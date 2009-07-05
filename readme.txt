@@ -1,7 +1,7 @@
 === MiniMeta Widget ===
 Contributors: danielhuesken
 Donate link: http://danielhuesken.de/
-Tags: backup, admin
+Tags: backup, admin, file, Database, mysql
 Requires at least: 2.8
 Tested up to: 2.8.1
 Stable tag: 0.5.0
