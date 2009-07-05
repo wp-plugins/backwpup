@@ -4,7 +4,7 @@ Donate link: http://danielhuesken.de/
 Tags: backup, admin
 Requires at least: 2.8
 Tested up to: 2.8.1
-Stable tag: 
+Stable tag: 0.5.0
 
 Backup and more of your WordPress Blog Database and Files
 
