@@ -18,7 +18,7 @@ Backup and more your Blog.
 * Optimize Dateabase
 * File Backup
 * Uses PCLZIP class of Wordpress
-*
+
 
 I can give no WARRANTY to any backups
 
