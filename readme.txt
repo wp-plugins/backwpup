@@ -1,4 +1,4 @@
-=== MiniMeta Widget ===
+=== BackWPup ===
 Contributors: danielhuesken
 Donate link: http://danielhuesken.de/
 Tags: backup, admin, file, Database, mysql
