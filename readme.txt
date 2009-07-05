@@ -36,7 +36,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 
 = Import with phpMyAdmin =
 
-You must import the Database Dumpt with Charaktercoding=latin1
+You must import the Database Dump with Charaktercoding:latin1
 
 
 == Screenshots ==
