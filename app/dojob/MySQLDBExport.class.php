@@ -205,7 +205,7 @@ class MySQLDBExport {
         // Wenn das Value nicht numerisch ist, es mit mysql_real_escape_string()
         // escapen und zwischen " setzen
         elseif(!is_numeric($value)) {
-          $value = utf8_encode(mysql_real_escape_string($value));
+          $value = mysql_real_escape_string($value);
           $value = "\"$value\"";
         }
         // In allen anderen Fällen ist das Value numerisch, kann belassen
