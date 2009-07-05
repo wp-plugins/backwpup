@@ -10,7 +10,7 @@ Backup and more of your WordPress Blog Database and Files
 
 == Description ==
 
-This Plugin is under hevy Development. Pleace test it and give feadback!!!.
+This Plugin is under heavy Development. Pleace test it and give feadback!!!.
 
 Backup and more your Blog.
 
