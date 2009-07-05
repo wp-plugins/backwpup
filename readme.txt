@@ -30,6 +30,14 @@ I can give no WARRANTY to any backups
 
 == Frequently Asked Questions ==
 
+= Where ist the Database dum on DB+File backup =
+
+in the root folder of the zip Archive. <i>DBName</i>.sql
+
+= Import with phpMyAdmin =
+
+You must import the Database Dumpt with Charaktercoding=latin1
+
 
 == Screenshots ==
 
