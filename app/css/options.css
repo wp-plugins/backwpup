@@ -1,0 +1,12 @@
+.column-id {
+	width:25px;
+}
+.column-logdate, .column-last, .column-next {
+	width:100px;
+}
+.column-type {
+	width:100px;
+}
+.column-size {
+	width:75px;
+}
