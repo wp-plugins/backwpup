@@ -1,0 +1,558 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Daniel H&uuml;sken
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tag/backwpup\n"
+"POT-Creation-Date: 2009-07-05 15:39+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: app/dojob/db.php:2
+msgid "Run Database Backup..."
+msgstr ""
+
+#: app/dojob/db.php:15
+msgid "Tables to Backup: "
+msgstr ""
+
+#: app/dojob/db.php:27
+msgid "ERROR:"
+msgstr ""
+
+#: app/dojob/db.php:31
+msgid "ERROR: No Tables to Backup"
+msgstr ""
+
+#: app/dojob/db.php:36
+msgid "Database backup done!"
+msgstr ""
+
+#: app/dojob/db.php:39
+msgid "Create Zip file from dump..."
+msgstr ""
+
+#: app/dojob/db.php:43
+msgid "ERROR: Database Zip file create:"
+msgstr ""
+
+#: app/dojob/db.php:46
+msgid "Zip file created..."
+msgstr ""
+
+#: app/dojob/destination-dir.php:2
+msgid "Move Backup Zip file to Backup dir..."
+msgstr ""
+
+#: app/dojob/destination-dir.php:19
+msgid "ERROR: Backup Zip file can not moved to Backup dir!!!"
+msgstr ""
+
+#: app/dojob/destination-dir.php:25
+msgid "ERROR: Log file file can not moved to Backup dir!!!"
+msgstr ""
+
+#: app/dojob/destination-dir.php:33
+msgid "Backup zip file saved to:"
+msgstr ""
+
+#: app/dojob/destination-dir.php:34
+msgid "Backup zip filesize is"
+msgstr ""
+
+#: app/dojob/destination-dir.php:36
+msgid "Log file saved to:"
+msgstr ""
+
+#: app/dojob/destination-dir.php:39
+msgid "Delete old backup files..."
+msgstr ""
+
+#: app/dojob/destination-dir.php:68
+msgid "Old backup files deleted!!!"
+msgstr ""
+
+#: app/dojob/destination-dir.php:69 app/dojob/optimize.php:62
+msgid "Old Log files deleted!!!"
+msgstr ""
+
+#: app/dojob/destination-mail.php:3
+msgid "Sendig mail..."
+msgstr ""
+
+#: app/dojob/destination-mail.php:8
+msgid "WARNING: Backup Archive too big for sendig by mail"
+msgstr ""
+
+#: app/dojob/destination-mail.php:16
+msgid "BackWPup Job:"
+msgstr ""
+
+#: app/dojob/destination-mail.php:17
+msgid "Mail send!!!"
+msgstr ""
+
+#: app/dojob/destination-mail.php:19
+msgid "ERROR: can not send mail!!!"
+msgstr ""
+
+#: app/dojob/file.php:2
+msgid "Run File Backup..."
+msgstr ""
+
+#: app/dojob/file.php:4
+msgid "Make File List..."
+msgstr ""
+
+#: app/dojob/file.php:68
+msgid "Remove Excludes from file list..."
+msgstr ""
+
+#: app/dojob/file.php:88 app/dojob/file.php:103
+msgid "ERROR: No files to Backup"
+msgstr ""
+
+#: app/dojob/file.php:109
+msgid "Files to Backup: "
+msgstr ""
+
+#: app/dojob/file.php:110
+msgid "Create Backup Zip file..."
+msgstr ""
+
+#: app/dojob/file.php:116
+msgid "ERROR: Zip file create:"
+msgstr ""
+
+#: app/dojob/file.php:120
+msgid "Add Database dump to Backup Zip file..."
+msgstr ""
+
+#: app/dojob/file.php:122
+msgid "ERROR: Zip file create Add Database dump:"
+msgstr ""
+
+#: app/dojob/file.php:129
+msgid "Backup Zip file create done!"
+msgstr ""
+
+#: app/dojob/optimize.php:3
+msgid "Run Database optimize..."
+msgstr ""
+
+#: app/dojob/optimize.php:14
+msgid "Tables to optimize: "
+msgstr ""
+
+#: app/dojob/optimize.php:20
+#, php-format
+msgid "ERROR: BackWPup database error %1$s for query %2$s"
+msgstr ""
+
+#: app/dojob/optimize.php:26
+msgid "Database optimize done!"
+msgstr ""
+
+#: app/dojob/optimize.php:28
+msgid "ERROR: No Tables to optimize"
+msgstr ""
+
+#: app/dojob/optimize.php:33
+msgid "Delete old Log files..."
+msgstr ""
+
+#. #-#-#-#-#  plugin.pot (PACKAGE VERSION)  #-#-#-#-#
+#. Plugin Name of an extension
+#: app/functions.php:7 app/options.php:3
+msgid "BackWPup"
+msgstr ""
+
+#: app/functions.php:15 app/functions.php:176
+msgid "Support"
+msgstr ""
+
+#: app/functions.php:16 app/functions.php:175
+msgid "FAQ"
+msgstr ""
+
+#: app/functions.php:17
+msgid "Plugin Homepage"
+msgstr ""
+
+#: app/functions.php:18
+msgid "Plugin Home on WordPress.org"
+msgstr ""
+
+#: app/functions.php:19 app/functions.php:177
+msgid "Donate"
+msgstr ""
+
+#: app/functions.php:22
+msgid "Version:"
+msgstr ""
+
+#: app/functions.php:23
+msgid "Author:"
+msgstr ""
+
+#: app/functions.php:167
+msgid "Go to Settings Page"
+msgstr ""
+
+#: app/functions.php:167 app/options.php:8
+msgid "Settings"
+msgstr ""
+
+#: app/functions.php:188
+msgid "BackWPup Job "
+msgstr ""
+
+#: app/options-edit.php:3
+msgid "Edit BackWPup Job"
+msgstr ""
+
+#: app/options-edit.php:34
+msgid "Job Type"
+msgstr ""
+
+#: app/options-edit.php:37 app/options-logs.php:65 app/options.php:73
+msgid "Database &amp; File Backup"
+msgstr ""
+
+#: app/options-edit.php:38 app/options-logs.php:68 app/options.php:76
+msgid "Database Backup"
+msgstr ""
+
+#: app/options-edit.php:39 app/options-logs.php:71 app/options.php:79
+msgid "File Backup"
+msgstr ""
+
+#: app/options-edit.php:40 app/options-logs.php:74 app/options.php:82
+msgid "Optimize Database Tabels"
+msgstr ""
+
+#: app/options-edit.php:42
+msgid "Change"
+msgstr ""
+
+#: app/options-edit.php:47
+msgid "Job Name"
+msgstr ""
+
+#: app/options-edit.php:53
+msgid "Exclude Databas Tabels:"
+msgstr ""
+
+#: app/options-edit.php:72
+msgid "Backup Blog dirs"
+msgstr ""
+
+#: app/options-edit.php:73
+msgid "Blog root and WP Files"
+msgstr ""
+
+#: app/options-edit.php:74
+msgid "Blog Content"
+msgstr ""
+
+#: app/options-edit.php:75
+msgid "Blog Plugins"
+msgstr ""
+
+#: app/options-edit.php:79
+msgid "Include extra dirs"
+msgstr ""
+
+#: app/options-edit.php:80
+msgid "Separate with ,. Full Path like:"
+msgstr ""
+
+#: app/options-edit.php:84
+msgid "Exclude files/dirs"
+msgstr ""
+
+#: app/options-edit.php:85
+msgid "Separate with ,"
+msgstr ""
+
+#: app/options-edit.php:90
+msgid "Schedule"
+msgstr ""
+
+#: app/options-edit.php:92
+msgid "Run Every:"
+msgstr ""
+
+#: app/options-edit.php:102
+msgid "Min(s)"
+msgstr ""
+
+#: app/options-edit.php:103
+msgid "Houer(s)"
+msgstr ""
+
+#: app/options-edit.php:104
+msgid "Day(s)"
+msgstr ""
+
+#: app/options-edit.php:108
+msgid "Start Time:"
+msgstr ""
+
+#: app/options-edit.php:123
+msgid "Start Date:"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "January"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "February"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "March"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "April"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "May"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "June"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "July"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "August"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "September"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "October"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "November"
+msgstr ""
+
+#: app/options-edit.php:129
+msgid "December"
+msgstr ""
+
+#: app/options-edit.php:142
+msgid "Activate:"
+msgstr ""
+
+#: app/options-edit.php:150
+msgid "Backup to Directory"
+msgstr ""
+
+#: app/options-edit.php:151
+msgid "Full Phath of Directory for Backup fiels"
+msgstr ""
+
+#: app/options-edit.php:154
+msgid "Max number of Backup Files"
+msgstr ""
+
+#: app/options-edit.php:158
+msgid "Off"
+msgstr ""
+
+#: app/options-edit.php:163
+msgid "Oldest files will deletet first."
+msgstr ""
+
+#: app/options-edit.php:171
+msgid "Send Mail to"
+msgstr ""
+
+#: app/options-edit.php:177 app/options-settings.php:24
+msgid "Save Changes"
+msgstr ""
+
+#: app/options-logs.php:3
+msgid "BackWPup Logs"
+msgstr ""
+
+#: app/options-logs.php:17 app/options-logs.php:117 app/options.php:18
+#: app/options.php:118
+msgid "Bulk Actions"
+msgstr ""
+
+#: app/options-logs.php:18 app/options-logs.php:88 app/options-logs.php:118
+#: app/options.php:19 app/options.php:64 app/options.php:119
+msgid "Delete"
+msgstr ""
+
+#: app/options-logs.php:20 app/options-logs.php:120 app/options.php:21
+#: app/options.php:121
+msgid "Apply"
+msgstr ""
+
+#: app/options-logs.php:32 app/options-logs.php:43
+msgid "Job"
+msgstr ""
+
+#: app/options-logs.php:33 app/options-logs.php:44 app/options.php:35
+#: app/options.php:46
+msgid "Type"
+msgstr ""
+
+#: app/options-logs.php:34 app/options-logs.php:45
+msgid "Backup/Log"
+msgstr ""
+
+#: app/options-logs.php:35 app/options-logs.php:46
+msgid "Size"
+msgstr ""
+
+#: app/options-logs.php:36 app/options-logs.php:47
+msgid "Log Date"
+msgstr ""
+
+#: app/options-logs.php:85
+msgid "View log"
+msgstr ""
+
+#: app/options-logs.php:85
+msgid "ERROR"
+msgstr ""
+
+#: app/options-logs.php:85
+msgid "OK"
+msgstr ""
+
+#: app/options-logs.php:87
+msgid "View"
+msgstr ""
+
+#: app/options-logs.php:88 app/options.php:64
+msgid ""
+"You are about to delete this Job. \n"
+"  'Cancel' to stop, 'OK' to delete."
+msgstr ""
+
+#: app/options-logs.php:90
+msgid "Download"
+msgstr ""
+
+#: app/options-logs.php:99
+msgid "only Log"
+msgstr ""
+
+#: app/options-logs.php:106 app/options.php:104
+msgid "Runtime:"
+msgstr ""
+
+#: app/options-logs.php:106 app/options.php:91 app/options.php:104
+msgid "sec."
+msgstr ""
+
+#: app/options-runnow.php:3
+msgid "BackWPup Job Running"
+msgstr ""
+
+#: app/options-save.php:34
+msgid "Copy of"
+msgstr ""
+
+#: app/options-save.php:60
+msgid "File does not exist."
+msgstr ""
+
+#: app/options-settings.php:3
+msgid "BackWPup Settings"
+msgstr ""
+
+#: app/options-settings.php:17
+msgid "Temp Directory:"
+msgstr ""
+
+#: app/options-settings.php:18
+msgid "Full Phath of Temp Directory"
+msgstr ""
+
+#: app/options-view_log.php:3
+msgid "BackWPup View Log"
+msgstr ""
+
+#: app/options.php:3
+msgid "Add New"
+msgstr ""
+
+#: app/options.php:6
+msgid "Jobs"
+msgstr ""
+
+#: app/options.php:7
+msgid "Logs"
+msgstr ""
+
+#: app/options.php:33 app/options.php:44
+msgid "ID"
+msgstr ""
+
+#: app/options.php:34 app/options.php:45
+msgid "Name"
+msgstr ""
+
+#: app/options.php:36 app/options.php:47
+msgid "Next Run"
+msgstr ""
+
+#: app/options.php:37 app/options.php:48
+msgid "Last Run"
+msgstr ""
+
+#: app/options.php:61
+msgid "Edit:"
+msgstr ""
+
+#: app/options.php:63
+msgid "Edit"
+msgstr ""
+
+#: app/options.php:65
+msgid "Copy"
+msgstr ""
+
+#: app/options.php:66
+msgid "Run Now"
+msgstr ""
+
+#: app/options.php:91
+msgid "Running since:"
+msgstr ""
+
+#: app/options.php:95
+msgid "Inactive"
+msgstr ""
+
+#: app/options.php:106
+msgid "None"
+msgstr ""
+
+#: backwpup.php:45
+msgid "Sorry, BackWPup works only under WordPress 2.8 or higher"
+msgstr ""
