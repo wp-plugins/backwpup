@@ -1,6 +1,6 @@
 === BackWPup ===
 Contributors: danielhuesken
-Donate link: http://danielhuesken.de/
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql
 Requires at least: 2.8
 Tested up to: 2.8.1
