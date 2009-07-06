@@ -1,37 +1,17 @@
 <?PHP
 BackWPupFunctions::joblog($logfile,__('Run File Backup...','backwpup'));
-
 BackWPupFunctions::joblog($logfile,__('Make File List...','backwpup'));
 
-	function allfiles($path,$filelist='') { //helper function
-		if ($pathhandle = @opendir($path)) {
-			$path=str_replace('\\','/',$path);
-			$path=str_replace('//','/',$path);
-			$path=untrailingslashit($path);
-			while (false !== ($file = readdir($pathhandle))) {
-				if ($file != "." && $file != ".." && $file != ".svn") {
-					if (is_dir($path.'/'.$file)) {
-						$filelist=allfiles($path.'/'.$file,$filelist);
-					} else {
-						$filelist[]=$path.'/'.$file;
-					}
-				}
-			}
-			closedir($pathhandle);
-		}
-		return $filelist;
-	}
-	
 	//Make filelist
 	if ($jobs[$jobid]['backuproot']) {
-		$filelist=allfiles(ABSPATH);
+		$filelist=BackWPupFunctions::list_files(str_replace('\\','/',untrailingslashit(ABSPATH)));
 	}
 	if ($jobs[$jobid]['backupcontent']) {
-		$filelist=allfiles(WP_CONTENT_DIR,$filelist);
+		$filelist=array_merge(BackWPupFunctions::list_files(str_replace('\\','/',untrailingslashit(WP_CONTENT_DIR))),$filelist);
 	} else {
 		if (is_array($filelist)) {
 			unset($excludefilelist); //clean vars
-			$excludefilelist=allfiles(WP_CONTENT_DIR);
+			$excludefilelist=BackWPupFunctions::list_files(WP_CONTENT_DIR);
 			foreach($excludefilelist as $fileexcludevalue) {
 				foreach($filelist as $filelistkey =>$filelistvalue) {
 					if ($filelistvalue==$fileexcludevalue)
@@ -41,11 +21,11 @@ BackWPupFunctions::joblog($logfile,__('Make File List...','backwpup'));
 		}
 	}
 	if ($jobs[$jobid]['backupplugins']) {
-		$filelist=allfiles(WP_PLUGIN_DIR,$filelist);
+		$filelist=array_merge(BackWPupFunctions::list_files(str_replace('\\','/',untrailingslashit(WP_PLUGIN_DIR))),$filelist);
 	} else {
 		if (is_array($filelist)) {
 			unset($excludefilelist); //clean vars
-			$excludefilelist=allfiles(WP_PLUGIN_DIR);
+			$excludefilelist=BackWPupFunctions::list_files(WP_PLUGIN_DIR);
 			foreach($excludefilelist as $fileexcludevalue) {
 				foreach($filelist as $filelistkey =>$filelistvalue) {
 					if ($filelistvalue==$fileexcludevalue)
@@ -58,7 +38,7 @@ BackWPupFunctions::joblog($logfile,__('Make File List...','backwpup'));
 	if (is_array($dirinclude)) {
 		foreach($dirinclude as $dirincludevalue) {
 			if (is_dir($dirincludevalue)) {
-				$filelist=allfiles($dirincludevalue,$filelist);
+				$filelist=array_merge(BackWPupFunctions::list_files(str_replace('\\','/',untrailingslashit($dirincludevalue))),$filelist);
 			}
 		}
 	}
@@ -66,6 +46,11 @@ BackWPupFunctions::joblog($logfile,__('Make File List...','backwpup'));
 	if (sizeof($filelist)>0) {
 		$filelist=array_unique($filelist);
 		BackWPupFunctions::joblog($logfile,__('Remove Excludes from file list...','backwpup'));	
+		//Remove Temp dir
+		foreach($filelist as $filelistkey =>$filelistvalue) {
+			if (stristr($filelistvalue,BackWPupFunctions::get_temp_dir().'backwpup/'))
+				unset($filelist[$filelistkey]);
+		}
 		//Remove Backup dirs
 		foreach($jobs as $jobsvale) {
 			foreach($filelist as $filelistkey =>$filelistvalue) {
@@ -75,7 +60,7 @@ BackWPupFunctions::joblog($logfile,__('Make File List...','backwpup'));
 		}
 		//Exclute files and dirs
 		$fileexclude=split(',',$jobs[$jobid]['fileexclude']);
-		if (is_array($fileexclude) and !empty($fileexclude[0]) and sizeof($fileexclude)>1) {
+		if (is_array($fileexclude)) {
 			foreach($fileexclude as $fileexcludevalue) {
 				foreach($filelist as $filelistkey =>$filelistvalue) {
 					if (stristr($filelistvalue,$fileexcludevalue))

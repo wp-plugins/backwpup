@@ -1,7 +1,44 @@
 <?PHP
 
 class BackWPupFunctions {
- 	
+
+
+	function list_files( $folder = '', $levels = 100 ) { //Same as WP function but needet for cron
+		if( empty($folder) )
+			return false;
+		if( ! $levels )
+			return false;
+		$files = array();
+		if ( $dir = @opendir( $folder ) ) {
+			while (($file = readdir( $dir ) ) !== false ) {
+				if ( in_array($file, array('.', '..','.svn') ) )
+					continue;
+				if ( is_dir( $folder . '/' . $file ) ) {
+					$files2 = list_files( $folder . '/' . $file, $levels - 1);
+					if( $files2 )
+						$files = array_merge($files, $files2 );
+					else
+						$files[] = $folder . '/' . $file . '/';
+				} else {
+					$files[] = $folder . '/' . $file;
+				}
+			}
+		}
+		@closedir( $dir );
+		return $files;
+	}
+
+ 	function get_temp_dir() { //Same as WP function but needet for cron
+		if ( defined('WP_TEMP_DIR') )
+			return trailingslashit(WP_TEMP_DIR);
+		$temp = WP_CONTENT_DIR . '/';
+		if ( is_dir($temp) && is_writable($temp) )
+			return $temp;
+		if  ( function_exists('sys_get_temp_dir') )
+			return trailingslashit(sys_get_temp_dir());
+		return '/tmp/';
+	}
+	
 	//Thems Option menu entry
 	function menu_entry() {
 		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), 'install_plugins', 'BackWPup',array('BackWPupFunctions', 'options')) ;
@@ -142,11 +179,6 @@ class BackWPupFunctions {
 				}
 			}
 		}
-		//set Tmp dir
-		$cfg=get_option('backwpup');
-		if (empty($cfg['tempdir']))
-			$cfg['tempdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup';
-		update_option('backwpup',$cfg);
 	}
 	
 	//on Plugin deaktivate
@@ -248,8 +280,8 @@ class BackWPupFunctions {
 		$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
 		$pow = min($pow, count($units) - 1);
 		$bytes /= pow(1024, $pow);
-    return round($bytes, $precision) . ' ' . $units[$pow];
-} 
+		return round($bytes, $precision) . ' ' . $units[$pow];
+	} 
 	
 	// add all action and so on only if plugin loaded.
 	function init() {

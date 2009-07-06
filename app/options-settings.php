@@ -13,10 +13,7 @@
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 
 <table class="form-table">
-<tr valign="top">
-<th scope="row"><label for="tempdir"><?PHP _e('Temp Directory:','backwpup'); ?></label></th> 
-<td><input name="tempdir" type="text" value="<?PHP echo $cfg['tempdir'];?>" class="regular-text" /><span class="description"><?PHP _e('Full Phath of Temp Directory','backwpup'); ?></span></td> 
-</tr> 
+
 
 </table>
  

@@ -38,7 +38,7 @@ class BackWPupOptions {
 
 	function config() {
 		$cfg=get_option('backwpup'); //Load Settings
-		$cfg['tempdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['tempdir'])));
+
 		update_option('backwpup',$cfg); //Save Settings
 	}
 	
