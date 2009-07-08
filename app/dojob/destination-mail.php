@@ -1,23 +1,23 @@
 <?php
 if (!empty($jobs[$jobid]['mailaddress'])) {
-	BackWPupFunctions::joblog($logfile,__('Sendig mail...','backwpup'));
+	BackWPupFunctions::joblog($logtime,__('Sendig mail...','backwpup'));
 	if (is_file($backupfile)) {
 		if (filesize($backupfile)<5242880) {
 			$mailfiles=$backupfile;
 		} else {
-			BackWPupFunctions::joblog($logfile,__('WARNING: Backup Archive too big for sendig by mail','backwpup'));
+			if (!empty($jobs[$jobid]['backupdir'])) {
+				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.__('Backup Archive too big for sendig by mail','backwpup'));		
+			} else {
+				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Backup Archive too big for sendig by mail','backwpup'));	
+			}
 			$mailfiles='';
 		}
 	}
-	$logmassage=file($logfile);
-	foreach ($logmassage as $massageline) {
-		$mailmessage.=$massageline;
-	}
-	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.$jobs[$jobid]['name'],$mailmessage,'',$mailfiles)) {
-		BackWPupFunctions::joblog($logfile,__('Mail send!!!','backwpup'));
+	$logs=get_option('backwpup_log');
+	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.$jobs[$jobid]['name'],$logs[$logtime]['log'],'',$mailfiles)) {
+		BackWPupFunctions::joblog($logtime,__('Mail send!!!','backwpup'));
 	} else {
-		BackWPupFunctions::joblog($logfile,__('ERROR: can not send mail!!!','backwpup'));
-		$joberror=true;
+		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not send mail!!!','backwpup'));
 	}	
 }
 //clean vars

@@ -10,9 +10,6 @@
 
 <pre>
 <?PHP
-$log=file($logfile);
-for ($i=0;$i<sizeof($log);$i++) {
-	echo $log[$i];
-}
+echo $logs[$logtime]['log'];
 ?>
 </pre>

@@ -87,10 +87,9 @@ class BackWPupFunctions {
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-runnow.php');
 			break;
 		case 'view_log':
-		    $log= (int) $_GET['log'];
+		    $logtime= (int) $_GET['logtime'];
 			check_admin_referer('view-log');
 			$logs=get_option('backwpup_log');
-			$logfile=$logs[$log]['logfile'];
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log.php');
 			break;
 		default:
@@ -239,17 +238,14 @@ class BackWPupFunctions {
 		case 'DB+FILE':
 			require_once('dojob/db.php');
 			require_once('dojob/file.php');
-			require_once('dojob/destination-dir.php');
 			//require_once('dojob/destination-ftp.php');
 			break;
 		case 'DB':
 			require_once('dojob/db.php');
-			require_once('dojob/destination-dir.php');
 			//require_once('dojob/destination-ftp.php');
 			break;
 		case 'FILE':
 			require_once('dojob/file.php');
-			require_once('dojob/destination-dir.php');
 			//require_once('dojob/destination-ftp.php');
 			break;
 		case 'OPTIMIZE':
@@ -260,17 +256,20 @@ class BackWPupFunctions {
 		require_once('dojob/after.php');
 		
 		if ($returnlogfile)
-			return $logfile;
+			return $logtime;
 		else 
 			return;
 	}
 	
 	//Make Log File for Jobs.
-	function joblog($logfile,$entry) {
-		if($file = fopen($logfile, 'a')) {
-			fwrite($file, date('Y-m-d H:i.s').": ".$entry."\n");
-			fclose($file);
-		} 
+	function joblog($logtime,$entry) {
+		$logs=get_option('backwpup_log');
+		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup'))
+			$logs[$logtime]['error']=$logs[$logtime]['error']+1;
+		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
+			$logs[$logtime]['warning']=$logs[$logtime]['warning']+1;
+		$logs[$logtime]['log'].=$entry."\n";
+		update_option('backwpup_log',$logs);
 	}
 	
 	//file size

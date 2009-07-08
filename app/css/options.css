@@ -1,11 +1,11 @@
 .column-id {
 	width:25px;
 }
-.column-logdate, .column-last, .column-next {
+.column-runtime, .column-last, .column-next , .column-status{
 	width:100px;
 }
 .column-type {
-	width:100px;
+	width:130px;
 }
 .column-size {
 	width:75px;

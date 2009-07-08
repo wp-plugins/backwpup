@@ -7,12 +7,10 @@
 <li><a href="admin.php?page=BackWPup&amp;action=settings">Settings</a></li>
 </ul>
 <br class="clear" /> 
-<?PHP $logfile=BackWPupFunctions::dojob(array('jobid'=>$jobid,'returnlogfile'=>true)); ?>
+<?PHP $logtime=BackWPupFunctions::dojob(array('jobid'=>$jobid,'returnlogfile'=>true)); ?>
 <pre>
 <?PHP
-$log=file($logfile);
-for ($i=0;$i<sizeof($log);$i++) {
-	echo $log[$i];
-}
+$logs=get_option('backwpup_log');
+echo $logs[$logtime]['log'];
 ?>
 </pre>

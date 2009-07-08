@@ -25,7 +25,7 @@
 </div> 
  
 <div class="clear"></div> 
- 
+
 <table class="widefat fixed" cellspacing="0"> 
 	<thead> 
 	<tr> 
@@ -100,8 +100,8 @@
 		<?PHP
 			if ($jobvalue['lastrun']) {
 				echo date(get_option('date_format'),$jobvalue['lastrun']); ?><br /><?PHP echo date(get_option('time_format'),$jobvalue['lastrun']); 
-				$runtime=$jobvalue['stoptime']-$jobvalue['starttime'];
-				echo '<br />'.__('Runtime:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
+				if (isset($jobvalue['lastruntime']))
+					echo '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup');
 			} else {
 				_e('None','backwpup');
 			}

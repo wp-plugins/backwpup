@@ -13,8 +13,6 @@ class BackWPupOptions {
 	
 	function delete_log($timestamp) {
 		$logs=get_option('backwpup_log'); //Load Settings
-		if (is_file($logs[$timestamp]['logfile'])) 
-			unlink($logs[$timestamp]['logfile']);
 		if (is_file($logs[$timestamp]['backupfile'])) 
 			unlink($logs[$timestamp]['backupfile']);
 		unset($logs[$timestamp]);
