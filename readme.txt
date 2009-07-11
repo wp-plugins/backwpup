@@ -42,3 +42,12 @@ You must import the Database Dump with Charaktercoding:latin1
 == Screenshots ==
 
 1. Job Page
+
+
+== Changelog ==
+
+= 0.5.5 =
+* removed log files. Log now stred in Database
+
+= 0.5.0 =
+* Inital rekease

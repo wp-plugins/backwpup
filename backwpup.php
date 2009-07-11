@@ -38,7 +38,7 @@ Change log:
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '0.5.0');
+define('BACKWPUP_VERSION', '0.5.5');
 
 //Version check
 if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
