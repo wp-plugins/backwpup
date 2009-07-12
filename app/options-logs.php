@@ -2,9 +2,10 @@
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e('BackWPup Logs', 'backwpup'); ?></h2>
 <ul class="subsubsub"> 
-<li><a href="admin.php?page=BackWPup">Jobs</a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=logs" class="current">Logs</a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=settings">Settings</a></li>
+<li><a href="admin.php?page=BackWPup"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
+<li><a href="admin.php?page=BackWPup&amp;action=logs" class="current"><?PHP _e('Logs','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=db_restore"><?PHP _e('DB Restore','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 
 <form id="logs-filter" action="" method="post">
@@ -62,20 +63,7 @@
 		<td class="column-id"><?PHP echo $logvalue['jobid'];?></td> 
 		<td class="column-type">
 		<?PHP
-			switch($logvalue['type']) {
-			case 'DB+FILE':
-				_e('Database &amp; File Backup','backwpup');
-				break;
-			case 'DB':
-				_e('Database Backup','backwpup');
-				break;			
-			case 'FILE':
-				_e('File Backup','backwpup');
-				break;
-			case 'OPTIMIZE':
-				_e('Optimize Database Tabels','backwpup');
-				break;				
-			}
+			BackWPupFunctions::backup_types($logvalue['type'],true);
 		?>
 		</td> 
 		<td class="name column-log">
@@ -84,7 +72,7 @@
 					if (is_file($logvalue['backupfile']))
 						$name=basename($logvalue['backupfile']);
 					?>
-					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date(get_option('date_format'),$timestamp); ?> <?PHP echo date(get_option('time_format'),$timestamp); ?></a></strong>
+					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date(get_option('date_format'),$timestamp); ?> <?PHP echo date(get_option('time_format'),$timestamp); ?><?php if (!empty($logvalue['jobname'])) echo ': <i>'.$logvalue['jobname'].'</i>';?></a></strong>
 					<p><div class="row-actions">
 						<span class="view"><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log'); ?>"><?PHP _e('View','backwpup'); ?></a></span>
 						<span class="delete"> | <a class="submitdelete" href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$timestamp, 'delete-log_'.$timestamp); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) ?>') ){return true;}return false;"><?PHP _e('Delete','backwpup'); ?></a></span>
@@ -102,7 +90,7 @@
 			if ($logvalue['warning']>0)
 				echo '<span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span>'; 
 		} else { 
-			_e('OK','backwpup'); 
+			echo '<span style="color:green;">'.__('OK','backwpup').'</span>';
 		} 
 		?>
 		</strong>
@@ -116,7 +104,7 @@
 			}
 		?>
 		</td> 
-		<td class="column-logdate">
+		<td class="column-runtime">
 		<?PHP
 			echo $logvalue['worktime'].' '.__('sec.','backwpup');
 		?>

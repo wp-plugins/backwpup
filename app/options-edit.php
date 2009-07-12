@@ -33,11 +33,12 @@ if ($jobs[$jobid]['type']=='FILE') {
 <tr valign="top"> 
 <th scope="row"><label for="job_type"><?PHP _e('Job Type','backwpup'); ?></label></th> 
 <td> 
-<select name="type" id="job_type"> 
-	<option value="DB+FILE"<?PHP selected('DB+FILE',$jobs[$jobid]['type']);?>><?PHP _e('Database &amp; File Backup','backwpup'); ?></option> 
-	<option value="DB"<?PHP selected('DB',$jobs[$jobid]['type']);?>><?PHP _e('Database Backup','backwpup'); ?></option> 
-	<option value="FILE"<?PHP selected('FILE',$jobs[$jobid]['type']);?>><?PHP _e('File Backup','backwpup'); ?></option> 
-	<option value="OPTIMIZE"<?PHP selected('OPTIMIZE',$jobs[$jobid]['type']);?>><?PHP _e('Optimize Database Tabels','backwpup'); ?></option>
+<select name="type" id="job_type">
+	<?php
+	foreach (BackWPupFunctions::backup_types() as $type) {
+		echo '<option value="'.$type.'"'.selected($type,$jobs[$jobid]['type'],false).'>'.BackWPupFunctions::backup_types($type).'</option>';
+	}
+	?>
 </select>
 <input type="submit" name="change" class="button" value="<?php _e('Change', 'backwpup'); ?>" /> 
 </td> 
@@ -140,7 +141,7 @@ echo '</select>';
 ?>
 <br />
 <span class="description"><?php _e('Activate:', 'backwpup'); ?></span>
-<input class="checkbox" type="checkbox" <?php checked($jobs[$jobid]['activated'],true); ?> name="activated" />
+<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['activated'],true); ?> name="activated" />
 </td> 
 </tr> 
 

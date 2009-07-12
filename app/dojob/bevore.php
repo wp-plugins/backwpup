@@ -24,6 +24,7 @@ $logs[$logtime]['error']=0;
 $logs[$logtime]['warning']=0;
 $logs[$logtime]['log']='';
 $logs[$logtime]['type']=$jobs[$jobid]['type'];
+$logs[$logtime]['jobname']=$jobs[$jobid]['name'];
 update_option('backwpup_log',$logs);
 
 if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off') {

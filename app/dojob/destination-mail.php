@@ -23,4 +23,5 @@ if (!empty($jobs[$jobid]['mailaddress'])) {
 //clean vars
 unset($mailfiles);
 unset($message);
+unset($logs);
 ?>

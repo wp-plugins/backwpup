@@ -2,9 +2,9 @@
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup", "backwpup"); ?><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid=0', 'edit-job'); ?>" class="button add-new-h2"><?php esc_html_e('Add New'); ?></a></h2>
 <ul class="subsubsub"> 
-
 <li><a href="admin.php?page=BackWPup" class="current"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li> 
+<li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=db_restore"><?PHP _e('DB Restore','backwpup'); ?></a> |</li>
 <li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 
@@ -68,20 +68,7 @@
 		</td> 
 		<td class="column-type">
 		<?PHP
-			switch($jobvalue['type']) {
-			case 'DB+FILE':
-				_e('Database &amp; File Backup','backwpup');
-				break;
-			case 'DB':
-				_e('Database Backup','backwpup');
-				break;			
-			case 'FILE':
-				_e('File Backup','backwpup');
-				break;
-			case 'OPTIMIZE':
-				_e('Optimize Database Tabels','backwpup');
-				break;				
-			}
+			BackWPupFunctions::backup_types($jobvalue['type'],true);
 		?>
 		</td> 
 		<td class="column-next">

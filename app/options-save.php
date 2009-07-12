@@ -76,7 +76,10 @@ class BackWPupOptions {
 		
 		$jobs[$jobid]['type']= $_POST['type'];
 		$jobs[$jobid]['name']= esc_html($_POST['name']);
-		$jobs[$jobid]['activated']= $_POST['activated'];
+		if ($_POST['activated']==1)
+			$jobs[$jobid]['activated']=true;
+		else
+			$jobs[$jobid]['activated']=false;
 		$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
 		$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
 		$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];

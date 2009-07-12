@@ -19,6 +19,16 @@ if (sizeof($tables)>0) {
 	$export->set_db(DB_NAME);  
 
 	$file = @fopen(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql', 'w');
+	fwrite($file, "-- ------------------------------------------\n");
+	fwrite($file, "-- Export with BackWPup ver.: ".BACKWPUP_VERSION."\n");
+	fwrite($file, "-- Plugin by Daniel Huesken for WordPress\n");
+	fwrite($file, "-- http://danielhuesken.de/portfolio/backwpup/\n");
+	fwrite($file, "-- Blog Name: ".get_option('blogname')."\n");
+	if (defined('WP_SITEURL')) 
+		fwrite($file, "-- Blog URL: ".trailingslashit(WP_SITEURL)."\n");
+	else 
+		fwrite($file, "-- Blog URL: ".trailingslashit(get_option('siteurl'))."\n");
+	fwrite($file, "-- Blog ABSPATH: ".trailingslashit(ABSPATH)."\n");
 	fwrite($file, $export->make_dump($tables));
 	fclose($file);
 

@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 0.5.5
+Version: 0.6.0
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -32,7 +32,7 @@ Domain Path: /lang/
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '0.5.5');
+define('BACKWPUP_VERSION', '0.6.0');
 
 //Version check
 if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
@@ -41,7 +41,7 @@ if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPres
 	//Load functions file
 	require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/functions.php');
 	//Plugin activate
-	register_activation_hook(__FILE__, array('BackWPupFunctions', 'plugin_activate')); //Don't work!!!!
+	register_activation_hook(__FILE__, array('BackWPupFunctions', 'plugin_activate')); 
 	//Plugin deactivate
 	register_deactivation_hook(__FILE__, array('BackWPupFunctions', 'plugin_deactivate'));
 	//Plugin uninstall

@@ -2,8 +2,8 @@
 
 class BackWPupFunctions {
 
-
-	function list_files( $folder = '', $levels = 100 ) { //Same as WP function but needet for cron
+	//Same as WP function but needet for cron
+	function list_files( $folder = '', $levels = 100 ) { 
 		if( empty($folder) )
 			return false;
 		if( ! $levels )
@@ -27,8 +27,9 @@ class BackWPupFunctions {
 		@closedir( $dir );
 		return $files;
 	}
-
- 	function get_temp_dir() { //Same as WP function but needet for cron
+	
+	//Same as WP function but needet for cron
+ 	function get_temp_dir() { 
 		if ( defined('WP_TEMP_DIR') )
 			return trailingslashit(WP_TEMP_DIR);
 		$temp = WP_CONTENT_DIR . '/';
@@ -79,6 +80,9 @@ class BackWPupFunctions {
 		case 'settings':
 			$cfg=get_option('backwpup');
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-settings.php');
+			break;
+		case 'db_restore':
+			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-db_restore.php');
 			break;
 		case 'runnow':
 		    $jobid = (int) $_GET['jobid'];
@@ -282,6 +286,84 @@ class BackWPupFunctions {
 		return round($bytes, $precision) . ' ' . $units[$pow];
 	} 
 	
+	//echo long backup type name
+	function backup_types($type='',$echo=false) {
+		switch($type) {
+		case 'DB+FILE':
+			$typename=__('Database &amp; File Backup','backwpup');
+			break;
+		case 'DB':
+			$typename=__('Database Backup','backwpup');
+			break;			
+		case 'FILE':
+			$typename=__('File Backup','backwpup');
+			break;
+		case 'OPTIMIZE':
+			$typename=__('Optimize Database Tabels','backwpup');
+			break;
+		default:
+			$typename=array('DB+FILE','DB','FILE','OPTIMIZE');
+			break;
+		}
+		if ($echo and !empty($type)) 
+			echo $typename;
+		else
+			return $typename;
+	}
+	
+	//Dashboard widget
+	function dashboard_output() {
+		$logs=get_option('backwpup_log');
+		$logs=array_reverse($logs,true);
+		$i=0;
+		echo '<strong>'.__('Logs:','backwpup').'</strong><ul>';
+		if (is_array($logs)) { 
+			foreach ($logs as $timestamp => $logvalue) {
+				echo '<li><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log').'" title="'.__('View Log','backwpup').'"><strong>'.date(get_option('date_format'),$timestamp).' '.date(get_option('time_format'),$timestamp).'</strong>: <i>';
+				if (empty($logvalue['jobname'])) 
+					BackWPupFunctions::backup_types($logvalue['type'],true);
+				else
+					echo $logvalue['jobname'];
+				echo '</i>';
+				if($logvalue['error']>0 or $logvalue['warning']>0) { 
+					if ($logvalue['error']>0)
+						echo ' <strong><span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span></strong>'; 
+					if ($logvalue['warning']>0)
+						echo ' <strong><span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span></strong>'; 
+				} else { 
+					echo ' <strong><span style="color:green;">'.__('OK','backwpup').'</span></strong>';  
+				} 
+				echo '</a></li>';
+				$i++;
+				if ($i>=5)
+					break;
+			}
+		}
+		echo "</ul>";
+		$jobs=get_option('backwpup_jobs');
+		echo '<strong>'.__('Scheduled Jobs:','backwpup').'</strong><ul>';
+		if (is_array($jobs)) { 
+			foreach ($jobs as $jobid => $jobvalue) {
+				if (wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
+					echo '<li><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'"><strong>';
+					if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
+						$runtime=time()-$jobvalue['starttime'];
+						echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
+					} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
+						echo date(get_option('date_format'),$time).' '.date(get_option('time_format'),$time);
+					}
+					echo '</strong>: <span>'.$jobvalue['name'].'</span></a></li>';
+				}
+			}
+		}
+		echo "</ul>";
+	}
+	
+	//add dashboard widget
+	function add_dashboard() {
+		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', array ('BackWPupFunctions', 'dashboard_output') );		
+	}
+	
 	// add all action and so on only if plugin loaded.
 	function init() {
 		//load Text Domain
@@ -294,7 +376,9 @@ class BackWPupFunctions {
 		//add cron intervals
 		add_filter('cron_schedules', array('BackWPupFunctions', 'intervals'));
 		//Actions for Cron job
-		add_action('backwpup_cron', array('BackWPupFunctions', 'dojob'));	
+		add_action('backwpup_cron', array('BackWPupFunctions', 'dojob'));
+		//add Dashboard widget
+		add_action( 'wp_dashboard_setup', array ('BackWPupFunctions', 'add_dashboard') );
 	} 	
 }
 

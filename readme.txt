@@ -45,6 +45,9 @@ You must import the Database Dump with Charaktercoding:latin1
 
 
 == Changelog ==
+= 0.6.0 dev.=
+* Add Dashboard Widget
+* fixed some Bugs
 
 = 0.5.5 =
 * removed log files. Log now stred in Database

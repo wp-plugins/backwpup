@@ -2,10 +2,10 @@
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup Settings", "backwpup"); ?></h2>
 <ul class="subsubsub"> 
-
-<li><a href="admin.php?page=BackWPup">Jobs</a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=logs">Logs</a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=settings" class="current">Settings</a></li>
+<li><a href="admin.php?page=BackWPup"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
+<li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=db_restore"><?PHP _e('DB Restore','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=settings" class="current"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 
 <form method="post" action="">
