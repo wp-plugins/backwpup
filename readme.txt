@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql
+Tags: backup, admin, file, Database, mysql, 
 Requires at least: 2.8
 Tested up to: 2.8.1
 Stable tag: 0.5.5
@@ -14,13 +14,17 @@ This Plugin is under heavy Development. Pleace test it and give feadback!!!.
 
 Backup and more your Blog.
 
-* Dateabase Backup
-* Optimize Dateabase
+* Database Backup
+* Optimize Database
+* Check\Repair Database
 * File Backup
 * Uses PCLZIP class of Wordpress
+* Store backup to Folder
+* Store backup to FTP Server
+* Send Log/Backup by eMail
 
 
-I can give no WARRANTY to any backups
+I can give no WARRANTY to any backups...
 
 == Installation ==
 
@@ -42,7 +46,6 @@ You must import the Database Dump with Charaktercoding:latin1
 == Screenshots ==
 
 1. Job Page
-
 
 == Changelog ==
 = 0.6.0 dev.=
