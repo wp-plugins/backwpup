@@ -47,6 +47,11 @@ You must import the Database Dump with Charaktercoding:latin1
 == Changelog ==
 = 0.6.0 dev.=
 * Add Dashboard Widget
+* Add Database Check
+* Add Backup file transfer to FTP Server
+* Save log fieles in own database table
+* Optimize Memory usage
+* Optimize File system access
 * fixed some Bugs
 
 = 0.5.5 =

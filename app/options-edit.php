@@ -11,11 +11,11 @@ if (empty($jobs[$jobid]['type']))
 	$jobs[$jobid]['type']='DB+FILE';
 
 
-if ($jobs[$jobid]['type']=='OPTIMIZE') {
+if ($jobs[$jobid]['type']=='OPTIMIZE' or $jobs[$jobid]['type']=='CHECK') {
 	echo '<input type="hidden" name="backupdir" value="'.$jobs[$jobid]['backupdir'].'" />';
 	echo '<input type="hidden" name="maxbackups" value="'.$jobs[$jobid]['maxbackups'].'" />';
 }
-if ($jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='OPTIMIZE') {
+if ($jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='OPTIMIZE' or $jobs[$jobid]['type']=='CHECK') {
 	echo '<input type="hidden" name="fileexclude" value="'.$jobs[$jobid]['fileexclude'].'" />';
 }
 if ($jobs[$jobid]['type']=='FILE') {
@@ -49,7 +49,7 @@ if ($jobs[$jobid]['type']=='FILE') {
 <td><input name="name" type="text" id="jobname" value="<?PHP echo $jobs[$jobid]['name'];?>" class="regular-text" /></td> 
 </tr> 
 
-<?PHP if ($jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$jobid]['type']=='OPTIMIZE') {?>
+<?PHP if ($jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$jobid]['type']=='OPTIMIZE' or $jobs[$jobid]['type']=='CHECK') {?>
 <tr valign="top"> 
 <th scope="row"><label for="dbexclude"><?PHP _e('Exclude Databas Tabels:','backwpup'); ?></label></th><td> 
 <?php
@@ -61,7 +61,8 @@ if (!isset($jobs[$jobid]['dbexclude'])) { //def.
 	}
 }
 foreach ($tables as $table) {
-	echo ' <input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobs[$jobid]['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/>'.$table;
+	if ($wpdb->backwpup_logs<>$table)
+		echo ' <input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobs[$jobid]['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/>'.$table;
 }
 
 ?>
@@ -165,6 +166,27 @@ _e('Oldest files will deletet first.','backwpup');
 ?></span>
 </td> 
 </tr>
+
+
+<tr valign="top">
+<th scope="row"><label for="mailaddress"><?PHP _e('Place Backup to FTP Server:','backwpup'); ?></label></th> 
+<td>
+<span class="description"><?PHP _e('Ftp Hostname:','backwpup'); ?></span><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
+<span class="description"><?PHP _e('Ftp Username:','backwpup'); ?></span><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" size="10" /><br />
+<span class="description"><?PHP _e('Ftp Password:','backwpup'); ?></span><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" size="10" /><br />
+<span class="description"><?PHP _e('Ftp directory:','backwpup'); ?></span><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
+<span class="description"><?PHP _e('Max Backup fieles on ftp:','backwpup'); ?></span>
+<?PHP 
+echo '<select name="ftpmaxbackups">';
+echo '<option value="0"'.selected(0,$jobs[$jobid]['ftpmaxbackups'],false).'>'.__('Off','backwpup').'</option>';
+for ($i=1;$i<=50;$i++) {
+	echo '<option value="'.$i.'"'.selected($i,$jobs[$jobid]['ftpmaxbackups'],false).'>'.$i.'</option>';
+}
+echo '</select>';
+?><br />
+</td> 
+</tr>
+
 <?PHP } ?>
 
  

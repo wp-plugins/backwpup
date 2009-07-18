@@ -11,7 +11,7 @@ Domain Path: /lang/
 */
 
 /*  
-	Copyright 2007  Daniel Hüsken  (email : daniel@huesken-net.de)
+	Copyright 2009  Daniel Hüsken  (email : daniel@huesken-net.de)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ Domain Path: /lang/
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 
@@ -33,19 +33,25 @@ Domain Path: /lang/
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
 define('BACKWPUP_VERSION', '0.6.0');
+//BackWPup Log Table Name
+global $wpdb;
+$wpdb->backwpup_logs = $wpdb->prefix.'backwpup_logs';
+
+//load Text Domain
+load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');	
+//Load functions file
+require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/functions.php');
+//Plugin activate
+register_activation_hook(__FILE__, array('BackWPupFunctions', 'plugin_activate')); 
+//Plugin deactivate
+register_deactivation_hook(__FILE__, array('BackWPupFunctions', 'plugin_deactivate'));
+//Plugin uninstall
+register_uninstall_hook(__FILE__, array('BackWPupFunctions', 'plugin_uninstall'));
 
 //Version check
 if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
 	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, BackWPup works only under WordPress 2.8 or higher','backwpup') . '</strong></p></div>\';'));
 } else {
-	//Load functions file
-	require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/functions.php');
-	//Plugin activate
-	register_activation_hook(__FILE__, array('BackWPupFunctions', 'plugin_activate')); 
-	//Plugin deactivate
-	register_deactivation_hook(__FILE__, array('BackWPupFunctions', 'plugin_deactivate'));
-	//Plugin uninstall
-	register_uninstall_hook(__FILE__, array('BackWPupFunctions', 'plugin_uninstall'));
 	//Plugin init	
 	add_action('plugins_loaded', array('BackWPupFunctions', 'init'));
 }

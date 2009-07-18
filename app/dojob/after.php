@@ -2,33 +2,27 @@
 //Delete old Logs/Backupfiles
 if (!empty($jobs[$jobid]['maxbackups'])) {
 	BackWPupFunctions::joblog($logtime,__('Delete old backup files...','backwpup'));
-	$logs=get_option('backwpup_log');
+	$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC", ARRAY_A);
 	if (is_array($logs)) {
-		unset($logkeys);
-		foreach ($logs as $timestamp => $logdata) {
-			if ($logdata['jobid']==$jobid)
-				$logkeys[]=$timestamp;
-		}
-		if (is_array($logkeys)) {
-			rsort($logkeys,SORT_NUMERIC);
-			$counter=0;$countdelbackups=0;
-			for ($i=0;$i<sizeof($logkeys);$i++) {
-				if (!empty($logs[$logkeys[$i]]['backupfile']) or in_array($jobs[$jobid]['type'],$logonlytyps))
-					$counter++;
-				if ($counter>=$jobs[$jobid]['maxbackups']) {
-					if (is_file($logs[$logkeys[$i]]['backupfile'])) {
-						unlink($logs[$logkeys[$i]]['backupfile']);
-						$countdelbackups++;
-					}
-					unset($logs[$logkeys[$i]]);
+		$counter=0;$countdelbackups=0;$countdellogs=0;
+		for ($i=0;$i<sizeof($logs);$i++) {
+			if (!empty($logs[$i]['backupfile']) or in_array($jobs[$jobid]['type'],$logonlytyps))
+				$counter++;
+			if ($counter>=$jobs[$jobid]['maxbackups']) {
+				if (is_file($logs[$i]['backupfile'])) {
+					unlink($logs[$i]['backupfile']);
+					$countdelbackups++;
 				}
+				$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logs[$i]['logtime']);
+				$countdellogs++;
 			}
 		}
 	}
-	update_option('backwpup_log',$logs);
-	BackWPupFunctions::joblog($logtime,$countdelbackups.' '.__('Old backup files deleted!!!','backwpup'));
+	if ($countdelbackups>0)
+		BackWPupFunctions::joblog($logtime,$countdelbackups.' '.__('old backup files deleted!!!','backwpup'));
+	if ($countdellogs>0)
+		BackWPupFunctions::joblog($logtime,$countdellogs.' '.__('old logs deleted!!!','backwpup'));
 	//clean vars
-	unset($logkeys);
 	unset($logs);
 }
 
@@ -40,7 +34,8 @@ if (is_file($backupfile)) {
 if (is_file(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql') ) { //delete sql temp file
 	unlink(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql');
 }
-if (empty($jobs[$jobid]['backupdir']) and ($backupfile!=BackWPupFunctions::get_temp_dir().'backwpup'.$backupfilename) and is_file($backupfile) ) { //delete backup file in temp dir
+
+if (empty($jobs[$jobid]['backupdir']) and (dirname($backupfile)!=BackWPupFunctions::get_temp_dir().'backwpup') and is_file($backupfile) ) { //delete backup file in temp dir
 	unlink($backupfile);
 	unset($backupfile);
 }
@@ -51,10 +46,7 @@ $jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
 $jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
 $jobs[$jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid));
 update_option('backwpup_jobs',$jobs); //Save Settings
-
-$logs=get_option('backwpup_log');
-$logs[$logtime]['worktime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
-if (is_file($backupfile)) 
-	$logs[$logtime]['backupfile']=$backupfile;	
-update_option('backwpup_log',$logs);
+//Write backupfile und worktime to log
+$wpdb->update( $wpdb->backwpup_logs, array( 'worktime' => $jobs[$jobid]['lastruntime'], 'backupfile' => mysql_real_escape_string($backupfile)), array( 'logtime' => $logtime ));
+ob_end_flush();
 ?>

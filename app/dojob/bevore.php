@@ -1,45 +1,49 @@
 <?php
+//@ini_set('memory_limit', '256M');
+ignore_user_abort(true);
+ob_start();
+
+define( 'PCLZIP_TEMPORARY_DIR', BackWPupFunctions::get_temp_dir().'backwpup/' );
 $cfg=get_option('backwpup');
 $jobs=get_option('backwpup_jobs');
-$jobs[$jobid]['starttime']=time();
+$logtime=time();
+$jobs[$jobid]['starttime']=$logtime;
 $jobs[$jobid]['stoptime']='';
 $jobs[$jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid));
 update_option('backwpup_jobs',$jobs); //Save Settings
-$logtime=$jobs[$jobid]['starttime'];
-$backupfilename='/backwpup_'.$jobid.'_'.date('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
-if (!empty($jobs[$jobid]['backupdir'])) {
-	$backupfile=$jobs[$jobid]['backupdir'].$backupfilename;
+if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$jobid]['type']=='DB') {
+	if (!empty($jobs[$jobid]['backupdir'])) {
+		$backupfile=$jobs[$jobid]['backupdir'].'/backwpup_'.$jobid.'_'.date('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
+	} else {
+		$backupfile=BackWPupFunctions::get_temp_dir().'backwpup/backwpup_'.$jobid.'_'.date('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
+	}
 } else {
-	$backupfile=BackWPupFunctions::get_temp_dir().'backwpup'.$backupfilename;
+	$backupfile='';
 }
-$logonlytyps=array('OPTIMIZE');
+$logonlytyps=array('OPTIMIZE','CHECK');
 if (in_array($jobs[$jobid]['type'],$logonlytyps)) {
 	$jobs[$jobid]['maxbackups']=20;
 }
 
 //Create Log
-$logs=get_option('backwpup_log');
-$logs[$logtime]['jobid']=$jobid;
-$logs[$logtime]['error']=0;
-$logs[$logtime]['warning']=0;
-$logs[$logtime]['log']='';
-$logs[$logtime]['type']=$jobs[$jobid]['type'];
-$logs[$logtime]['jobname']=$jobs[$jobid]['name'];
-update_option('backwpup_log',$logs);
+$wpdb->insert( $wpdb->backwpup_logs, array( 'logtime' => $logtime, 'jobid' => $jobid, 'jobname' => $jobs[$jobid]['name'], 'type' => $jobs[$jobid]['type'], 'log' => '' ));
 
-if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off') {
+
+if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
 	set_time_limit(300); //300 is most webserver time limit.
 } else {
-	BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('Safe Mode is on!!! Max exec time is %1$s sec.','backwpup'),ini_get('max_execution_time')));
+	BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$s sec.','backwpup'),ini_get('max_execution_time')));
 }
 
 //Look for and Crate Temp dir and secure
+BackWPupFunctions::joblog($logtime,sprintf(__('Temp dir is %1$s.','backwpup'),get_temp_dir().'backwpup'));
+
 if (!is_dir(BackWPupFunctions::get_temp_dir().'backwpup')) {
-	if (!mkdir(BackWPupFunctions::get_temp_dir().'backwpup')) {
+	if (!mkdir(BackWPupFunctions::get_temp_dir().'backwpup',0777,true)) {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Temp dir','backwpup'));	
 		require_once('after.php');
 		return false;
-	}	 
+	} 
 }
 if (!is_writeable(BackWPupFunctions::get_temp_dir().'backwpup')) {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not write to Temp dir','backwpup'));	
@@ -63,7 +67,7 @@ if (!is_file(BackWPupFunctions::get_temp_dir().'backwpup/index.html')) {
 if (!empty($backupfile)) {
 	//Look for and Crate Backup dir and secure
 	if (!is_dir($jobs[$jobid]['backupdir'])) {
-		if (!mkdir($jobs[$jobid]['backupdir'])) {
+		if (!mkdir($jobs[$jobid]['backupdir'],0777,true)) {
 			BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Backup dir','backwpup'));	
 			require_once('after.php');
 			return false;

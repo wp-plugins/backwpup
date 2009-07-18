@@ -11,12 +11,12 @@ class BackWPupOptions {
 		}
 	}
 	
-	function delete_log($timestamp) {
-		$logs=get_option('backwpup_log'); //Load Settings
-		if (is_file($logs[$timestamp]['backupfile'])) 
-			unlink($logs[$timestamp]['backupfile']);
-		unset($logs[$timestamp]);
-		update_option('backwpup_log',$logs); //Save Settings
+	function delete_log($logtime) {
+		global $wpdb;
+		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
+		if (is_file($backupfile)) 
+			unlink($backupfile);
+		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
 	}
 
 	function copy_job($jobid) {
@@ -40,8 +40,8 @@ class BackWPupOptions {
 		update_option('backwpup',$cfg); //Save Settings
 	}
 	
-	function download_backup($timestamp) {
-		$logs=get_option('backwpup_log'); //Load Settings
+	function download_backup($logtime) {
+		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
 		if (is_file($logs[$timestamp]['backupfile'])) {
 			header("Pragma: public");
 			header("Expires: 0");
@@ -49,10 +49,10 @@ class BackWPupOptions {
 			header("Content-Type: application/force-download");
 			header("Content-Type: application/octet-stream");
 			header("Content-Type: application/download");
-			header("Content-Disposition: attachment; filename=".basename($logs[$timestamp]['backupfile']).";");
+			header("Content-Disposition: attachment; filename=".basename($backupfile).";");
 			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".filesize($logs[$timestamp]['backupfile']));
-			@readfile($logs[$timestamp]['backupfile']);
+			header("Content-Length: ".filesize($backupfile));
+			@readfile($backupfile);
 		} else {
 			header('HTTP/1.0 404 Not Found');
 			die(__('File does not exist.', 'backwpup'));
@@ -76,10 +76,7 @@ class BackWPupOptions {
 		
 		$jobs[$jobid]['type']= $_POST['type'];
 		$jobs[$jobid]['name']= esc_html($_POST['name']);
-		if ($_POST['activated']==1)
-			$jobs[$jobid]['activated']=true;
-		else
-			$jobs[$jobid]['activated']=false;
+		$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
 		$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
 		$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
 		$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];
@@ -90,10 +87,14 @@ class BackWPupOptions {
 		$jobs[$jobid]['dbexclude']=array_unique((array)$_POST['dbexclude']);
 		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
 		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
-		$jobs[$jobid]['backuproot']=isset($_POST['backuproot']);
-		$jobs[$jobid]['backupcontent']=isset($_POST['backupcontent']);
-		$jobs[$jobid]['backupplugins']=isset($_POST['backupplugins']);
-		
+		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
+		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
+		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
+		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
+		$jobs[$jobid]['ftppass']=$_POST['ftppass'];
+		$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
+		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
 		
 		update_option('backwpup_jobs',$jobs); //Save Settings
 		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {

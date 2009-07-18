@@ -13,7 +13,15 @@
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 
 <table class="form-table">
-
+<tr valign="top"> 
+<tr valign="top"> 
+<th scope="row"><label for="jobname"><?PHP _e('Script Runime','backwpup'); ?></label></th> 
+<td>
+<? 
+	echo __('PHP.ini execution time:','backwpup').' '.ini_get('max_execution_time').' '.__('sec.','backwpup').'<br />'; 
+?>
+</td> 
+</tr> 
 
 </table>
  

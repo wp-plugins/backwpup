@@ -53,12 +53,13 @@
  
 	<tbody id="the-list" class="list:post"> 
 	
-	<?PHP if (is_array($logs)) { 
-		$logs=array_reverse($logs,true);
-		foreach ($logs as $timestamp => $logvalue) {?>
+	<?PHP 
+		$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC", ARRAY_A);
+		if (is_array($logs)) { 
+		foreach ($logs as $logvalue) {?>
 	<tr id="post-16" class="alternate author-self status-inherit" valign="top"> 
 		<th scope="row" class="check-column">
-			<input type="checkbox" name="logs[]" value="<?PHP echo $timestamp;?>" />
+			<input type="checkbox" name="logs[]" value="<?PHP echo $logvalue['logtime']?>" />
 		</th> 
 		<td class="column-id"><?PHP echo $logvalue['jobid'];?></td> 
 		<td class="column-type">
@@ -72,12 +73,12 @@
 					if (is_file($logvalue['backupfile']))
 						$name=basename($logvalue['backupfile']);
 					?>
-					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date(get_option('date_format'),$timestamp); ?> <?PHP echo date(get_option('time_format'),$timestamp); ?><?php if (!empty($logvalue['jobname'])) echo ': <i>'.$logvalue['jobname'].'</i>';?></a></strong>
+					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date(get_option('date_format'),$logvalue['logtime']); ?> <?PHP echo date(get_option('time_format'),$logvalue['logtime']); ?><?php if (!empty($logvalue['jobname'])) echo ': <i>'.$logvalue['jobname'].'</i>';?></a></strong>
 					<p><div class="row-actions">
-						<span class="view"><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$timestamp, 'view-log'); ?>"><?PHP _e('View','backwpup'); ?></a></span>
-						<span class="delete"> | <a class="submitdelete" href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$timestamp, 'delete-log_'.$timestamp); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) ?>') ){return true;}return false;"><?PHP _e('Delete','backwpup'); ?></a></span>
+						<span class="view"><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log'); ?>"><?PHP _e('View','backwpup'); ?></a></span>
+						<span class="delete"> | <a class="submitdelete" href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$logvalue['logtime'], 'delete-log_'.$logvalue['logtime']); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Log and Backupfile. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) ?>') ){return true;}return false;"><?PHP _e('Delete','backwpup'); ?></a></span>
 						<?PHP if (!empty($logvalue['backupfile']) and is_file($logvalue['backupfile'])) { ?>
-							<span class="download"> | <a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=download&log='.$timestamp, 'download-backup_'.$timestamp); ?>"><?PHP _e('Download','backwpup'); ?></a></span>
+							<span class="download"> | <a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=download&log='.$logvalue['logtime'], 'download-backup_'.$logvalue['logtime']); ?>"><?PHP _e('Download','backwpup'); ?></a></span>
 						<?PHP } ?>
 					</div></p>
 		</td> 
@@ -86,7 +87,7 @@
 		<?PHP
 		if($logvalue['error']>0 or $logvalue['warning']>0) { 
 			if ($logvalue['error']>0)
-				echo '<span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span>'; 
+				echo '<span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span><br />'; 
 			if ($logvalue['warning']>0)
 				echo '<span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span>'; 
 		} else { 
