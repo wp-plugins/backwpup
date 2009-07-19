@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, 
 Requires at least: 2.8
 Tested up to: 2.8.1
-Stable tag: 0.5.5
+Stable tag: 0.6.0
 
 Backup and more of your WordPress Blog Database and Files
 
