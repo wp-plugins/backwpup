@@ -311,7 +311,7 @@ class BackWPupFunctions {
 			$log['error']=$log['error']+1;
 		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
 			$log['warning']=$log['warning']+1;
-		$wpdb->update( $wpdb->backwpup_logs, array( 'error' => $log['error'], 'warning' => $log['warning'], 'log' => $log['log'].date('Y-m-d H:i.s').": ".$entry."\n" ), array( 'logtime' => $logtime ));
+		$wpdb->update( $wpdb->backwpup_logs, array( 'error' => $log['error'], 'warning' => $log['warning'], 'log' => $log['log'].date('Y-m-d H:i:s').": ".$entry."\n" ), array( 'logtime' => $logtime ));
 		echo date('Y-m-d H:i.s').": ".$entry."\n";
 		$wpdb->flush();
 		flush();

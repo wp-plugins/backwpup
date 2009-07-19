@@ -41,8 +41,9 @@ class BackWPupOptions {
 	}
 	
 	function download_backup($logtime) {
+		global $wpdb;
 		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
-		if (is_file($logs[$timestamp]['backupfile'])) {
+		if (is_file($backupfile)) {
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0"); 

@@ -55,6 +55,7 @@ You must import the Database Dump with Charaktercoding:latin1
 * Save log fieles in own database table
 * Optimize Memory usage
 * Optimize File system access
+* DB dump with own function
 * fixed some Bugs
 
 = 0.5.5 =

@@ -1,7 +1,9 @@
 <?php
+global $logtime;
 //@ini_set('memory_limit', '256M');
 ignore_user_abort(true);
 ob_start();
+ob_end_clean();
 
 define( 'PCLZIP_TEMPORARY_DIR', BackWPupFunctions::get_temp_dir().'backwpup/' );
 $cfg=get_option('backwpup');
