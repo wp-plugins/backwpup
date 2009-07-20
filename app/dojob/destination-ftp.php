@@ -17,24 +17,24 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 	}
 	
 	if ($ftp_conn_id) {
-		if ($login_result = @ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
+		if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
 			BackWPupFunctions::joblog($logtime,__('Logt on to FTP server with user:','backwpup').' '.$jobs[$jobid]['ftpuser']);
 			
-			if (@ftp_pasv($ftp_conn_id, true)) //set passive mode
+			if (ftp_pasv($ftp_conn_id, true)) //set passive mode
 				BackWPupFunctions::joblog($logtime,__('FTP set to passiv.','backwpup'));
 			else 
 				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.__('Can not set FTP Server to passiv!','backwpup'));
 			
-			if (@ftp_alloc($ftp_conn_id, filesize($backupfile), $result)) //allocate file spase on ftp server
+			if (ftp_alloc($ftp_conn_id, filesize($backupfile), $result)) //allocate file spase on ftp server
 				BackWPupFunctions::joblog($logtime,__('Space successfully allocated on FTP server. Sending backup file.','backwpup'));
 			else 
 				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.__('Unable to allocate space on server. FTP Server said:','backwpup').' '.$result);
 				
-			if (@ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY)) { //transvere file
+			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transvere file
 				BackWPupFunctions::joblog($logtime,__('Backup File transfered to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
-			} else {
+			else
 				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not tranfer backup to FTP server.','backwpup'));
-			}
+				
 			if ($jobs[$jobid]['ftpmaxbackups']>0) { //Delete old backups
 				if ($filelist=ftp_nlist($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']))) {
 					foreach($filelist as $files) {
