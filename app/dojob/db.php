@@ -21,6 +21,7 @@ function dump_table($table,$status) {
 	}
 	$dump.=$result['Create Table']."\n";
 	$dump.="/*!40101 SET character_set_client = @saved_cs_client */;\n";
+	$wpdb->flush();
 	
     //take data of table
     $result=$wpdb->get_results("SELECT * FROM `".$table."`", ARRAY_A);
