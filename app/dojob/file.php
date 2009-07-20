@@ -11,7 +11,6 @@
 			return false;
 		if( ! $levels )
 			return false;
-		$files = array();
 		if ( $dir = @opendir( $folder ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if ( in_array($file, array('.', '..','.svn') ) )
@@ -25,12 +24,10 @@
 				if (!$backwpup_jobs['backupplugins'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)))
 					continue;
 				if ( is_dir( $folder . '/' . $file ) ) {
-					$files2 = backwpup_list_files( $folder . '/' . $file, $levels - 1);
-					if( $files2 )
-						$files = array_merge($files, $files2 );
+					$files .= ",".backwpup_list_files( $folder . '/' . $file, $levels - 1);
 				} elseif (is_file( $folder . '/' . $file )) {
 					if (is_readable($folder . '/' . $file)) {
-						$files[] = $folder . '/' . $file;
+						$files.=",". $folder . '/' . $file;
 						$filezise=filesize($folder . '/' . $file);
 						$backwpup_allfilezise=$backwpup_allfilezise+$filezise;
 						BackWPupFunctions::joblog($logtime,__('File to Backup:','backwpup').' '.$folder . '/' . $file.' '.BackWPupFunctions::formatBytes($filezise));
@@ -43,12 +40,12 @@
 			}
 		}
 		@closedir( $dir );
-		return $files;
+		return str_replace(',,',',',$files);;
 	}
 	
 	
 	//Make filelist
-	$backwupu_exclude=array(); $dirinclude=array(); $allfilezise=''; $filelist=array();
+	$backwupu_exclude=array(); $dirinclude=array(); $allfilezise=''; $filelist='';
 	
 	if (!empty($jobs[$jobid]['fileexclude'])) 
 		$backwupu_exclude=split(',',$jobs[$jobid]['fileexclude']);
@@ -75,27 +72,26 @@
 	if (is_array($dirinclude)) {
 		foreach($dirinclude as $dirincludevalue) {
 			if (is_dir($dirincludevalue)) 
-				$filelist=array_merge(backwpup_list_files(untrailingslashit(str_replace('\\','/',$dirincludevalue))),$filelist);
+				$filelist .=",".backwpup_list_files(untrailingslashit(str_replace('\\','/',$dirincludevalue)));
 		}
 	}	
-	
 
-	if (sizeof($filelist)<1) {
+	if (empty($filelist)) {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('No files to Backup','backwpup'));
 		unset($filelist); //clean vars
 	} else {
 		BackWPupFunctions::joblog($logtime,__('Size off all files:','backwpup').' '.BackWPupFunctions::formatBytes($backwpup_allfilezise));
 	}
 	
-	BackWPupFunctions::needfreememory(33554432);
-	
 	//Create Zip File
-	if (is_array($filelist)) {
+	if (!empty($filelist)) {
+		BackWPupFunctions::needfreememory(8388608); //8MB free memory for zip
 		BackWPupFunctions::joblog($logtime,__('Create Backup Zip file...','backwpup'));
 		$zipbackupfile = new PclZip($backupfile);
 		if (0==$zipbackupfile -> create($filelist,PCLZIP_OPT_REMOVE_PATH,str_replace('\\','/',ABSPATH),PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 			BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true));
 		}
+		unset($filelist);
 		if ($jobs[$jobid]['type']=='DB+FILE') {
 			BackWPupFunctions::joblog($logtime,__('Database file size:','backwpup').' '.BackWPupFunctions::formatBytes(filesize(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
 			BackWPupFunctions::joblog($logtime,__('Add Database dump to Backup Zip file...','backwpup'));
@@ -103,9 +99,7 @@
 				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Zip file create Add Database dump:','backwpup').' '.$zipbackupfile->errorInfo(true));
 			} 
 		}
-		//clean vars
 		unset($zipbackupfile);
-		unset($filelist);
 		BackWPupFunctions::joblog($logtime,__('Backup Zip file create done!','backwpup'));
 	}
 

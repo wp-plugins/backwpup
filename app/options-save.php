@@ -36,7 +36,12 @@ class BackWPupOptions {
 
 	function config() {
 		$cfg=get_option('backwpup'); //Load Settings
-
+		$cfg['mailmethod']=$_POST['mailmethod'];
+		$cfg['mailsendmail']=str_replace('\\','/',stripslashes($_POST['mailsendmail']));
+		$cfg['mailsecure']=$_POST['mailsecure'];
+		$cfg['mailhost']=$_POST['mailhost'];
+		$cfg['mailuser']=$_POST['mailuser'];
+		$cfg['mailpass']=$_POST['mailpass'];
 		update_option('backwpup',$cfg); //Save Settings
 	}
 	

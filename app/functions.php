@@ -306,14 +306,13 @@ class BackWPupFunctions {
 	//Make Log File for Jobs.
 	function joblog($logtime,$entry) {
 		global $wpdb;
-		$log=$wpdb->get_row("SELECT error,warning,log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime, ARRAY_A);
+		$errors=0;$warnings=0;
 		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup'))
-			$log['error']=$log['error']+1;
+			$errors=1;
 		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
-			$log['warning']=$log['warning']+1;
-		$wpdb->update( $wpdb->backwpup_logs, array( 'error' => $log['error'], 'warning' => $log['warning'], 'log' => $log['log'].date('Y-m-d H:i:s').": ".$entry."\n" ), array( 'logtime' => $logtime ));
-		echo date('Y-m-d H:i.s').": ".$entry."\n";
-		$wpdb->flush();
+			$warnings=1;
+		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
+		echo date('Y-m-d H:i:s').": ".$entry." ".BackWPupFunctions::formatBytes(memory_get_peak_usage())."\n";
 		flush();
 		ob_flush();
 	}
@@ -410,6 +409,31 @@ class BackWPupFunctions {
 		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', array ('BackWPupFunctions', 'dashboard_output') );		
 	}
 	
+	//Sed mail send Method
+	function use_mail_method() {
+		global $phpmailer;
+		$cfg=get_option('backwpup'); //Load Settings
+		if ($cfg['mailmethod']=="SMTP") {
+			$smtpport=25;
+			$smtphost=$cfg['mailhost'];
+			if (false !== strpos($cfg['mailhost'],':')) //look for port
+				list($smtphost,$smtpport)=split(':',$cfg['mailhost'],2);
+			$phpmailer->Host=$smtphost;
+			$phpmailer->Port=$smtpport;
+			$phpmailer->SMTPSecure=$cfg['mailsecure'];
+			$phpmailer->Username=$cfg['mailuser'];
+			$phpmailer->Password=$cfg['mailpass'];
+			if (!empty($cfg['mailuser']) and !empty($cfg['mailpass']))
+				$phpmailer->SMTPAuth=true;
+			$phpmailer->IsSMTP();
+		} elseif ($cfg['mailmethod']=="Sendmail") {
+			$phpmailer->Sendmail=$cfg['mailsendmail'];
+			$phpmailer->IsSendmail();
+		} else {
+			$phpmailer->IsMail();
+		}
+	}
+	
 	// add all action and so on only if plugin loaded.
 	function init() {
 		//add Menu
@@ -422,7 +446,7 @@ class BackWPupFunctions {
 		//Actions for Cron job
 		add_action('backwpup_cron', array('BackWPupFunctions', 'dojob'));
 		//add Dashboard widget
-		add_action( 'wp_dashboard_setup', array ('BackWPupFunctions', 'add_dashboard') );
+		add_action('wp_dashboard_setup', array('BackWPupFunctions', 'add_dashboard'));
 	} 	
 }
 

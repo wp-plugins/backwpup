@@ -1,10 +1,10 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, 
+Tags: backup, admin, file, Database, mysql, cron
 Requires at least: 2.8
 Tested up to: 2.8.1
-Stable tag: 0.6.0
+Stable tag: 0.6.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -48,7 +48,15 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
-= 0.6.0 dev.=
+= 0.7.0 =
+*
+
+= 0.6.1 =
+* Added setting for Send Mail type.
+* Optimize Memory usage again
+* Fixed Bug that cron not work
+
+= 0.6.0 =
 * Add Dashboard Widget
 * Add Database Check
 * Add Backup file transfer to FTP Server

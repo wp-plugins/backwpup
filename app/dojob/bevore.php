@@ -38,7 +38,7 @@ if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get(
 }
 
 //Look for and Crate Temp dir and secure
-BackWPupFunctions::joblog($logtime,sprintf(__('Temp dir is %1$s.','backwpup'),get_temp_dir().'backwpup'));
+BackWPupFunctions::joblog($logtime,sprintf(__('Temp dir is %1$s.','backwpup'),BackWPupFunctions::get_temp_dir().'backwpup'));
 
 if (!is_dir(BackWPupFunctions::get_temp_dir().'backwpup')) {
 	if (!mkdir(BackWPupFunctions::get_temp_dir().'backwpup',0777,true)) {

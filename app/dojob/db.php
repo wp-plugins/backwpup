@@ -1,64 +1,62 @@
 <?PHP 
 BackWPupFunctions::joblog($logtime,__('Run Database Backup...','backwpup'));
 
-function dump_table($table,$status) {
+function dump_table($table,$status,$file) {
 	global $wpdb,$logtime;
 	$table = str_replace("´", "´´", $table); //esc table name
 
 	// create dump
-    $dump = "\n";
-	$dump.= "--\n";
-	$dump.= "-- Table structure for table $table\n";
-    $dump.= "--\n\n";
-    $dump.= "DROP TABLE IF EXISTS `" . $table .  "`;\n";            
-	$dump.= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-	$dump.= "/*!40101 SET character_set_client = latin1 */;\n";
+    fwrite($file, "\n");
+	fwrite($file, "--\n");
+	fwrite($file, "-- Table structure for table $table\n");
+    fwrite($file, "--\n\n");
+    fwrite($file, "DROP TABLE IF EXISTS `" . $table .  "`;\n");            
+	fwrite($file, "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n");
+	fwrite($file, "/*!40101 SET character_set_client = latin1 */;\n");
     //Dump the table structure
-    $result=$wpdb->get_row("SHOW CREATE TABLE `".$table."`", ARRAY_A);
+    $result=mysql_query("SHOW CREATE TABLE `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
 		return false;
 	}
-	$dump.=$result['Create Table']."\n";
-	$dump.="/*!40101 SET character_set_client = @saved_cs_client */;\n";
+	$tablestruc=mysql_fetch_assoc($result);
+	fwrite($file, $tablestruc['Create Table']."\n");
+	fwrite($file, "/*!40101 SET character_set_client = @saved_cs_client */;\n");
 	
     //take data of table
-    $result=$wpdb->get_results("SELECT * FROM `".$table."`", ARRAY_A);
+	$result=mysql_query("SELECT * FROM `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
 		return false;
 	}
-	if (is_array($result)) {
-		$dump.= "--\n";
-		$dump.= "-- Dumping data for table $table\n";
-		$dump.= "--\n\n";
-		$dump.= "LOCK TABLES `".$table."` WRITE;\n\n";
-		if ($status['Engine']=='MyISAM')
-			$dump.= "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n";
-		foreach($result as $data) {
-			$keys = array();
-			$values = array();
-			foreach($data as $key => $value) {
-				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
-   
-				if($value === NULL) // Make Value NULL to string NULL
-					$value = "NULL";
-				elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
-					$value = '""';
-				elseif(!is_numeric($value)) //is value not numeric esc
-					$value = "\"".mysql_real_escape_string($value)."\"";
+	
+	fwrite($file, "--\n");
+	fwrite($file, "-- Dumping data for table $table\n");
+	fwrite($file, "--\n\n");
+	fwrite($file, "LOCK TABLES `".$table."` WRITE;\n\n");
+	if ($status['Engine']=='MyISAM')
+		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 		
-				$values[] = $value;
-			}
-			// make data dump
-			$dump .= "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n";
+	while ($data = mysql_fetch_assoc($result)) {
+		$keys = array();
+		$values = array();
+		foreach($data as $key => $value) {
+			$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
+			if($value === NULL) // Make Value NULL to string NULL
+				$value = "NULL";
+			elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
+				$value = '""';
+			elseif(!is_numeric($value)) //is value not numeric esc
+				$value = "\"".mysql_real_escape_string($value)."\"";
+		
+			$values[] = $value;
 		}
-		if ($status['Engine']=='MyISAM')
-			$dump.= "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n";
-		$dump.= "UNLOCK TABLES;\n";
+		// make data dump
+		fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
 	}
-	$wpdb->flush();
-	return $dump;
+	if ($status['Engine']=='MyISAM')
+		fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
+	fwrite($file, "UNLOCK TABLES;\n");
 }
 
 
@@ -109,8 +107,8 @@ if (sizeof($tables)>0) {
 		//make table dumps
 		foreach($tables as $table) {
 			BackWPupFunctions::joblog($logtime,__('Database table to Backup: ','backwpup').' '.$table);
-			BackWPupFunctions::needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*2); //get mor memory if needed
-			fwrite($file, dump_table($table,$status[$table]));
+			BackWPupFunctions::needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get mor memory if needed
+			fwrite($file, dump_table($table,$status[$table],$file));
 		}
 		//for better import with mysql client
 		fwrite($file, "\n");
@@ -134,6 +132,7 @@ if (sizeof($tables)>0) {
 BackWPupFunctions::joblog($logtime,__('Database backup done!','backwpup'));
 
 if ($jobs[$jobid]['type']=='DB' and is_file(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql')) {
+	BackWPupFunctions::needfreememory(8388608); //8MB free memory for zip
 	BackWPupFunctions::joblog($logtime,__('Database file size:','backwpup').' '.BackWPupFunctions::formatBytes(filesize(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
 	BackWPupFunctions::joblog($logtime,__('Create Zip file from dump...','backwpup'));
 	$zipbackupfile = new PclZip($backupfile);

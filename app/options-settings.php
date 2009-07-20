@@ -23,6 +23,37 @@
 </td> 
 </tr> 
 
+<tr valign="top">
+<th scope="row"><label for="mailaddress"><?PHP _e('Mail Send:','backwpup'); ?></label></th> 
+<td>
+<span class="description"><?PHP _e('Send mail method:','backwpup'); ?></span>
+<?PHP 
+echo '<select name="mailmethod">';
+echo '<option value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
+echo '<option value="Sendmail"'.selected('Sendmail',$cfg['mailmethod'],false).'>'.__('Sendmail','backwpup').'</option>';
+echo '<option value="SMTP"'.selected('SMTP',$cfg['mailmethod'],false).'>'.__('SMTP','backwpup').'</option>';
+echo '</select>';
+if (empty($cfg['mailsendmail'])) {
+	$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
+}
+?><br />
+<span class="description"><?PHP _e('Sendmail Path:','backwpup'); ?></span><input name="mailhost" type="text" value="<?PHP echo $cfg['mailsendmail'];?>" class="regular-text" /><br />
+<span class="description"><?PHP _e('SMTP Hostname:','backwpup'); ?></span><input name="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text" /><br />
+<span class="description"><?PHP _e('SMTP Secure Connection:','backwpup'); ?></span><?PHP 
+echo '<select name="mailsecure">';
+echo '<option value=""'.selected('',$cfg['mailsecure'],false).'>'.__('none','backwpup').'</option>';
+echo '<option value="ssl"'.selected('ssl',$cfg['mailsecure'],false).'>SSL</option>';
+echo '<option value="tls"'.selected('tls',$cfg['mailsecure'],false).'>TLS</option>';
+echo '</select>';
+if (!empty($cfg['mailsendmail']))
+	$cfg['mailsendmail']='/usr/sbin/sendmail';
+?><br />
+<span class="description"><?PHP _e('SMTP Username:','backwpup'); ?></span><input name="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="user" /><br />
+<span class="description"><?PHP _e('SMTP Password:','backwpup'); ?></span><input name="mailpass" type="password" value="<?PHP echo $cfg['mailpass'];?>" class="password" /><br />
+</td> 
+</tr>
+
+
 </table>
  
 <p class="submit"> 

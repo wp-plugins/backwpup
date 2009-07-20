@@ -172,8 +172,8 @@ _e('Oldest files will deletet first.','backwpup');
 <th scope="row"><label for="mailaddress"><?PHP _e('Place Backup to FTP Server:','backwpup'); ?></label></th> 
 <td>
 <span class="description"><?PHP _e('Ftp Hostname:','backwpup'); ?></span><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
-<span class="description"><?PHP _e('Ftp Username:','backwpup'); ?></span><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" size="10" /><br />
-<span class="description"><?PHP _e('Ftp Password:','backwpup'); ?></span><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" size="10" /><br />
+<span class="description"><?PHP _e('Ftp Username:','backwpup'); ?></span><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" /><br />
+<span class="description"><?PHP _e('Ftp Password:','backwpup'); ?></span><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" /><br />
 <span class="description"><?PHP _e('Ftp directory:','backwpup'); ?></span><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
 <span class="description"><?PHP _e('Max Backup fieles on ftp:','backwpup'); ?></span>
 <?PHP 
