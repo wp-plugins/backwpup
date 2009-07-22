@@ -91,8 +91,8 @@ foreach ($tables as $table) {
 <tr valign="top"> 
 <th scope="row"><label for="jobname"><?PHP _e('Schedule','backwpup'); ?></label></th> 
 <td>
-<span class="description"><?php _e('Run Every:', 'backwpup'); ?></span>
-<?PHP
+<?php 
+_e('Run Every:', 'backwpup');
 echo '<select name="scheduleintervalteimes">';
 for ($i=1;$i<=60;$i++) {
 	echo '<option value="'.$i.'"'.selected($i,$jobs[$jobid]['scheduleintervalteimes'],false).'>'.$i.'</option>';
@@ -104,11 +104,9 @@ echo '<select name="scheduleintervaltype">';
 echo '<option value="60"'.selected('3600',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Min(s)','backwpup').'</option>';
 echo '<option value="3600"'.selected('3600',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Houer(s)','backwpup').'</option>';
 echo '<option value="86400"'.selected('86400',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Day(s)','backwpup').'</option>';
-echo '</select>';
-?>
-<br />
-<span class="description"><?php _e('Start Time:', 'backwpup'); ?></span>
-<?PHP
+echo '</select><br />';
+
+_e('Start Time:', 'backwpup');
 if (empty($jobs[$jobid]['scheduletime']))
 	$jobs[$jobid]['scheduletime']=time();
 
@@ -121,8 +119,8 @@ echo '<select name="scheduleminute">';
 for ($i=0;$i<=59;$i++) {
 	echo '<option value="'.$i.'"'.selected($i,date('i',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
-echo '</select>&nbsp;';
-?><span class="description"><?php _e('Start Date:', 'backwpup'); ?></span><?PHP
+echo '</select><br />';
+_e('Start Date:', 'backwpup'); 
 echo '<select name="scheduleday">';
 for ($i=1;$i<=31;$i++) {
 	echo '<option value="'.$i.'"'.selected($i,date('j',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
@@ -138,10 +136,9 @@ echo '<select name="scheduleyear">';
 for ($i=date('Y')-1;$i<=date('Y')+3;$i++) {
 	echo '<option value="'.$i.'"'.selected($i,date('Y',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
-echo '</select>';
-?>
-<br />
-<span class="description"><?php _e('Activate:', 'backwpup'); ?></span>
+echo '</select><br />';
+
+_e('Activate:', 'backwpup'); ?>
 <input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['activated'],true); ?> name="activated" />
 </td> 
 </tr> 
@@ -155,35 +152,19 @@ echo '</select>';
 <tr valign="top">
 <th scope="row"><label for="maxbackups"><?PHP _e('Max number of Backup Files','backwpup'); ?></label></th> 
 <td>
-<?PHP 
-echo '<select name="maxbackups">';
-echo '<option value="0"'.selected(0,$jobs[$jobid]['maxbackups'],false).'>'.__('Off','backwpup').'</option>';
-for ($i=1;$i<=50;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,$jobs[$jobid]['maxbackups'],false).'>'.$i.'</option>';
-}
-echo '</select> <span class="description">';
-_e('Oldest files will deletet first.','backwpup');
-?></span>
+<input name="maxbackups" type="text" value="<?PHP echo $jobs[$jobid]['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest files will deletet first.','backwpup');?></span>
 </td> 
 </tr>
 
 
 <tr valign="top">
-<th scope="row"><label for="mailaddress"><?PHP _e('Place Backup to FTP Server:','backwpup'); ?></label></th> 
+<th scope="row"><label for="ftptransfer"><?PHP _e('Place Backup to FTP Server:','backwpup'); ?></label></th> 
 <td>
-<span class="description"><?PHP _e('Ftp Hostname:','backwpup'); ?></span><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
-<span class="description"><?PHP _e('Ftp Username:','backwpup'); ?></span><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" /><br />
-<span class="description"><?PHP _e('Ftp Password:','backwpup'); ?></span><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" /><br />
-<span class="description"><?PHP _e('Ftp directory:','backwpup'); ?></span><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
-<span class="description"><?PHP _e('Max Backup fieles on ftp:','backwpup'); ?></span>
-<?PHP 
-echo '<select name="ftpmaxbackups">';
-echo '<option value="0"'.selected(0,$jobs[$jobid]['ftpmaxbackups'],false).'>'.__('Off','backwpup').'</option>';
-for ($i=1;$i<=50;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,$jobs[$jobid]['ftpmaxbackups'],false).'>'.$i.'</option>';
-}
-echo '</select>';
-?><br />
+<?PHP _e('Ftp Hostname:','backwpup'); ?><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
+<?PHP _e('Ftp Username:','backwpup'); ?><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" /><br />
+<?PHP _e('Ftp Password:','backwpup'); ?><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" /><br />
+<?PHP _e('Ftp directory:','backwpup'); ?><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
+<?PHP _e('Max Backup fieles on ftp:','backwpup'); ?><input name="ftpmaxbackups" type="text" value="<?PHP echo $jobs[$jobid]['ftpmaxbackups'];?>" class="small-text" /><?PHP _e('0=off','backwpup');?></span><br />
 </td> 
 </tr>
 
@@ -192,7 +173,13 @@ echo '</select>';
  
 <tr valign="top">
 <th scope="row"><label for="mailaddress"><?PHP _e('Send Mail to','backwpup'); ?></label></th> 
-<td><input name="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /></td> 
+<td><input name="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /><br />
+<?PHP 
+if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {
+	echo __('Max Filesize for Backups via mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobs[$jobid]['mailefilesize'].'" class="small-text" />MB <span class="description">'.__('0=send log only.','backwpup').'</span>';
+}
+?>
+</td> 
 </tr>
 
 </table>

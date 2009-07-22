@@ -16,7 +16,7 @@ class BackWPupFunctions {
 	
 	//Thems Option menu entry
 	function menu_entry() {
-		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), 'install_plugins', 'BackWPup',array('BackWPupFunctions', 'options')) ;
+		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup',array('BackWPupFunctions', 'options')) ;
 		add_action('load-'.$hook, array('BackWPupFunctions', 'options_load'));
 		add_contextual_help($hook,BackWPupFunctions::show_help());
 	}	
@@ -40,6 +40,8 @@ class BackWPupFunctions {
 	//Options Page
 	function options() {
 		global $wpdb;
+		if (!current_user_can(10)) 
+			wp_die('No rights');
 		switch($_REQUEST['action']) {
 		case 'edit':
 			$jobs=get_option('backwpup_jobs');
@@ -54,8 +56,8 @@ class BackWPupFunctions {
 			$cfg=get_option('backwpup');
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-settings.php');
 			break;
-		case 'db_restore':
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-db_restore.php');
+		case 'tools':
+			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-tools.php');
 			break;
 		case 'runnow':
 		    $jobid = (int) $_GET['jobid'];
@@ -78,6 +80,8 @@ class BackWPupFunctions {
 	//Options Page
 	function options_load() {
 		global $wpdb;
+		if (!current_user_can(10)) 
+			wp_die('No rights');
 		//Css for Admin Section
 		wp_enqueue_style('BackWpup',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/css/options.css'),'',BACKWPUP_VERSION,'screen');
 		//wp_enqueue_script('BackWpupOptions',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/js/options.js'),array('jquery','utils','jquery-ui-core'),BACKWPUP_VERSION,true);
@@ -278,28 +282,31 @@ class BackWPupFunctions {
 	//increase Memory need free memory in bytes
 	function needfreememory($memneed) {
 		global $logtime;
-			//calc mem to bytes
-			if (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='K')
-				$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024;
-			elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='M')
-				$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024;
-			elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='G')
-				$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024*1024;
-			else
-				$memory=trim(ini_get('memory_limit'));
-			
-			if (memory_get_usage()+$memneed>$memory) { // increase Memory
-				if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-					BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
-					return false;
-				}
-				$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
-				if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
-					BackWPupFunctions::joblog($logtime,sprintf(__('Memory incresed from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
-				else 
-					BackWPupFunctions::joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
-			} 
+		if (!function_exists('memory_get_usage'))
 			return true;
+			
+		//calc mem to bytes
+		if (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='K')
+			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024;
+		elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='M')
+			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024;
+		elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='G')
+			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024*1024;
+		else
+			$memory=trim(ini_get('memory_limit'));
+			
+		if (memory_get_usage()+$memneed>$memory) { // increase Memory
+			if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
+				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+				return false;
+			}
+			$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
+			if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
+				BackWPupFunctions::joblog($logtime,sprintf(__('Memory incresed from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
+			else 
+				BackWPupFunctions::joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+		} 
+		return true;
 	}
 	
 	
@@ -439,14 +446,17 @@ class BackWPupFunctions {
 		//add Menu
 		add_action('admin_menu', array('BackWPupFunctions', 'menu_entry'));
 		//Additional links on the plugin page
-		add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_DIR.'/backwpup.php', array('BackWPupFunctions', 'plugin_options_link'));
-		add_filter('plugin_row_meta', array('BackWPupFunctions', 'plugin_links'),10,2);
+		if (current_user_can(10)) 
+			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_DIR.'/backwpup.php', array('BackWPupFunctions', 'plugin_options_link'));
+		if (current_user_can('install_plugins')) 		
+			add_filter('plugin_row_meta', array('BackWPupFunctions', 'plugin_links'),10,2);
 		//add cron intervals
 		add_filter('cron_schedules', array('BackWPupFunctions', 'intervals'));
 		//Actions for Cron job
 		add_action('backwpup_cron', array('BackWPupFunctions', 'dojob'));
 		//add Dashboard widget
-		add_action('wp_dashboard_setup', array('BackWPupFunctions', 'add_dashboard'));
+		if (current_user_can(10)) 
+			add_action('wp_dashboard_setup', array('BackWPupFunctions', 'add_dashboard'));
 	} 	
 }
 

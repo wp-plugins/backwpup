@@ -6,17 +6,22 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 		list($ftphost,$ftpport)=split(':',$jobs[$jobid]['ftphost'],2);
 
 	if (function_exists('ftp_ssl_connect')) { //make SSL FTP connection
-		$ftp_conn_id = @ftp_ssl_connect($ftphost,$ftpport);
-		if ($ftp_conn_id)
+		$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport);
+		if ($ftp_conn_id) {
 			BackWPupFunctions::joblog($logtime,__('Connected by SSL to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);
+			$type = ftp_systype($ftp_conn_id);
+		}
 	}
-	if (!$ftp_conn_id) { //make normal FTP conection if SSL not work
-		$ftp_conn_id = @ftp_connect($ftphost,$ftpport);
-		if ($ftp_conn_id)
-			BackWPupFunctions::joblog($logtime,__('Connected insecure to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);		
+	if (!$type) { //make normal FTP conection if SSL not work
+		$ftp_conn_id = ftp_connect($ftphost,$ftpport);
+		if ($ftp_conn_id) {
+			BackWPupFunctions::joblog($logtime,__('Connected insecure to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);
+			$type = ftp_systype($ftp_conn_id);
+		}
 	}
 	
-	if ($ftp_conn_id) {
+	if ($type) {
+		BackWPupFunctions::joblog($logtime,__('FTP server System is:','backwpup').' '.$type);
 		if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
 			BackWPupFunctions::joblog($logtime,__('Logt on to FTP server with user:','backwpup').' '.$jobs[$jobid]['ftpuser']);
 			

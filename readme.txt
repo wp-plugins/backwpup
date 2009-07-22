@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron
 Requires at least: 2.8
 Tested up to: 2.8.1
-Stable tag: 0.6.1
+Stable tag: 0.6.2
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -48,8 +48,11 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
-= 0.7.0 =
-*
+= 0.6.2 =
+* Added setting for memory_limit if needed
+* Added setting for max. script execution time
+* Added job option to make max file size for sending via mail
+* bug fixes and littel improvments
 
 = 0.6.1 =
 * Added setting for Send Mail type.

@@ -42,6 +42,8 @@ class BackWPupOptions {
 		$cfg['mailhost']=$_POST['mailhost'];
 		$cfg['mailuser']=$_POST['mailuser'];
 		$cfg['mailpass']=$_POST['mailpass'];
+		$cfg['memorylimit']=$_POST['memorylimit'];
+		$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
 		update_option('backwpup',$cfg); //Save Settings
 	}
 	
@@ -90,6 +92,7 @@ class BackWPupOptions {
 		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
 		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
 		$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
+		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
 		$jobs[$jobid]['dbexclude']=array_unique((array)$_POST['dbexclude']);
 		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
 		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));

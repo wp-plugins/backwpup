@@ -5,11 +5,12 @@ if (!empty($jobs[$jobid]['mailaddress'])) {
 	global $phpmailer;
 
 	BackWPupFunctions::joblog($logtime,__('Sendig mail...','backwpup'));
-	if (is_file($backupfile)) {
-		if (filesize($backupfile)<20971520) {
+	if (is_file($backupfile) and !empty($jobs[$jobid]['mailefilesize'])) {
+		$maxfilezise=abs($jobs[$jobid]['mailefilesize']*1024*1024);
+		if (filesize($backupfile)<$maxfilezise) {
 			$mailfiles[0]=$backupfile;
-			if (!BackWPupFunctions::needfreememory(filesize($backupfile)*3+50554432)) {
-				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Out of Memory for sending Backup Archive by mail','backwpup'));
+			if (!BackWPupFunctions::needfreememory(filesize($backupfile)*4)) {
+				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not increase Memory for sending Backup Archive by Mail','backwpup'));
 				unset($mailfiles);
 			}
 		} else {
@@ -21,7 +22,7 @@ if (!empty($jobs[$jobid]['mailaddress'])) {
 			unset($mailfiles);
 		}
 	}
-	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.$jobs[$jobid]['name'],$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
+	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.$jobs[$jobid]['name'].' '.date('Y-m-d H:i',$logtime) ,$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
 		BackWPupFunctions::joblog($logtime,__('Mail send!!!','backwpup'));
 	} else {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo);

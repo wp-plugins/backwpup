@@ -1,6 +1,5 @@
 <?php
 global $logtime;
-//@ini_set('memory_limit', '256M');
 ignore_user_abort(true);
 ob_start();
 ob_end_clean();
@@ -32,9 +31,18 @@ $wpdb->insert( $wpdb->backwpup_logs, array( 'logtime' => $logtime, 'jobid' => $j
 
 
 if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
-	set_time_limit(300); //300 is most webserver time limit.
+	if (empty($cfg['maxexecutiontime']));
+		$cfg['maxexecutiontime']=300;
+	set_time_limit($cfg['maxexecutiontime']); //300 is most webserver time limit.
 } else {
 	BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$s sec.','backwpup'),ini_get('max_execution_time')));
+}
+
+if (!function_exists('memory_get_usage')) {
+	if (empty($cfg['memorylimit']));
+		$cfg['memorylimit']='128M';
+	ini_set('memory_limit', $cfg['memorylimit']);
+	BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('Memory limit set to %1$s ,beause can not use PHP: memory_get_usage() function.','backwpup'),ini_get('memory_limit')));
 }
 
 //Look for and Crate Temp dir and secure
