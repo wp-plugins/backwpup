@@ -319,7 +319,7 @@ class BackWPupFunctions {
 		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
 			$warnings=1;
 		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
-		echo date('Y-m-d H:i:s').": ".$entry." ".BackWPupFunctions::formatBytes(memory_get_peak_usage())."\n";
+		echo date('Y-m-d H:i:s').": ".$entry."\n";
 		flush();
 		ob_flush();
 	}

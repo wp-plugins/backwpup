@@ -1,5 +1,35 @@
 <?php
 if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !empty($jobs[$jobid]['ftppass'])) {
+	
+	function ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function
+		$return=ftp_raw($ftp_conn_id,$command);
+		if (strtoupper(substr(trim($command),0,4))=="PASS") {
+			BackWPupFunctions::joblog($logtime,__('FTP Client command:','backwpup').' PASS *******');
+		} else {
+			BackWPupFunctions::joblog($logtime,__('FTP Client command:','backwpup').' '.$command);
+		}
+		foreach ($return as $returnline) {
+			$code=substr(trim($returnline),0,3);
+			if ($code>=100 and $code<200) {
+				BackWPupFunctions::joblog($logtime,__('FTP Server Preliminary reply:','backwpup').' '.$returnline);
+				return true;
+			} elseif ($code>=200 and $code<300) {
+				BackWPupFunctions::joblog($logtime,__('FTP Server Completion reply:','backwpup').' '.$returnline);
+				return true;
+			} elseif ($code>=300 and $code<400) {
+				BackWPupFunctions::joblog($logtime,__('FTP Server Intermediate reply:','backwpup').' '.$returnline);
+				return true;
+			} elseif ($code>=400)  {
+				BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('FTP Server reply:','backwpup').' '.$returnline);
+				return false;
+			} else {
+				BackWPupFunctions::joblog($logtime,__('FTP Server answer:','backwpup').' '.$returnline);
+				return $return;
+			}
+		}
+	}
+	
+
 	$ftpport=21;
 	$ftphost=$jobs[$jobid]['ftphost'];
 	if (false !== strpos($jobs[$jobid]['ftphost'],':')) //look for port
@@ -22,18 +52,21 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 	
 	if ($type) {
 		BackWPupFunctions::joblog($logtime,__('FTP server System is:','backwpup').' '.$type);
-		if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
-			BackWPupFunctions::joblog($logtime,__('Logt on to FTP server with user:','backwpup').' '.$jobs[$jobid]['ftpuser']);
-			
-			if (ftp_pasv($ftp_conn_id, true)) //set passive mode
-				BackWPupFunctions::joblog($logtime,__('FTP set to passiv.','backwpup'));
-			else 
-				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.__('Can not set FTP Server to passiv!','backwpup'));
-			
-			if (ftp_alloc($ftp_conn_id, filesize($backupfile), $result)) //allocate file spase on ftp server
-				BackWPupFunctions::joblog($logtime,__('Space successfully allocated on FTP server. Sending backup file.','backwpup'));
-			else 
-				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.__('Unable to allocate space on server. FTP Server said:','backwpup').' '.$result);
+		
+		//FTP Login
+		$loginok=false;
+		if (ftp_raw_helper($ftp_conn_id,'USER '.$jobs[$jobid]['ftpuser'])) {
+			if (ftp_raw_helper($ftp_conn_id,'PASS '.$jobs[$jobid]['ftppass'])) {
+				$loginok=true;
+			}
+		}
+
+		//if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
+		if ($loginok) {
+			//PASV
+			ftp_raw_helper($ftp_conn_id,'PASV');
+			//ALLO
+			ftp_raw_helper($ftp_conn_id,'ALLO '.filesize($backupfile));
 				
 			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transvere file
 				BackWPupFunctions::joblog($logtime,__('Backup File transfered to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
@@ -46,21 +79,21 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 						if (!in_array(basename($files),array('.','..')) and false !== strpos(basename($files),'backwpup_'.$jobid.'_'))
 							$backupfilelist[]=basename($files);
 					}
-					rsort($backupfilelist);
-					$numdeltefiles=0;
-					for ($i=$jobs[$jobid]['ftpmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						if (ftp_delete($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).$backupfilelist[$i])) //delte files on ftp
+					if (sizeof($backupfilelist)>0) {
+						rsort($backupfilelist);
+						$numdeltefiles=0;
+						for ($i=$jobs[$jobid]['ftpmaxbackups'];$i<sizeof($backupfilelist);$i++) {
+							if (ftp_delete($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).$backupfilelist[$i])) //delte files on ftp
 							$numdeltefiles++;
-						else 
-							BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not delete file on FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).$backupfilelist[$i]);
+							else 
+								BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not delete file on FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).$backupfilelist[$i]);
+						}
+						if ($numdeltefiles>0)
+							BackWPupFunctions::joblog($logtime,$numdeltefiles.' '.__('files deleted on FTP Server:','backwpup'));
 					}
-					if ($numdeltefiles>0)
-						BackWPupFunctions::joblog($logtime,$numdeltefiles.' '.__('files deleted on FTP Server:','backwpup'));
 				}
 			}
-		} else {
-			BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not login to FTP server with user:','backwpup').' '.$jobs[$jobid]['ftpuser']);
-		}
+		} 
 		ftp_close($ftp_conn_id); 
 	} else {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not connect to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);

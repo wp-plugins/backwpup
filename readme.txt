@@ -48,6 +48,10 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
+= 0.6.3 =
+* use ftp_roe for login and other commans
+
+
 = 0.6.2 =
 * Added setting for memory_limit if needed
 * Added setting for max. script execution time
