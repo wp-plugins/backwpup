@@ -76,7 +76,7 @@ if (!empty($cfg['mailsendmail']))
 	$cfg['mailsendmail']='/usr/sbin/sendmail';
 ?><br />
 <?PHP _e('SMTP Username:','backwpup'); ?><input name="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="user" /><br />
-<?PHP _e('SMTP Password:','backwpup'); ?><input name="mailpass" type="password" value="<?PHP echo $cfg['mailpass'];?>" class="password" /><br />
+<?PHP _e('SMTP Password:','backwpup'); ?><input name="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="password" /><br />
 </td> 
 </tr>
 

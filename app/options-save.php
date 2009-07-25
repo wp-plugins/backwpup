@@ -41,7 +41,7 @@ class BackWPupOptions {
 		$cfg['mailsecure']=$_POST['mailsecure'];
 		$cfg['mailhost']=$_POST['mailhost'];
 		$cfg['mailuser']=$_POST['mailuser'];
-		$cfg['mailpass']=$_POST['mailpass'];
+		$cfg['mailpass']=base64_encode($_POST['mailpass']);
 		$cfg['memorylimit']=$_POST['memorylimit'];
 		$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
 		update_option('backwpup',$cfg); //Save Settings
@@ -99,9 +99,10 @@ class BackWPupOptions {
 		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
 		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
 		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+		$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
 		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
 		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
-		$jobs[$jobid]['ftppass']=$_POST['ftppass'];
+		$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
 		$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
 		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
 		

@@ -13,7 +13,7 @@ class BackWPupFunctions {
 			return trailingslashit(sys_get_temp_dir());
 		return '/tmp/';
 	}
-	
+
 	//Thems Option menu entry
 	function menu_entry() {
 		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup',array('BackWPupFunctions', 'options')) ;

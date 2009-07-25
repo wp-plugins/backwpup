@@ -1,9 +1,14 @@
 <?php
-if (!empty($jobs[$jobid]['mailaddress'])) {
+$sendmail=false;
+if ($wpdb->get_var("SELECT error FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime)>0 and $jobs[$jobid]['mailerroronly'])
+	$sendmail=true;
+if (!$jobs[$jobid]['mailerroronly'])
+	$sendmail=true;
+	
+if (!empty($jobs[$jobid]['mailaddress']) and $sendmail) {
 	//maillig method
 	add_action('phpmailer_init', array('BackWPupFunctions', 'use_mail_method'));
 	global $phpmailer;
-
 	BackWPupFunctions::joblog($logtime,__('Sendig mail...','backwpup'));
 	if (is_file($backupfile) and !empty($jobs[$jobid]['mailefilesize'])) {
 		$maxfilezise=abs($jobs[$jobid]['mailefilesize']*1024*1024);
@@ -22,7 +27,7 @@ if (!empty($jobs[$jobid]['mailaddress'])) {
 			unset($mailfiles);
 		}
 	}
-	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.$jobs[$jobid]['name'].' '.date('Y-m-d H:i',$logtime) ,$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
+	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.date('Y-m-d H:i',$logtime).': '.$jobs[$jobid]['name'] ,$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
 		BackWPupFunctions::joblog($logtime,__('Mail send!!!','backwpup'));
 	} else {
 		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo);

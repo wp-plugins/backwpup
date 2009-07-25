@@ -49,7 +49,8 @@ You must import the Database Dump with Charaktercoding:latin1
 
 == Changelog ==
 = 0.6.3 =
-* use ftp_roe for login and other commans
+* use ftp_row for login and other commands
+* Add option to send only email on erros
 
 
 = 0.6.2 =

@@ -162,7 +162,7 @@ _e('Activate:', 'backwpup'); ?>
 <td>
 <?PHP _e('Ftp Hostname:','backwpup'); ?><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
 <?PHP _e('Ftp Username:','backwpup'); ?><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" /><br />
-<?PHP _e('Ftp Password:','backwpup'); ?><input name="ftppass" type="password" value="<?PHP echo $jobs[$jobid]['ftppass'];?>" class="password" /><br />
+<?PHP _e('Ftp Password:','backwpup'); ?><input name="ftppass" type="password" value="<?PHP echo base64_decode($jobs[$jobid]['ftppass']);?>" class="password" /><br />
 <?PHP _e('Ftp directory:','backwpup'); ?><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
 <?PHP _e('Max Backup fieles on ftp:','backwpup'); ?><input name="ftpmaxbackups" type="text" value="<?PHP echo $jobs[$jobid]['ftpmaxbackups'];?>" class="small-text" /><?PHP _e('0=off','backwpup');?></span><br />
 </td> 
@@ -176,9 +176,10 @@ _e('Activate:', 'backwpup'); ?>
 <td><input name="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /><br />
 <?PHP 
 if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {
-	echo __('Max Filesize for Backups via mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobs[$jobid]['mailefilesize'].'" class="small-text" />MB <span class="description">'.__('0=send log only.','backwpup').'</span>';
+	echo __('Max Filesize for Backups via mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobs[$jobid]['mailefilesize'].'" class="small-text" />MB <span class="description">'.__('0=send log only.','backwpup').'</span><br />';
 }
 ?>
+<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Send only mail on errors.','backwpup'); ?>
 </td> 
 </tr>
 
