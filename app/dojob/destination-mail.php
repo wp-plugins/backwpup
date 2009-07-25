@@ -1,6 +1,7 @@
 <?php
 $sendmail=false;
-if ($wpdb->get_var("SELECT error FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime)>0 and $jobs[$jobid]['mailerroronly'])
+$errorcount=$wpdb->get_var("SELECT error FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
+if ($errorcount>0 and $jobs[$jobid]['mailerroronly'])
 	$sendmail=true;
 if (!$jobs[$jobid]['mailerroronly'])
 	$sendmail=true;

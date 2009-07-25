@@ -429,7 +429,7 @@ class BackWPupFunctions {
 			$phpmailer->Port=$smtpport;
 			$phpmailer->SMTPSecure=$cfg['mailsecure'];
 			$phpmailer->Username=$cfg['mailuser'];
-			$phpmailer->Password=$cfg['mailpass'];
+			$phpmailer->Password=base64_decode($cfg['mailpass']);
 			if (!empty($cfg['mailuser']) and !empty($cfg['mailpass']))
 				$phpmailer->SMTPAuth=true;
 			$phpmailer->IsSMTP();

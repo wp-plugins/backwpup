@@ -56,7 +56,7 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 		//FTP Login
 		$loginok=false;
 		if (ftp_raw_helper($ftp_conn_id,'USER '.$jobs[$jobid]['ftpuser'])) {
-			if (ftp_raw_helper($ftp_conn_id,'PASS '.$jobs[$jobid]['ftppass'])) {
+			if (ftp_raw_helper($ftp_conn_id,'PASS '.base64_decode($jobs[$jobid]['ftppass']))) {
 				$loginok=true;
 			}
 		}
