@@ -114,7 +114,6 @@
 		);
 		$sql = implode(';', $statements);
 		dbDelta($sql);
-		mysql_query("ALTER TABLE ".$wpdb->backwpup_logs." CHANGE `log` `log` LONGTEXT");
 		//add cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
