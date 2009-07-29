@@ -80,6 +80,16 @@ if (!empty($cfg['mailsendmail']))
 </td> 
 </tr>
 
+<tr valign="top"> 
+<th scope="row"><label for="jobname"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
+<td>
+<input class="checkbox" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/>
+ <?PHP _e('Use Cron job of Hoster and disable WP_Cron','backwpup'); ?><br />
+<?PHP _e('You must set up a cron job that calls:','backwpup'); ?><br />
+<i> php -q <?PHP echo ABSPATH.'wp-cron.php'; ?></i><br /> 
+<?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 
+</td> 
+</tr> 
 
 </table>
  

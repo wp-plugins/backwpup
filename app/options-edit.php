@@ -28,6 +28,7 @@ if ($jobs[$jobid]['type']=='FILE') {
 	
 	
 ?>
+
 <table class="form-table">
 
 <tr valign="top"> 
@@ -35,8 +36,8 @@ if ($jobs[$jobid]['type']=='FILE') {
 <td> 
 <select name="type" id="job_type">
 	<?php
-	foreach (BackWPupFunctions::backup_types() as $type) {
-		echo '<option value="'.$type.'"'.selected($type,$jobs[$jobid]['type'],false).'>'.BackWPupFunctions::backup_types($type).'</option>';
+	foreach (backwpup_backup_types() as $type) {
+		echo '<option value="'.$type.'"'.selected($type,$jobs[$jobid]['type'],false).'>'.backwpup_backup_types($type).'</option>';
 	}
 	?>
 </select>
@@ -62,7 +63,7 @@ if (!isset($jobs[$jobid]['dbexclude'])) { //def.
 }
 foreach ($tables as $table) {
 	if ($wpdb->backwpup_logs<>$table)
-		echo ' <input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobs[$jobid]['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/>'.$table;
+		echo ' <input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobs[$jobid]['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/> '.$table.'<br />';
 }
 
 ?>
@@ -71,19 +72,19 @@ foreach ($tables as $table) {
 <?PHP if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE') {?>
 <?PHP if (!isset($jobs[$jobid]['backuproot'])) $jobs[$jobid]['backuproot']=true; if (!isset($jobs[$jobid]['backupcontent'])) $jobs[$jobid]['backupcontent']=true; if (!isset($jobs[$jobid]['backupplugins'])) $jobs[$jobid]['backupplugins']=true;?>
 <tr valign="top"> 
-<th scope="row"><label for="fileinclude"><?PHP _e('Backup Blog dirs','backwpup'); ?></label></th><td> 
+<th scope="row"><label for="fileinclude"><?PHP _e('Backup Blog directorys','backwpup'); ?></label></th><td> 
 <input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backuproot'],true,true);?> name="backuproot" value="1"/> <?php _e('Blog root and WP Files','backwpup');?><br />
 <input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupcontent'],true,true);?> name="backupcontent" value="1"/> <?php _e('Blog Content','backwpup');?><br />
 <input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupplugins'],true,true);?> name="backupplugins" value="1"/> <?php _e('Blog Plugins','backwpup');?>
 </td></tr> 
 
 <tr valign="top"> 
-<th scope="row"><label for="dirinclude"><?PHP _e('Include extra dirs','backwpup'); ?></label></th><td> 
+<th scope="row"><label for="dirinclude"><?PHP _e('Include directorys','backwpup'); ?></label></th><td> 
 <input name="dirinclude" type="text" value="<?PHP echo $jobs[$jobid]['dirinclude'];?>" class="regular-text" /><span class="description"><?PHP echo __('Separate with ,. Full Path like:','backwpup').' '.str_replace('\\','/',ABSPATH); ?></span>
 </td></tr> 
 
 <tr valign="top"> 
-<th scope="row"><label for="fileexclude"><?PHP _e('Exclude files/dirs','backwpup'); ?></label></th><td> 
+<th scope="row"><label for="fileexclude"><?PHP _e('Exclude files/directorys','backwpup'); ?></label></th><td> 
 <input name="fileexclude" type="text" value="<?PHP echo $jobs[$jobid]['fileexclude'];?>" class="regular-text" /><span class="description"><?PHP _e('Separate with ,','backwpup') ?></span>
 </td></tr> 
 <?PHP } ?>
@@ -137,16 +138,15 @@ for ($i=date('Y')-1;$i<=date('Y')+3;$i++) {
 	echo '<option value="'.$i.'"'.selected($i,date('Y',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select><br />';
-
-_e('Activate:', 'backwpup'); ?>
-<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['activated'],true); ?> name="activated" />
+?>
+<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduleing', 'backwpup'); ?>
 </td> 
 </tr> 
 
 <?PHP if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {?>
 <tr valign="top">
 <?PHP if (empty($jobs[$jobid]['backupdir'])) $jobs[$jobid]['backupdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup/';?>
-<th scope="row"><label for="backupdir"><?PHP _e('Backup to Directory','backwpup'); ?></label></th> 
+<th scope="row"><label for="backupdir"><?PHP _e('Save Backups to directory','backwpup'); ?></label></th> 
 <td><input name="backupdir" type="text" value="<?PHP echo $jobs[$jobid]['backupdir'];?>" class="regular-text" /><span class="description"><?PHP _e('Full Phath of Directory for Backup fiels','backwpup'); ?></span></td> 
 </tr>
 <tr valign="top">
@@ -158,13 +158,13 @@ _e('Activate:', 'backwpup'); ?>
 
 
 <tr valign="top">
-<th scope="row"><label for="ftptransfer"><?PHP _e('Place Backup to FTP Server:','backwpup'); ?></label></th> 
+<th scope="row"><label for="ftptransfer"><?PHP _e('Copy Backup to FTP Server','backwpup'); ?></label></th> 
 <td>
 <?PHP _e('Ftp Hostname:','backwpup'); ?><input name="ftphost" type="text" value="<?PHP echo $jobs[$jobid]['ftphost'];?>" class="regular-text" /><br />
 <?PHP _e('Ftp Username:','backwpup'); ?><input name="ftpuser" type="text" value="<?PHP echo $jobs[$jobid]['ftpuser'];?>" class="user" /><br />
 <?PHP _e('Ftp Password:','backwpup'); ?><input name="ftppass" type="password" value="<?PHP echo base64_decode($jobs[$jobid]['ftppass']);?>" class="password" /><br />
 <?PHP _e('Ftp directory:','backwpup'); ?><input name="ftpdir" type="text" value="<?PHP echo $jobs[$jobid]['ftpdir'];?>" class="regular-text" /><br />
-<?PHP _e('Max Backup fieles on ftp:','backwpup'); ?><input name="ftpmaxbackups" type="text" value="<?PHP echo $jobs[$jobid]['ftpmaxbackups'];?>" class="small-text" /><?PHP _e('0=off','backwpup');?></span><br />
+<?PHP _e('Max Backup fieles on ftp:','backwpup'); ?><input name="ftpmaxbackups" type="text" value="<?PHP echo $jobs[$jobid]['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?></span><br />
 </td> 
 </tr>
 

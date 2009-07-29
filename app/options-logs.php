@@ -64,7 +64,7 @@
 		<td class="column-id"><?PHP echo $logvalue['jobid'];?></td> 
 		<td class="column-type">
 		<?PHP
-			BackWPupFunctions::backup_types($logvalue['type'],true);
+			backwpup_backup_types($logvalue['type'],true);
 		?>
 		</td> 
 		<td class="name column-log">
@@ -99,7 +99,7 @@
 		<td class="column-size">
 		<?PHP
 			if (!empty($logvalue['backupfile']) and is_file($logvalue['backupfile'])) {
-				echo BackWPupFunctions::formatBytes(filesize($logvalue['backupfile']));
+				echo backwpup_formatBytes(filesize($logvalue['backupfile']));
 			} else {
 				_e('only Log','backwpup');
 			}

@@ -1,7 +1,8 @@
 <?PHP 
-BackWPupFunctions::joblog($logtime,__('Run Database Backup...','backwpup'));
+backwpup_joblog($logtime,__('Run Database Backup...','backwpup'));
 
-function dump_table($table,$status,$file) {
+
+function backwpup_dump_table($table,$status,$file) {
 	global $wpdb,$logtime;
 	$table = str_replace("´", "´´", $table); //esc table name
 
@@ -16,7 +17,7 @@ function dump_table($table,$status,$file) {
     //Dump the table structure
     $result=mysql_query("SHOW CREATE TABLE `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
-		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
 		return false;
 	}
 	$tablestruc=mysql_fetch_assoc($result);
@@ -26,7 +27,7 @@ function dump_table($table,$status,$file) {
     //take data of table
 	$result=mysql_query("SELECT * FROM `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
-		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
 		return false;
 	}
 	
@@ -60,7 +61,6 @@ function dump_table($table,$status,$file) {
 }
 
 
-
 //Tables to backup		
 $tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');	
 $jobs[$jobid]['dbexclude'][]=$wpdb->backwpup_logs; //Exclude log table
@@ -74,12 +74,12 @@ if (is_array($jobs[$jobid]['dbexclude'])) {
 if (sizeof($tables)>0) {
     $result=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A); //get table status
 	if ($sqlerr=mysql_error($wpdb->dbh)) 
-		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
 	foreach($result as $statusdata) {
 		$status[$statusdata['Name']]=$statusdata;
 	}
 
-	if ($file = @fopen(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql', 'w')) {
+	if ($file = @fopen(get_temp_dir().'backwpup/'.DB_NAME.'.sql', 'w')) {
 		fwrite($file, "-- ---------------------------------------------------------\n");
 		fwrite($file, "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n");
 		fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");
@@ -106,9 +106,9 @@ if (sizeof($tables)>0) {
 		fwrite($file, "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n");
 		//make table dumps
 		foreach($tables as $table) {
-			BackWPupFunctions::joblog($logtime,__('Database table to Backup: ','backwpup').' '.$table);
-			BackWPupFunctions::needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get mor memory if needed
-			fwrite($file, dump_table($table,$status[$table],$file));
+			backwpup_joblog($logtime,__('Database table to Backup: ','backwpup').' '.$table);
+			backwpup_needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get mor memory if needed
+			fwrite($file, backwpup_dump_table($table,$status[$table],$file));
 		}
 		//for better import with mysql client
 		fwrite($file, "\n");
@@ -122,25 +122,25 @@ if (sizeof($tables)>0) {
 		fwrite($file, "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n");
 		fclose($file);
 	} else {
-		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Database Backup file','backwpup'));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Database Backup file','backwpup'));
 	}
 } else {
-	BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('No Tables to Backup','backwpup'));
+	backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('No Tables to Backup','backwpup'));
 }
 
 
-BackWPupFunctions::joblog($logtime,__('Database backup done!','backwpup'));
+backwpup_joblog($logtime,__('Database backup done!','backwpup'));
 
-if ($jobs[$jobid]['type']=='DB' and is_file(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql')) {
-	BackWPupFunctions::needfreememory(8388608); //8MB free memory for zip
-	BackWPupFunctions::joblog($logtime,__('Database file size:','backwpup').' '.BackWPupFunctions::formatBytes(filesize(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
-	BackWPupFunctions::joblog($logtime,__('Create Zip file from dump...','backwpup'));
+if ($jobs[$jobid]['type']=='DB' and is_file(get_temp_dir().'backwpup/'.DB_NAME.'.sql')) {
+	backwpup_needfreememory(8388608); //8MB free memory for zip
+	backwpup_joblog($logtime,__('Database file size:','backwpup').' '.backwpup_formatBytes(filesize(get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
+	backwpup_joblog($logtime,__('Create Zip file from dump...','backwpup'));
 	$zipbackupfile = new PclZip($backupfile);
-	if (0==$zipbackupfile -> create(BackWPupFunctions::get_temp_dir().'backwpup/'.DB_NAME.'.sql',PCLZIP_OPT_REMOVE_ALL_PATH,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-		BackWPupFunctions::joblog($logtime,__('ERROR:','backwpup').' '.__('Database Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true));
+	if (0==$zipbackupfile -> create(get_temp_dir().'backwpup/'.DB_NAME.'.sql',PCLZIP_OPT_REMOVE_ALL_PATH,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Database Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true));
 		$joberror=true;
 	} 
-	BackWPupFunctions::joblog($logtime,__('Zip file created...','backwpup'));
+	backwpup_joblog($logtime,__('Zip file created...','backwpup'));
 }
 //clean vars
 unset($tables);

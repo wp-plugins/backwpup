@@ -1,28 +1,14 @@
 <?PHP
-
-class BackWPupFunctions {
-
-	//Same as WP function but needet for cron
- 	function get_temp_dir() { 
-		if ( defined('WP_TEMP_DIR') )
-			return trailingslashit(WP_TEMP_DIR);
-		$temp = WP_CONTENT_DIR . '/';
-		if ( is_dir($temp) && is_writable($temp) )
-			return $temp;
-		if  ( function_exists('sys_get_temp_dir') )
-			return trailingslashit(sys_get_temp_dir());
-		return '/tmp/';
-	}
-
+	
 	//Thems Option menu entry
-	function menu_entry() {
-		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup',array('BackWPupFunctions', 'options')) ;
-		add_action('load-'.$hook, array('BackWPupFunctions', 'options_load'));
-		add_contextual_help($hook,BackWPupFunctions::show_help());
+	function backwpup_menu_entry() {
+		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup','backwpup_options_page') ;
+		add_action('load-'.$hook, 'backwpup_options_load');
+		add_contextual_help($hook,backwpup_show_help());
 	}	
 	
 	// Help too display
-	function show_help() {
+	function backwpup_show_help() {
 		$help .= '<div class="metabox-prefs">';
 		$help .= '<a href="http://wordpress.org/tags/backwpup" target="_blank">'.__('Support').'</a>';
 		$help .= ' | <a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>';
@@ -38,7 +24,7 @@ class BackWPupFunctions {
 	}
 	
 	//Options Page
-	function options() {
+	function backwpup_options_page() {
 		global $wpdb;
 		if (!current_user_can(10)) 
 			wp_die('No rights');
@@ -78,7 +64,7 @@ class BackWPupFunctions {
 	}
 	
 	//Options Page
-	function options_load() {
+	function backwpup_options_load() {
 		global $wpdb;
 		if (!current_user_can(10)) 
 			wp_die('No rights');
@@ -87,70 +73,18 @@ class BackWPupFunctions {
 		//wp_enqueue_script('BackWpupOptions',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/js/options.js'),array('jquery','utils','jquery-ui-core'),BACKWPUP_VERSION,true);
 		//For save Options
 		require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-save.php');
-		if ($_REQUEST['action2']!='-1' and !empty($_REQUEST['doaction2'])) 
-			$_REQUEST['action']=$_REQUEST['action2'];
-		switch($_REQUEST['action']) {
-		case 'delete':
-			if (is_Array($_POST['jobs'])) {
-				check_admin_referer('actions-jobs');
-				foreach ($_POST['jobs'] as $jobid) {
-					BackWPupOptions::delete_job($jobid);
-				}
-			} else {
-				$jobid = (int) $_GET['jobid'];
-				check_admin_referer('delete-job_' . $jobid);
-				BackWPupOptions::delete_job($jobid);
-			}
-			$_REQUEST['action']='';
-			break;
-		case 'delete-logs':
-			if (is_Array($_POST['logs'])) {
-				check_admin_referer('actions-logs');
-				foreach ($_POST['logs'] as $timestamp) {
-					BackWPupOptions::delete_log($timestamp);
-				}
-			} else {
-				$timestamp = (int) $_GET['log'];
-				check_admin_referer('delete-log_' . $timestamp);
-				BackWPupOptions::delete_log($timestamp);
-			}
-			$_REQUEST['action']='logs';
-			break;
-		case 'saveeditjob':
-			check_admin_referer('edit-job');
-			BackWPupOptions::edit_job((int) $_POST['jobid']);
-			break;
-		case 'savecfg':
-			check_admin_referer('backwpup-cfg');
-			BackWPupOptions::config();
-			$_REQUEST['action']='settings';
-			break;
-		case 'copy':
-			$jobid = (int) $_GET['jobid'];
-			check_admin_referer('copy-job_'.$jobid);
-			BackWPupOptions::copy_job($jobid);
-			$_REQUEST['action']='';
-			break;
-		case 'download':
-			$log = (int) $_GET['log'];
-			check_admin_referer('download-backup_'.$log);
-			BackWPupOptions::download_backup($log);
-			$_REQUEST['action']='logs';
-			break;
-		}	
 	}
 	
     //delete Otions
-	function plugin_uninstall() {
+	function backwpup_plugin_uninstall() {
 		global $wpdb;
 		delete_option('backwpup');
 		delete_option('backwpup_jobs');
-		delete_option('backwpup_log');
 		$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->backwpup_logs);
 	}
 	
 	//On Plugin activate
-	function plugin_activate() {
+	function backwpup_plugin_activate() {
 		global $wpdb;
 
 		//Create log table
@@ -164,8 +98,6 @@ class BackWPupFunctions {
 				$charset_collate .= " COLLATE $wpdb->collate";
 			}
 		}
-		
-		
 		$statements = array( 
 			"CREATE TABLE ".$wpdb->backwpup_logs." (
 			logtime BIGINT NOT NULL,
@@ -175,7 +107,7 @@ class BackWPupFunctions {
 			error TINYINT NOT NULL default '0',
 			warning TINYINT NOT NULL default '0',
 			worktime TINYINT NOT NULL default '0',
-			log TEXT NOT NULL default '',
+			log LONGTEXT NOT NULL default '',
 			backupfile VARCHAR(255),
 			PRIMARY KEY (logtime)
 			)".$charset_collate,
@@ -196,7 +128,7 @@ class BackWPupFunctions {
 	}
 	
 	//on Plugin deaktivate
-	function plugin_deactivate() {
+	function backwpup_plugin_deactivate() {
 		//remove cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
@@ -209,14 +141,14 @@ class BackWPupFunctions {
 	}
 	
 	//add edit setting to plugins page
-	function plugin_options_link($links) {
+	function backwpup_plugin_options_link($links) {
 		$settings_link='<a href="admin.php?page=BackWPup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings') . '</a>';
 		array_unshift( $links, $settings_link ); 
 		return $links;
 	}
 	
 	//add links on plugins page
-	function plugin_links($links, $file) {
+	function backwpup_plugin_links($links, $file) {
 		if ($file == BACKWPUP_PLUGIN_DIR.'/backwpup.php') {
 			$links[] = '<a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>';
 			$links[] = '<a href="http://wordpress.org/tags/backwpup/" target="_blank">' . __('Support') . '</a>';
@@ -226,7 +158,7 @@ class BackWPupFunctions {
 	}
 	
 	//Add cron interval
-	function intervals($schedules) {
+	function backwpup_intervals($schedules) {
 		$jobs=get_option('backwpup_jobs'); //Load Settings
 		if (is_array($jobs)) {
 			foreach ($jobs as $jobkey => $jobvalue) {
@@ -238,16 +170,19 @@ class BackWPupFunctions {
 		} 
 		return $schedules;
 	}
+
 	
 	//DoJob
-	function dojob($args) {
+	function backwpup_dojob($args) {
 		global $wpdb;
+		
 		if (is_array($args)) { //cron gifes no complete arry back!!!
 			extract($args, EXTR_SKIP );
 		} else {
 			$jobid=$args;
 		}
 		if (empty($jobid)) return false;
+		require_once(ABSPATH . 'wp-admin/includes/file.php');
 		require_once('dojob/bevore.php');
 		switch($jobs[$jobid]['type']) {
 		case 'DB+FILE':
@@ -280,7 +215,7 @@ class BackWPupFunctions {
 	}
 	
 	//increase Memory need free memory in bytes
-	function needfreememory($memneed) {
+	function backwpup_needfreememory($memneed) {
 		global $logtime;
 		if (!function_exists('memory_get_usage'))
 			return true;
@@ -297,21 +232,21 @@ class BackWPupFunctions {
 			
 		if (memory_get_usage()+$memneed>$memory) { // increase Memory
 			if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-				BackWPupFunctions::joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
 				return false;
 			}
 			$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
 			if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
-				BackWPupFunctions::joblog($logtime,sprintf(__('Memory incresed from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
+				backwpup_joblog($logtime,sprintf(__('Memory incresed from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
 			else 
-				BackWPupFunctions::joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+				backwpup_joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
 		} 
 		return true;
 	}
 	
 	
 	//Make Log File for Jobs.
-	function joblog($logtime,$entry) {
+	function backwpup_joblog($logtime,$entry) {
 		global $wpdb;
 		$errors=0;$warnings=0;
 		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup'))
@@ -319,13 +254,13 @@ class BackWPupFunctions {
 		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
 			$warnings=1;
 		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
-		echo date('Y-m-d H:i:s').": ".$entry."\n";
+		if (!defined('DOING_CRON'))
+			echo date('Y-m-d H:i:s').": ".$entry."\n";
 		flush();
-		ob_flush();
 	}
 	
 	//file size
-	function formatBytes($bytes, $precision = 2) {
+	function backwpup_formatBytes($bytes, $precision = 2) {
 		$units = array('B', 'KB', 'MB', 'GB', 'TB');
 		$bytes = max($bytes, 0);
 		$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
@@ -335,7 +270,7 @@ class BackWPupFunctions {
 	} 
 	
 	//echo long backup type name
-	function backup_types($type='',$echo=false) {
+	function backwpup_backup_types($type='',$echo=false) {
 		switch($type) {
 		case 'DB+FILE':
 			$typename=__('Database &amp; File Backup','backwpup');
@@ -363,7 +298,7 @@ class BackWPupFunctions {
 	}
 	
 	//Dashboard widget
-	function dashboard_output() {
+	function backwpup_dashboard_output() {
 		global $wpdb;
 		echo '<strong>'.__('Logs:','backwpup').'</strong><ul>';
 		$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC LIMIT 5", ARRAY_A);
@@ -372,7 +307,7 @@ class BackWPupFunctions {
 			foreach ($logs as $logvalue) {
 				echo '<li><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'"><strong>'.date(get_option('date_format'),$logvalue['logtime']).' '.date(get_option('time_format'),$logvalue['logtime']).'</strong>: <i>';
 				if (empty($logvalue['jobname'])) 
-					BackWPupFunctions::backup_types($logvalue['type'],true);
+					backwpup_backup_types($logvalue['type'],true);
 				else
 					echo $logvalue['jobname'];
 				echo '</i>';
@@ -412,12 +347,12 @@ class BackWPupFunctions {
 	}
 	
 	//add dashboard widget
-	function add_dashboard() {
-		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', array ('BackWPupFunctions', 'dashboard_output') );		
+	function backwpup_add_dashboard() {
+		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );		
 	}
 	
 	//Sed mail send Method
-	function use_mail_method() {
+	function backwpup_use_mail_method() {
 		global $phpmailer;
 		$cfg=get_option('backwpup'); //Load Settings
 		if ($cfg['mailmethod']=="SMTP") {
@@ -442,22 +377,25 @@ class BackWPupFunctions {
 	}
 	
 	// add all action and so on only if plugin loaded.
-	function init() {
+	function backwpup_init() {
+		//Disabele WP_Corn
+		$cfg=get_option('backwpup');
+		if ($cfg['disablewpcron'])
+			define('DISABLE_WP_CRON',true);
 		//add Menu
-		add_action('admin_menu', array('BackWPupFunctions', 'menu_entry'));
+		add_action('admin_menu', 'backwpup_menu_entry');
 		//Additional links on the plugin page
 		if (current_user_can(10)) 
-			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_DIR.'/backwpup.php', array('BackWPupFunctions', 'plugin_options_link'));
+			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_DIR.'/backwpup.php', 'backwpup_plugin_options_link');
 		if (current_user_can('install_plugins')) 		
-			add_filter('plugin_row_meta', array('BackWPupFunctions', 'plugin_links'),10,2);
+			add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 		//add cron intervals
-		add_filter('cron_schedules', array('BackWPupFunctions', 'intervals'));
+		add_filter('cron_schedules', 'backwpup_intervals');
 		//Actions for Cron job
-		add_action('backwpup_cron', array('BackWPupFunctions', 'dojob'));
+		add_action('backwpup_cron', 'backwpup_dojob');
 		//add Dashboard widget
 		if (current_user_can(10)) 
-			add_action('wp_dashboard_setup', array('BackWPupFunctions', 'add_dashboard'));
+			add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 	} 	
-}
 
 ?>

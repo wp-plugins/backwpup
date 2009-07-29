@@ -3,8 +3,8 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, cron
 Requires at least: 2.8
-Tested up to: 2.8.1
-Stable tag: 0.6.2
+Tested up to: 2.8.2
+Stable tag: 0.6.3
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -51,7 +51,9 @@ You must import the Database Dump with Charaktercoding:latin1
 = 0.6.3 =
 * use ftp_row for login and other commands
 * Add option to send only email on erros
-
+* Internal struckture changes
+* Add option to diesable WP-Cron and use Hoster cron
+* bug fixes
 
 = 0.6.2 =
 * Added setting for memory_limit if needed

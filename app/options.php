@@ -68,7 +68,7 @@
 		</td> 
 		<td class="column-type">
 		<?PHP
-			BackWPupFunctions::backup_types($jobvalue['type'],true);
+			backwpup_backup_types($jobvalue['type'],true);
 		?>
 		</td> 
 		<td class="column-next">

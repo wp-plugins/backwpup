@@ -28,7 +28,6 @@ Domain Path: /lang/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
@@ -42,17 +41,17 @@ load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
 //Load functions file
 require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/functions.php');
 //Plugin activate
-register_activation_hook(__FILE__, array('BackWPupFunctions', 'plugin_activate')); 
+register_activation_hook(__FILE__, 'backwpup_plugin_activate'); 
 //Plugin deactivate
-register_deactivation_hook(__FILE__, array('BackWPupFunctions', 'plugin_deactivate'));
+register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Plugin uninstall
-register_uninstall_hook(__FILE__, array('BackWPupFunctions', 'plugin_uninstall'));
+register_uninstall_hook(__FILE__, 'backwpup_plugin_uninstall');
 
 //Version check
 if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
 	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, BackWPup works only under WordPress 2.8 or higher','backwpup') . '</strong></p></div>\';'));
 } else {
 	//Plugin init	
-	add_action('plugins_loaded', array('BackWPupFunctions', 'init'));
+	add_action('plugins_loaded', 'backwpup_init');
 }
 ?>

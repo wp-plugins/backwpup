@@ -9,5 +9,5 @@
 </ul>
 <br class="clear" /> 
 <pre>
-<?PHP BackWPupFunctions::dojob($jobid); ?>
+<?PHP backwpup_dojob($jobid); ?>
 </pre>

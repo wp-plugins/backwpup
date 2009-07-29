@@ -1,124 +1,152 @@
 <?php
+if ($_REQUEST['action2']!='-1' and !empty($_REQUEST['doaction2'])) 
+	$_REQUEST['action']=$_REQUEST['action2'];
 
-class BackWPupOptions {
-
-	function delete_job($jobid) {
-		$jobs=get_option('backwpup_jobs'); //Load Settings
-		unset($jobs[$jobid]);
-		update_option('backwpup_jobs',$jobs); //Save Settings
-		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
-		}
-	}
-	
-	function delete_log($logtime) {
-		global $wpdb;
-		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
-		if (is_file($backupfile)) 
-			unlink($backupfile);
-		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
-	}
-
-	function copy_job($jobid) {
-		$jobs=get_option('backwpup_jobs'); //Load Settings
-		
-		//generate new ID
-		foreach ($jobs as $jobkey => $jobvalue) {
-			if ($jobkey>$heighestid) $heighestid=$jobkey;
-		}
-		$newjobid=$heighestid+1;
-
-		$jobs[$newjobid]=$jobs[$jobid];
-		$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
-		$jobs[$newjobid]['activated']=false;
-		update_option('backwpup_jobs',$jobs); //Save Settings
-	}
-
-	function config() {
-		$cfg=get_option('backwpup'); //Load Settings
-		$cfg['mailmethod']=$_POST['mailmethod'];
-		$cfg['mailsendmail']=str_replace('\\','/',stripslashes($_POST['mailsendmail']));
-		$cfg['mailsecure']=$_POST['mailsecure'];
-		$cfg['mailhost']=$_POST['mailhost'];
-		$cfg['mailuser']=$_POST['mailuser'];
-		$cfg['mailpass']=base64_encode($_POST['mailpass']);
-		$cfg['memorylimit']=$_POST['memorylimit'];
-		$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
-		update_option('backwpup',$cfg); //Save Settings
-	}
-	
-	function download_backup($logtime) {
-		global $wpdb;
-		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
-		if (is_file($backupfile)) {
-			header("Pragma: public");
-			header("Expires: 0");
-			header("Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
-			header("Content-Type: application/force-download");
-			header("Content-Type: application/octet-stream");
-			header("Content-Type: application/download");
-			header("Content-Disposition: attachment; filename=".basename($backupfile).";");
-			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".filesize($backupfile));
-			@readfile($backupfile);
-		} else {
-			header('HTTP/1.0 404 Not Found');
-			die(__('File does not exist.', 'backwpup'));
-		}			
-	}
-	
-	function edit_job($jobid) {
-		$jobs=get_option('backwpup_jobs'); //Load Settings
-		
-		if (empty($jobid)) { //generate a new id for new job
-			if (is_array($jobs)) { 
-				foreach ($jobs as $jobkey => $jobvalue) {
-					if ($jobkey>$heighestid) $heighestid=$jobkey;
-				}
-				$jobid=$heighestid+1;
-			} else {
-				$jobid=1;
+switch($_REQUEST['action']) {
+case 'delete': //Delete Job
+	$jobs=get_option('backwpup_jobs'); 
+	if (is_Array($_POST['jobs'])) {
+		check_admin_referer('actions-jobs');
+		foreach ($_POST['jobs'] as $jobid) {
+			unset($jobs[$jobid]);
+			if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
+				wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 			}
 		}
-		
-		
-		$jobs[$jobid]['type']= $_POST['type'];
-		$jobs[$jobid]['name']= esc_html($_POST['name']);
-		$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
-		$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
-		$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
-		$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];
-		$jobs[$jobid]['scheduleinterval']=$_POST['scheduleintervaltype']*$_POST['scheduleintervalteimes'];
-		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
-		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
-		$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
-		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
-		$jobs[$jobid]['dbexclude']=array_unique((array)$_POST['dbexclude']);
-		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
-		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
-		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
-		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
-		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
-		$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
-		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
-		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
-		$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-		$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
-		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
-		
-		update_option('backwpup_jobs',$jobs); //Save Settings
+	} else {
+		$jobid = (int) $_GET['jobid'];
+		check_admin_referer('delete-job_' . $jobid);			
+		unset($jobs[$jobid]);
 		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 		}
-		if ($jobs[$jobid]['activated']) {
-			wp_schedule_event($jobs[$jobid]['scheduletime'], 'backwpup_int_'.$jobid, 'backwpup_cron',array('jobid'=>$jobid));
+	}
+	update_option('backwpup_jobs',$jobs);
+	$_REQUEST['action']='';
+	break;
+case 'delete-logs': //Delete Log
+	if (is_Array($_POST['logs'])) {
+		check_admin_referer('actions-logs');
+		foreach ($_POST['logs'] as $timestamp) {
+			$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+			if (is_file($backupfile)) 
+				unlink($backupfile);
+			$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
 		}
-		if (!empty($_POST['change'])) {
-			$_REQUEST['action']='edit';
-			$_REQUEST['jobid']=$jobid;
+	} else {
+		$timestamp = (int) $_GET['log'];
+		check_admin_referer('delete-log_' . $timestamp);
+		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+		if (is_file($backupfile)) 
+			unlink($backupfile);
+		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+	}
+	$_REQUEST['action']='logs';
+	break;
+case 'savecfg': //Save config form Setings page
+	check_admin_referer('backwpup-cfg');
+	$cfg=get_option('backwpup'); //Load Settings
+	$cfg['mailmethod']=$_POST['mailmethod'];
+	$cfg['mailsendmail']=str_replace('\\','/',stripslashes($_POST['mailsendmail']));
+	$cfg['mailsecure']=$_POST['mailsecure'];
+	$cfg['mailhost']=$_POST['mailhost'];
+	$cfg['mailuser']=$_POST['mailuser'];
+	$cfg['mailpass']=base64_encode($_POST['mailpass']);
+	$cfg['memorylimit']=$_POST['memorylimit'];
+	$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
+	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
+	update_option('backwpup',$cfg); //Save Settings
+	$_REQUEST['action']='settings';
+	break;
+case 'copy': //Copy Job
+	$jobid = (int) $_GET['jobid'];
+	check_admin_referer('copy-job_'.$jobid);
+	$jobs=get_option('backwpup_jobs');
+	//generate new ID
+	foreach ($jobs as $jobkey => $jobvalue) {
+		if ($jobkey>$heighestid) $heighestid=$jobkey;
+	}
+	$newjobid=$heighestid+1;
+	$jobs[$newjobid]=$jobs[$jobid];
+	$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
+	$jobs[$newjobid]['activated']=false;
+	update_option('backwpup_jobs',$jobs);
+	$_REQUEST['action']='';
+	break;
+case 'download': //Download Backup
+	$log = (int) $_GET['log'];
+	check_admin_referer('download-backup_'.$log);
+	$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
+	if (is_file($backupfile)) {
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
+		header("Content-Type: application/force-download");
+		header("Content-Type: application/octet-stream");
+		header("Content-Type: application/download");
+		header("Content-Disposition: attachment; filename=".basename($backupfile).";");
+		header("Content-Transfer-Encoding: binary");
+		header("Content-Length: ".filesize($backupfile));
+		@readfile($backupfile);
+	} else {
+		header('HTTP/1.0 404 Not Found');
+		die(__('File does not exist.', 'backwpup'));
+	}	
+	$_REQUEST['action']='logs';
+	break;
+case 'saveeditjob': //Save Job settings
+	$jobid = (int) $_POST['jobid'];
+	check_admin_referer('edit-job');
+	$jobs=get_option('backwpup_jobs'); //Load Settings
+		
+	if (empty($jobid)) { //generate a new id for new job
+		if (is_array($jobs)) { 
+			foreach ($jobs as $jobkey => $jobvalue) {
+				if ($jobkey>$heighestid) $heighestid=$jobkey;
+			}
+			$jobid=$heighestid+1;
 		} else {
-			$_REQUEST['action']='';
+			$jobid=1;
 		}
 	}
-}
+		
+	$jobs[$jobid]['type']= $_POST['type'];
+	$jobs[$jobid]['name']= esc_html($_POST['name']);
+	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
+	$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
+	$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
+	$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];
+	$jobs[$jobid]['scheduleinterval']=$_POST['scheduleintervaltype']*$_POST['scheduleintervalteimes'];
+	$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
+	$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
+	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
+	$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
+	$jobs[$jobid]['dbexclude']=array_unique((array)$_POST['dbexclude']);
+	$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
+	$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
+	$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
+	$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
+	$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
+	$jobs[$jobid]['ftphost']=$_POST['ftphost'];
+	$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
+	$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
+	$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
+	$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
+		
+	update_option('backwpup_jobs',$jobs); //Save Settings
+	if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
+		wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
+	}
+	if ($jobs[$jobid]['activated']) {
+		wp_schedule_event($jobs[$jobid]['scheduletime'], 'backwpup_int_'.$jobid, 'backwpup_cron',array('jobid'=>$jobid));
+	}
+	if (!empty($_POST['change'])) {
+		$_REQUEST['action']='edit';
+		$_REQUEST['jobid']=$jobid;
+	} else {
+		$_REQUEST['action']='';
+	}
+	break;
+}	
 ?>
