@@ -48,6 +48,9 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
+= 0.6.4 =
+
+
 = 0.6.3 =
 * use ftp_row for login and other commands
 * Add option to send only email on erros

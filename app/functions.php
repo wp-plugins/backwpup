@@ -114,7 +114,7 @@
 		);
 		$sql = implode(';', $statements);
 		dbDelta($sql);
-
+		mysql_query("ALTER TABLE ".$wpdb->backwpup_logs." CHANGE `log` `log` LONGTEXT");
 		//add cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
@@ -182,7 +182,7 @@
 			$jobid=$args;
 		}
 		if (empty($jobid)) return false;
-		require_once(ABSPATH . 'wp-admin/includes/file.php');
+		require_once(ABSPATH . 'wp-admin/includes/file.php'); //for get_tempdir();
 		require_once('dojob/bevore.php');
 		switch($jobs[$jobid]['type']) {
 		case 'DB+FILE':
