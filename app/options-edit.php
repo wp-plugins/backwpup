@@ -150,7 +150,7 @@ echo '</select><br />';
 <td><input name="backupdir" type="text" value="<?PHP echo $jobs[$jobid]['backupdir'];?>" class="regular-text" /><span class="description"><?PHP _e('Full Phath of Directory for Backup fiels','backwpup'); ?></span></td> 
 </tr>
 <tr valign="top">
-<th scope="row"><label for="maxbackups"><?PHP _e('Max number of Backup Files','backwpup'); ?></label></th> 
+<th scope="row"><label for="maxbackups"><?PHP _e('Max. number of Backup Files','backwpup'); ?></label></th> 
 <td>
 <input name="maxbackups" type="text" value="<?PHP echo $jobs[$jobid]['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest files will deletet first.','backwpup');?></span>
 </td> 

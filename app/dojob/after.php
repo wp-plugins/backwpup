@@ -1,23 +1,33 @@
 <?PHP
-//Delete old Logs/Backupfiles
-if (!empty($jobs[$jobid]['maxbackups'])) {
-	backwpup_joblog($logtime,__('Delete old backup files...','backwpup'));
-	$counter=0;$countdelbackups=0;$countdellogs=0;
-	$result=mysql_query("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC");
-	while ($logs = mysql_fetch_assoc($result)) {
-		if (!empty($logs['backupfile']) or in_array($jobs[$jobid]['type'],$logonlytyps))
-			$counter++;
-		if ($counter>=$jobs[$jobid]['maxbackups']) {
-			if (is_file($logs['backupfile'])) {
-				unlink($logs['backupfile']);
-				$countdelbackups++;
-			}
-			$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logs['logtime']);
-			$countdellogs++;
+//Delete old Backupfiles
+if (!empty($jobs[$jobid]['maxbackups']) and !empty($jobs[$jobid]['backupdir']) and is_dir($jobs[$jobid]['backupdir'])) {
+	unset($backupfilelist);	
+	if ( $dir = @opendir($jobs[$jobid]['backupdir']) ) { //make file list	
+		while (($file = readdir($dir)) !== false ) {
+			if ('backwpup_'.$jobid.'_' == substr($file,0,strlen('backwpup_'.$jobid.'_')) and ".zip" == substr($file,-4))
+				$backupfilelist[]=$file;
 		}
+		@closedir( $dir );
 	}
-	if ($countdelbackups>0)
-		backwpup_joblog($logtime,$countdelbackups.' '.__('old backup files deleted!!!','backwpup'));
+	if (sizeof($backupfilelist)>0) {
+		rsort($backupfilelist);
+		$numdeltefiles=0;
+		for ($i=$jobs[$jobid]['maxbackups'];$i<sizeof($backupfilelist);$i++) {
+			unlink(trailingslashit($jobs[$jobid]['backupdir']).$backupfilelist[$i]);
+			$numdeltefiles++;
+		}
+		if ($numdeltefiles>0)
+			backwpup_joblog($logtime,$numdeltefiles.' '.__('old backup files deleted!!!','backwpup'));
+	}
+}
+//Delete old Logs
+if (!empty($cfg['maxlogs'])) {
+	$countdellogs=0;
+	$result=mysql_query("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC LIMIT ".$cfg['maxlogs'].",18446744073709551615");
+	while ($logs = mysql_fetch_assoc($result)) {
+		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logs['logtime']);
+		$countdellogs++;
+	}	
 	if ($countdellogs>0)
 		backwpup_joblog($logtime,$countdellogs.' '.__('old logs deleted!!!','backwpup'));
 }

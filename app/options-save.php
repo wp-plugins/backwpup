@@ -13,6 +13,7 @@ case 'delete': //Delete Job
 				wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 			}
 		}
+		$backwpup_message=str_replace('%1',implode(", ",$_POST['jobs']),__('Jobs %1 deleted', 'backwpup'));
 	} else {
 		$jobid = (int) $_GET['jobid'];
 		check_admin_referer('delete-job_' . $jobid);			
@@ -20,6 +21,7 @@ case 'delete': //Delete Job
 		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 		}
+		$backwpup_message=str_replace('%1',$jobid,__('Job %1 deleted', 'backwpup'));
 	}
 	update_option('backwpup_jobs',$jobs);
 	$_REQUEST['action']='';
@@ -27,12 +29,15 @@ case 'delete': //Delete Job
 case 'delete-logs': //Delete Log
 	if (is_Array($_POST['logs'])) {
 		check_admin_referer('actions-logs');
+		$num=0;
 		foreach ($_POST['logs'] as $timestamp) {
 			$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
 			if (is_file($backupfile)) 
 				unlink($backupfile);
 			$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+			$num++;
 		}
+		$backwpup_message=$num.' '.__('Logs deleted', 'backwpup');
 	} else {
 		$timestamp = (int) $_GET['log'];
 		check_admin_referer('delete-log_' . $timestamp);
@@ -40,6 +45,7 @@ case 'delete-logs': //Delete Log
 		if (is_file($backupfile)) 
 			unlink($backupfile);
 		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+		$backwpup_message=__('Log deleted', 'backwpup');
 	}
 	$_REQUEST['action']='logs';
 	break;
@@ -55,7 +61,9 @@ case 'savecfg': //Save config form Setings page
 	$cfg['memorylimit']=$_POST['memorylimit'];
 	$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
-	update_option('backwpup',$cfg); //Save Settings
+	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
+	if (update_option('backwpup',$cfg))
+		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';
 	break;
 case 'copy': //Copy Job
@@ -71,12 +79,13 @@ case 'copy': //Copy Job
 	$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
 	$jobs[$newjobid]['activated']=false;
 	update_option('backwpup_jobs',$jobs);
+	$backwpup_message=__('Job copyed', 'backwpup');
 	$_REQUEST['action']='';
 	break;
 case 'download': //Download Backup
 	$log = (int) $_GET['log'];
 	check_admin_referer('download-backup_'.$log);
-	$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
+	$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$log);
 	if (is_file($backupfile)) {
 		header("Pragma: public");
 		header("Expires: 0");
@@ -134,7 +143,9 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
 	$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
 		
-	update_option('backwpup_jobs',$jobs); //Save Settings
+	if (update_option('backwpup_jobs',$jobs)) 
+		$backwpup_message=str_replace('%1',$jobid,__('Job %1 settings saved', 'backwpup'));
+	
 	if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 		wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 	}

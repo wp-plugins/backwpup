@@ -23,14 +23,9 @@ if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$
 } else {
 	$backupfile='';
 }
-$logonlytyps=array('OPTIMIZE','CHECK');
-if (in_array($jobs[$jobid]['type'],$logonlytyps)) {
-	$jobs[$jobid]['maxbackups']=20;
-}
 
 //Create Log
 $wpdb->insert( $wpdb->backwpup_logs, array( 'logtime' => $logtime, 'jobid' => $jobid, 'jobname' => $jobs[$jobid]['name'], 'type' => $jobs[$jobid]['type'], 'log' => '' ));
-
 
 if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
 	if (empty($cfg['maxexecutiontime']))
@@ -104,6 +99,4 @@ if (!empty($backupfile)) {
 	}
 	backwpup_joblog($logtime,__('Backup zip file save to:','backwpup').' '.$backupfile);
 }
-
-
 ?>

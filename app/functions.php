@@ -25,9 +25,11 @@
 	
 	//Options Page
 	function backwpup_options_page() {
-		global $wpdb;
+		global $wpdb,$backwpup_message;
 		if (!current_user_can(10)) 
 			wp_die('No rights');
+		if(!empty($backwpup_message)) 
+			echo '<div id="message" class="updated fade"><p><strong>'.$backwpup_message.'</strong></p></div>';
 		switch($_REQUEST['action']) {
 		case 'edit':
 			$jobs=get_option('backwpup_jobs');
@@ -65,7 +67,7 @@
 	
 	//Options Page
 	function backwpup_options_load() {
-		global $wpdb;
+		global $wpdb,$backwpup_message;
 		if (!current_user_can(10)) 
 			wp_die('No rights');
 		//Css for Admin Section
@@ -299,12 +301,12 @@
 	//Dashboard widget
 	function backwpup_dashboard_output() {
 		global $wpdb;
-		echo '<strong>'.__('Logs:','backwpup').'</strong><ul>';
+		echo '<strong>'.__('Logs:','backwpup').'</strong><br />';
 		$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC LIMIT 5", ARRAY_A);
 		$wpdb->flush();
 		if (is_array($logs)) { 
 			foreach ($logs as $logvalue) {
-				echo '<li><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'"><strong>'.date(get_option('date_format'),$logvalue['logtime']).' '.date(get_option('time_format'),$logvalue['logtime']).'</strong>: <i>';
+				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'">'.date(get_option('date_format'),$logvalue['logtime']).' '.date(get_option('time_format'),$logvalue['logtime']).': <i>';
 				if (empty($logvalue['jobname'])) 
 					backwpup_backup_types($logvalue['type'],true);
 				else
@@ -312,37 +314,35 @@
 				echo '</i>';
 				if($logvalue['error']>0 or $logvalue['warning']>0) { 
 					if ($logvalue['error']>0)
-						echo ' <strong><span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span></strong>'; 
+						echo ' <span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span>'; 
 					if ($logvalue['warning']>0)
-						echo ' <strong><span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span></strong>'; 
+						echo ' <span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span>'; 
 				} else { 
-					echo ' <strong><span style="color:green;">'.__('OK','backwpup').'</span></strong>';  
+					echo ' <span style="color:green;">'.__('OK','backwpup').'</span>';  
 				} 
-				echo '</a></li>';
+				echo '</a><br />';
 			}
 		} else {
-			echo '<li><i>'.__('none','backwpup').'</i></li>';
+			echo '<i>'.__('none','backwpup').'</i><br />';
 		}
-		echo "</ul>";
 		$jobs=get_option('backwpup_jobs');
-		echo '<strong>'.__('Scheduled Jobs:','backwpup').'</strong><ul>';
+		echo '<strong>'.__('Scheduled Jobs:','backwpup').'</strong><br />';
 		if (is_array($jobs)) { 
 			foreach ($jobs as $jobid => $jobvalue) {
 				if (wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-					echo '<li><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'"><strong>';
+					echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">';
 					if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
 						$runtime=time()-$jobvalue['starttime'];
 						echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 						echo date(get_option('date_format'),$time).' '.date(get_option('time_format'),$time);
 					}
-					echo '</strong>: <span>'.$jobvalue['name'].'</span></a></li>';
+					echo ': <span>'.$jobvalue['name'].'</span></a><br />';
 				}
 			}
 		} else {
-			echo '<li><i>'.__('none','backwpup').'</i></li>';
+			echo '<i>'.__('none','backwpup').'</i><br />';
 		}
-		echo "</ul>";
 	}
 	
 	//add dashboard widget

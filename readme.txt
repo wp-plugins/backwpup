@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron
 Requires at least: 2.8
 Tested up to: 2.8.2
-Stable tag: 0.6.3
+Stable tag: 0.6.4
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -49,7 +49,11 @@ You must import the Database Dump with Charaktercoding:latin1
 
 == Changelog ==
 = 0.6.4 =
-
+* New option to delete old logs
+* Backup fiele deletion separeted form logs deletion
+* make dashboard wiget smaller
+* added masseges
+* bug fixes
 
 = 0.6.3 =
 * use ftp_row for login and other commands

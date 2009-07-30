@@ -72,11 +72,12 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 				backwpup_joblog($logtime,__('Backup File transfered to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
 			else
 				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not tranfer backup to FTP server.','backwpup'));
-				
+			
+			unset($backupfilelist);			
 			if ($jobs[$jobid]['ftpmaxbackups']>0) { //Delete old backups
 				if ($filelist=ftp_nlist($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']))) {
 					foreach($filelist as $files) {
-						if (!in_array(basename($files),array('.','..')) and false !== strpos(basename($files),'backwpup_'.$jobid.'_'))
+						if ('backwpup_'.$jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$jobid.'_')) and ".zip" == substr(basename($files),-4))
 							$backupfilelist[]=basename($files);
 					}
 					if (sizeof($backupfilelist)>0) {

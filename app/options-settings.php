@@ -80,6 +80,13 @@ if (!empty($cfg['mailsendmail']))
 </td> 
 </tr>
 
+<tr valign="top">
+<th scope="row"><label for="maxlogs"><?PHP _e('Max. number of Logs','backwpup'); ?></label></th> 
+<td>
+<input name="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deletet first.','backwpup');?></span>
+</td> 
+</tr>
+
 <tr valign="top"> 
 <th scope="row"><label for="jobname"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
 <td>

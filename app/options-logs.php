@@ -100,6 +100,8 @@
 		<?PHP
 			if (!empty($logvalue['backupfile']) and is_file($logvalue['backupfile'])) {
 				echo backwpup_formatBytes(filesize($logvalue['backupfile']));
+			} elseif (!empty($logvalue['backupfile'])) {
+				_e('File not exists','backwpup');
 			} else {
 				_e('only Log','backwpup');
 			}
