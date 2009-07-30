@@ -87,4 +87,4 @@ You must import the Database Dump with Charaktercoding:latin1
 * removed log files. Log now stred in Database
 
 = 0.5.0 =
-* Inital rekease
+* Inital release
