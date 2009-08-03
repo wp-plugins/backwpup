@@ -1,4 +1,8 @@
-<?PHP
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 //Delete old Backupfiles
 if (!empty($jobs[$jobid]['maxbackups']) and !empty($jobs[$jobid]['backupdir']) and is_dir($jobs[$jobid]['backupdir'])) {
 	unset($backupfilelist);	

@@ -1,3 +1,8 @@
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+?>
 <div class="wrap">
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup Settings", "backwpup"); ?></h2>
@@ -14,8 +19,8 @@
 
 <table class="form-table">
 <tr valign="top"> 
-<th scope="row"><label for="jobname"><?PHP _e('Script Runime','backwpup'); ?></label></th> 
-<td>
+<th scope="row"><label for="runtime"><?PHP _e('Script Runime','backwpup'); ?></label></th> 
+<td id="runtime">
 <? 
 echo __('PHP.ini execution time:','backwpup').' '.ini_get('max_execution_time').' '.__('sec.','backwpup').'<br />'; 
 	
@@ -32,8 +37,8 @@ if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get(
 </tr> 
 
 <tr valign="top"> 
-<th scope="row"><label for="jobname"><?PHP _e('Max Memory Usage','backwpup'); ?></label></th> 
-<td>
+<th scope="row"><label for="memory"><?PHP _e('Max Memory Usage','backwpup'); ?></label></th> 
+<td id="memory">
 <? 
 echo __('PHP.ini Memory Limit:','backwpup').' '.ini_get('memory_limit').'<br />'; 
 	
@@ -52,8 +57,8 @@ if (!function_exists('memory_get_usage'))
 
 
 <tr valign="top">
-<th scope="row"><label for="mailaddress"><?PHP _e('Mail Send:','backwpup'); ?></label></th> 
-<td>
+<th scope="row"><label for="mailtype"><?PHP _e('Mail Send:','backwpup'); ?></label></th> 
+<td id="mailtype">
 <?PHP _e('Send mail method:','backwpup'); 
 echo '<select name="mailmethod">';
 echo '<option value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
@@ -83,14 +88,14 @@ if (!empty($cfg['mailsendmail']))
 <tr valign="top">
 <th scope="row"><label for="maxlogs"><?PHP _e('Max. number of Logs','backwpup'); ?></label></th> 
 <td>
-<input name="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deletet first.','backwpup');?></span>
+<input name="maxlogs" id="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deletet first.','backwpup');?></span>
 </td> 
 </tr>
 
 <tr valign="top"> 
-<th scope="row"><label for="jobname"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
+<th scope="row"><label for="disablewpcron"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
 <td>
-<input class="checkbox" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/>
+<input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/>
  <?PHP _e('Use Cron job of Hoster and disable WP_Cron','backwpup'); ?><br />
 <?PHP _e('You must set up a cron job that calls:','backwpup'); ?><br />
 <i> php -q <?PHP echo ABSPATH.'wp-cron.php'; ?></i><br /> 
@@ -104,3 +109,4 @@ if (!empty($cfg['mailsendmail']))
 <input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
 </p> 
 </form>
+</div>

@@ -1,4 +1,8 @@
-<?php
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 global $logtime;
 ignore_user_abort(true);
 // flush any buffers and send the headers

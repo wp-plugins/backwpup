@@ -1,4 +1,8 @@
-<?php
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !empty($jobs[$jobid]['ftppass'])) {
 	
 	function ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function

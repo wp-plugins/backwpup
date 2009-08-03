@@ -1,4 +1,7 @@
 <?PHP
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
 	
 	//Thems Option menu entry
 	function backwpup_menu_entry() {
@@ -14,7 +17,7 @@
 		$help .= ' | <a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>';
 		$help .= ' | <a href="http://danielhuesken.de/portfolio/backwpup" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>';
 		$help .= ' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin Home on WordPress.org', 'backwpup') . '</a>';
-		$help .= ' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>';
+		$help .= ' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=daniel%40huesken-net%2ede&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;currency_code=EUR&amp;lc=DE&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>';
 		$help .= "</div>\n";	
 		$help .= '<div class="metabox-prefs">';
 		$help .= __('Version:', 'backwpup').' '.BACKWPUP_VERSION.' | ';
@@ -35,7 +38,7 @@
 			$jobs=get_option('backwpup_jobs');
 		    $jobid = (int) $_REQUEST['jobid'];
 			check_admin_referer('edit-job');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-edit.php');
+			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-jobs.php');
 			break;
 		case 'logs':
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-logs.php');

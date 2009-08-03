@@ -1,3 +1,8 @@
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+?>
 <div class="wrap">
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup Restore Database", "backwpup"); ?></h2>
@@ -18,6 +23,5 @@
 <?php  _e('Comming Soon','backwpup'); ?>
 </td></tr>
 </table>
- 
-
 </form>
+</div>

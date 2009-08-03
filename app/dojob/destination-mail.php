@@ -1,4 +1,8 @@
-<?php
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 $sendmail=false;
 $errorcount=$wpdb->get_var("SELECT error FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
 if ($errorcount>0 and $jobs[$jobid]['mailerroronly'])

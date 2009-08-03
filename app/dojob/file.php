@@ -1,4 +1,8 @@
-<?PHP
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 	global $backwupu_exclude ,$backwpup_allfilezise, $backwpup_jobs;
 	$backwpup_jobs=$jobs[$jobid];
 	backwpup_joblog($logtime,__('Run file backup...','backwpup'));
@@ -19,6 +23,8 @@
 					if (false !== stripos($folder.'/'.$file,str_replace('\\','/',$exclusion)))
 						continue 2;
 				}
+				if (!$backwpup_jobs['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',ABSPATH)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))
+					continue;
 				if (!$backwpup_jobs['backupcontent'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)) and !is_dir($folder.'/'.$file))
 					continue;
 				if (!$backwpup_jobs['backupplugins'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)))

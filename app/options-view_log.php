@@ -1,3 +1,8 @@
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+?>
 <div class="wrap">
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup View Log", "backwpup"); ?></h2>
@@ -14,3 +19,4 @@
 echo $wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
 ?>
 </pre>
+</div>

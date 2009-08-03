@@ -1,6 +1,9 @@
 <?PHP 
-backwpup_joblog($logtime,__('Run Database Backup...','backwpup'));
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
 
+backwpup_joblog($logtime,__('Run Database Backup...','backwpup'));
 
 function backwpup_dump_table($table,$status,$file) {
 	global $wpdb,$logtime;

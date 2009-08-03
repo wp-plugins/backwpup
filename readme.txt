@@ -48,6 +48,10 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
+= 0.6.5 =
+* Prevent direct file loading
+* job woring in iframe
+
 = 0.6.4 =
 * New option to delete old logs
 * Backup fiele deletion separeted form logs deletion
@@ -87,4 +91,4 @@ You must import the Database Dump with Charaktercoding:latin1
 * removed log files. Log now stred in Database
 
 = 0.5.0 =
-* Inital release
+* Inital rekease

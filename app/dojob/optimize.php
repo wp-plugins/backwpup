@@ -1,4 +1,8 @@
-<?PHP
+<?PHP 
+// don't load directly 
+if ( !defined('ABSPATH') ) 
+	die('-1');
+
 //Optimize SQL Table
 backwpup_joblog($logtime,__('Run Database optimize...','backwpup'));
 $tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
