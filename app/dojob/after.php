@@ -55,7 +55,7 @@ $jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
 $jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
 $jobs[$jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid));
 update_option('backwpup_jobs',$jobs); //Save Settings
-backwpup_joblog($logtime,sprintf(__('Backup Excution time %1s sec.','backwpup'),$jobs[$jobid]['lastruntime']));
+backwpup_joblog($logtime,sprintf(__('Backup done in %1s sec.','backwpup'),$jobs[$jobid]['lastruntime']));
 //Write backupfile und worktime to log
 $wpdb->update( $wpdb->backwpup_logs, array( 'worktime' => $jobs[$jobid]['lastruntime'], 'backupfile' => mysql_real_escape_string($backupfile)), array( 'logtime' => $logtime ));
 ?>

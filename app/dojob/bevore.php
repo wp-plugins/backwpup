@@ -4,11 +4,6 @@ if ( !defined('ABSPATH') )
 	die('-1');
 
 global $logtime;
-ignore_user_abort(true);
-// flush any buffers and send the headers
-ob_start();
-while (@ob_end_flush());
-flush();
 
 define( 'PCLZIP_TEMPORARY_DIR', get_temp_dir().'backwpup/' );
 $cfg=get_option('backwpup');

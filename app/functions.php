@@ -75,7 +75,7 @@ if ( !defined('ABSPATH') )
 			wp_die('No rights');
 		//Css for Admin Section
 		wp_enqueue_style('BackWpup',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/css/options.css'),'',BACKWPUP_VERSION,'screen');
-		//wp_enqueue_script('BackWpupOptions',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/js/options.js'),array('jquery','utils','jquery-ui-core'),BACKWPUP_VERSION,true);
+		//wp_enqueue_script('BackWpupOptions',plugins_url('/'.BACKWPUP_PLUGIN_DIR.'/app/js/otions.js'),'',BACKWPUP_VERSION,true);
 		//For save Options
 		require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-save.php');
 	}
@@ -253,14 +253,20 @@ if ( !defined('ABSPATH') )
 	function backwpup_joblog($logtime,$entry) {
 		global $wpdb;
 		$errors=0;$warnings=0;
-		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup'))
+		$style="";
+		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup')) {
 			$errors=1;
-		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup'))
+			$style=' style="background-color:red;"';
+		}
+		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup')) {
 			$warnings=1;
+			$style=' style="background-color:yellow;"';
+		}
 		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
 		if (!defined('DOING_CRON'))
-			echo date('Y-m-d H:i:s').": ".$entry."\n";
+			echo "<nobr><span style=\"background-color:c3c3c3;\">".date('Y-m-d H:i:s').":</span> <span".$style.">".$entry."</span></nobr><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
 		flush();
+		ob_flush();
 	}
 	
 	//file size
