@@ -10,7 +10,7 @@ Backup and more of your WordPress Blog Database and Files
 
 == Description ==
 
-This Plugin is under heavy Development. Pleace test it and give feadback!!!.
+This Plugin is under heavy Development. Please test it and give feedback!!!.
 
 Backup and more your Blog.
 
@@ -18,7 +18,7 @@ Backup and more your Blog.
 * Optimize Database
 * Check\Repair Database
 * File Backup
-* Uses PCLZIP class of Wordpress
+* Uses PCLZIP class of WordPress
 * Store backup to Folder
 * Store backup to FTP Server
 * Send Log/Backup by eMail
@@ -34,14 +34,13 @@ I can give no WARRANTY to any backups...
 
 == Frequently Asked Questions ==
 
-= Where ist the Database dum on DB+File backup =
+= Where is the Database dump on DB+File backup =
 
 in the root folder of the zip Archive. <i>DBName</i>.sql
 
 = Import with phpMyAdmin =
 
 You must import the Database Dump with Charaktercoding:latin1
-
 
 == Screenshots ==
 
@@ -50,27 +49,27 @@ You must import the Database Dump with Charaktercoding:latin1
 == Changelog ==
 = 0.6.5 =
 * Prevent direct file loading
-* job woring in iframe
+* job working in iframe
 
 = 0.6.4 =
 * New option to delete old logs
-* Backup fiele deletion separeted form logs deletion
-* make dashboard wiget smaller
-* added masseges
+* Backup file deletion separated form logs deletion
+* make dashboard widget smaller
+* added massages
 * bug fixes
 
 = 0.6.3 =
 * use ftp_row for login and other commands
-* Add option to send only email on erros
-* Internal struckture changes
-* Add option to diesable WP-Cron and use Hoster cron
+* Add option to send only email on errors
+* Internal structure changes
+* Add option to disable WP-Cron and use Hoster cron
 * bug fixes
 
 = 0.6.2 =
 * Added setting for memory_limit if needed
-* Added setting for max. script execution time
-* Added job option to make max file size for sending via mail
-* bug fixes and littel improvments
+* Added setting for Max. Script execution time
+* Added job option to make Max file size for sending via mail
+* bug fixes and little improvements
 
 = 0.6.1 =
 * Added setting for Send Mail type.
@@ -81,14 +80,14 @@ You must import the Database Dump with Charaktercoding:latin1
 * Add Dashboard Widget
 * Add Database Check
 * Add Backup file transfer to FTP Server
-* Save log fieles in own database table
+* Save log files in own database table
 * Optimize Memory usage
 * Optimize File system access
 * DB dump with own function
 * fixed some Bugs
 
 = 0.5.5 =
-* removed log files. Log now stred in Database
+* removed log files. Log now stored in Database
 
 = 0.5.0 =
-* Inital rekease
+* Initial release

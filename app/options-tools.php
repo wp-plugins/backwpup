@@ -20,7 +20,7 @@ if ( !defined('ABSPATH') )
 
 <table class="form-table">
 <tr><td>
-<?php  _e('Comming Soon','backwpup'); ?>
+<?php  _e('Coming Soon','backwpup'); ?>
 </td></tr>
 </table>
 </form>

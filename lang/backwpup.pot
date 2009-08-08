@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/backwpup\n"
-"POT-Creation-Date: 2009-08-03 18:54+0000\n"
+"POT-Creation-Date: 2009-08-06 18:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,34 +31,34 @@ msgstr ""
 
 #: app/dojob/after.php:58
 #, php-format
-msgid "Backup Excution time %1s sec."
+msgid "Backup done in %1s sec."
 msgstr ""
 
-#: app/dojob/bevore.php:39 app/dojob/bevore.php:46
+#: app/dojob/bevore.php:34 app/dojob/bevore.php:41
 #: app/dojob/destination-mail.php:28 app/dojob/file.php:41
-#: app/dojob/file.php:44 app/functions.php:239 app/functions.php:258
+#: app/dojob/file.php:44 app/functions.php:239 app/functions.php:261
 msgid "WARNING:"
 msgstr ""
 
-#: app/dojob/bevore.php:39
+#: app/dojob/bevore.php:34
 #, php-format
 msgid "PHP Safe Mode is on!!! Max exec time is %1$s sec."
 msgstr ""
 
-#: app/dojob/bevore.php:46
+#: app/dojob/bevore.php:41
 #, php-format
 msgid ""
 "Memory limit set to %1$s ,beause can not use PHP: memory_get_usage() "
 "function."
 msgstr ""
 
-#: app/dojob/bevore.php:50
+#: app/dojob/bevore.php:45
 #, php-format
 msgid "Temp dir is %1$s."
 msgstr ""
 
-#: app/dojob/bevore.php:54 app/dojob/bevore.php:60 app/dojob/bevore.php:82
-#: app/dojob/bevore.php:88 app/dojob/check.php:23 app/dojob/check.php:28
+#: app/dojob/bevore.php:49 app/dojob/bevore.php:55 app/dojob/bevore.php:77
+#: app/dojob/bevore.php:83 app/dojob/check.php:23 app/dojob/check.php:28
 #: app/dojob/check.php:35 app/dojob/db.php:23 app/dojob/db.php:33
 #: app/dojob/db.php:80 app/dojob/db.php:128 app/dojob/db.php:131
 #: app/dojob/db.php:143 app/dojob/destination-ftp.php:27
@@ -67,27 +67,27 @@ msgstr ""
 #: app/dojob/destination-mail.php:30 app/dojob/destination-mail.php:38
 #: app/dojob/file.php:86 app/dojob/file.php:98 app/dojob/file.php:105
 #: app/dojob/optimize.php:23 app/dojob/optimize.php:29 app/functions.php:246
-#: app/functions.php:256
+#: app/functions.php:257
 msgid "ERROR:"
 msgstr ""
 
-#: app/dojob/bevore.php:54
+#: app/dojob/bevore.php:49
 msgid "Can not create Temp dir"
 msgstr ""
 
-#: app/dojob/bevore.php:60
+#: app/dojob/bevore.php:55
 msgid "Can not write to Temp dir"
 msgstr ""
 
-#: app/dojob/bevore.php:82
+#: app/dojob/bevore.php:77
 msgid "Can not create Backup dir"
 msgstr ""
 
-#: app/dojob/bevore.php:88
+#: app/dojob/bevore.php:83
 msgid "Can not write to Backup dir"
 msgstr ""
 
-#: app/dojob/bevore.php:104
+#: app/dojob/bevore.php:99
 msgid "Backup zip file save to:"
 msgstr ""
 
@@ -367,63 +367,63 @@ msgstr ""
 msgid "Can not increse Memory Limit is %1$s"
 msgstr ""
 
-#: app/functions.php:280
+#: app/functions.php:286
 msgid "Database &amp; File Backup"
 msgstr ""
 
-#: app/functions.php:283
+#: app/functions.php:289
 msgid "Database Backup"
 msgstr ""
 
-#: app/functions.php:286
+#: app/functions.php:292
 msgid "File Backup"
 msgstr ""
 
-#: app/functions.php:289
+#: app/functions.php:295
 msgid "Optimize Database Tabels"
 msgstr ""
 
-#: app/functions.php:292
+#: app/functions.php:298
 msgid "Check Database Tabels"
 msgstr ""
 
-#: app/functions.php:307
+#: app/functions.php:313
 msgid "Logs:"
 msgstr ""
 
-#: app/functions.php:312
+#: app/functions.php:318
 msgid "View Log"
 msgstr ""
 
-#: app/functions.php:320 app/options-logs.php:95
+#: app/functions.php:326 app/options-logs.php:95
 msgid "ERROR(S)"
 msgstr ""
 
-#: app/functions.php:322 app/options-logs.php:97
+#: app/functions.php:328 app/options-logs.php:97
 msgid "WARNING(S)"
 msgstr ""
 
-#: app/functions.php:324 app/options-logs.php:99
+#: app/functions.php:330 app/options-logs.php:99
 msgid "OK"
 msgstr ""
 
-#: app/functions.php:329 app/functions.php:347 app/options-settings.php:76
+#: app/functions.php:335 app/functions.php:353 app/options-settings.php:76
 msgid "none"
 msgstr ""
 
-#: app/functions.php:332
+#: app/functions.php:338
 msgid "Scheduled Jobs:"
 msgstr ""
 
-#: app/functions.php:336
+#: app/functions.php:342
 msgid "Edit Job"
 msgstr ""
 
-#: app/functions.php:339 app/options.php:83
+#: app/functions.php:345 app/options.php:83
 msgid "Running since:"
 msgstr ""
 
-#: app/functions.php:339 app/options-logs.php:117 app/options-settings.php:25
+#: app/functions.php:345 app/options-logs.php:117 app/options-settings.php:25
 #: app/options-settings.php:31 app/options.php:83 app/options.php:96
 msgid "sec."
 msgstr ""
@@ -924,3 +924,18 @@ msgstr ""
 msgid "Sorry, BackWPup works only under WordPress 2.8 or higher"
 msgstr ""
 
+#. Plugin URI of an extension
+msgid "http://danielhuesken.de/portfolio/backwpup/"
+msgstr ""
+
+#. Description of an extension
+msgid "Backup and more of your WordPress Blog Database and Files."
+msgstr ""
+
+#. Author of an extension
+msgid "Daniel H&uuml;sken"
+msgstr ""
+
+#. Author URI of an extension
+msgid "http://danielhuesken.de"
+msgstr ""

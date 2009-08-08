@@ -83,7 +83,7 @@ case 'copy': //Copy Job
 	$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
 	$jobs[$newjobid]['activated']=false;
 	update_option('backwpup_jobs',$jobs);
-	$backwpup_message=__('Job copyed', 'backwpup');
+	$backwpup_message=__('Job copied', 'backwpup');
 	$_REQUEST['action']='';
 	break;
 case 'download': //Download Backup

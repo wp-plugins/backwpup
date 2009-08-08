@@ -236,14 +236,14 @@ if ( !defined('ABSPATH') )
 			
 		if (memory_get_usage()+$memneed>$memory) { // increase Memory
 			if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
 				return false;
 			}
 			$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
 			if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
-				backwpup_joblog($logtime,sprintf(__('Memory incresed from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
+				backwpup_joblog($logtime,sprintf(__('Memory increased from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
 			else 
-				backwpup_joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increse Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
+				backwpup_joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
 		} 
 		return true;
 	}
@@ -292,10 +292,10 @@ if ( !defined('ABSPATH') )
 			$typename=__('File Backup','backwpup');
 			break;
 		case 'OPTIMIZE':
-			$typename=__('Optimize Database Tabels','backwpup');
+			$typename=__('Optimize Database Tables','backwpup');
 			break;
 		case 'CHECK':
-			$typename=__('Check Database Tabels','backwpup');
+			$typename=__('Check Database Tables','backwpup');
 			break;
 		default:
 			$typename=array('DB+FILE','DB','FILE','OPTIMIZE','CHECK');

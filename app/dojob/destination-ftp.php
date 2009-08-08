@@ -73,9 +73,9 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 			ftp_raw_helper($ftp_conn_id,'ALLO '.filesize($backupfile));
 				
 			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transvere file
-				backwpup_joblog($logtime,__('Backup File transfered to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
+				backwpup_joblog($logtime,__('Backup File transferred to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
 			else
-				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not tranfer backup to FTP server.','backwpup'));
+				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not transfer backup to FTP server.','backwpup'));
 			
 			unset($backupfilelist);			
 			if ($jobs[$jobid]['ftpmaxbackups']>0) { //Delete old backups

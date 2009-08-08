@@ -14,7 +14,7 @@ if (!empty($jobs[$jobid]['mailaddress']) and $sendmail) {
 	//maillig method
 	add_action('phpmailer_init', 'backwpup_use_mail_method');
 	global $phpmailer;
-	backwpup_joblog($logtime,__('Sendig mail...','backwpup'));
+	backwpup_joblog($logtime,__('Sending mail...','backwpup'));
 	if (is_file($backupfile) and !empty($jobs[$jobid]['mailefilesize'])) {
 		$maxfilezise=abs($jobs[$jobid]['mailefilesize']*1024*1024);
 		if (filesize($backupfile)<$maxfilezise) {
@@ -25,9 +25,9 @@ if (!empty($jobs[$jobid]['mailaddress']) and $sendmail) {
 			}
 		} else {
 			if (!empty($jobs[$jobid]['backupdir'])) {
-				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.__('Backup Archive too big for sendig by mail','backwpup'));		
+				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.__('Backup Archive too big for sending by mail','backwpup'));		
 			} else {
-				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Backup Archive too big for sendig by mail','backwpup'));	
+				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Backup Archive too big for sending by mail','backwpup'));	
 			}
 			unset($mailfiles);
 		}

@@ -19,7 +19,7 @@ if ( !defined('ABSPATH') )
 
 <table class="form-table">
 <tr valign="top"> 
-<th scope="row"><label for="runtime"><?PHP _e('Script Runime','backwpup'); ?></label></th> 
+<th scope="row"><label for="runtime"><?PHP _e('Script Runtime','backwpup'); ?></label></th> 
 <td id="runtime">
 <? 
 echo __('PHP.ini execution time:','backwpup').' '.ini_get('max_execution_time').' '.__('sec.','backwpup').'<br />'; 
@@ -28,7 +28,7 @@ if (empty($cfg['maxexecutiontime']));
 	$cfg['maxexecutiontime']=300;
 	
 if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') 
-	echo __('Set max ececution Time for Scripts:','backwpup').'<input name="maxexecutiontime" type="text" value="'.$cfg['maxexecutiontime'].'" class="small-text" />'.__('sec.','backwpup');
+	echo __('Set Max. execution Time for Scripts:','backwpup').'<input name="maxexecutiontime" type="text" value="'.$cfg['maxexecutiontime'].'" class="small-text" />'.__('sec.','backwpup');
  else 
 	echo '<input name="maxexecutiontime" type="hidden" value="'.$cfg['maxexecutiontime'].'"  />';
 
@@ -48,7 +48,7 @@ if (empty($cfg['memorylimit']));
 if (!function_exists('memory_get_usage')) 
 	echo __('Set Memory limit:','backwpup').'<input name="memorylimit" type="text" value="'.$cfg['memorylimit'].'" class="small-text" />';
  else 
-	echo '<span class="description">'.__('Memory will be automaticly increased!!!','backwpup').'</span><input name="memorylimit" type="hidden" value="'.$cfg['memorylimit'].'"  />';
+	echo '<span class="description">'.__('Memory will be automatically increased!!!','backwpup').'</span><input name="memorylimit" type="hidden" value="'.$cfg['memorylimit'].'"  />';
 
 ?>
 </td> 
@@ -86,9 +86,9 @@ if (!empty($cfg['mailsendmail']))
 </tr>
 
 <tr valign="top">
-<th scope="row"><label for="maxlogs"><?PHP _e('Max. number of Logs','backwpup'); ?></label></th> 
+<th scope="row"><label for="maxlogs"><?PHP _e('Max. Number of Logs','backwpup'); ?></label></th> 
 <td>
-<input name="maxlogs" id="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deletet first.','backwpup');?></span>
+<input name="maxlogs" id="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deleted first.','backwpup');?></span>
 </td> 
 </tr>
 

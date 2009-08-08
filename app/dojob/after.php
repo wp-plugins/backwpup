@@ -37,7 +37,7 @@ if (!empty($cfg['maxlogs'])) {
 }
 
 if (is_file($backupfile)) {
-	backwpup_joblog($logtime,sprintf(__('Backup zip filesize is %1s','backwpup'),backwpup_formatBytes(filesize($backupfile))));
+	backwpup_joblog($logtime,sprintf(__('Backup ZIP File size is %1s','backwpup'),backwpup_formatBytes(filesize($backupfile))));
 }
 
 if (is_file(get_temp_dir().'backwpup/'.DB_NAME.'.sql') ) { //delete sql temp file

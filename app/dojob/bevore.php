@@ -38,7 +38,7 @@ if (!function_exists('memory_get_usage')) {
 	if (empty($cfg['memorylimit']))
 		$cfg['memorylimit']='128M';
 	ini_set('memory_limit', $cfg['memorylimit']);
-	backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('Memory limit set to %1$s ,beause can not use PHP: memory_get_usage() function.','backwpup'),ini_get('memory_limit')));
+	backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function.','backwpup'),ini_get('memory_limit')));
 }
 
 //Look for and Crate Temp dir and secure
