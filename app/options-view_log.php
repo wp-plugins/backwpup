@@ -13,10 +13,24 @@ if ( !defined('ABSPATH') )
 <li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 <br class="clear" /> 
-
-<pre>
 <?PHP
-echo $wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime);
+$log=explode("\n",$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime));
+
 ?>
-</pre>
+<div style="font-family:monospace;font-size:12px;white-space:nowrap;">
+<?PHP
+foreach ($log as $line) {
+	if (empty($line)) {
+		echo "<br />\n";
+		continue;
+	}
+	$style='';
+	if (substr($line,21,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup')) 
+		$style=' style="background-color:red;color:black;"';
+	if (substr($line,21,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup')) 
+		$style=' style="background-color:yellow;color:black;"';
+	echo "<span style=\"background-color:gray;color:black;\">".substr($line,0,19).":</span> <span".$style.">".substr($line,21)."</span><br />\n";
+}
+?>
+</div>
 </div>

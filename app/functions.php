@@ -264,7 +264,7 @@ if ( !defined('ABSPATH') )
 		}
 		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
 		if (!defined('DOING_CRON'))
-			echo "<nobr><span style=\"background-color:c3c3c3;\">".date('Y-m-d H:i:s').":</span> <span".$style.">".$entry."</span></nobr><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
+			echo "<span style=\"background-color:c3c3c3;\">".date('Y-m-d H:i:s').":</span> <span".$style.">".$entry."</span><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
 		flush();
 		ob_flush();
 	}

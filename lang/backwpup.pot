@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/backwpup\n"
-"POT-Creation-Date: 2009-08-06 18:49+0000\n"
+"POT-Creation-Date: 2009-08-08 09:55+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 
 #: app/dojob/after.php:40
 #, php-format
-msgid "Backup zip filesize is %1s"
+msgid "Backup ZIP File size is %1s"
 msgstr ""
 
 #: app/dojob/after.php:58
@@ -48,7 +48,7 @@ msgstr ""
 #: app/dojob/bevore.php:41
 #, php-format
 msgid ""
-"Memory limit set to %1$s ,beause can not use PHP: memory_get_usage() "
+"Memory limit set to %1$s ,because can not use PHP: memory_get_usage() "
 "function."
 msgstr ""
 
@@ -196,11 +196,11 @@ msgid "FTP server System is:"
 msgstr ""
 
 #: app/dojob/destination-ftp.php:76
-msgid "Backup File transfered to FTP Server:"
+msgid "Backup File transferred to FTP Server:"
 msgstr ""
 
 #: app/dojob/destination-ftp.php:78
-msgid "Can not tranfer backup to FTP server."
+msgid "Can not transfer backup to FTP server."
 msgstr ""
 
 #: app/dojob/destination-ftp.php:94
@@ -216,7 +216,7 @@ msgid "Can not connect to FTP server:"
 msgstr ""
 
 #: app/dojob/destination-mail.php:17
-msgid "Sendig mail..."
+msgid "Sending mail..."
 msgstr ""
 
 #: app/dojob/destination-mail.php:23
@@ -224,7 +224,7 @@ msgid "Can not increase Memory for sending Backup Archive by Mail"
 msgstr ""
 
 #: app/dojob/destination-mail.php:28 app/dojob/destination-mail.php:30
-msgid "Backup Archive too big for sendig by mail"
+msgid "Backup Archive too big for sending by mail"
 msgstr ""
 
 #: app/dojob/destination-mail.php:35
@@ -354,17 +354,17 @@ msgstr ""
 
 #: app/functions.php:239
 #, php-format
-msgid "PHP Safe Mode is on!!! Can not increse Memory Limit is %1$s"
+msgid "PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s"
 msgstr ""
 
 #: app/functions.php:244
 #, php-format
-msgid "Memory incresed from %1$s to %2$s"
+msgid "Memory increased from %1$s to %2$s"
 msgstr ""
 
 #: app/functions.php:246
 #, php-format
-msgid "Can not increse Memory Limit is %1$s"
+msgid "Can not increase Memory Limit is %1$s"
 msgstr ""
 
 #: app/functions.php:286
@@ -380,11 +380,11 @@ msgid "File Backup"
 msgstr ""
 
 #: app/functions.php:295
-msgid "Optimize Database Tabels"
+msgid "Optimize Database Tables"
 msgstr ""
 
 #: app/functions.php:298
-msgid "Check Database Tabels"
+msgid "Check Database Tables"
 msgstr ""
 
 #: app/functions.php:313
@@ -444,11 +444,11 @@ msgstr ""
 msgid "Job Name"
 msgstr ""
 
-#: app/options-edit.php:55 app/options-jobs.php:42
+#: app/options-edit.php:55
 msgid "Exclude Databas Tabels:"
 msgstr ""
 
-#: app/options-edit.php:75 app/options-jobs.php:62
+#: app/options-edit.php:75
 msgid "Backup Blog directorys"
 msgstr ""
 
@@ -464,7 +464,7 @@ msgstr ""
 msgid "Blog Plugins"
 msgstr ""
 
-#: app/options-edit.php:82 app/options-jobs.php:69
+#: app/options-edit.php:82
 msgid "Include directorys"
 msgstr ""
 
@@ -472,7 +472,7 @@ msgstr ""
 msgid "Separate with ,. Full Path like:"
 msgstr ""
 
-#: app/options-edit.php:87 app/options-jobs.php:74
+#: app/options-edit.php:87
 msgid "Exclude files/directorys"
 msgstr ""
 
@@ -492,7 +492,7 @@ msgstr ""
 msgid "Min(s)"
 msgstr ""
 
-#: app/options-edit.php:106 app/options-jobs.php:93
+#: app/options-edit.php:106
 msgid "Houer(s)"
 msgstr ""
 
@@ -556,7 +556,7 @@ msgstr ""
 msgid "December"
 msgstr ""
 
-#: app/options-edit.php:142 app/options-jobs.php:129
+#: app/options-edit.php:142
 msgid "Activate scheduleing"
 msgstr ""
 
@@ -564,11 +564,11 @@ msgstr ""
 msgid "Save Backups to directory"
 msgstr ""
 
-#: app/options-edit.php:150 app/options-jobs.php:137
+#: app/options-edit.php:150
 msgid "Full Phath of Directory for Backup fiels"
 msgstr ""
 
-#: app/options-edit.php:153 app/options-jobs.php:140
+#: app/options-edit.php:153
 msgid "Max. number of Backup Files"
 msgstr ""
 
@@ -577,7 +577,7 @@ msgstr ""
 msgid "0=off"
 msgstr ""
 
-#: app/options-edit.php:155 app/options-jobs.php:142
+#: app/options-edit.php:155
 msgid "Oldest files will deletet first."
 msgstr ""
 
@@ -601,7 +601,7 @@ msgstr ""
 msgid "Ftp directory:"
 msgstr ""
 
-#: app/options-edit.php:167 app/options-jobs.php:154
+#: app/options-edit.php:167
 msgid "Max Backup fieles on ftp:"
 msgstr ""
 
@@ -609,7 +609,7 @@ msgstr ""
 msgid "Send Mail to"
 msgstr ""
 
-#: app/options-edit.php:179 app/options-jobs.php:166
+#: app/options-edit.php:179
 msgid "Max Filesize for Backups via mail:"
 msgstr ""
 
@@ -624,6 +624,50 @@ msgstr ""
 #: app/options-edit.php:188 app/options-jobs.php:175
 #: app/options-settings.php:109
 msgid "Save Changes"
+msgstr ""
+
+#: app/options-jobs.php:42
+msgid "Exclude Database Tables:"
+msgstr ""
+
+#: app/options-jobs.php:62
+msgid "Backup Blog Folders"
+msgstr ""
+
+#: app/options-jobs.php:69
+msgid "Include Folders"
+msgstr ""
+
+#: app/options-jobs.php:74
+msgid "Exclude Files/Folders"
+msgstr ""
+
+#: app/options-jobs.php:93
+msgid "Hour(s)"
+msgstr ""
+
+#: app/options-jobs.php:129
+msgid "Activate scheduling"
+msgstr ""
+
+#: app/options-jobs.php:137
+msgid "Full Path of Folder for Backup Files"
+msgstr ""
+
+#: app/options-jobs.php:140
+msgid "Max. Number of Backup Files"
+msgstr ""
+
+#: app/options-jobs.php:142
+msgid "Oldest files will deleted first."
+msgstr ""
+
+#: app/options-jobs.php:154
+msgid "Max Backup files on ftp:"
+msgstr ""
+
+#: app/options-jobs.php:166
+msgid "Max File Size for sending Backups with mail:"
 msgstr ""
 
 #: app/options-logs.php:8
@@ -747,7 +791,7 @@ msgid "Copy of"
 msgstr ""
 
 #: app/options-save.php:86
-msgid "Job copyed"
+msgid "Job copied"
 msgstr ""
 
 #: app/options-save.php:106
@@ -763,7 +807,7 @@ msgid "BackWPup Settings"
 msgstr ""
 
 #: app/options-settings.php:22
-msgid "Script Runime"
+msgid "Script Runtime"
 msgstr ""
 
 #: app/options-settings.php:25
@@ -771,7 +815,7 @@ msgid "PHP.ini execution time:"
 msgstr ""
 
 #: app/options-settings.php:31
-msgid "Set max ececution Time for Scripts:"
+msgid "Set Max. execution Time for Scripts:"
 msgstr ""
 
 #: app/options-settings.php:40
@@ -787,7 +831,7 @@ msgid "Set Memory limit:"
 msgstr ""
 
 #: app/options-settings.php:51
-msgid "Memory will be automaticly increased!!!"
+msgid "Memory will be automatically increased!!!"
 msgstr ""
 
 #: app/options-settings.php:60
@@ -831,11 +875,11 @@ msgid "SMTP Password:"
 msgstr ""
 
 #: app/options-settings.php:89
-msgid "Max. number of Logs"
+msgid "Max. Number of Logs"
 msgstr ""
 
 #: app/options-settings.php:91
-msgid "Oldest log will deletet first."
+msgid "Oldest log will deleted first."
 msgstr ""
 
 #: app/options-settings.php:96
@@ -859,7 +903,7 @@ msgid "BackWPup Restore Database"
 msgstr ""
 
 #: app/options-tools.php:23
-msgid "Comming Soon"
+msgid "Coming Soon"
 msgstr ""
 
 #: app/options-view_log.php:8

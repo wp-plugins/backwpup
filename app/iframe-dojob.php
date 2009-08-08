@@ -7,7 +7,7 @@ if ( !defined('ABSPATH') ) {
 <html>
     <head>
     </head>
-	<body style="font-family:Lucida Console,System;font-size:12px;">
+	<body style="font-family:monospace;font-size:12px;white-space:nowrap;">
 	<?PHP
 	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
 	ignore_user_abort(true);
