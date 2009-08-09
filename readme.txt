@@ -47,6 +47,8 @@ You must import the Database Dump with Charaktercoding:latin1
 1. Job Page
 
 == Changelog ==
+= 0.6.6 =
+
 = 0.6.5 =
 * Prevent direct file loading
 * job working in iframe
