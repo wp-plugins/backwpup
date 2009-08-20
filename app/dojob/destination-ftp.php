@@ -40,14 +40,14 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 		list($ftphost,$ftpport)=split(':',$jobs[$jobid]['ftphost'],2);
 
 	if (function_exists('ftp_ssl_connect')) { //make SSL FTP connection
-		$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport);
+		$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
 		if ($ftp_conn_id) {
 			backwpup_joblog($logtime,__('Connected by SSL to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);
 			$type = ftp_systype($ftp_conn_id);
 		}
 	}
 	if (!$type) { //make normal FTP conection if SSL not work
-		$ftp_conn_id = ftp_connect($ftphost,$ftpport);
+		$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
 		if ($ftp_conn_id) {
 			backwpup_joblog($logtime,__('Connected insecure to FTP server:','backwpup').' '.$jobs[$jobid]['ftphost']);
 			$type = ftp_systype($ftp_conn_id);
