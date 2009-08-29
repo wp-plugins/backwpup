@@ -72,6 +72,7 @@ if (is_array($jobs[$jobid]['dbexclude'])) {
 		if (in_array($tablevalue,$jobs[$jobid]['dbexclude']))
 			unset($tables[$tablekey]);
 	}
+	sort($tables);
 }
 
 if (sizeof($tables)>0) {
@@ -110,7 +111,7 @@ if (sizeof($tables)>0) {
 		//make table dumps
 		foreach($tables as $table) {
 			backwpup_joblog($logtime,__('Database table to Backup: ','backwpup').' '.$table);
-			backwpup_needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get mor memory if needed
+			backwpup_needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get more memory if needed
 			fwrite($file, backwpup_dump_table($table,$status[$table],$file));
 		}
 		//for better import with mysql client

@@ -122,7 +122,13 @@ case 'saveeditjob': //Save Job settings
 			$jobid=1;
 		}
 	}
-		
+	
+	if ($jobs[$jobid]['type']!=$_POST['type']) // set type to save
+		$savetype=$jobs[$jobid]['type'];
+	else
+		$savetype=$_POST['type'];
+	
+	//All types
 	$jobs[$jobid]['type']= $_POST['type'];
 	$jobs[$jobid]['name']= esc_html($_POST['name']);
 	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
@@ -130,34 +136,33 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
 	$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];
 	$jobs[$jobid]['scheduleinterval']=$_POST['scheduleintervaltype']*$_POST['scheduleintervalteimes'];
-	if (isset($_POST['backupdir']))
-		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
-	if (isset($_POST['maxbackups']))
-		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
 	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
-	if (isset($_POST['mailefilesize']))
-		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
-	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
-	if (isset($_POST['dbexclude']))
-		$jobs[$jobid]['dbexclude']=array_unique((array)$_POST['dbexclude']);
-	if (isset($_POST['fileexclude']))
+	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
+	
+	if ($savetype=='DB' or $savetype=='DB+FILE' or $savetype=='OPTIMIZE' or $savetype=='CHECK') {
+		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+	}
+	if ($savetype=='DB' or $savetype=='DB+FILE') {
+		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+	}
+	if ($savetype=='FILE' or $savetype=='DB+FILE') {
 		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
-	if (isset($_POST['dirinclude']))
 		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
-	$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
-	$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
-	$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
-	if (isset($_POST['ftphost']))
+		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
+		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
+		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+	}
+	if ($savetype=='DB' or $savetype=='DB+FILE' or $savetype=='FILE') {
+		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
+		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
+		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
 		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
-	if (isset($_POST['ftpuser']))
 		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
-	if (isset($_POST['ftppass']))
 		$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-	if (isset($_POST['ftpdir']))
 		$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes($_POST['ftpdir']));
-	if (isset($_POST['ftpmaxbackups']))
 		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
-		
+	}
+	
 	if (update_option('backwpup_jobs',$jobs)) 
 		$backwpup_message=str_replace('%1',$jobid,__('Job %1 settings saved', 'backwpup'));
 	
