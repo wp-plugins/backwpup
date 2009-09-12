@@ -44,7 +44,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
-= 0.6.6 =
+= 0.7.0 =
 * set ftp Connection timeout to 10 sec
 * fix bug for DB tables exclude
 * DB Backup in mySQL Client encoding now
