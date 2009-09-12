@@ -16,7 +16,7 @@ function backwpup_dump_table($table,$status,$file) {
     fwrite($file, "--\n\n");
     fwrite($file, "DROP TABLE IF EXISTS `" . $table .  "`;\n");            
 	fwrite($file, "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n");
-	fwrite($file, "/*!40101 SET character_set_client = latin1 */;\n");
+	fwrite($file, "/*!40101 SET character_set_client = utf8 */;\n");
     //Dump the table structure
     $result=mysql_query("SHOW CREATE TABLE `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
@@ -24,7 +24,7 @@ function backwpup_dump_table($table,$status,$file) {
 		return false;
 	}
 	$tablestruc=mysql_fetch_assoc($result);
-	fwrite($file, $tablestruc['Create Table']."\n");
+	fwrite($file, $tablestruc['Create Table'].";\n");
 	fwrite($file, "/*!40101 SET character_set_client = @saved_cs_client */;\n");
 	
     //take data of table
@@ -84,6 +84,7 @@ if (sizeof($tables)>0) {
 	}
 
 	if ($file = @fopen(get_temp_dir().'backwpup/'.DB_NAME.'.sql', 'w')) {
+		mysql_query("SET NAMES utf8");
 		fwrite($file, "-- ---------------------------------------------------------\n");
 		fwrite($file, "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n");
 		fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");
@@ -99,11 +100,11 @@ if (sizeof($tables)>0) {
 		fwrite($file, "-- ---------------------------------------------------------\n\n");
 		//for better import with mysql client
 		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n");
-		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */\n");
+		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n");
 		fwrite($file, "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n");
-		fwrite($file, "/*!40101 SET NAMES latin1 */;\n");
+		fwrite($file, "/*!40101 SET NAMES utf8 */;\n");
 		fwrite($file, "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n");
-		//fwrite($file, "/*!40103 SET TIME_ZONE='+00:00' */;\n");
+		fwrite($file, "/*!40103 SET TIME_ZONE='".mysql_result(mysql_query("SELECT @@time_zone"),0)."' */;\n");
 		fwrite($file, "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n");
 		fwrite($file, "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n");
 		fwrite($file, "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n");

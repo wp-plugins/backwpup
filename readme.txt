@@ -50,6 +50,8 @@ You must import the Database Dump with Charaktercoding:latin1
 = 0.6.6 =
 * set ftp Connection timeout to 10 sec
 * fix bug for DB tables exclude
+* DB Backup in utf8 now
+* Fixed missing ; in DB Backup
 
 = 0.6.5 =
 * Prevent direct file loading
