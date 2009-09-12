@@ -12,6 +12,7 @@ set_time_limit($cfg['maxexecutiontime']); //300 is most webserver time limit.
 //Vars
 $oldblogabspath="";
 $oldblogurl="";
+$numcommands="";
 $blogurl=trailingslashit(get_option('siteurl'));
 $blogabspath=trailingslashit(ABSPATH);
 
@@ -32,11 +33,7 @@ while (!feof($file)){
 	$line=str_replace("/*!40014","", $line);
 	$line=str_replace("/*!40111","", $line);
 	$line=str_replace("*/;",";", $line);
-	if (!empty($oldblogurl) and $oldblogurl!=$blogurl)
-		$line=str_replace($oldblogurl,$blogurl,$line);
-	if (!empty($oldblogabspath) and $oldblogabspath!=$blogabspath)
-		$line=str_replace($oldblogabspath,$blogabspath,$line);
-	
+
 	$command="";
 	
 	if (";"==substr($line,-1)) {
@@ -55,9 +52,17 @@ while (!feof($file)){
 }
 fclose($file);
 echo __('Executed Database Querys:','backwpup').' '.$numcommands.'<br />';
-echo __('Plugins Deactivated.','backwpup')."<br />";
+echo __('Make changes for Blogurl and ABSPATH if needed.','backwpup')."<br />";
+if (!empty($oldblogurl) and $oldblogurl!=$blogurl) {
+	mysql_query("UPDATE wp_options SET option_value = replace(option_value, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
+	mysql_query("UPDATE wp_posts SET guid = replace(guid, '".untrailingslashit($oldblogurl)."','".untrailingslashit($blogurl)."');");
+	mysql_query("UPDATE wp_posts SET post_content = replace(post_content, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
+}
+if (!empty($oldblogabspath) and $oldblogabspath!=$blogabspath) {
+	mysql_query("UPDATE wp_options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');");
+}
 echo __('Restore Done.','backwpup')."<br />";
-update_option("active_plugins","");
+
 
 
 ?>
