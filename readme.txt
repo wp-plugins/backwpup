@@ -38,9 +38,6 @@ I can give no WARRANTY to any backups...
 
 in the root folder of the zip Archive. <i>DBName</i>.sql
 
-= Import with phpMyAdmin =
-
-You must import the Database Dump with Charaktercoding:latin1
 
 == Screenshots ==
 
@@ -50,8 +47,9 @@ You must import the Database Dump with Charaktercoding:latin1
 = 0.6.6 =
 * set ftp Connection timeout to 10 sec
 * fix bug for DB tables exclude
-* DB Backup in utf8 now
+* DB Backup in mySQL Client encoding now
 * Fixed missing ; in DB Backup
+* Added tool DB Restore with automatic Blog Url/Path change
 
 = 0.6.5 =
 * Prevent direct file loading

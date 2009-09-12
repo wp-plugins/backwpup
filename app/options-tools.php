@@ -17,11 +17,36 @@ if ( !defined('ABSPATH') )
 <input type="hidden" name="action" value="tools" />
 <input type="hidden" name="page" value="BackWPup" />
 <?php  wp_nonce_field('backwpup-tools'); ?>
-
 <table class="form-table">
-<tr><td>
-<?php  _e('Coming Soon','backwpup'); ?>
-</td></tr>
+<tr valign="top"> 
+<th scope="row"><label for="sqlfile"><?PHP _e('Database restore','backwpup'); ?></label></th> 
+<td>
+<?PHP
+if ($_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile'])) {
+	$sqlfile=$_POST['sqlfile'];
+	require('tools/db_restore.php');
+} else {
+	if ( $dir = @opendir(ABSPATH)) {
+		$sqlfile="";
+		while (($file = readdir( $dir ) ) !== false ) {
+			if (strtolower(substr($file,-4))==".sql") {
+				$sqlfile=$file;
+				break;
+			}	
+		}
+		@closedir( $dir );
+		if (!empty($sqlfile)) {
+			$sqlfile=trailingslashit(ABSPATH).$sqlfile;
+		}
+	}
+	?>
+	<input type="text" name="sqlfile" id="sqlfile" value="<?PHP echo $sqlfile;?>" class="regular-text" />
+	<input type="submit" name="dbrestore" class="button" value="<?php _e('Restore', 'backwpup'); ?>" />
+	<?PHP
+}
+?>
+</td> 
+</tr> 
 </table>
 </form>
 </div>

@@ -16,11 +16,11 @@ function backwpup_dump_table($table,$status,$file) {
     fwrite($file, "--\n\n");
     fwrite($file, "DROP TABLE IF EXISTS `" . $table .  "`;\n");            
 	fwrite($file, "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n");
-	fwrite($file, "/*!40101 SET character_set_client = utf8 */;\n");
+	fwrite($file, "/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n");
     //Dump the table structure
     $result=mysql_query("SHOW CREATE TABLE `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
-		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SHOW CREATE TABLE `".$table."`"));
 		return false;
 	}
 	$tablestruc=mysql_fetch_assoc($result);
@@ -30,7 +30,7 @@ function backwpup_dump_table($table,$status,$file) {
     //take data of table
 	$result=mysql_query("SELECT * FROM `".$table."`");
 	if ($sqlerr=mysql_error($wpdb->dbh)) {
-		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SELECT * FROM `".$table."`"));
 		return false;
 	}
 	
@@ -78,13 +78,12 @@ if (is_array($jobs[$jobid]['dbexclude'])) {
 if (sizeof($tables)>0) {
     $result=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A); //get table status
 	if ($sqlerr=mysql_error($wpdb->dbh)) 
-		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, $sqlerr->last_query));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SHOW TABLE STATUS FROM `".DB_NAME."`;"));
 	foreach($result as $statusdata) {
 		$status[$statusdata['Name']]=$statusdata;
 	}
 
 	if ($file = @fopen(get_temp_dir().'backwpup/'.DB_NAME.'.sql', 'w')) {
-		mysql_query("SET NAMES utf8");
 		fwrite($file, "-- ---------------------------------------------------------\n");
 		fwrite($file, "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n");
 		fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");
@@ -102,7 +101,7 @@ if (sizeof($tables)>0) {
 		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n");
 		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n");
 		fwrite($file, "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n");
-		fwrite($file, "/*!40101 SET NAMES utf8 */;\n");
+		fwrite($file, "/*!40101 SET NAMES '".mysql_client_encoding()."' */;\n");
 		fwrite($file, "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n");
 		fwrite($file, "/*!40103 SET TIME_ZONE='".mysql_result(mysql_query("SELECT @@time_zone"),0)."' */;\n");
 		fwrite($file, "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n");
