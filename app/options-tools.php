@@ -44,7 +44,7 @@ if ($_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile']
 		<input type="submit" name="dbrestore" class="button" value="<?php _e('Restore', 'backwpup'); ?>" />
 		<?PHP
 	} else {
-		echo __('Copy SQL file to restoe in Blog root dir to use restore.', 'backwpup')."<br />";
+		echo __('Copy SQL file to restore in the Blog root dir to use restore.', 'backwpup')."<br />";
 	}
 }
 ?>
