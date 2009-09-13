@@ -94,6 +94,7 @@ if (sizeof($tables)>0) {
 		else 
 			fwrite($file, "-- Blog URL: ".trailingslashit(get_option('siteurl'))."\n");
 		fwrite($file, "-- Blog ABSPATH: ".trailingslashit(ABSPATH)."\n");
+		fwrite($file, "-- Table Prefix: ".$wpdb->prefix."\n");
 		fwrite($file, "-- Database Name: ".DB_NAME."\n");
 		fwrite($file, "-- Dump on: ".date('Y-m-d H:i:s')."\n");
 		fwrite($file, "-- ---------------------------------------------------------\n\n");

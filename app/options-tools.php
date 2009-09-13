@@ -21,6 +21,7 @@ if ( !defined('ABSPATH') )
 <tr valign="top"> 
 <th scope="row"><label for="sqlfile"><?PHP _e('Database restore','backwpup'); ?></label></th> 
 <td>
+
 <?PHP
 if ($_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile'])) {
 	$sqlfile=$_POST['sqlfile'];
@@ -35,14 +36,16 @@ if ($_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile']
 			}	
 		}
 		@closedir( $dir );
-		if (!empty($sqlfile)) {
-			$sqlfile=trailingslashit(ABSPATH).$sqlfile;
-		}
 	}
-	?>
-	<input type="text" name="sqlfile" id="sqlfile" value="<?PHP echo $sqlfile;?>" class="regular-text" />
-	<input type="submit" name="dbrestore" class="button" value="<?php _e('Restore', 'backwpup'); ?>" />
-	<?PHP
+	if (!empty($sqlfile)) {
+		echo __('SQL File to restore:','backwpup').' '.trailingslashit(ABSPATH).$sqlfile."<br />";
+		?>
+		<input type="hidden" name="sqlfile" id="sqlfile" value="<?PHP echo trailingslashit(ABSPATH).$sqlfile;?>" class="regular-text" />
+		<input type="submit" name="dbrestore" class="button" value="<?php _e('Restore', 'backwpup'); ?>" />
+		<?PHP
+	} else {
+		echo __('Copy SQL file to restoe in Blog root dir to use restore.', 'backwpup')."<br />";
+	}
 }
 ?>
 </td> 
