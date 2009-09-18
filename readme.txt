@@ -46,6 +46,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 == Changelog ==
 = 0.7.1 =
 * FTP Conection test changes
+* no Errors in LOog for FTP ALLO command.
 
 
 = 0.7.0 =

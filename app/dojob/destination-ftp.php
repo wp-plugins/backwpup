@@ -27,7 +27,7 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('FTP Server reply:','backwpup').' '.$returnline);
 				return false;
 			} else {
-				backwpup_joblog($logtime,__('FTP Server answer:','backwpup').' '.$returnline);
+				backwpup_joblog($logtime,__('FTP Server reply:','backwpup').' '.$returnline);
 				return $return;
 			}
 		}
@@ -53,8 +53,7 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 	}
 	
 	if ($ftp_conn_id) {
-		backwpup_joblog($logtime,__('FTP server System is:','backwpup').' '.ftp_systype($ftp_conn_id));
-		
+
 		//FTP Login
 		$loginok=false;
 		if (ftp_raw_helper($ftp_conn_id,'USER '.$jobs[$jobid]['ftpuser'])) {
@@ -65,10 +64,14 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 
 		//if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
 		if ($loginok) {
+			//SYSTYPE
+			ftp_raw_helper($ftp_conn_id,'SYST');
 			//PASV
 			ftp_raw_helper($ftp_conn_id,'PASV');
-			//ALLO
-			ftp_raw_helper($ftp_conn_id,'ALLO '.filesize($backupfile));
+			//ALLO show no erros in log if do not work
+			backwpup_joblog($logtime,__('FTP Client command:','backwpup').' ALLO');
+			ftp_alloc($ftp_conn_id,filesize($backupfile),$result);
+			backwpup_joblog($logtime,__('FTP Server reply:','backwpup').' '.$result);
 				
 			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transvere file
 				backwpup_joblog($logtime,__('Backup File transferred to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
