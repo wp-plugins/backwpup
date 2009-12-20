@@ -100,29 +100,29 @@ if (empty($jobs[$jobid]['scheduletime']))
 
 echo '<select name="schedulehour">';
 for ($i=0;$i<=23;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date('G',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
+	echo '<option value="'.$i.'"'.selected($i,date_i18n('G',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select>:';
 echo '<select name="scheduleminute">';
 for ($i=0;$i<=59;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date('i',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
+	echo '<option value="'.$i.'"'.selected($i,date_i18n('i',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select><br />';
 _e('Start Date:', 'backwpup'); 
 echo '<select name="scheduleday">';
 for ($i=1;$i<=31;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date('j',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
+	echo '<option value="'.$i.'"'.selected($i,date_i18n('j',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select>.';
 $month=array('1'=>__('January'),'2'=>__('February'),'3'=>__('March'),'4'=>__('April'),'5'=>__('May'),'6'=>__('June'),'7'=>__('July'),'8'=>__('August'),'9'=>__('September'),'10'=>__('October'),'11'=>__('November'),'12'=>__('December'));
 echo '<select name="schedulemonth">';
 for ($i=1;$i<=12;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date('n',$jobs[$jobid]['scheduletime']),false).'>'.$month[$i].'</option>';
+	echo '<option value="'.$i.'"'.selected($i,date_i18n('n',$jobs[$jobid]['scheduletime']),false).'>'.$month[$i].'</option>';
 }
 echo '</select>.';
 echo '<select name="scheduleyear">';
-for ($i=date('Y')-1;$i<=date('Y')+3;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date('Y',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
+for ($i=date_i18n('Y')-1;$i<=date_i18n('Y')+3;$i++) {
+	echo '<option value="'.$i.'"'.selected($i,date_i18n('Y',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select><br />';
 ?>

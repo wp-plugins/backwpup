@@ -96,7 +96,7 @@ if (sizeof($tables)>0) {
 		fwrite($file, "-- Blog ABSPATH: ".trailingslashit(ABSPATH)."\n");
 		fwrite($file, "-- Table Prefix: ".$wpdb->prefix."\n");
 		fwrite($file, "-- Database Name: ".DB_NAME."\n");
-		fwrite($file, "-- Dump on: ".date('Y-m-d H:i:s')."\n");
+		fwrite($file, "-- Dump on: ".date_i18n('Y-m-d H:i.s')."\n");
 		fwrite($file, "-- ---------------------------------------------------------\n\n");
 		//for better import with mysql client
 		fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n");
@@ -137,7 +137,7 @@ if (sizeof($tables)>0) {
 backwpup_joblog($logtime,__('Database backup done!','backwpup'));
 
 if ($jobs[$jobid]['type']=='DB' and is_file(get_temp_dir().'backwpup/'.DB_NAME.'.sql')) {
-	backwpup_needfreememory(8388608); //8MB free memory for zip
+	backwpup_needfreememory(10485760); //10MB free memory for zip
 	backwpup_joblog($logtime,__('Database file size:','backwpup').' '.backwpup_formatBytes(filesize(get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
 	backwpup_joblog($logtime,__('Create Zip file from dump...','backwpup'));
 	$zipbackupfile = new PclZip($backupfile);

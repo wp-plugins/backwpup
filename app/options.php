@@ -91,7 +91,7 @@ if ( !defined('ABSPATH') )
 		<td class="column-last">
 		<?PHP
 			if ($jobvalue['lastrun']) {
-				echo date(get_option('date_format'),$jobvalue['lastrun']); ?><br /><?PHP echo date(get_option('time_format'),$jobvalue['lastrun']); 
+				echo date_i18n(get_option('date_format'),$jobvalue['lastrun']); ?><br /><?PHP echo date_i18n(get_option('time_format'),$jobvalue['lastrun']); 
 				if (isset($jobvalue['lastruntime']))
 					echo '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup');
 			} else {

@@ -32,7 +32,7 @@ if (!empty($jobs[$jobid]['mailaddress']) and $sendmail) {
 			unset($mailfiles);
 		}
 	}
-	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.date('Y-m-d H:i',$logtime).': '.$jobs[$jobid]['name'] ,$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
+	if (wp_mail($jobs[$jobid]['mailaddress'],__('BackWPup Job:','backwpup').' '.date_i18n('Y-m-d H:i',$logtime).': '.$jobs[$jobid]['name'] ,$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime),'',$mailfiles)) {
 		backwpup_joblog($logtime,__('Mail send!!!','backwpup'));
 	} else {
 		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo);

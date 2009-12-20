@@ -78,7 +78,7 @@ if ( !defined('ABSPATH') )
 					if (is_file($logvalue['backupfile']))
 						$name=basename($logvalue['backupfile']);
 					?>
-					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date(get_option('date_format'),$logvalue['logtime']); ?> <?PHP echo date(get_option('time_format'),$logvalue['logtime']); ?><?php if (!empty($logvalue['jobname'])) echo ': <i>'.$logvalue['jobname'].'</i>';?></a></strong>
+					<strong><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log'); ?>" title="<?PHP _e('View log','backwpup'); ?>"><?PHP echo date_i18n(get_option('date_format'),$logvalue['logtime']); ?> <?PHP echo date_i18n(get_option('time_format'),$logvalue['logtime']); ?><?php if (!empty($logvalue['jobname'])) echo ': <i>'.$logvalue['jobname'].'</i>';?></a></strong>
 					<div class="row-actions">
 						<span class="view"><a href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log'); ?>"><?PHP _e('View','backwpup'); ?></a></span>
 						<span class="delete"> | <a class="submitdelete" href="<?PHP echo wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$logvalue['logtime'], 'delete-log_'.$logvalue['logtime']); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Log and Backupfile. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) ?>') ){return true;}return false;"><?PHP _e('Delete','backwpup'); ?></a></span>

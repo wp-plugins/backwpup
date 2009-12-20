@@ -56,24 +56,50 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 
 		//FTP Login
 		$loginok=false;
-		if (ftp_raw_helper($ftp_conn_id,'USER '.$jobs[$jobid]['ftpuser'])) {
-			if (ftp_raw_helper($ftp_conn_id,'PASS '.base64_decode($jobs[$jobid]['ftppass']))) {
+		
+		if (@ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], base64_decode($jobs[$jobid]['ftppass']))) {
+				backwpup_joblog($logtime,__('FTP Server Completion reply:','backwpup').' 230 User '.$jobs[$jobid]['ftpuser'].' logged in.');
 				$loginok=true;
+		} else { //if PHP ftp login don't work use raw login
+			if (ftp_raw_helper($ftp_conn_id,'USER '.$jobs[$jobid]['ftpuser'])) {
+				if (ftp_raw_helper($ftp_conn_id,'PASS '.base64_decode($jobs[$jobid]['ftppass']))) {
+					$loginok=true;
+				}
 			}
 		}
-
+		
 		//if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
 		if ($loginok) {
 			//SYSTYPE
 			ftp_raw_helper($ftp_conn_id,'SYST');
 			//PASV
-			ftp_raw_helper($ftp_conn_id,'PASV');
+			backwpup_joblog($logtime,__('FTP Client command:','backwpup').' PASV');
+			if (ftp_pasv($ftp_conn_id, true))
+				backwpup_joblog($logtime,__('Server Completion reply: 227 Entering Passive Mode','backwpup').' '.$result);
+			else 
+				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.__('FTP Server reply:','backwpup').' '.__('Can not Entering Passive Mode','backwpup'));
 			//ALLO show no erros in log if do not work
 			backwpup_joblog($logtime,__('FTP Client command:','backwpup').' ALLO');
 			ftp_alloc($ftp_conn_id,filesize($backupfile),$result);
 			backwpup_joblog($logtime,__('FTP Server reply:','backwpup').' '.$result);
-				
-			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transvere file
+			
+			//test ftp dir and create it f not exists
+			$ftpdirs=split("/", untrailingslashit($jobs[$jobid]['ftpdir']));
+			foreach ($ftpdirs as $ftpdir) {
+				if (empty($ftpdir))
+					continue;
+				if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
+					backwpup_joblog($logtime,__('WARNING:','backwpup').' "'.$ftpdir.'" '.__('FTP Dir on Server not exists!','backwpup'));
+					if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
+						backwpup_joblog($logtime,'"'.$ftpdir.'" '.__('FTP Dir created!','backwpup'));
+						ftp_chdir($ftp_conn_id, $ftpdir);
+					} else {
+						backwpup_joblog($logtime,__('ERROR:','backwpup').' "'.$ftpdir.'" '.__('FTP Dir on Server can not created!','backwpup'));
+					}
+				}
+			}
+			
+			if (ftp_put($ftp_conn_id, trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile), $backupfile, FTP_BINARY))  //transfere file
 				backwpup_joblog($logtime,__('Backup File transferred to FTP Server:','backwpup').' '.trailingslashit($jobs[$jobid]['ftpdir']).basename($backupfile));
 			else
 				backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not transfer backup to FTP server.','backwpup'));

@@ -15,9 +15,9 @@ $jobs[$jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$
 update_option('backwpup_jobs',$jobs); //Save Settings
 if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$jobid]['type']=='DB') {
 	if (!empty($jobs[$jobid]['backupdir'])) {
-		$backupfile=$jobs[$jobid]['backupdir'].'/backwpup_'.$jobid.'_'.date('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
+		$backupfile=$jobs[$jobid]['backupdir'].'/backwpup_'.$jobid.'_'.date_i18n('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
 	} else {
-		$backupfile=get_temp_dir().'backwpup/backwpup_'.$jobid.'_'.date('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
+		$backupfile=get_temp_dir().'backwpup/backwpup_'.$jobid.'_'.date_i18n('Y-m-d_H-i-s',$jobs[$jobid]['starttime']).'.zip';
 	}
 } else {
 	$backupfile='';

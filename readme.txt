@@ -3,8 +3,8 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, cron
 Requires at least: 2.8
-Tested up to: 2.8.4
-Stable tag: 0.7.0
+Tested up to: 2.9.0
+Stable tag: 0.7.2
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -44,10 +44,14 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
+= 0.7.2 =
+* make FTP any more robust
+* increased memory for Zip Files
+* make date with date_i18n
+
 = 0.7.1 =
 * FTP Conection test changes
-* no Errors in LOog for FTP ALLO command.
-
+* no Errors in Log for FTP ALLO command.
 
 = 0.7.0 =
 * set ftp Connection timeout to 10 sec

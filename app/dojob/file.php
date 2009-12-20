@@ -91,7 +91,7 @@ if ( !defined('ABSPATH') )
 	
 	//Create Zip File
 	if (!empty($filelist)) {
-		backwpup_needfreememory(8388608); //8MB free memory for zip
+		backwpup_needfreememory(10485760); //10MB free memory for zip
 		backwpup_joblog($logtime,__('Create Backup Zip file...','backwpup'));
 		$zipbackupfile = new PclZip($backupfile);
 		if (0==$zipbackupfile -> create($filelist,PCLZIP_OPT_REMOVE_PATH,str_replace('\\','/',ABSPATH),PCLZIP_OPT_ADD_TEMP_FILE_ON)) {

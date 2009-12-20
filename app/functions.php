@@ -262,9 +262,9 @@ if ( !defined('ABSPATH') )
 			$warnings=1;
 			$style=' style="background-color:yellow;"';
 		}
-		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date('Y-m-d H:i:s').": ".$entry."\n")."') WHERE logtime=".$logtime);
+		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date_i18n('Y-m-d H:i.s').": ".$entry."\n")."') WHERE logtime=".$logtime);
 		if (!defined('DOING_CRON'))
-			echo "<span style=\"background-color:c3c3c3;\">".date('Y-m-d H:i:s').":</span> <span".$style.">".$entry."</span><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
+			echo "<span style=\"background-color:c3c3c3;\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$entry."</span><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
 		flush();
 		ob_flush();
 	}
@@ -315,7 +315,7 @@ if ( !defined('ABSPATH') )
 		$wpdb->flush();
 		if (is_array($logs)) { 
 			foreach ($logs as $logvalue) {
-				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'">'.date(get_option('date_format'),$logvalue['logtime']).' '.date(get_option('time_format'),$logvalue['logtime']).': <i>';
+				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logvalue['logtime']).' '.date_i18n(get_option('time_format'),$logvalue['logtime']).': <i>';
 				if (empty($logvalue['jobname'])) 
 					backwpup_backup_types($logvalue['type'],true);
 				else
@@ -344,7 +344,7 @@ if ( !defined('ABSPATH') )
 						$runtime=time()-$jobvalue['starttime'];
 						echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-						echo date(get_option('date_format'),$time).' '.date(get_option('time_format'),$time);
+						echo date_i18n(get_option('date_format'),$time).' '.date_i18n(get_option('time_format'),$time);
 					}
 					echo ': <span>'.$jobvalue['name'].'</span></a><br />';
 				}
