@@ -44,6 +44,8 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
+= 0.7.3 =
+
 = 0.7.2 =
 * make FTP any more robust
 * increased memory for Zip Files
