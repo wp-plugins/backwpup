@@ -103,7 +103,8 @@ if ( !defined('ABSPATH') )
 				$charset_collate .= " COLLATE $wpdb->collate";
 			}
 		}
-		$statements = array( 
+		//WP Function to add or Upgrade Dtatabse
+		dbDelta(
 			"CREATE TABLE ".$wpdb->backwpup_logs." (
 			logtime BIGINT NOT NULL,
 			jobid INT NOT NULL,
@@ -112,13 +113,12 @@ if ( !defined('ABSPATH') )
 			error TINYINT NOT NULL default '0',
 			warning TINYINT NOT NULL default '0',
 			worktime TINYINT NOT NULL default '0',
-			log LONGTEXT NOT NULL default '',
+			log LONGTEXT NOT NULL,
 			backupfile VARCHAR(255),
 			PRIMARY KEY (logtime)
-			)".$charset_collate,
+			)".$charset_collate
 		);
-		$sql = implode(';', $statements);
-		dbDelta($sql);
+
 		//add cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 

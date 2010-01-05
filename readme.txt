@@ -45,6 +45,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 
 == Changelog ==
 = 0.7.3 =
+* Litele changes on DB Table creation for logs
 
 = 0.7.2 =
 * make FTP any more robust
