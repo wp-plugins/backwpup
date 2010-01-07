@@ -75,7 +75,7 @@ if (!empty($jobs[$jobid]['ftphost']) and !empty($jobs[$jobid]['ftpuser']) and !e
 			//PASV
 			backwpup_joblog($logtime,__('FTP Client command:','backwpup').' PASV');
 			if (ftp_pasv($ftp_conn_id, true))
-				backwpup_joblog($logtime,__('Server Completion reply: 227 Entering Passive Mode','backwpup').' '.$result);
+				backwpup_joblog($logtime,__('Server Completion reply: 227 Entering Passive Mode','backwpup'));
 			else 
 				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.__('FTP Server reply:','backwpup').' '.__('Can not Entering Passive Mode','backwpup'));
 			//ALLO show no erros in log if do not work
