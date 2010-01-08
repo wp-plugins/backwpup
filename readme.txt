@@ -47,6 +47,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 = 0.7.3 =
 * Litele changes on DB Table creation for logs
 * Fiexed not working default setttings on settingspage
+* crate .htaccsses on Apache and index.html on other webserver
 
 = 0.7.2 =
 * make FTP any more robust

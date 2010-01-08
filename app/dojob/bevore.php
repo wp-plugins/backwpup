@@ -56,19 +56,21 @@ if (!is_writeable(get_temp_dir().'backwpup')) {
 		require_once('after.php');
 		return false;	
 }
-if (!is_file(get_temp_dir().'backwpup/.htaccess')) {
-	if($file = @fopen(get_temp_dir().'backwpup/.htaccess', 'w')) {
-		fwrite($file, "Order allow,deny\ndeny from all");
-		fclose($file);
+if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+	if (!is_file(get_temp_dir().'backwpup/.htaccess')) {
+		if($file = @fopen(get_temp_dir().'backwpup/.htaccess', 'w')) {
+			fwrite($file, "Order allow,deny\ndeny from all");
+			fclose($file);
+		}
+	}
+} else {
+	if (!is_file(get_temp_dir().'backwpup/index.html')) {
+		if($file = @fopen(get_temp_dir().'backwpup/index.html', 'w')) {
+			fwrite($file,"\n");
+			fclose($file);
+		} 
 	}
 }
-if (!is_file(get_temp_dir().'backwpup/index.html')) {
-	if($file = @fopen(get_temp_dir().'backwpup/index.html', 'w')) {
-		fwrite($file,"\n");
-		fclose($file);
-	} 
-}
-
 
 if (!empty($backupfile)) {
 	//Look for and Crate Backup dir and secure
@@ -84,17 +86,20 @@ if (!empty($backupfile)) {
 			require_once('after.php');
 			return false;	
 	}
-	if (!is_file($jobs[$jobid]['backupdir'].'/.htaccess')) {
-		if($file = fopen($jobs[$jobid]['backupdir'].'/.htaccess', 'w')) {
-			fwrite($file, "Order allow,deny\ndeny from all");
-			fclose($file);
+	if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+		if (!is_file($jobs[$jobid]['backupdir'].'/.htaccess')) {
+			if($file = fopen($jobs[$jobid]['backupdir'].'/.htaccess', 'w')) {
+				fwrite($file, "Order allow,deny\ndeny from all");
+				fclose($file);
+			}
 		}
-	}
-	if (!is_file($jobs[$jobid]['backupdir'].'/index.html')) {
-		if($file = fopen($jobs[$jobid]['backupdir'].'/index.html', 'w')) {
-			fwrite($file,"\n");
-			fclose($file);
-		} 
+	} else {
+		if (!is_file($jobs[$jobid]['backupdir'].'/index.html')) {
+			if($file = fopen($jobs[$jobid]['backupdir'].'/index.html', 'w')) {
+				fwrite($file,"\n");
+				fclose($file);
+			} 
+		}
 	}
 	backwpup_joblog($logtime,__('Backup zip file save to:','backwpup').' '.$backupfile);
 }
