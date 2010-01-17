@@ -15,7 +15,6 @@ if ( !defined('ABSPATH') )
 <br class="clear" /> 
 <?PHP
 $log=explode("\n",$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime));
-set_time_limit
 ?>
 <div style="font-family:monospace;font-size:12px;white-space:nowrap;">
 <?PHP
