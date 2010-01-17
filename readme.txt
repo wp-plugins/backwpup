@@ -48,6 +48,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * Litele changes on DB Table creation for logs
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver
+* fixed global for $wp_version
 
 = 0.7.2 =
 * make FTP any more robust
