@@ -82,7 +82,7 @@ if ( !defined('ABSPATH') )
 				$runtime=time()-$jobvalue['starttime'];
 				echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 			} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-				echo date(get_option('date_format'),$time); ?><br /><?PHP echo date(get_option('time_format'),$time);
+				echo date_i18n(get_option('date_format'),$time); ?><br /><?PHP echo date_i18n(get_option('time_format'),$time);
 			} else {
 				_e('Inactive','backwpup');
 			}		
