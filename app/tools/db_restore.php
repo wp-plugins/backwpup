@@ -5,9 +5,7 @@ if ( !defined('ABSPATH') )
 	
 ignore_user_abort(true);
 
-if (empty($cfg['maxexecutiontime']))
-	$cfg['maxexecutiontime']=300;
-set_time_limit($cfg['maxexecutiontime']); //300 is most webserver time limit.
+@set_time_limit(0); //300 is most webserver time limit.
 	
 //Vars
 $oldblogabspath="";

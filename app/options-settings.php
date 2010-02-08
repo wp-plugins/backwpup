@@ -18,23 +18,7 @@ if ( !defined('ABSPATH') )
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 
 <table class="form-table">
-<tr valign="top"> 
-<th scope="row"><label for="runtime"><?PHP _e('Script Runtime','backwpup'); ?></label></th> 
-<td id="runtime">
-<?php
-echo __('PHP.ini execution time:','backwpup').' '.ini_get('max_execution_time').' '.__('sec.','backwpup').'<br />'; 
-	
-if (empty($cfg['maxexecutiontime']))
-	$cfg['maxexecutiontime']=300;
-	
-if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') 
-	echo __('Set Max. execution Time for Scripts:','backwpup').'<input name="maxexecutiontime" type="text" value="'.$cfg['maxexecutiontime'].'" class="small-text" />'.__('sec.','backwpup');
- else 
-	echo '<input name="maxexecutiontime" type="hidden" value="'.$cfg['maxexecutiontime'].'"  />';
 
-?>
-</td> 
-</tr> 
 
 <tr valign="top"> 
 <th scope="row"><label for="memory"><?PHP _e('Max Memory Usage','backwpup'); ?></label></th> 

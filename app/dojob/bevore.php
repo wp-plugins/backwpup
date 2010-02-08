@@ -27,9 +27,7 @@ if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$
 $wpdb->insert( $wpdb->backwpup_logs, array( 'logtime' => $logtime, 'jobid' => $jobid, 'jobname' => $jobs[$jobid]['name'], 'type' => $jobs[$jobid]['type'], 'log' => '' ));
 
 if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
-	if (empty($cfg['maxexecutiontime']))
-		$cfg['maxexecutiontime']=300;
-	set_time_limit($cfg['maxexecutiontime']); //300 is most webserver time limit.
+	set_time_limit(0); //300 is most webserver time limit. 0= max time
 } else {
 	backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$s sec.','backwpup'),ini_get('max_execution_time')));
 }

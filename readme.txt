@@ -45,10 +45,12 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 
 == Changelog ==
 = 0.7.3 =
-* Litele changes on DB Table creation for logs
+* Littel changes on DB Table creation for logs
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver
 * fixed global for $wp_version
+* set max execution time to 0 for unlimeted
+* use WP function to generate options tables
 
 = 0.7.2 =
 * make FTP any more robust

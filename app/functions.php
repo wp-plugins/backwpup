@@ -8,6 +8,8 @@ if ( !defined('ABSPATH') )
 		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup','backwpup_options_page') ;
 		add_action('load-'.$hook, 'backwpup_options_load');
 		add_contextual_help($hook,backwpup_show_help());
+		register_column_headers('backwpup_options',array('cb'=>'<input type="checkbox" />','id'=>__('ID','backwpup'),'name'=>__('Name','backwpup'),'type'=>__('Type','backwpup'),'next'=>__('Next Run','backwpup'),'last'=>__('Last Run','backwpup')));
+		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'type'=>__('Type','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup'),'status'=>__('Status','backwpup'),'size'=>__('Size','backwpup'),'runtime'=>__('Runtime','backwpup')));
 	}	
 	
 	// Help too display

@@ -14,6 +14,7 @@ if ( !defined('ABSPATH') )
 </ul>
 <br class="clear" /> 
 <?PHP
+@set_time_limit(0);
 $log=explode("\n",$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime));
 ?>
 <div style="font-family:monospace;font-size:12px;white-space:nowrap;">
@@ -23,7 +24,6 @@ foreach ($log as $line) {
 		echo "<br />\n";
 		continue;
 	}
-	@set_time_limit(10);
 	$style='';
 	if (substr($line,21,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup')) 
 		$style=' style="background-color:red;color:black;"';
