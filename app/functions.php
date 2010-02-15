@@ -195,16 +195,19 @@ if ( !defined('ABSPATH') )
 			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			require_once('dojob/db.php');
 			require_once('dojob/file.php');
+			require_once('dojob/zipfiles.php');
 			require_once('dojob/destination-ftp.php');
 			break;
 		case 'DB':
 			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			require_once('dojob/db.php');
+			require_once('dojob/zipfiles.php');
 			require_once('dojob/destination-ftp.php');
 			break;
 		case 'FILE':
 			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			require_once('dojob/file.php');
+			require_once('dojob/zipfiles.php');
 			require_once('dojob/destination-ftp.php');
 			break;
 		case 'OPTIMIZE':

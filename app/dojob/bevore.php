@@ -3,9 +3,11 @@
 if ( !defined('ABSPATH') ) 
 	die('-1');
 
-global $logtime;
+global $logtime, $backwpup_allfilezise, $backwpup_fielstobackup;
 
 define( 'PCLZIP_TEMPORARY_DIR', get_temp_dir().'backwpup/' );
+$backwpup_fielstobackup=array();
+$backwpup_allfilezise=0;
 $cfg=get_option('backwpup');
 $jobs=get_option('backwpup_jobs');
 $logtime=time();

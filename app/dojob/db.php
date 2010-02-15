@@ -3,7 +3,7 @@
 if ( !defined('ABSPATH') ) 
 	die('-1');
 
-backwpup_joblog($logtime,__('Run Database Backup...','backwpup'));
+backwpup_joblog($logtime,__('Run Database Dump to file...','backwpup'));
 
 function backwpup_dump_table($table,$status,$file) {
 	global $wpdb,$logtime;
@@ -111,7 +111,7 @@ if (sizeof($tables)>0) {
 		fwrite($file, "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n");
 		//make table dumps
 		foreach($tables as $table) {
-			backwpup_joblog($logtime,__('Database table to Backup: ','backwpup').' '.$table);
+			backwpup_joblog($logtime,__('Database table to Dump: ','backwpup').' '.$table);
 			backwpup_needfreememory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get more memory if needed
 			fwrite($file, backwpup_dump_table($table,$status[$table],$file));
 		}
@@ -127,26 +127,18 @@ if (sizeof($tables)>0) {
 		fwrite($file, "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n");
 		fclose($file);
 	} else {
-		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Database Backup file','backwpup'));
+		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Can not create Database Dump file','backwpup'));
 	}
 } else {
-	backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('No Tables to Backup','backwpup'));
+	backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('No Tables to Dump','backwpup'));
 }
 
-
-backwpup_joblog($logtime,__('Database backup done!','backwpup'));
-
-if ($jobs[$jobid]['type']=='DB' and is_file(get_temp_dir().'backwpup/'.DB_NAME.'.sql')) {
-	backwpup_needfreememory(10485760); //10MB free memory for zip
-	backwpup_joblog($logtime,__('Database file size:','backwpup').' '.backwpup_formatBytes(filesize(get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
-	backwpup_joblog($logtime,__('Create Zip file from dump...','backwpup'));
-	$zipbackupfile = new PclZip($backupfile);
-	if (0==$zipbackupfile -> create(get_temp_dir().'backwpup/'.DB_NAME.'.sql',PCLZIP_OPT_REMOVE_ALL_PATH,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Database Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true));
-		$joberror=true;
-	} 
-	backwpup_joblog($logtime,__('Zip file created...','backwpup'));
-}
+backwpup_joblog($logtime,__('Database Dump done!','backwpup'));
+//add database file to backupfiles
+backwpup_joblog($logtime,__('Add Database Dump to Backup:','backwpup').' '.DB_NAME.'.sql '.backwpup_formatBytes(filesize(get_temp_dir().'backwpup/'.DB_NAME.'.sql')));
+$backwpup_allfilezise=$backwpup_allfilezise+filesize(get_temp_dir().'backwpup/'.DB_NAME.'.sql');
+$backwpup_fielstobackup[]=array(PCLZIP_ATT_FILE_NAME=>get_temp_dir().'backwpup/'.DB_NAME.'.sql',PCLZIP_ATT_FILE_NEW_FULL_NAME=>DB_NAME.'.sql');
+	
 //clean vars
 unset($tables);
 unset($zipbackupfile);

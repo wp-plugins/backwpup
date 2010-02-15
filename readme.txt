@@ -51,6 +51,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * fixed global for $wp_version
 * set max execution time to 0 for unlimeted
 * use WP function to generate options tables
+* Backup file list and zip creation changes
 
 = 0.7.2 =
 * make FTP any more robust
