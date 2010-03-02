@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, cron
+Tags: backup, admin, file, Database, mysql, cron, ftp, S3
 Requires at least: 2.8
 Tested up to: 2.9.1
 Stable tag: 0.7.2
@@ -21,6 +21,7 @@ Backup and more your Blog.
 * Uses PCLZIP class of WordPress
 * Store backup to Folder
 * Store backup to FTP Server
+* Store backup to Amazon S3
 * Send Log/Backup by eMail
 
 
@@ -52,6 +53,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * set max execution time to 0 for unlimeted
 * use WP function to generate options tables
 * Backup file list and zip creation changes
+* Added support for Amazon S3
 
 = 0.7.2 =
 * make FTP any more robust

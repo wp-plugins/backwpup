@@ -155,6 +155,20 @@ echo '</select><br />';
 </td> 
 </tr>
 
+<?PHP if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {?>
+<tr valign="top">
+<th scope="row"><label for="ftptransfer"><?PHP _e('Backup to Amazon S3','backwpup'); ?></label></th> 
+<td id="ftptransfer">
+<?PHP _e('Access Key ID:','backwpup'); ?><input name="awsAccessKey" type="text" value="<?PHP echo $jobs[$jobid]['awsAccessKey'];?>" class="regular-text" /><br />
+<?PHP _e('Secret Access Key:','backwpup'); ?><input name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="regular-text" /><br />
+<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['awsSSL'],true); ?> name="awsSSL" /> <?PHP _e('Use SSL connection.','backwpup'); ?><br />
+<?PHP _e('Bucket:','backwpup'); ?><input name="awsBucket" type="text" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" class="regular-text" /><br />
+<?PHP _e('Directory in Bucket:','backwpup'); ?><input name="awsdir" type="text" value="<?PHP echo $jobs[$jobid]['awsdir'];?>" class="regular-text" /><br />
+<?PHP _e('Max Backup files on Bucket:','backwpup'); ?><input name="awsmaxbackups" type="text" value="<?PHP echo $jobs[$jobid]['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?></span><br />
+</td> 
+</tr>
+<?PHP } ?>
+
 <?PHP } ?>
 
  
