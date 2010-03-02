@@ -11,6 +11,7 @@ Backup and more of your WordPress Blog Database and Files
 == Description ==
 
 This Plugin is under heavy Development. Please test it and give feedback!!!.
+Plugin Requires PHP 5.
 
 Backup and more your Blog.
 
@@ -54,6 +55,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * use WP function to generate options tables
 * Backup file list and zip creation changes
 * Added support for Amazon S3
+* Only works with PHP 5 now
 
 = 0.7.2 =
 * make FTP any more robust

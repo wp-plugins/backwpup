@@ -52,8 +52,8 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 register_uninstall_hook(__FILE__, 'backwpup_plugin_uninstall');
 
 //Version check
-if (version_compare($wp_version, '2.8', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
-	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, BackWPup works only under WordPress 2.8 or higher','backwpup') . '</strong></p></div>\';'));
+if (version_compare($wp_version, '2.8', '<') and version_compare(phpversion(), '5.0.0', '<')) { // Let only Activate on WordPress Version 2.8 or heiger
+	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, BackWPup works only with WordPress 2.8 and PHP 5 or heigher!!!','backwpup') . '</strong></p></div>\';'));
 } else {
 	//Plugin init	
 	add_action('plugins_loaded', 'backwpup_init');
