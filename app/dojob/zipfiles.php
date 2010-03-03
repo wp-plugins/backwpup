@@ -17,10 +17,11 @@ if (is_array($backwpup_fielstobackup[0])) {
 	$zipbackupfile = new PclZip($backupfile);
 	if (0==$zipbackupfile -> create($backwpup_fielstobackup,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 		backwpup_joblog($logtime,__('ERROR:','backwpup').' '.__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true));
+	} else {
+		backwpup_joblog($logtime,__('Backup Zip file create done!','backwpup'));
 	}
 	unset($backwpup_fielstobackup);
 	unset($zipbackupfile);
-	backwpup_joblog($logtime,__('Backup Zip file create done!','backwpup'));
 }
 	
 ?>
