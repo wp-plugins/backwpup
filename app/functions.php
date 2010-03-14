@@ -9,7 +9,7 @@ if ( !defined('ABSPATH') )
 		add_action('load-'.$hook, 'backwpup_options_load');
 		add_contextual_help($hook,backwpup_show_help());
 		register_column_headers('backwpup_options',array('cb'=>'<input type="checkbox" />','id'=>__('ID','backwpup'),'name'=>__('Name','backwpup'),'type'=>__('Type','backwpup'),'next'=>__('Next Run','backwpup'),'last'=>__('Last Run','backwpup')));
-		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup')));
+		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'type'=>__('Type','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup'),'status'=>__('Status','backwpup'),'size'=>__('Size','backwpup'),'runtime'=>__('Runtime','backwpup')));
 	}	
 	
 	// Help too display
@@ -60,7 +60,6 @@ if ( !defined('ABSPATH') )
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-runnow.php');
 			break;
 		case 'view_log':
-		    $logtime= (int) $_GET['logtime'];
 			check_admin_referer('view-log');
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log.php');
 			break;
@@ -225,10 +224,12 @@ if ( !defined('ABSPATH') )
 	
 	//read log file header
 	function backwpup_read_logheader($logfile) {
-		$headers=array("backwupu_errors" => "errors","backwupu_warnings" => "warnings","backwupu_jobid" => "jobid","backwupu_jobname" => "name","backwupu_jobtype" => "type","backwupu_jobruntime" => "runtime");
+		$headers=array("backwpup_version" => "version","backwpup_logtime" => "logtime","backwpup_errors" => "errors","backwpup_warnings" => "warnings","backwpup_jobid" => "jobid","backwpup_jobname" => "name","backwpup_jobtype" => "type","backwpup_jobruntime" => "runtime","backwpup_backupfile" => "backupfile");
+		if (!is_readable($logfile))
+			return false;
 		//Read file
 		$fp = @fopen( $logfile, 'r' );
-		$file_data = @fread( $fp, 4096 ); // Pull only the first 4kiB of the file in.
+		$file_data = @fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
 		@fclose( $fp );
 
 		//get data form file
@@ -239,6 +240,10 @@ if ( !defined('ABSPATH') )
 			else
 				$joddata[$field]='';
 		}
+		
+		if (empty($joddata['logtime']))
+			$joddata['logtime']=filectime($logfile);
+			
 		return $joddata;
 	}
 	
@@ -246,26 +251,41 @@ if ( !defined('ABSPATH') )
 	//Dashboard widget
 	function backwpup_dashboard_output() {
 		global $wpdb;
+		$cfg=get_option('backwpup');
 		echo '<strong>'.__('Logs:','backwpup').'</strong><br />';
-		$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC LIMIT 5", ARRAY_A);
-		$wpdb->flush();
-		if (is_array($logs)) { 
-			foreach ($logs as $logvalue) {
-				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logvalue['logtime']).' '.date_i18n(get_option('time_format'),$logvalue['logtime']).': <i>';
-				if (empty($logvalue['jobname'])) 
-					backwpup_backup_types($logvalue['type'],true);
+		//get log files
+		$logfiles=array();
+		if ( $dir = opendir( $cfg['dirlogs'] ) ) {
+			while (($file = readdir( $dir ) ) !== false ) {
+				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5))
+					$logfiles[]=$file;
+			}
+			closedir( $dir );
+			rsort($logfiles);
+		}
+		
+		if (is_array($logfiles)) {
+			$count=0;
+			foreach ($logfiles as $logfile) {
+				$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
+				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log').'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
+				if (empty($logdata['name'])) 
+					echo $logdata['type'];
 				else
-					echo $logvalue['jobname'];
+					echo $logdata['name'];
 				echo '</i>';
-				if($logvalue['error']>0 or $logvalue['warning']>0) { 
-					if ($logvalue['error']>0)
-						echo ' <span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span>'; 
-					if ($logvalue['warning']>0)
-						echo ' <span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span>'; 
+				if($logdata['errors']>0 or $logdata['warnings']>0) { 
+					if ($logdata['errors']>0)
+						echo ' <span style="color:red;">'.$logdata['errors'].' '.__('ERROR(S)','backwpup').'</span>'; 
+					if ($logdata['warnings']>0)
+						echo ' <span style="color:yellow;">'.$logdata['warnings'].' '.__('WARNING(S)','backwpup').'</span>'; 
 				} else { 
 					echo ' <span style="color:green;">'.__('OK','backwpup').'</span>';  
 				} 
 				echo '</a><br />';
+				$count++;
+				if ($count>=5)
+					break;
 			}
 		} else {
 			echo '<i>'.__('none','backwpup').'</i><br />';

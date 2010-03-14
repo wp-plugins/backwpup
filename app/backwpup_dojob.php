@@ -51,14 +51,14 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 		$fd=@fopen(BACKWPUP_LOGFILE,"r+");
 		while (!feof($fd)) {
 			$line=@fgets($fd);
-			if (stripos($line,"<meta name=\"backwupu_errors\"") !== false and isset($errors)) {
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwupu_errors\" content=\"".$errors."\" />".backwpup_fillspases(4-strlen($errors))."\n");
+				@fputs($fd,"<meta name=\"backwpup_errors\" content=\"".$errors."\" />".backwpup_fillspases(4-strlen($errors))."\n");
 				break;
 			}
-			if (stripos($line,"<meta name=\"backwupu_warnings\"") !== false and isset($warnings)) {
+			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwupu_warnings\" content=\"".$warnings."\" />".backwpup_fillspases(4-strlen($warnings))."\n");
+				@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />".backwpup_fillspases(4-strlen($warnings))."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -121,19 +121,23 @@ class backwpup_dojob {
 		if ($this->job['type']=='FILE' or $this->job['type']=='DB+FILE' or $this->job['type']=='DB') 
 			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').'.zip';
 		//set Log file name
-		$this->logfile='backwpup_log_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').'.html'; 
+		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html'; 
 		define('BACKWPUP_LOGFILE',$this->logdir.'/'.$this->logfile);
 		//Create log file
 		if (!$this->check_folders($this->logdir))
 			return false;
 		$fd=@fopen(BACKWPUP_LOGFILE,"a+");
 		@fputs($fd,"<html>\n<head>\n");
-		@fputs($fd,"<meta name=\"backwupu_errors\" content=\"0\" />".backwpup_fillspases(3)."\n");
-		@fputs($fd,"<meta name=\"backwupu_warnings\" content=\"0\" />".backwpup_fillspases(3)."\n");
-		@fputs($fd,"<meta name=\"backwupu_jobid\" content=\"".$this->jobid."\" />\n");
-		@fputs($fd,"<meta name=\"backwupu_jobname\" content=\"".$this->job['name']."\" />\n");
-		@fputs($fd,"<meta name=\"backwupu_jobtype\" content=\"".$this->job['type']."\" />\n");
-		@fputs($fd,"<meta name=\"backwupu_jobruntime\" content=\"0\" />".backwpup_fillspases(9)."\n");
+		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_errors\" content=\"0\" />".backwpup_fillspases(3)."\n");
+		@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"0\" />".backwpup_fillspases(3)."\n");
+		@fputs($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_jobname\" content=\"".$this->job['name']."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_jobtype\" content=\"".backwpup_backup_types($this->job['type'],false)."\" />\n");
+		if (!empty($this->backupfile))
+			@fputs($fd,"<meta name=\"backwpup_backupfile\" content=\"".$this->backupdir."/".$this->backupfile."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_jobruntime\" content=\"0\" />".backwpup_fillspases(9)."\n");
 		@fputs($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$this->job['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 		@fclose($fd);
 		//PHP Error handling
@@ -860,7 +864,28 @@ class backwpup_dojob {
 		if (empty($this->job['backupdir']) and ($this->backupdir!=$this->tempdir) and is_file($this->backupdir.'/'.$this->backupfile)) { //delete backup file in temp dir
 			unlink($this->backupdir.'/'.$this->backupfile);
 		}
-
+		
+		//delete old logs
+		if (!empty($this->cfg['maxlogs'])) {
+			if ( $dir = @opendir($this->logdir) ) { //make file list	
+				while (($file = readdir($dir)) !== false ) {
+					if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and ".html" == substr($file,-5))
+						$logfilelist[]=$file;
+				}
+				@closedir( $dir );
+			}
+			if (sizeof($logfilelist)>0) {
+				rsort($logfilelist);
+				$numdeltefiles=0;
+				for ($i=$this->cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
+					unlink(trailingslashit($this->logdir).$logfilelist[$i]);
+					$numdeltefiles++;
+				}
+				if ($numdeltefiles>0)
+					trigger_error($numdeltefiles.' '.__('old Log files deleted!!!','backwpup'),E_USER_NOTICE);
+			}
+		}		
+		
 		$jobs=get_option('backwpup_jobs');
 		$jobs[$this->jobid]['stoptime']=time();
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
@@ -873,9 +898,9 @@ class backwpup_dojob {
 		$fd=@fopen(BACKWPUP_LOGFILE,"r+");
 		while (!feof($fd)) {
 			$line=@fgets($fd);
-			if (stripos($line,"<meta name=\"backwupu_jobruntime\"") !== false) {
+			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwupu_jobruntime\" content=\"".$jobs[$this->jobid]['lastruntime']."\" />".backwpup_fillspases(10-strlen($jobs[$this->jobid]['lastruntime']))."\n");
+				@fputs($fd,"<meta name=\"backwpup_jobruntime\" content=\"".$jobs[$this->jobid]['lastruntime']."\" />".backwpup_fillspases(10-strlen($jobs[$this->jobid]['lastruntime']))."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -895,6 +920,7 @@ class backwpup_dojob {
 			$sendmail=true;
 		if ($sendmail) {
 			$mailbody=__("Jobname:","backwpup")." ".$logdata['name']."\n";
+			$mailbody.=__("Jobtype:","backwpup")." ".$logdata['type']."\n";
 			$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
 			$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
 			wp_mail($this->job['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['starttime']).': '.$this->job['name'] ,$mailbody,'',array($this->logdir."/".$this->logfile));
