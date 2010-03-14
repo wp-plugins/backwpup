@@ -9,7 +9,7 @@ if ( !defined('ABSPATH') )
 		add_action('load-'.$hook, 'backwpup_options_load');
 		add_contextual_help($hook,backwpup_show_help());
 		register_column_headers('backwpup_options',array('cb'=>'<input type="checkbox" />','id'=>__('ID','backwpup'),'name'=>__('Name','backwpup'),'type'=>__('Type','backwpup'),'next'=>__('Next Run','backwpup'),'last'=>__('Last Run','backwpup')));
-		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'type'=>__('Type','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup'),'status'=>__('Status','backwpup'),'size'=>__('Size','backwpup'),'runtime'=>__('Runtime','backwpup')));
+		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup')));
 	}	
 	
 	// Help too display
@@ -43,6 +43,7 @@ if ( !defined('ABSPATH') )
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-jobs.php');
 			break;
 		case 'logs':
+			$cfg=get_option('backwpup');
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-logs.php');
 			break;
 		case 'settings':
@@ -84,43 +85,16 @@ if ( !defined('ABSPATH') )
 	
     //delete Otions
 	function backwpup_plugin_uninstall() {
-		global $wpdb;
 		delete_option('backwpup');
 		delete_option('backwpup_jobs');
-		$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->backwpup_logs);
 	}
 	
 	//On Plugin activate
 	function backwpup_plugin_activate() {
+		//delete old log table
 		global $wpdb;
-
-		//Create log table
-		require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-		$charset_collate = '';
-		if($wpdb->supports_collation()) {
-			if(!empty($wpdb->charset)) {
-				$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
-			}
-			if(!empty($wpdb->collate)) {
-				$charset_collate .= " COLLATE $wpdb->collate";
-			}
-		}
-		//WP Function to add or Upgrade Dtatabse
-		dbDelta(
-			"CREATE TABLE ".$wpdb->backwpup_logs." (
-			logtime BIGINT NOT NULL,
-			jobid INT NOT NULL,
-			jobname VARCHAR(255) NOT NULL,
-			type VARCHAR(20) NOT NULL,
-			error TINYINT NOT NULL default '0',
-			warning TINYINT NOT NULL default '0',
-			worktime TINYINT NOT NULL default '0',
-			log LONGTEXT NOT NULL,
-			backupfile VARCHAR(255),
-			PRIMARY KEY (logtime)
-			)".$charset_collate
-		);
-
+		$wpdb->backwpup_logs = $wpdb->prefix.'backwpup_logs';
+		$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->backwpup_logs);
 		//add cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
@@ -130,7 +104,17 @@ if ( !defined('ABSPATH') )
 				}
 			}
 		}
-
+		//Set defaults
+		$cfg=get_option('backwpup'); //Load Settings
+		if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
+	    if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
+	    if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
+		if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
+		if (empty($cfg['memorylimit'])) $cfg['memorylimit']='128M';
+		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
+		if (empty($cfg['dirlogs'])) $cfg['dirlogs']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup/logs'));
+		if (empty($cfg['dirtemp'])) $cfg['dirtemp']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup'));
+		update_option('backwpup',$cfg);
 	}
 	
 	//on Plugin deaktivate
@@ -177,107 +161,19 @@ if ( !defined('ABSPATH') )
 		return $schedules;
 	}
 
-	
 	//DoJob
 	function backwpup_dojob($args) {
-		global $wpdb;
-		
-		if (is_array($args)) { //cron gifes no complete arry back!!!
+		if (is_array($args)) { //cron gifes no complete array back!!!
 			extract($args, EXTR_SKIP );
 		} else {
 			$jobid=$args;
 		}
 		if (empty($jobid)) return false;
 		require_once(ABSPATH . 'wp-admin/includes/file.php'); //for get_tempdir();
-		require_once('dojob/bevore.php');
-		switch($jobs[$jobid]['type']) {
-		case 'DB+FILE':
-			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
-			require_once('dojob/db.php');
-			require_once('dojob/file.php');
-			require_once('dojob/zipfiles.php');
-			require_once('dojob/destination-ftp.php');
-			if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))
-				require_once('dojob/destination-s3.php');
-			break;
-		case 'DB':
-			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
-			require_once('dojob/db.php');
-			require_once('dojob/zipfiles.php');
-			require_once('dojob/destination-ftp.php');
-			if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))
-				require_once('dojob/destination-s3.php');
-			break;
-		case 'FILE':
-			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
-			require_once('dojob/file.php');
-			require_once('dojob/zipfiles.php');
-			require_once('dojob/destination-ftp.php');
-			if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))
-				require_once('dojob/destination-s3.php');
-			break;
-		case 'OPTIMIZE':
-			require_once('dojob/optimize.php');
-			break;
-		case 'CHECK':
-			require_once('dojob/check.php');
-			break;
-		}
-		require_once('dojob/destination-mail.php');
-		require_once('dojob/after.php');
-		
-		return $logtime;
-	}
-	
-	//increase Memory need free memory in bytes
-	function backwpup_needfreememory($memneed) {
-		global $logtime;
-		if (!function_exists('memory_get_usage'))
-			return true;
-			
-		//calc mem to bytes
-		if (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='K')
-			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024;
-		elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='M')
-			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024;
-		elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='G')
-			$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024*1024;
-		else
-			$memory=trim(ini_get('memory_limit'));
-			
-		if (memory_get_usage()+$memneed>$memory) { // increase Memory
-			if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-				backwpup_joblog($logtime,__('WARNING:','backwpup').' '.sprintf(__('PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
-				return false;
-			}
-			$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
-			if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
-				backwpup_joblog($logtime,sprintf(__('Memory increased from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')));
-			else 
-				backwpup_joblog($logtime,sprintf(__('ERROR:','backwpup').' '.__('Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')));
-		} 
-		return true;
-	}
-	
-	
-	//Make Log File for Jobs.
-	function backwpup_joblog($logtime,$entry) {
-		global $wpdb;
-		$errors=0;$warnings=0;
-		$style="";
-		if (substr($entry,0,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup')) {
-			$errors=1;
-			$style=' style="background-color:red;"';
-		}
-		if (substr($entry,0,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup')) {
-			$warnings=1;
-			$style=' style="background-color:yellow;"';
-		}
-		mysql_query("UPDATE ".$wpdb->backwpup_logs." SET error=error+".$errors.", warning=warning+".$warnings.", log=concat(log,'".mysql_real_escape_string(date_i18n('Y-m-d H:i.s').": ".$entry."\n")."') WHERE logtime=".$logtime);
-		if (!defined('DOING_CRON'))
-			echo "<span style=\"background-color:c3c3c3;\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$entry."</span><script type=\"text/javascript\">window.scrollByLines(3);</script><br />\n";
-		flush();
-		ob_flush();
+		require_once('backwpup_dojob.php');
+		$dojob= new backwpup_dojob($jobid);
+		unset($dojob);
+		return BACKWPUP_LOGFILE;
 	}
 	
 	//file size
@@ -317,6 +213,35 @@ if ( !defined('ABSPATH') )
 		else
 			return $typename;
 	}
+	
+	//add spases
+	function backwpup_fillspases($number) {
+		$spaces='';
+		for ($i=0;$i<$number;$i++) {
+			$spaces.=' ';
+		}
+		return $spaces;
+	}
+	
+	//read log file header
+	function backwpup_read_logheader($logfile) {
+		$headers=array("backwupu_errors" => "errors","backwupu_warnings" => "warnings","backwupu_jobid" => "jobid","backwupu_jobname" => "name","backwupu_jobtype" => "type","backwupu_jobruntime" => "runtime");
+		//Read file
+		$fp = @fopen( $logfile, 'r' );
+		$file_data = @fread( $fp, 4096 ); // Pull only the first 4kiB of the file in.
+		@fclose( $fp );
+
+		//get data form file
+		foreach ($headers as $keyword => $field) {
+			preg_match('/(<meta name="'.$keyword.'" content="(.*)" \/>)/i',$file_data,$content);
+			if (!empty($content))
+				$joddata[$field]=$content[2];
+			else
+				$joddata[$field]='';
+		}
+		return $joddata;
+	}
+	
 	
 	//Dashboard widget
 	function backwpup_dashboard_output() {
@@ -370,30 +295,6 @@ if ( !defined('ABSPATH') )
 		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );		
 	}
 	
-	//Sed mail send Method
-	function backwpup_use_mail_method() {
-		global $phpmailer;
-		$cfg=get_option('backwpup'); //Load Settings
-		if ($cfg['mailmethod']=="SMTP") {
-			$smtpport=25;
-			$smtphost=$cfg['mailhost'];
-			if (false !== strpos($cfg['mailhost'],':')) //look for port
-				list($smtphost,$smtpport)=split(':',$cfg['mailhost'],2);
-			$phpmailer->Host=$smtphost;
-			$phpmailer->Port=$smtpport;
-			$phpmailer->SMTPSecure=$cfg['mailsecure'];
-			$phpmailer->Username=$cfg['mailuser'];
-			$phpmailer->Password=base64_decode($cfg['mailpass']);
-			if (!empty($cfg['mailuser']) and !empty($cfg['mailpass']))
-				$phpmailer->SMTPAuth=true;
-			$phpmailer->IsSMTP();
-		} elseif ($cfg['mailmethod']=="Sendmail") {
-			$phpmailer->Sendmail=$cfg['mailsendmail'];
-			$phpmailer->IsSendmail();
-		} else {
-			$phpmailer->IsMail();
-		}
-	}
 	
 	// add all action and so on only if plugin loaded.
 	function backwpup_init() {

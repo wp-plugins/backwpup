@@ -43,15 +43,14 @@ if (!function_exists('memory_get_usage'))
 <tr valign="top">
 <th scope="row"><label for="mailtype"><?PHP _e('Mail Send:','backwpup'); ?></label></th> 
 <td id="mailtype">
+<?PHP _e('Sender Email:','backwpup'); ?><input name="mailsndemail" type="text" value="<?PHP echo $cfg['mailsndemail'];?>" class="user" /><br />
+<?PHP _e('Sender Name:','backwpup'); ?><input name="mailsndname" type="text" value="<?PHP echo $cfg['mailsndname'];?>" class="user" /><br />
 <?PHP _e('Send mail method:','backwpup'); 
 echo '<select name="mailmethod">';
 echo '<option value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
 echo '<option value="Sendmail"'.selected('Sendmail',$cfg['mailmethod'],false).'>'.__('Sendmail','backwpup').'</option>';
 echo '<option value="SMTP"'.selected('SMTP',$cfg['mailmethod'],false).'>'.__('SMTP','backwpup').'</option>';
 echo '</select>';
-if (empty($cfg['mailsendmail'])) {
-	$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-}
 ?><br />
 <?PHP _e('Sendmail Path:','backwpup'); ?><input name="mailhost" type="text" value="<?PHP echo $cfg['mailsendmail'];?>" class="regular-text" /><br />
 <?PHP _e('SMTP Hostname:','backwpup'); ?><input name="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text" /><br />
@@ -61,8 +60,6 @@ echo '<option value=""'.selected('',$cfg['mailsecure'],false).'>'.__('none','bac
 echo '<option value="ssl"'.selected('ssl',$cfg['mailsecure'],false).'>SSL</option>';
 echo '<option value="tls"'.selected('tls',$cfg['mailsecure'],false).'>TLS</option>';
 echo '</select>';
-if (!empty($cfg['mailsendmail']))
-	$cfg['mailsendmail']='/usr/sbin/sendmail';
 ?><br />
 <?PHP _e('SMTP Username:','backwpup'); ?><input name="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="user" /><br />
 <?PHP _e('SMTP Password:','backwpup'); ?><input name="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="password" /><br />
@@ -77,6 +74,13 @@ if (!empty($cfg['mailsendmail']))
 </tr>
 
 <tr valign="top"> 
+<th scope="row"><label for="dirlogs"><?PHP _e('Log file Folder:','backwpup'); ?></label></th> 
+<td>
+<input name="dirlogs" type="text" value="<?PHP echo $cfg['dirlogs'];?>" class="regular-text" /><br />
+</td> 
+</tr> 
+
+<tr valign="top"> 
 <th scope="row"><label for="disablewpcron"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
 <td>
 <input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/>
@@ -86,6 +90,14 @@ if (!empty($cfg['mailsendmail']))
 <?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 
 </td> 
 </tr> 
+
+<tr valign="top"> 
+<th scope="row"><label for="dirtemp"><?PHP _e('Temp Folder for Backups:','backwpup'); ?></label></th> 
+<td>
+<input name="dirtemp" type="text" value="<?PHP echo $cfg['dirtemp'];?>" class="regular-text" /><br />
+</td> 
+</tr> 
+
 
 </table>
  

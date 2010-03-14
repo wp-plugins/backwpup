@@ -56,6 +56,8 @@ case 'delete-logs': //Delete Log
 case 'savecfg': //Save config form Setings page
 	check_admin_referer('backwpup-cfg');
 	$cfg=get_option('backwpup'); //Load Settings
+	$cfg['mailsndemail']=sanitize_email($_POST['mailsndemail']);
+	$cfg['mailsndname']=$_POST['mailsndname'];
 	$cfg['mailmethod']=$_POST['mailmethod'];
 	$cfg['mailsendmail']=str_replace('\\','/',stripslashes($_POST['mailsendmail']));
 	$cfg['mailsecure']=$_POST['mailsecure'];
@@ -63,9 +65,10 @@ case 'savecfg': //Save config form Setings page
 	$cfg['mailuser']=$_POST['mailuser'];
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['memorylimit']=$_POST['memorylimit'];
-	$cfg['maxexecutiontime']=$_POST['maxexecutiontime'];
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
+	$cfg['dirlogs']=str_replace('\\','/',stripslashes($_POST['dirlogs']));
+	$cfg['dirtemp']=str_replace('\\','/',stripslashes($_POST['dirtemp']));
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';
@@ -136,7 +139,7 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['scheduleintervaltype']=$_POST['scheduleintervaltype'];
 	$jobs[$jobid]['scheduleintervalteimes']=$_POST['scheduleintervalteimes'];
 	$jobs[$jobid]['scheduleinterval']=$_POST['scheduleintervaltype']*$_POST['scheduleintervalteimes'];
-	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
+	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
 	
 	if ($savetype=='DB' or $savetype=='DB+FILE' or $savetype=='OPTIMIZE' or $savetype=='CHECK') {
@@ -168,6 +171,7 @@ case 'saveeditjob': //Save Job settings
 		$jobs[$jobid]['awsdir']=str_replace('\\','/',stripslashes(trim($_POST['awsdir'])));
 		if (substr($jobs[$jobid]['awsdir'],0,1)=='/')
 			$jobs[$jobid]['awsdir']=substr($jobs[$jobid]['awsdir'],1);
+		$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
 		$jobs[$jobid]['awsmaxbackups']=abs((int)$_POST['awsmaxbackups']);
 	}
 	

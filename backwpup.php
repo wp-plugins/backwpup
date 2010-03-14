@@ -35,10 +35,7 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '0.7.3');
-//BackWPup Log Table Name
-global $wpdb,$wp_version;
-$wpdb->backwpup_logs = $wpdb->prefix.'backwpup_logs';
+define('BACKWPUP_VERSION', '0.8.0');
 
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');	

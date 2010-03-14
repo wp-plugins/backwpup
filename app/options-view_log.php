@@ -13,24 +13,9 @@ if ( !defined('ABSPATH') )
 <li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 <br class="clear" /> 
-<?PHP
-@set_time_limit(0);
-$log=explode("\n",$wpdb->get_var("SELECT log FROM ".$wpdb->backwpup_logs." WHERE logtime=".$logtime));
-?>
-<div style="font-family:monospace;font-size:12px;white-space:nowrap;">
-<?PHP
-foreach ($log as $line) {
-	if (empty($line)) {
-		echo "<br />\n";
-		continue;
-	}
-	$style='';
-	if (substr($line,21,strlen(__('ERROR:','backwpup')))==__('ERROR:','backwpup')) 
-		$style=' style="background-color:red;color:black;"';
-	if (substr($line,21,strlen(__('WARNING:','backwpup')))==__('WARNING:','backwpup')) 
-		$style=' style="background-color:yellow;color:black;"';
-	echo "<span style=\"background-color:gray;color:black;\">".substr($line,0,19).":</span> <span".$style.">".substr($line,21)."</span><br />\n";
-}
-?>
-</div>
+<big><?php
+_e('View Log','backwpup');
+echo ' <strong>'.basename($_GET['logfile']).'</strong>';
+?></big>
+<iframe src="<?PHP  echo wp_nonce_url(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log-iframe.php?ABSPATH='.ABSPATH.'&amp;logfile=' . $_GET['logfile'], 'viewlognow'); ?>" name="Logframe" id="Logframe" width="100%" height="450" align="left" scrolling="auto" style="border: 1px solid gray" frameborder="0"></iframe>
 </div>

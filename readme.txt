@@ -46,8 +46,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
-= 0.7.3 =
-* Littel changes on DB Table creation for logs
+= 0.8.0 =
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver
 * fixed global for $wp_version
@@ -56,6 +55,9 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * Backup file list and zip creation changes
 * Added support for Amazon S3
 * Only works with PHP 5 now
+* Cmplete rewrite of job doing as PHP5 class
+* PHP errors now in Backup log
+* Log now in files
 
 = 0.7.2 =
 * make FTP any more robust

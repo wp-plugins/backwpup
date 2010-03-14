@@ -50,10 +50,20 @@ if ( !defined('ABSPATH') )
 	$item_columns = get_column_headers('backwpup_options_logs');
 	$hidden = get_hidden_columns('backwpup_options_logs');
 	
-	$logs=$wpdb->get_results("SELECT * FROM ".$wpdb->backwpup_logs." ORDER BY logtime DESC", ARRAY_A);
-	if (is_array($logs)) { 
-		foreach ($logs as $logvalue) {
-		?><tr id="log-<?PHP echo $logvalue['logtime']?>" valign="top"><?PHP
+	//get log files
+	$logfiles=array();
+	if ( $dir = opendir( $cfg['dirlogs'] ) ) {
+		while (($file = readdir( $dir ) ) !== false ) {
+			if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5))
+				$logfiles[]=$file;
+		}
+		closedir( $dir );
+		rsort($logfiles);
+	}
+	
+
+	foreach ($logfiles as $logfile) {
+		?><tr id="<?PHP echo $logfile?>" valign="top"><?PHP
 		foreach($item_columns as $column_name=>$column_display_name) {
 			$class = "class=\"column-$column_name\"";
 
@@ -65,28 +75,20 @@ if ( !defined('ABSPATH') )
 			
 			switch($column_name) {
 				case 'cb':
-					echo '<th scope="row" class="check-column"><input type="checkbox" name="logs[]" value="'. esc_attr($logvalue['logtime']) .'" /></th>';
+					echo '<th scope="row" class="check-column"><input type="checkbox" name="logs[]" value="'. esc_attr($logfile) .'" /></th>';
 					break;
 				case 'id':
-					echo '<td $attributes>'.$logvalue['jobid'].'</td>'; 
-					break;
-				case 'type':
 					echo '<td $attributes>';
-					backwpup_backup_types($logvalue['type'],true);
-					echo '</td>'; 
+					echo substr($logfile,strlen('backwpup_log_'),strpos($logfile,'_',strlen('backwpup_log_'))-strlen('backwpup_log_'));
+					echo '</td>';
 					break;
 				case 'log':
 					$name='';
-					if (is_file($logvalue['backupfile']))
-						$name=basename($logvalue['backupfile']);
-				
-				
-					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log').'" title="'.__('View log','backwpup').'">'.date_i18n(get_option('date_format'),$logvalue['logtime']).date_i18n(get_option('time_format'),$logvalue['logtime']).': <i>'.$logvalue['jobname'].'</i></a></strong>';
+					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log').'" title="'.__('View log','backwpup').'">'.  substr(substr($logfile,strlen('backwpup_log_')),strpos(substr($logfile,strlen('backwpup_log_')),'_')+1,-5).'</a></strong>';
 					$actions = array();
-					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=view_log&logtime='.$logvalue['logtime'], 'view-log') . "\">" . __('View','backwpup') . "</a>";
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$logvalue['logtime'], 'delete-log_'.$logvalue['logtime']) . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
-					if (!empty($logvalue['backupfile']) and is_file($logvalue['backupfile']))
-						$actions['download'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=download&log='.$logvalue['logtime'], 'download-backup_'.$logvalue['logtime']) . "\">" . __('Download','backwpup') . "</a>";
+					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log') . "\">" . __('View','backwpup') . "</a>";
+					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&log='.$logfile, 'delete-log') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+
 					$action_count = count($actions);
 					$i = 0;
 					echo '<br /><div class="row-actions">';
@@ -97,39 +99,10 @@ if ( !defined('ABSPATH') )
 					}
 					echo '</div>';
 					echo '</td>';
-					break;
-				case 'status':
-					echo '<td $attributes>';
-					if($logvalue['error']>0 or $logvalue['warning']>0) { 
-						if ($logvalue['error']>0)
-							echo '<span style="color:red;">'.$logvalue['error'].' '.__('ERROR(S)','backwpup').'</span><br />'; 
-						if ($logvalue['warning']>0)
-							echo '<span style="color:yellow;">'.$logvalue['warning'].' '.__('WARNING(S)','backwpup').'</span>'; 
-					} else { 
-						echo '<span style="color:green;">'.__('OK','backwpup').'</span>';
-					} 
-					echo '</td>'; 
-					break;
-				case 'size':
-					echo '<td $attributes>';
-					if (!empty($logvalue['backupfile']) and is_file($logvalue['backupfile'])) {
-						echo backwpup_formatBytes(filesize($logvalue['backupfile']));
-					} elseif (!empty($logvalue['backupfile'])) {
-						_e('File not exists','backwpup');
-					} else {
-						_e('only Log','backwpup');
-					}
-					echo '</td>'; 
-					break;
-				case 'runtime':
-					echo '<td $attributes>';
-					echo $logvalue['worktime'].' '.__('sec.','backwpup');
-					echo '</td>'; 
-					break;					
+					break;				
 			}
 		}
 		echo "\n    </tr>\n";
-		}
 	}
 	?></tbody> 
 </table> 

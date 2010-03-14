@@ -171,18 +171,26 @@ echo '</select><br />';
 
 <?PHP } ?>
 
- 
-<tr valign="top">
-<th scope="row"><label for="mailaddress"><?PHP _e('Send Mail to','backwpup'); ?></label></th> 
-<td><input name="mailaddress" id="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /><br />
 <?PHP 
 if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {
-	echo __('Max File Size for sending Backups with mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobs[$jobid]['mailefilesize'].'" class="small-text" />MB <span class="description">'.__('0=send log only.','backwpup').'</span><br />';
-}
 ?>
+<tr valign="top">
+<th scope="row"><label for="mailaddress"><?PHP _e('Send Backup with Mail to','backwpup'); ?></label></th> 
+<td><input name="mailaddress" id="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /><br />
+<?PHP 
+echo __('Max File Size for sending Backups with mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobs[$jobid]['mailefilesize'].'" class="small-text" />MB <span class="description">'.__('0=send log only.','backwpup').'</span><br />';
+?>
+</td> 
+</tr>
+<?PHP } ?>
+
+<tr valign="top">
+<th scope="row"><label for="mailaddresslog"><?PHP _e('Send Log Mail to','backwpup'); ?></label></th> 
+<td><input name="mailaddresslog" id="mailaddresslog" type="text" value="<?PHP echo $jobs[$jobid]['mailaddresslog'];?>" class="regular-text" /><br />
 <input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Send only mail on errors.','backwpup'); ?>
 </td> 
 </tr>
+
 
 </table>
 <p class="submit"> 
