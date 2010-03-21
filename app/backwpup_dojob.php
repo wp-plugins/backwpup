@@ -923,8 +923,10 @@ class backwpup_dojob {
 		if ($sendmail) {
 			$mailbody=__("Jobname:","backwpup")." ".$logdata['name']."\n";
 			$mailbody.=__("Jobtype:","backwpup")." ".$logdata['type']."\n";
-			$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
-			$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
+			if (!empty($logdata['errors'])) 
+				$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
+			if (!empty($logdata['warnings']))
+				$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
 			wp_mail($this->job['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['starttime']).': '.$this->job['name'] ,$mailbody,'',array($this->logdir."/".$this->logfile));
 		}
 	}
