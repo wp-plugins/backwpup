@@ -60,7 +60,7 @@ if ( !defined('ABSPATH') )
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-runnow.php');
 			break;
 		case 'view_log':
-			check_admin_referer('view-log');
+			check_admin_referer('view-log_'.basename($_GET['logfile']));
 			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log.php');
 			break;
 		default:
@@ -268,7 +268,7 @@ if ( !defined('ABSPATH') )
 			$count=0;
 			foreach ($logfiles as $logfile) {
 				$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
-				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log').'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
+				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
 				if (empty($logdata['name'])) 
 					echo $logdata['type'];
 				else

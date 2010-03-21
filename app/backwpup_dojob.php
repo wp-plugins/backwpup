@@ -36,7 +36,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
         break;
     }
 		
-	$title="[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."]";
+	$title="[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
 		
 	//wirte log file
 	$fd=@fopen(BACKWPUP_LOGFILE,"a+");
@@ -44,7 +44,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	@fclose($fd);
 		
 	if (!defined('DOING_CRON'))
-		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">scrollByLines(1);</script><br />\n";
+		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">window.scrollByLines(2);</script><br />\n";
 	
 	//write new log header
 	if (isset($errors) or isset($warnings)) {
@@ -124,7 +124,7 @@ class backwpup_dojob {
 		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html'; 
 		define('BACKWPUP_LOGFILE',$this->logdir.'/'.$this->logfile);
 		//Create log file
-		if (!$this->check_folders($this->logdir))
+		if (!$this->_check_folders($this->logdir))
 			return false;
 		$fd=@fopen(BACKWPUP_LOGFILE,"a+");
 		@fputs($fd,"<html>\n<head>\n");
@@ -143,9 +143,9 @@ class backwpup_dojob {
 		//PHP Error handling
 		set_error_handler("backwpup_joberrorhandler"); //set function for PHP error handling
 		//check dirs
-		if (!$this->check_folders($this->tempdir))
+		if (!$this->_check_folders($this->tempdir))
 			return false;
-		if (!$this->check_folders($this->backupdir))
+		if (!$this->_check_folders($this->backupdir))
 			return false;
 		//check max script execution tme
 		if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
@@ -196,13 +196,14 @@ class backwpup_dojob {
         }
 	}
 	
-	private function check_folders($folder) {
+	private function _check_folders($folder) {
 		$folder=str_replace("\\","/",$folder);
 		$folder=untrailingslashit(str_replace("//","/",$folder));
 		if (!is_dir($folder)) { //create dir if not exists
-			if (!mkdir($folder,0777,true))
+			if (!mkdir($folder,0777,true)) {
 				trigger_error(sprintf(__('Can not create Folder: %1$s','backwpup'),$folder),E_USER_ERROR);
 				return false;
+			}
 		}
 		if (!is_writeable($folder)) { //test if folder wirteable
 			trigger_error(sprintf(__('Can not write to Folder: %1$s','backwpup'),$folder),E_USER_ERROR);	
@@ -756,7 +757,7 @@ class backwpup_dojob {
 		$phpmailer->AddAddress($this->job['mailaddress']); 
 		$phpmailer->Subject  =  __('BackWPup File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['starttime']).': '.$this->job['name'];
 		$phpmailer->IsHTML(false);
-		$phpmailer->Body  =  'Backup text';
+		$phpmailer->Body  =  'Backup File';
 		
 		//check file Size
 		if (!empty($this->job['mailefilesize'])) {
@@ -766,12 +767,13 @@ class backwpup_dojob {
 				return false;
 			}
 		}
+		
 		trigger_error(__('Adding Attachment to mail','backwpup'),E_USER_NOTICE);
 		$this->need_free_memory(filesize($this->backupdir.'/'.$this->backupfile)*4);
 		$phpmailer->AddAttachment($this->backupdir.'/'.$this->backupfile);		
 		
 		trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);
-		if (! $phpmailer->Send()) {
+		if (!$phpmailer->Send()) {
 			trigger_error(__('Mail send!!!','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo,E_USER_ERROR);

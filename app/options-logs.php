@@ -52,7 +52,7 @@ if ( !defined('ABSPATH') )
 	
 	//get log files
 	$logfiles=array();
-	if ( $dir = opendir( $cfg['dirlogs'] ) ) {
+	if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
 		while (($file = readdir( $dir ) ) !== false ) {
 			if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5))
 				$logfiles[]=$file;
@@ -91,12 +91,13 @@ if ( !defined('ABSPATH') )
 					if (is_file($logvalue['backupfile']))
 						$name=basename($logvalue['backupfile']);
 				
-					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log').'" title="'.__('View log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>'.$logdata['name'].'</i></a></strong>';
+					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>'.$logdata['name'].'</i></a></strong>';
 					$actions = array();
-					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log') . "\">" . __('View','backwpup') . "</a>";
+					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile) . "\">" . __('View','backwpup') . "</a>";
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&logfile='.$logfile, 'delete-log_'.$logfile) . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+					$actions['downloadlog'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=download&file='.$cfg['dirlogs'].'/'.$logfile, 'download-backup_'.$logfile) . "\">" . __('Download Log','backwpup') . "</a>";
 					if (!empty($logdata['backupfile']) and is_file($logdata['backupfile']))
-						$actions['download'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=download&file='.$logdata['backupfile'], 'download-backup') . "\">" . __('Download','backwpup') . "</a>";
+						$actions['downloadbackup'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=download&file='.$logdata['backupfile'], 'download-backup_'.basename($logdata['backupfile'])) . "\">" . __('Download Backup','backwpup') . "</a>";
 					$action_count = count($actions);
 					$i = 0;
 					echo '<br /><div class="row-actions">';

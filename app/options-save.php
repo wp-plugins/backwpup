@@ -31,24 +31,20 @@ case 'delete': //Delete Job
 	$_REQUEST['action']='';
 	break;
 case 'delete-logs': //Delete Log
-	if (is_Array($_POST['logs'])) {
+	$cfg=get_option('backwpup'); //Load Settings
+	if (is_Array($_POST['logfiles'])) {
 		check_admin_referer('actions-logs');
 		$num=0;
-		foreach ($_POST['logs'] as $timestamp) {
-			$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
-			if (is_file($backupfile)) 
-				unlink($backupfile);
-			$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+		foreach ($_POST['logfiles'] as $logfile) {
+			if (is_file($cfg['dirlogs'].'/'.$logfile)) 
+				unlink($cfg['dirlogs'].'/'.$logfile);
 			$num++;
 		}
 		$backwpup_message=$num.' '.__('Logs deleted', 'backwpup');
 	} else {
-		$timestamp = (int) $_GET['log'];
-		check_admin_referer('delete-log_' . $timestamp);
-		$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
-		if (is_file($backupfile)) 
-			unlink($backupfile);
-		$wpdb->query("DELETE FROM ".$wpdb->backwpup_logs." WHERE logtime=".$timestamp);
+		check_admin_referer('delete-log_' . $_GET['logfile']);
+		if (is_file($cfg['dirlogs'].'/'.$_GET['logfile'])) 
+			unlink($cfg['dirlogs'].'/'.$_GET['logfile']);
 		$backwpup_message=__('Log deleted', 'backwpup');
 	}
 	$_REQUEST['action']='logs';
@@ -67,8 +63,8 @@ case 'savecfg': //Save config form Setings page
 	$cfg['memorylimit']=$_POST['memorylimit'];
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
-	$cfg['dirlogs']=str_replace('\\','/',stripslashes($_POST['dirlogs']));
-	$cfg['dirtemp']=str_replace('\\','/',stripslashes($_POST['dirtemp']));
+	$cfg['dirlogs']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirlogs'])));
+	$cfg['dirtemp']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirtemp'])));
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';
@@ -90,20 +86,18 @@ case 'copy': //Copy Job
 	$_REQUEST['action']='';
 	break;
 case 'download': //Download Backup
-	$log = (int) $_GET['log'];
-	check_admin_referer('download-backup_'.$log);
-	$backupfile=$wpdb->get_var("SELECT backupfile FROM ".$wpdb->backwpup_logs." WHERE logtime=".$log);
-	if (is_file($backupfile)) {
+	check_admin_referer('download-backup_'.basename($_GET['file']));
+	if (is_file($_GET['file'])) {
 		header("Pragma: public");
 		header("Expires: 0");
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0"); 
 		header("Content-Type: application/force-download");
 		header("Content-Type: application/octet-stream");
 		header("Content-Type: application/download");
-		header("Content-Disposition: attachment; filename=".basename($backupfile).";");
+		header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 		header("Content-Transfer-Encoding: binary");
-		header("Content-Length: ".filesize($backupfile));
-		@readfile($backupfile);
+		header("Content-Length: ".filesize($_GET['file']));
+		@readfile($_GET['file']);
 	} else {
 		header('HTTP/1.0 404 Not Found');
 		die(__('File does not exist.', 'backwpup'));
