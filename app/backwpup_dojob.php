@@ -9,15 +9,14 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	
 	switch ($errno) {
     case E_NOTICE:
-        $errorstype = __("[NOTICE]");
-		$style='';
-        break;
-    case E_USER_NOTICE:
+	case E_USER_NOTICE:
         $errorstype = "";
 		$style='';
         break;
     case E_WARNING:
     case E_USER_WARNING:
+	case E_CORE_WARNING;
+	case E_COMPILE_WARNING:
         $errorstype = __("[WARNING]");
 		$logheader=backwpup_read_logheader(BACKWPUP_LOGFILE); //read waring count from log header
 		$warnings=$logheader['warnings']+1;
@@ -25,17 +24,36 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
         break;
     case E_ERROR:
     case E_USER_ERROR:
+	case E_CORE_ERROR;
+	case E_COMPILE_ERROR;
         $errorstype = __("[ERROR]");
 		$logheader=backwpup_read_logheader(BACKWPUP_LOGFILE); //read error count from log header
 		$errors=$logheader['errors']+1;
 		$style=' style="background-color:red;"';
         break;
-    default:
-        $errorstype = "";
+	case E_DEPRECATED:
+	case E_USER_DEPRECATED:
+        $errorstype = __("[DEPRECATED]");
+		$style='';		
+		break;
+	case E_PARSE:
+        $errorstype = __("[PARSING ERROR]");
+		$style='';		
+		break;
+	case E_STRICT:
+        $errorstype = __("[STRICT NOTICE]");
+		$style='';		
+		break;
+	case E_RECOVERABLE_ERROR:
+        $errorstype = __("[RECOVERABLE ERROR]");
+		$style='';		
+		break;
+	default:
+        $errorstype = "[".$errno."]";
 		$style='';
         break;
     }
-		
+	
 	$title="[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
 		
 	//wirte log file
@@ -44,7 +62,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	@fclose($fd);
 		
 	if (!defined('DOING_CRON'))
-		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">window.scrollByLines(2);</script><br />\n";
+		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
 	
 	//write new log header
 	if (isset($errors) or isset($warnings)) {
@@ -69,7 +87,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	@flush();
 	@ob_flush();
 		
-	if ($errno==E_ERROR) { //Die on fatal php errors.
+	if ($errno==E_ERROR or $errno==E_CORE_ERROR or $errno==E_COMPILE_ERROR) { //Die on fatal php errors.
 		die();
 	}
 	//true for nor more php error hadling.
