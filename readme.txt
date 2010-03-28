@@ -50,14 +50,14 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver
 * fixed global for $wp_version
-* set max execution time to 0 for unlimeted
-* use WP function to generate options tables
+* set max execution time to 0 for unlimeted job time
+* use WP function to display job tables
 * Backup file list and zip creation changes
 * Added support for Amazon S3
 * Only works with PHP 5 now
 * Cmplete rewrite of job doing as PHP5 class
 * PHP errors now in Backup log
-* Log now in files
+* Log stred in files now again
 
 = 0.7.2 =
 * make FTP any more robust
