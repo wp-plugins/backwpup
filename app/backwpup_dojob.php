@@ -132,7 +132,7 @@ class backwpup_dojob {
 		if (empty($this->backupdir)) 
 			$this->backupdir=get_temp_dir().'backwpup';
 		//set Logs Dir
-		$this->logdir=untrailingslashit($this->cfg['dirlog']);
+		$this->logdir=untrailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir)) 
 			$this->logdir=get_temp_dir().'backwpup/logs';	
 		//set Backup file name only for jos that makes backups
