@@ -6,6 +6,7 @@ if ( !defined('ABSPATH') )
 	
 //function for PHP error handling	
 function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
+	global $backwpup_logfile;
 	
 	switch ($errno) {
     case E_NOTICE:
@@ -18,7 +19,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	case E_CORE_WARNING;
 	case E_COMPILE_WARNING:
         $errorstype = __("[WARNING]");
-		$logheader=backwpup_read_logheader(BACKWPUP_LOGFILE); //read waring count from log header
+		$logheader=backwpup_read_logheader($backwpup_logfile); //read waring count from log header
 		$warnings=$logheader['warnings']+1;
 		$style=' style="background-color:yellow;"';
         break;
@@ -27,7 +28,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	case E_CORE_ERROR;
 	case E_COMPILE_ERROR;
         $errorstype = __("[ERROR]");
-		$logheader=backwpup_read_logheader(BACKWPUP_LOGFILE); //read error count from log header
+		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
 		$errors=$logheader['errors']+1;
 		$style=' style="background-color:red;"';
         break;
@@ -57,7 +58,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	$title="[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
 		
 	//wirte log file
-	$fd=@fopen(BACKWPUP_LOGFILE,"a+");
+	$fd=@fopen($backwpup_logfile,"a+");
 	@fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><br />\n");
 	@fclose($fd);
 		
@@ -66,7 +67,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	
 	//write new log header
 	if (isset($errors) or isset($warnings)) {
-		$fd=@fopen(BACKWPUP_LOGFILE,"r+");
+		$fd=@fopen($backwpup_logfile,"r+");
 		while (!feof($fd)) {
 			$line=@fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
@@ -115,6 +116,8 @@ class backwpup_dojob {
 	private $job=array();
 	
 	public function __construct($jobid) {
+		global $backwpup_logfile;
+		
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
 		$jobs=get_option('backwpup_jobs'); //load jobdata
@@ -140,11 +143,11 @@ class backwpup_dojob {
 			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').'.zip';
 		//set Log file name
 		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html'; 
-		define('BACKWPUP_LOGFILE',$this->logdir.'/'.$this->logfile);
+		$backwpup_logfile=$this->logdir.'/'.$this->logfile;
 		//Create log file
 		if (!$this->_check_folders($this->logdir))
 			return false;
-		$fd=@fopen(BACKWPUP_LOGFILE,"a+");
+		$fd=@fopen($backwpup_logfile,"a+");
 		@fputs($fd,"<html>\n<head>\n");
 		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
@@ -873,6 +876,8 @@ class backwpup_dojob {
 	}
 	
 	public function __destruct() {
+		global $backwpup_logfile;
+		
 		if (is_file($this->backupdir.'/'.$this->backupfile)) {
 			trigger_error(sprintf(__('Backup ZIP File size is %1s','backwpup'),backwpup_formatBytes(filesize($this->backupdir.'/'.$this->backupfile))),E_USER_NOTICE);
 		}
@@ -915,7 +920,7 @@ class backwpup_dojob {
 		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),$jobs[$this->jobid]['lastruntime']),E_USER_NOTICE);
 		
 		//write runtime header
-		$fd=@fopen(BACKWPUP_LOGFILE,"r+");
+		$fd=@fopen($backwpup_logfile,"r+");
 		while (!feof($fd)) {
 			$line=@fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
@@ -927,11 +932,11 @@ class backwpup_dojob {
 		}
 		@fclose($fd);
 		//logfile end
-		$fd=fopen(BACKWPUP_LOGFILE,"a+");
+		$fd=fopen($backwpup_logfile,"a+");
 		fputs($fd,"</body>\n</html>\n");
 		fclose($fd);
 		restore_error_handler();
-		$logdata=backwpup_read_logheader(BACKWPUP_LOGFILE);
+		$logdata=backwpup_read_logheader($backwpup_logfile);
 		//Send mail with log
 		$sendmail=false;
 		if ($logdata['errors']>0 and $this->job['mailerroronly'] and !empty($this->job['mailaddresslog']))

@@ -46,6 +46,9 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
+= 0.8.1 =
+* use global var instat of constant for log file
+
 = 0.8.0 =
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver

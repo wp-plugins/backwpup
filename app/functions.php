@@ -162,6 +162,7 @@ if ( !defined('ABSPATH') )
 
 	//DoJob
 	function backwpup_dojob($args) {
+		global $backwpup_logfile;
 		if (is_array($args)) { //cron gifes no complete array back!!!
 			extract($args, EXTR_SKIP );
 		} else {
@@ -255,7 +256,7 @@ if ( !defined('ABSPATH') )
 		echo '<strong>'.__('Logs:','backwpup').'</strong><br />';
 		//get log files
 		$logfiles=array();
-		if ( $dir = opendir( $cfg['dirlogs'] ) ) {
+		if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5))
 					$logfiles[]=$file;
