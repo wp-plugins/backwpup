@@ -3,8 +3,8 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3
 Requires at least: 2.8
-Tested up to: 2.9.3
-Stable tag: 0.8.0
+Tested up to: 3.0.0
+Stable tag: 0.8.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -48,19 +48,20 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 == Changelog ==
 = 0.8.1 =
 * use global var instat of constant for log file
+* PCL Zip Trace included with setting for log Level
 
 = 0.8.0 =
 * Fiexed not working default setttings on settingspage
 * crate .htaccsses on Apache and index.html on other webserver
 * fixed global for $wp_version
-* set max execution time to 0 for unlimeted job time
-* use WP function to display job tables
+* set max execution time to 0 for unlimeted
+* use WP function to generate options tables
 * Backup file list and zip creation changes
 * Added support for Amazon S3
 * Only works with PHP 5 now
 * Cmplete rewrite of job doing as PHP5 class
 * PHP errors now in Backup log
-* Log stred in files now again
+* Log now in files
 
 = 0.7.2 =
 * make FTP any more robust

@@ -16,7 +16,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
         break;
     case E_WARNING:
     case E_USER_WARNING:
-	case E_CORE_WARNING;
+	case E_CORE_WARNING:
 	case E_COMPILE_WARNING:
         $errorstype = __("[WARNING]");
 		$logheader=backwpup_read_logheader($backwpup_logfile); //read waring count from log header
@@ -25,8 +25,8 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
         break;
     case E_ERROR:
     case E_USER_ERROR:
-	case E_CORE_ERROR;
-	case E_COMPILE_ERROR;
+	case E_CORE_ERROR:
+	case E_COMPILE_ERROR:
         $errorstype = __("[ERROR]");
 		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
 		$errors=$logheader['errors']+1;
@@ -95,8 +95,75 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	return true;
 }
 	
+//PCL Zip trace functions
+function PclTraceFctStart($p_file, $p_line, $p_name, $p_param="", $p_message="") {
+	return;
+}
+function TrFctStart($p_file, $p_line, $p_name, $p_param="", $p_message="") {
+	return;
+}
+function PclTraceFctEnd($p_file, $p_line, $p_level=1, $p_message="") {
+	return;
+}
+function TrFctEnd($p_file, $p_line, $p_level=1, $p_message="") {
+	return;
+}
+function PclTraceFctMessage($p_file, $p_line, $p_level, $p_message="") {
+	TrFctMessage($p_file, $p_line, $p_level, $p_message);
+}
+function TrFctMessage($p_file, $p_line, $p_level, $p_message="") {
+	global $backwpup_logfile;
+	global $backwpup_pcl_log_level;
+
+    if (($backwpup_pcl_log_level < $p_level))
+      return;
 	
+	switch ($p_level) {
+	case 1:
+        $errorstype = __("[PCLZIP ERROR]");
+		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
+		$errors=$logheader['errors']+1;
+		$style=' style="background-color:red;"';
+        break;
+	default:
+        $errorstype = "[PCLZIP ".$p_level."]";
+		$style='';
+        break;
+    }
 	
+	$title="[Line: ".$p_line."|File: ".basename($p_file)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
+		
+	//wirte log file
+	$fd=@fopen($backwpup_logfile,"a+");
+	@fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$p_message."</span><br />\n");
+	@fclose($fd);
+		
+	if (!defined('DOING_CRON'))
+		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$p_message."</span><script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
+	
+	//write new log header
+	if (isset($errors) or isset($warnings)) {
+		$fd=@fopen($backwpup_logfile,"r+");
+		while (!feof($fd)) {
+			$line=@fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+				@fseek($fd,$filepos);
+				@fputs($fd,"<meta name=\"backwpup_errors\" content=\"".$errors."\" />".backwpup_fillspases(4-strlen($errors))."\n");
+				break;
+			}
+			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
+				@fseek($fd,$filepos);
+				@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />".backwpup_fillspases(4-strlen($warnings))."\n");
+				break;
+			}
+			$filepos=ftell($fd);
+		}
+		@fclose($fd);
+	}
+	
+	@flush();
+}
+
 	
 /**
 * BackWPup PHP class for WordPress
@@ -117,9 +184,13 @@ class backwpup_dojob {
 	
 	public function __construct($jobid) {
 		global $backwpup_logfile;
-		
+		global $backwpup_pcl_log_level;
+
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
+		$backwpup_pcl_log_level=$this->cfg['pcl_log_level']; 
+		if ($backwpup_pcl_log_level<1 or $backwpup_pcl_log_level>5) //set to 1 for false values
+			$backwpup_pcl_log_level=1;
 		$jobs=get_option('backwpup_jobs'); //load jobdata
 		$jobs[$this->jobid]['starttime']=time(); //set start time for job
 		$jobs[$this->jobid]['stoptime']='';	   //Set stop time for job
@@ -578,6 +649,9 @@ class backwpup_dojob {
 	public function zip_files() {
 		
 		define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
+		if (!class_exists('PclZip')) require_once 'libs/pclzip-trace.lib.php';
+		
+		
 		
 		if (!is_array($this->filelist[0])) {
 			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
@@ -589,7 +663,6 @@ class backwpup_dojob {
 		if (is_array($this->filelist[0])) {
 			$this->need_free_memory(10485760); //10MB free memory for zip
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
-			if (!class_exists('PclZip')) require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			$zipbackupfile = new PclZip($this->backupdir.'/'.$this->backupfile);
 			if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 				trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);

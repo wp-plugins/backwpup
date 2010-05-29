@@ -111,6 +111,7 @@ if ( !defined('ABSPATH') )
 		if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 		if (empty($cfg['memorylimit'])) $cfg['memorylimit']='128M';
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
+		if (empty($cfg['pcl_log_level'])) $cfg['pcl_log_level']=1;
 		if (empty($cfg['dirlogs'])) $cfg['dirlogs']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup/logs'));
 		if (empty($cfg['dirtemp'])) $cfg['dirtemp']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup'));
 		update_option('backwpup',$cfg);

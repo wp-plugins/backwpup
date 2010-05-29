@@ -98,6 +98,20 @@ echo '</select>';
 </td> 
 </tr> 
 
+<tr valign="top"> 
+<th scope="row"><label for="pcl_log_level"><?PHP _e('Log Level for PCL ZIP:','backwpup'); ?></label></th> 
+<td>
+<?PHP
+echo '<select name="pcl_log_level">';
+echo '<option value="1"'.selected(1,$cfg['pcl_log_level'],false).'>'.__('Level 1 (Errors)','backwpup').'</option>';
+echo '<option value="2"'.selected(2,$cfg['pcl_log_level'],false).'>'.__('Level 2 (Min.)','backwpup').'</option>';
+echo '<option value="3"'.selected(3,$cfg['pcl_log_level'],false).'>'.__('Level 3','backwpup').'</option>';
+echo '<option value="4"'.selected(4,$cfg['pcl_log_level'],false).'>'.__('Level 4','backwpup').'</option>';
+echo '<option value="5"'.selected(5,$cfg['pcl_log_level'],false).'>'.__('Level 5 (Max.)','backwpup').'</option>';
+echo '</select>';
+?><br />
+</td> 
+</tr> 
 
 </table>
  
