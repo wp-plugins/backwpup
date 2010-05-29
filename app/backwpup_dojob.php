@@ -262,30 +262,24 @@ class backwpup_dojob {
 			break;
 		case 'DB':
 			$this->dump_db($this->job['dbexclude']);
-			$this->zip_files();
-			$this->destination_mail();
-			$this->destination_ftp();
-			$this->destination_s3();
-			$this->destination_dir();
+			$this->export_wp();
 			break;
 		case 'DB+FILE':
 			$this->dump_db($this->job['dbexclude']);
 			$this->file_list();
-			$this->zip_files();
-			$this->destination_mail();
-			$this->destination_ftp();
-			$this->destination_s3();
-			$this->destination_dir();
 			break;
 		case 'FILE':
 			$this->file_list();
+			break;
+        }
+		
+		if (isset($this->filelist[0][79001])) { // Zip Files and put it to destionation if filelist isnt empty
 			$this->zip_files();
 			$this->destination_mail();
 			$this->destination_ftp();
 			$this->destination_s3();
-			$this->destination_dir();
-			break;
-        }
+			$this->destination_dir();		
+		}
 	}
 	
 	private function _check_folders($folder) {
@@ -537,7 +531,20 @@ class backwpup_dojob {
 		$this->filelist[]=array(79001=>$this->tempdir.'/'.DB_NAME.'.sql',79003=>DB_NAME.'.sql');
 	
 	}	
-	
+
+	public function export_wp() {
+		trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
+		if (copy(wp_nonce_url(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/wp_xml_export.php?ABSPATH='.ABSPATH, 'xmlexportwp'),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {;
+			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
+			//add database file to backupfiles
+			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
+			$this->allfilesize=$this->allfilesize+filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml');
+			$this->filelist[]=array(79001=>$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>'wordpress.' . date( 'Y-m-d' ) . '.xml');
+		} else {
+			trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
+		}
+	}	
+
 	public function optimize_db($exclude_tables) {
 		global $wpdb;
 		
@@ -958,7 +965,11 @@ class backwpup_dojob {
 		if (is_file($this->tempdir.'/'.DB_NAME.'.sql') ) { //delete sql temp file
 			unlink($this->tempdir.'/'.DB_NAME.'.sql');
 		}
-
+		
+		if (is_file($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml') ) { //delete WP XML Export temp file
+			unlink($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml');
+		}
+		
 		if (empty($this->job['backupdir']) and ($this->backupdir!=$this->tempdir) and is_file($this->backupdir.'/'.$this->backupfile)) { //delete backup file in temp dir
 			unlink($this->backupdir.'/'.$this->backupfile);
 		}
