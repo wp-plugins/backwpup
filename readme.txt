@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, cron, ftp, S3
+Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
 Stable tag: 0.8.1
@@ -10,12 +10,10 @@ Backup and more of your WordPress Blog Database and Files
 
 == Description ==
 
-This Plugin is under heavy Development. Please test it and give feedback!!!.
-Plugin Requires PHP 5.
-
 Backup and more your Blog.
 
 * Database Backup
+* Wordpress XML Export
 * Optimize Database
 * Check\Repair Database
 * File Backup
@@ -27,6 +25,8 @@ Backup and more your Blog.
 
 
 I can give no WARRANTY to any backups...
+
+Plugin Requires PHP 5.
 
 == Installation ==
 
@@ -46,6 +46,9 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 1. Job Page
 
 == Changelog ==
+= 0.8.2 =
+* now Worpress Exports to XML can made
+
 = 0.8.1 =
 * use global var instat of constant for log file
 * PCL Zip Trace included with setting for log Level
