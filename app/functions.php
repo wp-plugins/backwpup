@@ -189,39 +189,36 @@ if ( !defined('ABSPATH') )
 	
 	//echo long backup type name
 	function backwpup_backup_types($type='',$echo=false) {
-		switch($type) {
-		case 'DB+FILE':
-			$typename=__('Database &amp; File Backup','backwpup');
-			break;
-		case 'DB':
-			$typename=__('Database Backup','backwpup');
-			break;			
-		case 'FILE':
-			$typename=__('File Backup','backwpup');
-			break;
-		case 'OPTIMIZE':
-			$typename=__('Optimize Database Tables','backwpup');
-			break;
-		case 'CHECK':
-			$typename=__('Check Database Tables','backwpup');
-			break;
-		default:
-			$typename=array('DB+FILE','DB','FILE','OPTIMIZE','CHECK');
-			break;
+		$typename='';
+		if (!empty($type)) {
+			$todo=explode('+',$type);
+			foreach($todo as $key => $value) {
+				switch($value) {
+				case 'WPEXP':
+					$typename.=__('WP XML Export','backwpup')."<br />";
+					break;
+				case 'DB':
+					$typename.=__('Database Backup','backwpup')."<br />";
+					break;			
+				case 'FILE':
+					$typename.=__('File Backup','backwpup')."<br />";
+					break;
+				case 'OPTIMIZE':
+					$typename.=__('Optimize Database Tables','backwpup')."<br />";
+					break;
+				case 'CHECK':
+					$typename.=__('Check Database Tables','backwpup')."<br />";
+					break;
+				}
+			}
+		} else {
+			$typename=array('WPEXP','DB','FILE','OPTIMIZE','CHECK');
 		}
-		if ($echo and !empty($type)) 
+		
+		if ($echo) 
 			echo $typename;
 		else
 			return $typename;
-	}
-	
-	//add spases
-	function backwpup_fillspases($number) {
-		$spaces='';
-		for ($i=0;$i<$number;$i++) {
-			$spaces.=' ';
-		}
-		return $spaces;
 	}
 	
 	//read log file header

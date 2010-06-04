@@ -13,7 +13,9 @@ if ( !defined('ABSPATH') )
 <?php 
 wp_nonce_field('edit-job'); 
 if (empty($jobs[$jobid]['type'])) 
-	$jobs[$jobid]['type']='DB+FILE';	
+	$jobs[$jobid]['type']='DB+FILE';
+
+$todo=explode('+',$jobs[$jobid]['type']);
 ?>
 
 <table class="form-table">
@@ -21,13 +23,11 @@ if (empty($jobs[$jobid]['type']))
 <tr valign="top"> 
 <th scope="row"><label for="job_type"><?PHP _e('Job Type','backwpup'); ?></label></th> 
 <td> 
-<select name="type" id="job_type">
-	<?php
-	foreach (backwpup_backup_types() as $type) {
-		echo '<option value="'.$type.'"'.selected($type,$jobs[$jobid]['type'],false).'>'.backwpup_backup_types($type).'</option>';
-	}
-	?>
-</select>
+<?php
+foreach (backwpup_backup_types() as $type) {
+	echo "<input class=\"checkbox\" type=\"checkbox\"".checked(true,in_array($type,$todo),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
+}
+?>
 <input type="submit" name="change" class="button" value="<?php _e('Change', 'backwpup'); ?>" /> 
 </td> 
 </tr> 
@@ -37,7 +37,7 @@ if (empty($jobs[$jobid]['type']))
 <td><input name="name" type="text" id="jobname" value="<?PHP echo $jobs[$jobid]['name'];?>" class="regular-text" /></td> 
 </tr> 
 
-<?PHP if ($jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE' or $jobs[$jobid]['type']=='OPTIMIZE' or $jobs[$jobid]['type']=='CHECK') {?>
+<?PHP if (in_array('DB',$todo) or in_array('OPTIMIZE',$todo) or in_array('CHECK',$todo)) {?>
 <tr valign="top"> 
 <th scope="row"><label for="dbexclude"><?PHP _e('Exclude Database Tables:','backwpup'); ?></label></th><td> 
 <?php
@@ -56,7 +56,7 @@ foreach ($tables as $table) {
 ?>
 </td></tr>
 <?PHP } ?>
-<?PHP if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB+FILE') {?>
+<?PHP if (in_array('FILE',$todo)) {?>
 <?PHP if (!isset($jobs[$jobid]['backuproot'])) $jobs[$jobid]['backuproot']=true; if (!isset($jobs[$jobid]['backupcontent'])) $jobs[$jobid]['backupcontent']=true; if (!isset($jobs[$jobid]['backupplugins'])) $jobs[$jobid]['backupplugins']=true;?>
 <tr valign="top"> 
 <th scope="row"><label for="fileinclude"><?PHP _e('Backup Blog Folders','backwpup'); ?></label></th><td id="fileinclude"> 
@@ -130,19 +130,37 @@ echo '</select><br />';
 </td> 
 </tr> 
 
-<?PHP if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {?>
+<?PHP if (in_array('DB',$todo) or in_array('FILE',$todo) or in_array('WPEXP',$todo)) {?>
+
+<tr valign="top">
+<th scope="row"><label for="fileformart"><?PHP _e('Backup File Format','backwpup'); ?></label></th> 
+<td>
+<?PHP 
+echo '<select name="fileformart">';
+if (function_exists('gzopen'))
+	echo '<option value=".zip"'.selected('.zip',$jobs[$jobid]['fileformart'],false).'>'.__('ZIP (.zip) (uses PCLZIP lib and 8MB free Memory)','backwpup').'</option>';
+echo '<option value=".tar"'.selected('.tar',$jobs[$jobid]['fileformart'],false).'>'.__('TAR (.tar)','backwpup').'</option>';
+if (function_exists('gzopen'))
+	echo '<option value=".tar.gz"'.selected('.tar.gz',$jobs[$jobid]['fileformart'],false).'>'.__('TAR GZIP (.tar.gz)','backwpup').'</option>';
+if (function_exists('bzopen'))
+	echo '<option value=".tar.bz2"'.selected('.tar.bz2',$jobs[$jobid]['fileformart'],false).'>'.__('TAR BZIP2 (.tar.bz2)','backwpup').'</option>';
+echo '</select><br />';
+?>
+</td> 
+</tr>
+
 <tr valign="top">
 <?PHP if (empty($jobs[$jobid]['backupdir'])) $jobs[$jobid]['backupdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup/';?>
 <th scope="row"><label for="backupdir"><?PHP _e('Save Backups to directory','backwpup'); ?></label></th> 
 <td><input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobs[$jobid]['backupdir'];?>" class="regular-text" /><span class="description"><?PHP _e('Full Path of Folder for Backup Files','backwpup'); ?></span></td> 
 </tr>
+
 <tr valign="top">
 <th scope="row"><label for="maxbackups"><?PHP _e('Max. Number of Backup Files','backwpup'); ?></label></th> 
 <td>
 <input name="maxbackups" id="maxbackups" type="text" value="<?PHP echo $jobs[$jobid]['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest files will deleted first.','backwpup');?></span>
 </td> 
 </tr>
-
 
 <tr valign="top">
 <th scope="row"><label for="ftptransfer"><?PHP _e('Copy Backup to FTP Server','backwpup'); ?></label></th> 
@@ -169,11 +187,6 @@ echo '</select><br />';
 </tr>
 <?PHP } ?>
 
-<?PHP } ?>
-
-<?PHP 
-if ($jobs[$jobid]['type']=='FILE' or $jobs[$jobid]['type']=='DB' or $jobs[$jobid]['type']=='DB+FILE') {
-?>
 <tr valign="top">
 <th scope="row"><label for="mailaddress"><?PHP _e('Send Backup with Mail to','backwpup'); ?></label></th> 
 <td><input name="mailaddress" id="mailaddress" type="text" value="<?PHP echo $jobs[$jobid]['mailaddress'];?>" class="regular-text" /><br />

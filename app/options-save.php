@@ -122,12 +122,12 @@ case 'saveeditjob': //Save Job settings
 	}
 	
 	if ($jobs[$jobid]['type']!=$_POST['type']) // set type to save
-		$savetype=$jobs[$jobid]['type'];
+		$savetype=explode('+',$jobs[$jobid]['type']);
 	else
 		$savetype=$_POST['type'];
 	
 	//All types
-	$jobs[$jobid]['type']= $_POST['type'];
+	$jobs[$jobid]['type']= implode('+',$_POST['type']);
 	$jobs[$jobid]['name']= esc_html($_POST['name']);
 	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
 	$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
@@ -137,20 +137,18 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
 	
-	if ($savetype=='DB' or $savetype=='DB+FILE' or $savetype=='OPTIMIZE' or $savetype=='CHECK') {
+	if (in_array('DB',$savetype) or in_array('OPTIMIZE',$savetype) or in_array('CHECK',$savetype)) {
 		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
 	}
-	if ($savetype=='DB' or $savetype=='DB+FILE') {
-		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
-	}
-	if ($savetype=='FILE' or $savetype=='DB+FILE') {
+	if (in_array('FILE',$savetype)) {
 		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
 		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
 		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
 		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
 		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
 	}
-	if ($savetype=='DB' or $savetype=='DB+FILE' or $savetype=='FILE') {
+	if (in_array('DB',$savetype) or in_array('FILE',$savetype) or in_array('WPEXP',$savetype)) {
+		$jobs[$jobid]['fileformart']=$_POST['fileformart'];
 		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
 		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
 		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);

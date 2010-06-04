@@ -72,12 +72,12 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 			$line=@fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwpup_errors\" content=\"".$errors."\" />".backwpup_fillspases(4-strlen($errors))."\n");
+				@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
 				break;
 			}
 			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />".backwpup_fillspases(4-strlen($warnings))."\n");
+				@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -148,12 +148,12 @@ function TrFctMessage($p_file, $p_line, $p_level, $p_message="") {
 			$line=@fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwpup_errors\" content=\"".$errors."\" />".backwpup_fillspases(4-strlen($errors))."\n");
+				@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
 				break;
 			}
 			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />".backwpup_fillspases(4-strlen($warnings))."\n");
+				@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -173,8 +173,10 @@ class backwpup_dojob {
    
 	private $jobid=0;
 	private $filelist=array();
+	private $todo=array();
 	private $allfilesize=0;
 	private $backupfile='';
+	private $backupfileformat='.zip';
 	private $backupdir='';
 	private $logdir='';
 	private $logfile='';
@@ -197,6 +199,11 @@ class backwpup_dojob {
 		$jobs[$this->jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid)); //set Schedule time to next scheduled
 		update_option('backwpup_jobs',$jobs); //Save job Settings
 		$this->job=$jobs[$this->jobid];  //Set job settings
+		//set waht to do
+		$this->todo=explode('+',$this->job['type']);
+		//set Backup File format Dir
+		if (!empty($this->job['fileformart']) or $this->job['fileformart']=='.zip' or $this->job['fileformart']=='.tar' or $this->job['fileformart']=='.tar.gz' or $this->job['fileformart']=='.tar.bz2')
+			$this->backupfileformat=$this->job['fileformart'];
 		//set Temp Dir
 		$this->tempdir=untrailingslashit($this->cfg['dirtemp']);
 		if (empty($this->tempdir)) 
@@ -210,8 +217,8 @@ class backwpup_dojob {
 		if (empty($this->logdir)) 
 			$this->logdir=get_temp_dir().'backwpup/logs';	
 		//set Backup file name only for jos that makes backups
-		if ($this->job['type']=='FILE' or $this->job['type']=='DB+FILE' or $this->job['type']=='DB') 
-			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').'.zip';
+		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo)) 
+			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
 		//set Log file name
 		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html'; 
 		$backwpup_logfile=$this->logdir.'/'.$this->logfile;
@@ -222,14 +229,14 @@ class backwpup_dojob {
 		@fputs($fd,"<html>\n<head>\n");
 		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_errors\" content=\"0\" />".backwpup_fillspases(3)."\n");
-		@fputs($fd,"<meta name=\"backwpup_warnings\" content=\"0\" />".backwpup_fillspases(3)."\n");
+		@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
+		@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
 		@fputs($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_jobname\" content=\"".$this->job['name']."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_jobtype\" content=\"".backwpup_backup_types($this->job['type'],false)."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_jobtype\" content=\"".$this->job['type']."\" />\n");
 		if (!empty($this->backupfile))
 			@fputs($fd,"<meta name=\"backwpup_backupfile\" content=\"".$this->backupdir."/".$this->backupfile."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_jobruntime\" content=\"0\" />".backwpup_fillspases(9)."\n");
+		@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
 		@fputs($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$this->job['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 		@fclose($fd);
 		//PHP Error handling
@@ -253,33 +260,45 @@ class backwpup_dojob {
 			trigger_error(sprintf(__('Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamicli increase the Memeory!','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
 		}
 		//run job parts
-		switch ($this->job['type']) {
-		case 'CHECK':
-			$this->check_db($this->job['dbexclude']);
-			break;
-		case 'OPTIMIZE':
-			$this->optimize_db($this->job['dbexclude']);
-			break;
-		case 'DB':
-			$this->dump_db($this->job['dbexclude']);
-			$this->export_wp();
-			break;
-		case 'DB+FILE':
-			$this->dump_db($this->job['dbexclude']);
-			$this->file_list();
-			break;
-		case 'FILE':
-			$this->file_list();
-			break;
-        }
+		foreach($this->todo as $key => $value) {
+			switch ($value) {
+			case 'DB':
+				$this->dump_db($this->job['dbexclude']);
+				break;
+			case 'WPEXP':
+				$this->export_wp();
+				break;
+			case 'FILE':
+				$this->file_list();
+				break;
+			}
+		}
 		
 		if (isset($this->filelist[0][79001])) { // Zip Files and put it to destionation if filelist isnt empty
-			$this->zip_files();
+			if ($this->backupfileformat==".zip")
+				$this->zip_files();
+			elseif ($this->backupfileformat==".tar.gz" or $this->backupfileformat==".tar.bz2" or $this->backupfileformat==".tar")
+				$this->tar_pack_files();
+			else
+				return;
+			if (!file_exists($this->backupdir.'/'.$this->backupfile))
+				return;
 			$this->destination_mail();
 			$this->destination_ftp();
 			$this->destination_s3();
 			$this->destination_dir();		
 		}
+		
+		foreach($this->todo as $key => $value) {
+			switch ($value) {
+			case 'CHECK':
+				$this->check_db($this->job['dbexclude']);
+				break;
+			case 'OPTIMIZE':
+				$this->optimize_db($this->job['dbexclude']);
+				break;
+			}
+		}	
 	}
 	
 	private function _check_folders($folder) {
@@ -605,7 +624,7 @@ class backwpup_dojob {
 					if (is_readable($folder . '/' . $file)) {
 						$this->filelist[]=array(79001=>$folder.'/' .$file,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$folder.'/') . $file);
 						$this->allfilesize=$this->allfilesize+filesize($folder . '/' . $file);
-						trigger_error(__('Add File to Backup:','backwpup').' '.$folder . '/' . $file.' '.backwpup_formatBytes(filesize($folder . '/' . $file)),E_USER_NOTICE);
+						trigger_error(__('Add to Backup File list:','backwpup').' '.$folder . '/' . $file.' '.backwpup_formatBytes(filesize($folder . '/' . $file)),E_USER_NOTICE);
 					} else {
 						trigger_error(__('Can not read file:','backwpup').' '.$folder . '/' . $file,E_USER_WARNING);
 					}
@@ -650,7 +669,14 @@ class backwpup_dojob {
 				if (is_dir($dirincludevalue)) 
 					$this->_file_list_folder(untrailingslashit(str_replace('\\','/',$dirincludevalue)),100,$backwpup_exclude);
 			}
-		}		
+		}
+
+		if (!is_array($this->filelist[0])) {
+			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
+		} else {
+			trigger_error(__('Size off all files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
+		}
+	
 	}	
 
 	public function zip_files() {
@@ -658,14 +684,6 @@ class backwpup_dojob {
 		define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
 		if (!class_exists('PclZip')) require_once 'libs/pclzip-trace.lib.php';
 		
-		
-		
-		if (!is_array($this->filelist[0])) {
-			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
-		} else {
-			trigger_error(__('Size off all files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
-		}
-
 		//Create Zip File
 		if (is_array($this->filelist[0])) {
 			$this->need_free_memory(10485760); //10MB free memory for zip
@@ -674,12 +692,105 @@ class backwpup_dojob {
 			if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 				trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
 			} else {
-				trigger_error(__('Backup Zip file create done! File size is:','backwpup').' '.backwpup_formatBytes(filesize($this->backupdir.'/'.$this->backupfile)),E_USER_NOTICE);
+				trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 			}
 		}
 		
 	}
 	
+	public function tar_pack_files() {
+		
+		if ($this->backupfileformat=='.tar.gz') {
+			$tarbackup=gzopen($this->backupdir.'/'.$this->backupfile,'w9');
+		} elseif ($this->backupfileformat=='.tar.bz2') {
+			$tarbackup=bzopen($this->backupdir.'/'.$this->backupfile,'w');
+		} else {
+			$tarbackup=fopen($this->backupdir.'/'.$this->backupfile,'w');
+		}
+		
+		if (!$tarbackup) {
+			trigger_error(__('Can not create TAR Backup file','backwpup'),E_USER_ERROR);
+			return;
+		} else {
+			trigger_error(__('Create Backup Archive file...','backwpup'),E_USER_NOTICE);
+		}
+		
+		$this->need_free_memory(1048576); //1MB free memory for zip
+		
+		foreach($this->filelist as $key => $files) {
+				trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001],E_USER_NOTICE);
+				// Get file information
+				$file_information = stat($files[79001]);
+
+				// Generate the TAR header for this file
+				$header = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
+						  substr($files[79003],0,100),  				//name of file  100
+						  sprintf("%07o", $file_information['mode']), 	//file mode  8
+						  sprintf("%07o", $file_information['uid']),	//owner user ID  8
+						  sprintf("%07o", $file_information['gid']),	//owner group ID  8
+						  sprintf("%011o", $file_information['size']),	//length of file in bytes  12
+						  sprintf("%011o", $file_information['mtime']),	//modify time of file  12
+						  "        ",									//checksum for header  8
+						  0,											//type of file  0 or null = File, 5=Dir
+						  "",											//name of linked file  100
+						  "ustar ",										//USTAR indicator  6
+						  " ",											//USTAR version  2
+						  "Unknown",									//owner user name 32
+						  "Unknown",									//owner group name 32
+						  "",											//device major number 8
+						  "",											//device minor number 8
+						  substr($files[79003],101),					//prefix for file name 155
+						  "");											//fill block 512K
+							
+				// Computes the unsigned Checksum of a file's header
+				$checksum = 0;
+				for ($i = 0; $i < 512; $i++)
+					$checksum += ord(substr($header, $i, 1));
+				$checksum = pack("a8", sprintf("%07o", $checksum));
+				
+				$header = substr_replace($header, $checksum, 148, 8);
+				
+				if ($this->backupfileformat=='.tar.gz') {
+					gzwrite($tarbackup, $header);
+				} elseif ($this->backupfileformat=='.tar.bz2') {
+					bzwrite($tarbackup, $header);
+				} else {
+					fwrite($tarbackup, $header);
+				}
+				
+				// read/write files in 512K Blocks
+				$fd=fopen($files[79001],'rb');
+				while(!feof($fd)) {
+					$filedata=fread($fd,512);
+					if (strlen($filedata)>0) {
+						if ($this->backupfileformat=='.tar.gz') {
+							gzwrite($tarbackup,pack("a512", $filedata));
+						} elseif ($this->backupfileformat=='.tar.bz2') {
+							bzwrite($tarbackup,pack("a512", $filedata));
+						} else {
+							fwrite($tarbackup,pack("a512", $filedata));
+						}
+					}
+				}
+				fclose($fd);
+			}
+		
+		
+		if ($this->backupfileformat=='.tar.gz') {
+			gzwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
+			gzclose($tarbackup);	
+		} elseif ($this->backupfileformat=='.tar.bz2') {
+			bzwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
+			bzclose($tarbackup);
+		} else {
+			fwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
+			fclose($tarbackup);	
+		}
+				
+		trigger_error(__('Backup Archive file create done!','backwpup'),E_USER_NOTICE);
+	}
+	
+		
 	public function _ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function
 		$return=ftp_raw($ftp_conn_id,$command);
 		if (strtoupper(substr(trim($command),0,4))=="PASS") {
@@ -786,12 +897,12 @@ class backwpup_dojob {
 			trigger_error(__('Backup File transferred to FTP Server:','backwpup').' '.trailingslashit($this->job['ftpdir']).$this->backupfile,E_USER_NOTICE);
 		else
 			trigger_error(__('Can not transfer backup to FTP server.','backwpup'),E_USER_ERROR);
-			
-		unset($backupfilelist);			
+		
 		if ($this->job['ftpmaxbackups']>0) { //Delete old backups
+			$backupfilelist=array();
 			if ($filelist=ftp_nlist($ftp_conn_id, trailingslashit($this->job['ftpdir']))) {
 				foreach($filelist as $files) {
-					if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and ".zip" == substr(basename($files),-4))
+					if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
 						$backupfilelist[]=basename($files);
 				}
 				if (sizeof($backupfilelist)>0) {
@@ -902,14 +1013,14 @@ class backwpup_dojob {
 				trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.str_replace('//','/',trailingslashit($this->job['awsdir'])).$this->backupfile,E_USER_NOTICE);
 			else
 				trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
-		
-			unset($backupfilelist);			
+			
 			if ($this->job['awsmaxbackups']>0) { //Delete old backups
+				$backupfilelist=array();
 				if (($contents = $s3->getBucket($this->job['awsBucket'])) !== false) {
 					foreach ($contents as $object) {
 						if (trailingslashit($this->job['awsdir'])==substr($object['name'],0,strlen(trailingslashit($this->job['awsdir'])))) {
 							$files=basename($object['name']);
-							if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and ".zip" == substr(basename($files),-4))
+							if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
 								$backupfilelist[]=basename($object['name']);
 						}
 					}
@@ -934,10 +1045,11 @@ class backwpup_dojob {
 
 	public function destination_dir() {
 		//Delete old Backupfiles
+		$backupfilelist=array();
 		if (!empty($this->job['maxbackups']) and !empty($this->job['backupdir']) and is_dir($this->job['backupdir'])) {
 			if ( $dir = @opendir($this->job['backupdir']) ) { //make file list	
 				while (($file = readdir($dir)) !== false ) {
-					if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and ".zip" == substr($file,-4))
+					if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
 						$backupfilelist[]=$file;
 				}
 				@closedir( $dir );
@@ -959,7 +1071,7 @@ class backwpup_dojob {
 		global $backwpup_logfile;
 		
 		if (is_file($this->backupdir.'/'.$this->backupfile)) {
-			trigger_error(sprintf(__('Backup ZIP File size is %1s','backwpup'),backwpup_formatBytes(filesize($this->backupdir.'/'.$this->backupfile))),E_USER_NOTICE);
+			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes(filesize($this->backupdir.'/'.$this->backupfile))),E_USER_NOTICE);
 		}
 
 		if (is_file($this->tempdir.'/'.DB_NAME.'.sql') ) { //delete sql temp file
@@ -1009,7 +1121,7 @@ class backwpup_dojob {
 			$line=@fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
 				@fseek($fd,$filepos);
-				@fputs($fd,"<meta name=\"backwpup_jobruntime\" content=\"".$jobs[$this->jobid]['lastruntime']."\" />".backwpup_fillspases(10-strlen($jobs[$this->jobid]['lastruntime']))."\n");
+				@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$jobs[$this->jobid]['lastruntime']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
