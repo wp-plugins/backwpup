@@ -173,7 +173,7 @@ if ( !defined('ABSPATH') )
 		require_once('backwpup_dojob.php');
 		$dojob= new backwpup_dojob($jobid);
 		unset($dojob);
-		return BACKWPUP_LOGFILE;
+		return $backwpup_logfile;
 	}
 	
 	//file size
@@ -295,7 +295,7 @@ if ( !defined('ABSPATH') )
 				if (wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 					echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">';
 					if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
-						$runtime=time()-$jobvalue['starttime'];
+						$runtime=current_time('timestamp')-$jobvalue['starttime'];
 						echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 						echo date_i18n(get_option('date_format'),$time).' '.date_i18n(get_option('time_format'),$time);

@@ -125,9 +125,10 @@ class backwpup_dojob {
 		if ($backwpup_pcl_log_level<1 or $backwpup_pcl_log_level>5) //set to 1 for false values
 			$backwpup_pcl_log_level=1;
 		$jobs=get_option('backwpup_jobs'); //load jobdata
-		$jobs[$this->jobid]['starttime']=time(); //set start time for job
+		$jobs[$this->jobid]['starttime']=current_time('timestamp'); //set start time for job
 		$jobs[$this->jobid]['stoptime']='';	   //Set stop time for job
-		$jobs[$this->jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid)); //set Schedule time to next scheduled
+		if (defined('DOING_CRON')) //set Schedule time to next scheduled
+			$jobs[$this->jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid));
 		update_option('backwpup_jobs',$jobs); //Save job Settings
 		$this->job=$jobs[$this->jobid];  //Set job settings
 		//set waht to do
@@ -159,7 +160,7 @@ class backwpup_dojob {
 		$fd=@fopen($backwpup_logfile,"a+");
 		@fputs($fd,"<html>\n<head>\n");
 		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
+		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 		@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 		@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
 		@fputs($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
@@ -1060,13 +1061,12 @@ class backwpup_dojob {
 		}		
 		
 		$jobs=get_option('backwpup_jobs');
-		$jobs[$this->jobid]['stoptime']=time();
+		$jobs[$this->jobid]['stoptime']=current_time('timestamp');
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['lastruntime']=$jobs[$this->jobid]['stoptime']-$jobs[$this->jobid]['starttime'];
-		$jobs[$this->jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid));
 		update_option('backwpup_jobs',$jobs); //Save Settings
 		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),$jobs[$this->jobid]['lastruntime']),E_USER_NOTICE);
-		
+
 		//write runtime header
 		$fd=@fopen($backwpup_logfile,"r+");
 		while (!feof($fd)) {

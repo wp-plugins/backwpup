@@ -83,7 +83,7 @@ if ( !defined('ABSPATH') )
 					break;
 				case 'type':
 					echo '<td $attributes>';
-					echo $logdata['type'];
+					echo backwpup_backup_types($logdata['type'],true);
 					echo '</td>'; 
 					break;
 				case 'log':

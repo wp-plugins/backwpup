@@ -94,7 +94,7 @@ if ( !defined('ABSPATH') )
 				case 'next':
 					echo "<td $attributes>";
 					if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
-						$runtime=time()-$jobvalue['starttime'];
+						$runtime=current_time('timestamp')-$jobvalue['starttime'];
 						echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 						echo date_i18n(get_option('date_format'),$time); ?><br /><?PHP echo date_i18n(get_option('time_format'),$time);

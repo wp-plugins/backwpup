@@ -96,7 +96,7 @@ echo '</select><br />';
 
 _e('Start Time:', 'backwpup');
 if (empty($jobs[$jobid]['scheduletime']))
-	$jobs[$jobid]['scheduletime']=time();
+	$jobs[$jobid]['scheduletime']=current_time('timestamp');
 
 echo '<select name="schedulehour">';
 for ($i=0;$i<=23;$i++) {
@@ -105,7 +105,10 @@ for ($i=0;$i<=23;$i++) {
 echo '</select>:';
 echo '<select name="scheduleminute">';
 for ($i=0;$i<=59;$i++) {
-	echo '<option value="'.$i.'"'.selected($i,date_i18n('i',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
+	$minute=$i;
+	if (strlen($minute)<2)
+		$minute='0'.$minute;
+	echo '<option value="'.$i.'"'.selected($minute,date_i18n('i',$jobs[$jobid]['scheduletime']),false).'>'.$i.'</option>';
 }
 echo '</select><br />';
 _e('Start Date:', 'backwpup'); 
