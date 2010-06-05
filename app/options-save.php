@@ -65,7 +65,6 @@ case 'savecfg': //Save config form Setings page
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['dirlogs']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirlogs'])));
 	$cfg['dirtemp']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirtemp'])));
-	$cfg['pcl_log_level']=$_POST['pcl_log_level'];
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';

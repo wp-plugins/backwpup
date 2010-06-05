@@ -94,75 +94,6 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	//true for nor more php error hadling.
 	return true;
 }
-	
-//PCL Zip trace functions
-function PclTraceFctStart($p_file, $p_line, $p_name, $p_param="", $p_message="") {
-	return;
-}
-function TrFctStart($p_file, $p_line, $p_name, $p_param="", $p_message="") {
-	return;
-}
-function PclTraceFctEnd($p_file, $p_line, $p_level=1, $p_message="") {
-	return;
-}
-function TrFctEnd($p_file, $p_line, $p_level=1, $p_message="") {
-	return;
-}
-function PclTraceFctMessage($p_file, $p_line, $p_level, $p_message="") {
-	TrFctMessage($p_file, $p_line, $p_level, $p_message);
-}
-function TrFctMessage($p_file, $p_line, $p_level, $p_message="") {
-	global $backwpup_logfile;
-	global $backwpup_pcl_log_level;
-
-    if (($backwpup_pcl_log_level < $p_level))
-      return;
-	
-	switch ($p_level) {
-	case 1:
-        $errorstype = __("[PCLZIP ERROR]");
-		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
-		$errors=$logheader['errors']+1;
-		$style=' style="background-color:red;"';
-        break;
-	default:
-        $errorstype = "[PCLZIP ".$p_level."]";
-		$style='';
-        break;
-    }
-	
-	$title="[Line: ".$p_line."|File: ".basename($p_file)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
-		
-	//wirte log file
-	$fd=@fopen($backwpup_logfile,"a+");
-	@fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$p_message."</span><br />\n");
-	@fclose($fd);
-		
-	if (!defined('DOING_CRON'))
-		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$p_message."</span><script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
-	
-	//write new log header
-	if (isset($errors) or isset($warnings)) {
-		$fd=@fopen($backwpup_logfile,"r+");
-		while (!feof($fd)) {
-			$line=@fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
-				break;
-			}
-			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
-				break;
-			}
-			$filepos=ftell($fd);
-		}
-		@fclose($fd);
-	}
-	
-	@flush();
-}
 
 	
 /**
@@ -546,7 +477,7 @@ class backwpup_dojob {
 		trigger_error(__('Database Dump done!','backwpup'),E_USER_NOTICE);
 		//add database file to backupfiles
 		trigger_error(__('Add Database Dump to Backup:','backwpup').' '.DB_NAME.'.sql '.backwpup_formatBytes(filesize($this->tempdir.'/'.DB_NAME.'.sql')),E_USER_NOTICE);
-		$this->allfilesize=$this->allfilesize+filesize($this->tempdir.'/'.DB_NAME.'.sql');
+		$this->allfilesize+=filesize($this->tempdir.'/'.DB_NAME.'.sql');
 		$this->filelist[]=array(79001=>$this->tempdir.'/'.DB_NAME.'.sql',79003=>DB_NAME.'.sql');
 	
 	}	
@@ -557,7 +488,7 @@ class backwpup_dojob {
 			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			//add database file to backupfiles
 			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
-			$this->allfilesize=$this->allfilesize+filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml');
+			$this->allfilesize+=filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml');
 			$this->filelist[]=array(79001=>$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>'wordpress.' . date( 'Y-m-d' ) . '.xml');
 		} else {
 			trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
@@ -621,10 +552,9 @@ class backwpup_dojob {
 				if ( is_dir( $folder . '/' . $file ) ) {
 					$this->_file_list_folder( $folder . '/' . $file, $levels - 1, $excludes);
 				} elseif (is_file( $folder . '/' . $file )) {
-					if (is_readable($folder . '/' . $file)) {
+					if (is_readable($folder . '/' . $file)) { //add file to filelist
 						$this->filelist[]=array(79001=>$folder.'/' .$file,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$folder.'/') . $file);
 						$this->allfilesize=$this->allfilesize+filesize($folder . '/' . $file);
-						trigger_error(__('Add to Backup File list:','backwpup').' '.$folder . '/' . $file.' '.backwpup_formatBytes(filesize($folder . '/' . $file)),E_USER_NOTICE);
 					} else {
 						trigger_error(__('Can not read file:','backwpup').' '.$folder . '/' . $file,E_USER_WARNING);
 					}
@@ -638,6 +568,7 @@ class backwpup_dojob {
 	
 	public function file_list() {
 		//Make filelist
+		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_ERROR);
 		$backwpup_exclude=array(); $dirinclude=array();
 	
 		if (!empty($this->job['fileexclude'])) 
@@ -681,21 +612,42 @@ class backwpup_dojob {
 
 	public function zip_files() {
 		
-		define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
-		if (!class_exists('PclZip')) require_once 'libs/pclzip-trace.lib.php';
-		
-		//Create Zip File
-		if (is_array($this->filelist[0])) {
-			$this->need_free_memory(10485760); //10MB free memory for zip
+		if (class_exists('ZipArchive')) {  //use php zip lib
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
-			$zipbackupfile = new PclZip($this->backupdir.'/'.$this->backupfile);
-			if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-				trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
-			} else {
+			$zip = new ZipArchive;
+			if ($res=$zip->open($this->backupdir.'/'.$this->backupfile,ZIPARCHIVE::CREATE) === TRUE) {
+				foreach($this->filelist as $key => $files) {
+					if ($zip->addFile($files[79001], $files[79003])) {
+						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+					} else {
+						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$files[79001],E_USER_ERROR);
+					}
+				}
+				$zip->close();
 				trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
+			} else {
+				trigger_error(__('Can not create Backup ZIP file:','backwpup').' '.$res,E_USER_ERROR);
+			}
+		
+		} else { //use PclZip
+			define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
+			if (!class_exists('PclZip')) require_once 'libs/pclzip.lib.php';
+		
+			//Create Zip File
+			if (is_array($this->filelist[0])) {
+				$this->need_free_memory(10485760); //10MB free memory for zip
+				trigger_error(__('Create Backup Zip (PclZip) file...','backwpup'),E_USER_NOTICE);
+				$zipbackupfile = new PclZip($this->backupdir.'/'.$this->backupfile);
+				if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
+					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
+				} else {
+					foreach($this->filelist as $key => $files) {
+						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+					}					
+					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
+				}
 			}
 		}
-		
 	}
 	
 	public function tar_pack_files() {
@@ -718,7 +670,7 @@ class backwpup_dojob {
 		$this->need_free_memory(1048576); //1MB free memory for zip
 		
 		foreach($this->filelist as $key => $files) {
-				trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001],E_USER_NOTICE);
+				trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
 				// Get file information
 				$file_information = stat($files[79001]);
 

@@ -17,8 +17,7 @@ Backup and more your Blog.
 * Optimize Database
 * Check\Repair Database
 * File Backup
-* Uses PCLZIP class for ZIP BAckup
-* make tar Backups (gz,bz2)
+* Backups in Zip,tar,tar.gz,tar.bz2 formart
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
@@ -51,6 +50,8 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * now Worpress Exports to XML can made
 * new backup files formats tar, tar.gz, tar.bz2
 * all backup types can made in one job
+* added php zip extension support (use pclzip only if no support)
+* removed PclZip trace code becose use new formats on Problems
 
 = 0.8.1 =
 * use global var instat of constant for log file
