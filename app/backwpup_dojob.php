@@ -62,8 +62,11 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	@fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><br />\n");
 	@fclose($fd);
 		
-	if (!defined('DOING_CRON'))
+	if (!defined('DOING_CRON')) {
 		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
+		@flush();
+		@ob_flush();
+	}
 	
 	//write new log header
 	if (isset($errors) or isset($warnings)) {
@@ -84,9 +87,6 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 		}
 		@fclose($fd);
 	}
-	
-	@flush();
-	@ob_flush();
 		
 	if ($errno==E_ERROR or $errno==E_CORE_ERROR or $errno==E_COMPILE_ERROR) { //Die on fatal php errors.
 		die();
@@ -637,13 +637,13 @@ class backwpup_dojob {
 			if (is_array($this->filelist[0])) {
 				$this->need_free_memory(10485760); //10MB free memory for zip
 				trigger_error(__('Create Backup Zip (PclZip) file...','backwpup'),E_USER_NOTICE);
+				foreach($this->filelist as $key => $files) {
+					trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+				}	
 				$zipbackupfile = new PclZip($this->backupdir.'/'.$this->backupfile);
 				if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
-				} else {
-					foreach($this->filelist as $key => $files) {
-						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
-					}					
+				} else {				
 					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 				}
 			}

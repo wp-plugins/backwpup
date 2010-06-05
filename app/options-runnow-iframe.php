@@ -7,9 +7,11 @@ if ( !defined('ABSPATH') ) {
 check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
 ignore_user_abort(true);
 // flush any buffers and send the headers
-ob_start();
-while (@ob_end_flush());
-flush();		
+@apache_setenv('no-gzip', 1);
+@ini_set('zlib.output_compression', 0);
+@ini_set('implicit_flush', 1);
+@flush();
+@ob_flush();	
 }
 ?>
 <html>

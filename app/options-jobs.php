@@ -137,8 +137,8 @@ echo '</select><br />';
 <td>
 <?PHP 
 echo '<select name="fileformart">';
-if (function_exists('gzopen'))
-	echo '<option value=".zip"'.selected('.zip',$jobs[$jobid]['fileformart'],false).'>'.__('ZIP (.zip) (uses PCLZIP lib and 8MB free Memory)','backwpup').'</option>';
+if (function_exists('gzopen') or class_exists('ZipArchive'))
+	echo '<option value=".zip"'.selected('.zip',$jobs[$jobid]['fileformart'],false).'>'.__('ZIP (.zip)','backwpup').'</option>';
 echo '<option value=".tar"'.selected('.tar',$jobs[$jobid]['fileformart'],false).'>'.__('TAR (.tar)','backwpup').'</option>';
 if (function_exists('gzopen'))
 	echo '<option value=".tar.gz"'.selected('.tar.gz',$jobs[$jobid]['fileformart'],false).'>'.__('TAR GZIP (.tar.gz)','backwpup').'</option>';
