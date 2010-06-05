@@ -568,7 +568,7 @@ class backwpup_dojob {
 	
 	public function file_list() {
 		//Make filelist
-		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_ERROR);
+		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
 		$backwpup_exclude=array(); $dirinclude=array();
 	
 		if (!empty($this->job['fileexclude'])) 
