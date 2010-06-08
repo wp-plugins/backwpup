@@ -53,6 +53,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * added php zip extension support (use pclzip only if no support)
 * removed PclZip trace code becose use new formats on Problems
 * fixed time display and schedule bugs
+* added some security
 
 = 0.8.1 =
 * use global var instat of constant for log file

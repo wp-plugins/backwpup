@@ -111,8 +111,14 @@ if ( !defined('ABSPATH') )
 		if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 		if (empty($cfg['memorylimit'])) $cfg['memorylimit']='128M';
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
-		if (empty($cfg['dirlogs'])) $cfg['dirlogs']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup/logs'));
-		if (empty($cfg['dirtemp'])) $cfg['dirtemp']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup'));
+		if (empty($cfg['dirtemp'])) {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+			$cfg['dirtemp']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup-'.$rand));
+		}
+		if (empty($cfg['dirlogs'])) {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+			$cfg['dirlogs']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup-'.$rand.'/logs';
+		}
 		update_option('backwpup',$cfg);
 	}
 	
@@ -312,7 +318,6 @@ if ( !defined('ABSPATH') )
 	function backwpup_add_dashboard() {
 		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );		
 	}
-	
 	
 	// add all action and so on only if plugin loaded.
 	function backwpup_init() {

@@ -153,7 +153,12 @@ echo '</select><br />';
 </tr>
 
 <tr valign="top">
-<?PHP if (empty($jobs[$jobid]['backupdir'])) $jobs[$jobid]['backupdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup/';?>
+<?PHP 
+	if (empty($jobs[$jobid]['backupdir'])) {
+		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+		$jobs[$jobid]['backupdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup-'.$rand;
+	}
+?>
 <th scope="row"><label for="backupdir"><?PHP _e('Save Backups to directory','backwpup'); ?></label></th> 
 <td><input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobs[$jobid]['backupdir'];?>" class="regular-text" /><span class="description"><?PHP _e('Full Path of Folder for Backup Files','backwpup'); ?></span></td> 
 </tr>

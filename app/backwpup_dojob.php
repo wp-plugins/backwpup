@@ -344,7 +344,6 @@ class backwpup_dojob {
 		}	
 	}
 
-
 	private function dump_db_table($table,$status,$file) {
 		global $wpdb;
 		$table = str_replace("´", "´´", $table); //esc table name
@@ -380,6 +379,7 @@ class backwpup_dojob {
 		fwrite($file, "LOCK TABLES `".$table."` WRITE;\n\n");
 		if ($status['Engine']=='MyISAM')
 			fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
+
 		
 		while ($data = mysql_fetch_assoc($result)) {
 			$keys = array();
@@ -485,7 +485,7 @@ class backwpup_dojob {
 
 	public function export_wp() {
 		trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-		if (copy(wp_nonce_url(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/wp_xml_export.php?ABSPATH='.ABSPATH, 'xmlexportwp'),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {;
+		if (copy(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/wp_xml_export.php?ABSPATH='.ABSPATH.'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			//add database file to backupfiles
 			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);

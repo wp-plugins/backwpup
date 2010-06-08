@@ -1,18 +1,14 @@
 <?PHP
-if ( !defined('ABSPATH') ) {
-	/** Setup WordPress environment */
-	require_once($_GET['ABSPATH'].'/wp-load.php');
-	
-	
-check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
-ignore_user_abort(true);
-// flush any buffers and send the headers
-@apache_setenv('no-gzip', 1);
-@ini_set('zlib.output_compression', 0);
-@ini_set('implicit_flush', 1);
-@flush();
-@ob_flush();	
-}
+if (is_dir($_GET['ABSPATH'])) {
+	require_once($_GET['ABSPATH'].'/wp-load.php'); /** Setup WordPress environment */
+	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
+	ignore_user_abort(true);
+	// flush any buffers and send the headers
+	@apache_setenv('no-gzip', 1);
+	@ini_set('zlib.output_compression', 0);
+	@ini_set('implicit_flush', 1);
+	@flush();
+	@ob_flush();	
 ?>
 <html>
     <head>
@@ -25,3 +21,8 @@ ignore_user_abort(true);
 	?>
 	</body>
 </html>
+<?PHP
+} else {	
+	header("HTTP/1.0 404 Not Found");
+}
+?>
