@@ -345,8 +345,6 @@ class backwpup_dojob {
 	}
 
 	private function dump_db_table($table,$status,$file) {
-		global $wpdb;
-		$table = str_replace("´", "´´", $table); //esc table name
 
 		// create dump
 		fwrite($file, "\n");
@@ -358,8 +356,8 @@ class backwpup_dojob {
 		fwrite($file, "/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n");
 		//Dump the table structure
 		$result=mysql_query("SHOW CREATE TABLE `".$table."`");
-		if ($sqlerr=mysql_error($wpdb->dbh)) {
-			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
+		if (!$result) {
+			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
 			return false;
 		}
 		$tablestruc=mysql_fetch_assoc($result);
@@ -368,8 +366,8 @@ class backwpup_dojob {
 	
 		//take data of table
 		$result=mysql_query("SELECT * FROM `".$table."`");
-		if ($sqlerr=mysql_error($wpdb->dbh)) {
-			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SELECT * FROM `".$table."`"),E_USER_ERROR);
+		if (!$result) {
+			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
 			return false;
 		}
 	
@@ -389,10 +387,9 @@ class backwpup_dojob {
 				if($value === NULL) // Make Value NULL to string NULL
 					$value = "NULL";
 				elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
-					$value = '""';
+					$value = "''";
 				elseif(!is_numeric($value)) //is value not numeric esc
-					$value = "\"".mysql_real_escape_string($value)."\"";
-		
+					$value = "'".mysql_real_escape_string($value)."'";
 				$values[] = $value;
 			}
 			// make data dump
@@ -409,6 +406,8 @@ class backwpup_dojob {
 
 		//Tables to backup		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+		if ($sqlerr=mysql_error($wpdb->dbh)) 
+			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SHOW TABLES FROM `'.DB_NAME.'`"),E_USER_ERROR);
 		if (is_array($exclude_tables)) {
 			foreach($tables as $tablekey => $tablevalue) {
 				if (in_array($tablevalue,$exclude_tables))
