@@ -140,8 +140,8 @@ case 'saveeditjob': //Save Job settings
 		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
 	}
 	if (in_array('FILE',$savetype)) {
-		$jobs[$jobid]['fileexclude']=str_replace('\\','/',stripslashes($_POST['fileexclude']));
-		$jobs[$jobid]['dirinclude']=str_replace('\\','/',stripslashes($_POST['dirinclude']));
+		$jobs[$jobid]['fileexclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['fileexclude'])));
+		$jobs[$jobid]['dirinclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['dirinclude'])));
 		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
 		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
 		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
@@ -149,18 +149,18 @@ case 'saveeditjob': //Save Job settings
 	if (in_array('DB',$savetype) or in_array('FILE',$savetype) or in_array('WPEXP',$savetype)) {
 		$jobs[$jobid]['fileformart']=$_POST['fileformart'];
 		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
-		$jobs[$jobid]['backupdir']= untrailingslashit(str_replace('\\','/',stripslashes($_POST['backupdir'])));
+		$jobs[$jobid]['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['backupdir']))));
 		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
 		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
 		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
 		$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-		$jobs[$jobid]['ftpdir']=str_replace('\\','/',stripslashes(trim($_POST['ftpdir'])));
+		$jobs[$jobid]['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['ftpdir'])))));
 		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
 		$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
 		$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
 		$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
 		$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
-		$jobs[$jobid]['awsdir']=str_replace('\\','/',stripslashes(trim($_POST['awsdir'])));
+		$jobs[$jobid]['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['awsdir'])))));
 		if (substr($jobs[$jobid]['awsdir'],0,1)=='/')
 			$jobs[$jobid]['awsdir']=substr($jobs[$jobid]['awsdir'],1);
 		$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);

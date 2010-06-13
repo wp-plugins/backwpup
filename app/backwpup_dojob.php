@@ -141,7 +141,7 @@ class backwpup_dojob {
 		if (empty($this->tempdir)) 
 			$this->tempdir=get_temp_dir().'backwpup';
 		//set Backup Dir
-		$this->backupdir=untrailingslashit($this->job['backupdir']);
+		$this->backupdir=untrailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($this->job['backupdir']))));
 		if (empty($this->backupdir)) 
 			$this->backupdir=get_temp_dir().'backwpup';
 		//set Logs Dir
@@ -585,7 +585,7 @@ class backwpup_dojob {
 	
 		//include dirs
 		if (!empty($this->job['dirinclude'])) 
-			$dirinclude=explode(',',str_replace('\\','/',$this->job['dirinclude']));
+			$dirinclude=explode(',',$this->job['dirinclude']);
 		
 		if ($this->job['backuproot']) //Include extra path
 			$dirinclude[]=ABSPATH;
@@ -773,6 +773,11 @@ class backwpup_dojob {
 	
 	
 	public function destination_ftp() {
+		$this->job['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($this->job['ftpdir'])))));
+		if ($this->job['ftpdir']=='/')
+			$this->job['ftpdir']='';
+	
+	
 		if (empty($this->job['ftphost']) or empty($this->job['ftpuser']) or empty($this->job['ftppass'])) 
 			return false;
 	
@@ -845,14 +850,14 @@ class backwpup_dojob {
 			}
 		}
 			
-		if (ftp_put($ftp_conn_id, trailingslashit($this->job['ftpdir']).$this->backupfile, $this->backupdir.'/'.$this->backupfile, FTP_BINARY))  //transfere file
-			trigger_error(__('Backup File transferred to FTP Server:','backwpup').' '.trailingslashit($this->job['ftpdir']).$this->backupfile,E_USER_NOTICE);
+		if (ftp_put($ftp_conn_id, $this->job['ftpdir'].$this->backupfile, $this->backupdir.'/'.$this->backupfile, FTP_BINARY))  //transfere file
+			trigger_error(__('Backup File transferred to FTP Server:','backwpup').' '.$this->job['ftpdir'].$this->backupfile,E_USER_NOTICE);
 		else
 			trigger_error(__('Can not transfer backup to FTP server.','backwpup'),E_USER_ERROR);
 		
 		if ($this->job['ftpmaxbackups']>0) { //Delete old backups
 			$backupfilelist=array();
-			if ($filelist=ftp_nlist($ftp_conn_id, trailingslashit($this->job['ftpdir']))) {
+			if ($filelist=ftp_nlist($ftp_conn_id, $this->job['ftpdir'])) {
 				foreach($filelist as $files) {
 					if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
 						$backupfilelist[]=basename($files);
@@ -861,10 +866,10 @@ class backwpup_dojob {
 					rsort($backupfilelist);
 					$numdeltefiles=0;
 					for ($i=$this->job['ftpmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						if (ftp_delete($ftp_conn_id, trailingslashit($this->job['ftpdir']).$backupfilelist[$i])) //delte files on ftp
+						if (ftp_delete($ftp_conn_id, $this->job['ftpdir'].$backupfilelist[$i])) //delte files on ftp
 						$numdeltefiles++;
 						else 
-							trigger_error(__('Can not delete file on FTP Server:','backwpup').' '.trailingslashit($this->job['ftpdir']).$backupfilelist[$i],E_USER_ERROR);
+							trigger_error(__('Can not delete file on FTP Server:','backwpup').' '.$this->job['ftpdir'].$backupfilelist[$i],E_USER_ERROR);
 					}
 					if ($numdeltefiles>0)
 						trigger_error($numdeltefiles.' '.__('files deleted on FTP Server:','backwpup'),E_USER_NOTICE);
@@ -946,6 +951,10 @@ class backwpup_dojob {
 	}
 
 	public function destination_s3() {
+		$this->job['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($this->job['awsdir'])))));
+		if ($this->job['awsdir']=='/')
+			$this->job['awsdir']='';
+		
 		if (empty($this->job['awsAccessKey']) or empty($this->job['awsSecretKey']) or empty($this->job['awsBucket'])) 
 			return false;
 
@@ -961,8 +970,8 @@ class backwpup_dojob {
 		if (in_array($this->job['awsBucket'],$s3->listBuckets())) {
 			trigger_error(__('Connected to S3 Bucket:','backwpup').' '.$this->job['awsBucket'],E_USER_NOTICE);
 			//Transfer Backup to S3
-			if ($s3->putObjectFile($this->backupdir.'/'.$this->backupfile, $this->job['awsBucket'], str_replace('//','/',trailingslashit($this->job['awsdir'])).$this->backupfile, S3::ACL_PRIVATE))  //transfere file to S3
-				trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.str_replace('//','/',trailingslashit($this->job['awsdir'])).$this->backupfile,E_USER_NOTICE);
+			if ($s3->putObjectFile($this->backupdir.'/'.$this->backupfile, $this->job['awsBucket'], $this->job['awsdir'].$this->backupfile, S3::ACL_PRIVATE))  //transfere file to S3
+				trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$this->backupfile,E_USER_NOTICE);
 			else
 				trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
 			
@@ -970,7 +979,7 @@ class backwpup_dojob {
 				$backupfilelist=array();
 				if (($contents = $s3->getBucket($this->job['awsBucket'])) !== false) {
 					foreach ($contents as $object) {
-						if (trailingslashit($this->job['awsdir'])==substr($object['name'],0,strlen(trailingslashit($this->job['awsdir'])))) {
+						if ($this->job['awsdir']==dirname(str_replace('\\','/',$object['name']))) {
 							$files=basename($object['name']);
 							if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
 								$backupfilelist[]=basename($object['name']);
@@ -981,10 +990,10 @@ class backwpup_dojob {
 					rsort($backupfilelist);
 					$numdeltefiles=0;
 					for ($i=$this->job['awsmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						if ($s3->deleteObject($this->job['awsBucket'], str_replace('//','/',trailingslashit($this->job['awsdir']).$backupfilelist[$i]))) //delte files on S3
+						if ($s3->deleteObject($this->job['awsBucket'], $this->job['awsdir'].$backupfilelist[$i])) //delte files on S3
 							$numdeltefiles++;
 						else 
-							trigger_error(__('Can not delete file on S3//:','backwpup').$this->job['awsBucket'].'/'.str_replace('//','/',trailingslashit($this->job['awsdir']).$backupfilelist[$i]),E_USER_ERROR);
+							trigger_error(__('Can not delete file on S3//:','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$backupfilelist[$i],E_USER_ERROR);
 						if ($numdeltefiles>0)
 							trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
 					}
