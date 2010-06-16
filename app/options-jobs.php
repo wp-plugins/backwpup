@@ -54,6 +54,10 @@ foreach ($tables as $table) {
 }
 
 ?>
+</td></tr> 
+<tr valign="top"> 
+<th scope="row"><label for="maintenance"><?PHP _e('Maintenance Mode','backwpup'); ?></label></th><td id="maintenance"> 
+<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['maintenance'],true,true);?> name="maintenance" value="1"/> <?php _e('Set Blog Maintenance Mode on Database Operations','backwpup');?><br />
 </td></tr>
 <?PHP } ?>
 <?PHP if (in_array('FILE',$todo)) {?>

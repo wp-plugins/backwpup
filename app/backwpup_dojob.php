@@ -295,6 +295,40 @@ class backwpup_dojob {
 		return true;	
 	}
 	
+	private function maintenance_mode($enable = false) {
+		if (!$this->job['maintenance'])
+			return;
+			
+		if ( $enable ) {
+			trigger_error(__('Set Blog to Maintenance Mode','backwpup'),E_USER_NOTICE);
+			if ( class_exists('WPMaintenanceMode') ) { //Support for WP Maintenance Mode Plugin
+				update_option('wp-maintenance-mode-msqld','1');			
+			} elseif ( class_exists('MaintenanceMode') ) { //Support for Maintenance Mode Plugin
+				$mamo=get_option('plugin_maintenance-mode');
+				$mamo['mamo_activate']='on_'.current_time('timestamp');
+				$mamo['mamo_backtime_days']='0';
+				$mamo['mamo_backtime_hours']='0';
+				$mamo['mamo_backtime_mins']='5';
+				update_option('plugin_maintenance-mode',$mamo);				
+			} else { //WP Support
+				$fdmain=fopen(trailingslashit(ABSPATH).'.maintenance','w');
+				fputs($fdmain,'<?php $upgrading = ' . time() . '; ?>');
+				fclose($fdmain);			
+			}
+		} else {
+			trigger_error(__('Set Blog to normal Mode','backwpup'),E_USER_NOTICE);
+			if ( class_exists('WPMaintenanceMode') ) { //Support for WP Maintenance Mode Plugin
+				update_option('wp-maintenance-mode-msqld','0');	
+			} elseif ( class_exists('MaintenanceMode') ) { //Support for Maintenance Mode Plugin
+				$mamo=get_option('plugin_maintenance-mode');
+				$mamo['mamo_activate']='off';
+				update_option('plugin_maintenance-mode',$mamo);					
+			} else { //WP Support
+				@unlink(trailingslashit(ABSPATH).'.maintenance');
+			}
+		}
+	}
+	
 	private function check_db($exclude_tables) {
 		global $wpdb;
 		
@@ -310,8 +344,10 @@ class backwpup_dojob {
 			}
 		}
 		
+		
 		//check tables
 		if (sizeof($tables)>0) {
+			$this->maintenance_mode(true);
 			foreach ($tables as $table) {
 				$check=$wpdb->get_row('CHECK TABLE `'.$table.'` MEDIUM', ARRAY_A);
 				if ($check['Msg_type']=='error')
@@ -338,6 +374,7 @@ class backwpup_dojob {
 				}
 			}
 			$wpdb->flush();
+			$this->maintenance_mode(false);
 			trigger_error(__('Database check done!','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('No Tables to check','backwpup'),E_USER_WARNING);
@@ -403,6 +440,7 @@ class backwpup_dojob {
 	public function dump_db($exclude_tables) {
 		global $wpdb;
 		trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
+		$this->maintenance_mode(true);
 
 		//Tables to backup		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
@@ -479,7 +517,8 @@ class backwpup_dojob {
 		trigger_error(__('Add Database Dump to Backup:','backwpup').' '.DB_NAME.'.sql '.backwpup_formatBytes(filesize($this->tempdir.'/'.DB_NAME.'.sql')),E_USER_NOTICE);
 		$this->allfilesize+=filesize($this->tempdir.'/'.DB_NAME.'.sql');
 		$this->filelist[]=array(79001=>$this->tempdir.'/'.DB_NAME.'.sql',79003=>DB_NAME.'.sql');
-	
+		
+		$this->maintenance_mode(false);
 	}	
 
 	public function export_wp() {
@@ -511,6 +550,7 @@ class backwpup_dojob {
 		}
 		
 		if (sizeof($tables)>0) {
+			$this->maintenance_mode(true);
 			foreach ($tables as $table) {
 				$optimize=$wpdb->get_row('OPTIMIZE TABLE `'.$table.'`', ARRAY_A);
 				if ($optimize['Msg_type']=='error')
@@ -525,6 +565,7 @@ class backwpup_dojob {
 			}
 			$wpdb->flush();
 			trigger_error(__('Database optimize done!','backwpup'),E_USER_NOTICE);
+			$this->maintenance_mode(false);
 		} else {
 			trigger_error(__('No Tables to optimize','backwpup'),E_USER_WARNING);
 		}	
@@ -540,7 +581,7 @@ class backwpup_dojob {
 				if ( in_array($file, array('.', '..','.svn') ) )
 					continue;
 				foreach ($excludes as $exclusion) { //exclude dirs and files
-					if (false !== stripos($folder.'/'.$file,str_replace('\\','/',$exclusion)))
+					if (false !== stripos($folder.'/'.$file,$exclusion))
 						continue 2;
 				}
 				if (!$this->job['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',ABSPATH)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))

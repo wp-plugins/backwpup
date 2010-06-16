@@ -138,6 +138,7 @@ case 'saveeditjob': //Save Job settings
 	
 	if (in_array('DB',$savetype) or in_array('OPTIMIZE',$savetype) or in_array('CHECK',$savetype)) {
 		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+		$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;	
 	}
 	if (in_array('FILE',$savetype)) {
 		$jobs[$jobid]['fileexclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['fileexclude'])));
