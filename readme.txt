@@ -54,6 +54,7 @@ in the root folder of the zip Archive. <i>DBName</i>.sql
 * removed PclZip trace code becose use new formats on Problems
 * fixed time display and schedule bugs
 * added some security
+* Mantinance Mode on MySQL Operations
 
 = 0.8.1 =
 * use global var instat of constant for log file
