@@ -17,7 +17,7 @@ Backup and more your Blog.
 * Optimize Database
 * Check\Repair Database
 * File Backup
-* Backups in Zip,tar,tar.gz,tar.bz2 formart
+* Backups in zip,tar,tar.gz,tar.bz2 formart
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
@@ -26,7 +26,6 @@ Backup and more your Blog.
 
 I can give no WARRANTY to any backups...
 
-Plugin Requires PHP 5.
 
 == Installation ==
 
@@ -35,23 +34,59 @@ Plugin Requires PHP 5.
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
+= Requires =
+* PHP 5
+* Wordpress 2.8
+* curl (for Amazon S3 Support)
+* gzip (for PCLZIP and gzip archives)
+* bzip2 (for bzip2 archives)
 
-= Where is the Database dump on DB+File backup =
+= Where is the Database dump File =
+in the root folder of the Archive. <i>DBName</i>.sql
 
-in the root folder of the zip Archive. <i>DBName</i>.sql
+= Where is the Wordpress Export File =
+in the root folder of the Archive. wordpress.<i>jjjj-mm-dd</i>.xml
 
+= Zip File Support =
+Plugin use PCLZIP lib if not php uses zip extension
+
+= Mantinance Mode =
+Supported Plugins
+* maintenance-mode
+* wp-maintenance-mode
+* Wordpress .mantinance file
+
+if your blog do not come back from Mantinace Mode switsh back from Mantinace Mode by changing the Plugin options or delete the <i>.mantinance</i> file in blog root folder.
+
+= Retore a Blog DataBase =
+Copy the <i>DBName</i>.sql in the root folder of the blog and go to the tools tab in the plugin.
+You kann use PHPMyAdmin also.
+
+= Abnormal Script aborts =
+Webserver normaly abort Scrips that works longer then 300s.
+PHP normaly abort Script that works langen then 30s but the plugin try too switch off the arbotion.
+
+= Memory usage =
+* The Plugin is coded to use low memory
+* The Plugin will try to increase Memory automaticly if needed
+* PCLZIP lib need 8MB free Memeory for ziping
+* Mail a archive need many Memory
+
+= Mail achives =
+I have build in many options to Optimize the Mailing but the mailing lib uses high Memory.
+Pleace mail only littele archives
 
 == Screenshots ==
 
 1. Job Page
 
 == Changelog ==
-= 0.9.0 =
+= 1.0.0 =
 * now Worpress Exports to XML can made
 * new backup files formats tar, tar.gz, tar.bz2
-* all backup types can made in one job
-* added php zip extension support (use pclzip only if no support)
-* removed PclZip trace code becose use new formats on Problems
+* all job types can made in one job
+* added php zip extension support (use pclzip only if not supported)
+* removed PclZip trace code
 * fixed time display and schedule bugs
 * added some security
 * Mantinance Mode on MySQL Operations
