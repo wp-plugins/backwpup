@@ -90,6 +90,7 @@ Pleace mail only littele archives
 * fixed time display and schedule bugs
 * added some security
 * Mantinance Mode on MySQL Operations
+* new Design on Job edit page
 
 = 0.8.1 =
 * use global var instat of constant for log file

@@ -125,8 +125,8 @@ case 'saveeditjob': //Save Job settings
 	else
 		$savetype=$_POST['type'];
 	
-	//All types
-	$jobs[$jobid]['type']= implode('+',$_POST['type']);
+
+	$jobs[$jobid]['type']= implode('+',(array)$_POST['type']);
 	$jobs[$jobid]['name']= esc_html($_POST['name']);
 	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
 	$jobs[$jobid]['scheduletime']=mktime($_POST['schedulehour'],$_POST['scheduleminute'],0,$_POST['schedulemonth'],$_POST['scheduleday'],$_POST['scheduleyear']);
@@ -135,54 +135,47 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['scheduleinterval']=$_POST['scheduleintervaltype']*$_POST['scheduleintervalteimes'];
 	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
-	
-	if (in_array('DB',$savetype) or in_array('OPTIMIZE',$savetype) or in_array('CHECK',$savetype)) {
-		$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
-		$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;	
-	}
-	if (in_array('FILE',$savetype)) {
-		$jobs[$jobid]['fileexclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['fileexclude'])));
-		$jobs[$jobid]['dirinclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['dirinclude'])));
-		$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
-		$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
-		$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
-	}
-	if (in_array('DB',$savetype) or in_array('FILE',$savetype) or in_array('WPEXP',$savetype)) {
-		$jobs[$jobid]['fileformart']=$_POST['fileformart'];
-		$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
-		$jobs[$jobid]['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['backupdir']))));
-		$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
-		$jobs[$jobid]['ftphost']=$_POST['ftphost'];
-		$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
-		$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-		$jobs[$jobid]['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['ftpdir'])))));
-		$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
-		$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
-		$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
-		$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
-		$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
-		$jobs[$jobid]['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['awsdir'])))));
-		if (substr($jobs[$jobid]['awsdir'],0,1)=='/')
-			$jobs[$jobid]['awsdir']=substr($jobs[$jobid]['awsdir'],1);
-		$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
-		$jobs[$jobid]['awsmaxbackups']=abs((int)$_POST['awsmaxbackups']);
-	}
-	
+	$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+	$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;	
+	$jobs[$jobid]['fileexclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['fileexclude'])));
+	$jobs[$jobid]['dirinclude']=str_replace('//','/',str_replace('\\','/',stripslashes($_POST['dirinclude'])));
+	$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
+	$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
+	$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+	$jobs[$jobid]['fileformart']=$_POST['fileformart'];
+	$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
+	$jobs[$jobid]['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['backupdir']))));
+	$jobs[$jobid]['maxbackups']=abs((int)$_POST['maxbackups']);
+	$jobs[$jobid]['ftphost']=$_POST['ftphost'];
+	$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
+	$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
+	$jobs[$jobid]['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['ftpdir'])))));
+	$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
+	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
+	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
+	$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
+	$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
+	$jobs[$jobid]['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['awsdir'])))));
+	if (substr($jobs[$jobid]['awsdir'],0,1)=='/')
+		$jobs[$jobid]['awsdir']=substr($jobs[$jobid]['awsdir'],1);
+	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
+	$jobs[$jobid]['awsmaxbackups']=abs((int)$_POST['awsmaxbackups']);
+
+	//save chages
 	if (update_option('backwpup_jobs',$jobs)) 
-		$backwpup_message=str_replace('%1',$jobid,__('Job %1 settings saved', 'backwpup'));
+		$backwpup_message=str_replace('%1',$jobs[$jobid]['name'],__('Job \'%1\' changes saved', 'backwpup'));
 	
+	//update schedule
 	if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 		wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 	}
 	if ($jobs[$jobid]['activated']) {
 		wp_schedule_event($jobs[$jobid]['scheduletime'], 'backwpup_int_'.$jobid, 'backwpup_cron',array('jobid'=>$jobid));
 	}
-	if (!empty($_POST['change'])) {
-		$_REQUEST['action']='edit';
-		$_REQUEST['jobid']=$jobid;
-	} else {
-		$_REQUEST['action']='';
-	}
+	//go to job page
+	$_REQUEST['action']='edit';
+	$_REQUEST['jobid']=$jobid;
+
 	break;
 }	
 ?>
