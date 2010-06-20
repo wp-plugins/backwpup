@@ -34,21 +34,21 @@ if ( !defined('ABSPATH') )
 <table class="widefat" cellspacing="0">
 	<thead>
 	<tr>
-<?php print_column_headers('backwpup_options_logs'); ?>
+<?php print_column_headers($page_hook); ?>
 	</tr>
 	</thead>
 	
 	<tfoot>
 	<tr>
-<?php print_column_headers('backwpup_options_logs', false); ?>
+<?php print_column_headers($page_hook, false); ?>
 	</tr>
 	</tfoot>	
  
 	<tbody id="the-list" class="list:post"> 
 	
 <?php
-	$item_columns = get_column_headers('backwpup_options_logs');
-	$hidden = get_hidden_columns('backwpup_options_logs');
+	$item_columns = get_column_headers($page_hook);
+	$hidden = get_hidden_columns($page_hook);
 	
 	//get log files
 	$logfiles=array();
@@ -79,19 +79,19 @@ if ( !defined('ABSPATH') )
 					echo '<th scope="row" class="check-column"><input type="checkbox" name="logfiles[]" value="'. esc_attr($logfile) .'" /></th>';
 					break;
 				case 'id':
-					echo '<td $attributes>'.$logdata['jobid'].'</td>'; 
+					echo "<td $attributes>".$logdata['jobid']."</td>"; 
 					break;
 				case 'type':
-					echo '<td $attributes>';
+					echo "<td $attributes>";
 					echo backwpup_backup_types($logdata['type'],true);
-					echo '</td>'; 
+					echo "</td>"; 
 					break;
 				case 'log':
 					$name='';
 					if (is_file($logvalue['backupfile']))
 						$name=basename($logvalue['backupfile']);
 				
-					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>'.$logdata['name'].'</i></a></strong>';
+					echo "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile)."\" title=\"".__('View log','backwpup')."\">".date_i18n(get_option('date_format'),$logdata['logtime'])." ".date_i18n(get_option('time_format'),$logdata['logtime']).": <i>".$logdata['name']."</i></a></strong>";
 					$actions = array();
 					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile) . "\">" . __('View','backwpup') . "</a>";
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete-logs&logfile='.$logfile, 'delete-log_'.$logfile) . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
@@ -107,10 +107,10 @@ if ( !defined('ABSPATH') )
 						echo "<span class='$action'>$linkaction$sep</span>";
 					}
 					echo '</div>';
-					echo '</td>';
+					echo "</td>";
 					break;
 				case 'status':
-					echo '<td $attributes>';
+					echo "<td $attributes>";
 					if($logdata['errors']>0 or $logdata['warnings']>0) { 
 						if ($logdata['errors']>0)
 							echo '<span style="color:red;">'.$logdata['errors'].' '.__('ERROR(S)','backwpup').'</span><br />'; 
@@ -119,10 +119,10 @@ if ( !defined('ABSPATH') )
 					} else { 
 						echo '<span style="color:green;">'.__('OK','backwpup').'</span>';
 					} 
-					echo '</td>'; 
+					echo "</td>"; 
 					break;
 				case 'size':
-					echo '<td $attributes>';
+					echo "<td $attributes>";
 					if (!empty($logdata['backupfile']) and is_file($logdata['backupfile'])) {
 						echo backwpup_formatBytes(filesize($logdata['backupfile']));
 					} elseif (!empty($logdata['backupfile'])) {
@@ -130,12 +130,12 @@ if ( !defined('ABSPATH') )
 					} else {
 						_e('only Log','backwpup');
 					}
-					echo '</td>'; 
+					echo "</td>"; 
 					break;
 				case 'runtime':
-					echo '<td $attributes>';
+					echo "<td $attributes>";
 					echo $logdata['runtime'].' '.__('sec.','backwpup');
-					echo '</td>'; 
+					echo "</td>"; 
 					break;					
 			}
 		}

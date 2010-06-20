@@ -8,8 +8,24 @@ if ( !defined('ABSPATH') )
 		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup','backwpup_options_page') ;
 		add_action('load-'.$hook, 'backwpup_options_load');
 		add_contextual_help($hook,backwpup_show_help());
-		register_column_headers('backwpup_options',array('cb'=>'<input type="checkbox" />','id'=>__('ID','backwpup'),'name'=>__('Name','backwpup'),'type'=>__('Type','backwpup'),'next'=>__('Next Run','backwpup'),'last'=>__('Last Run','backwpup')));
-		register_column_headers('backwpup_options_logs',array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'type'=>__('Type','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup'),'status'=>__('Status','backwpup'),'size'=>__('Size','backwpup'),'runtime'=>__('Runtime','backwpup')));
+		switch($_REQUEST['action']) {
+		case 'logs':
+			register_column_headers($hook,array('cb'=>'<input type="checkbox" />','id'=>__('Job','backwpup'),'type'=>__('Type','backwpup'),'log'=>__('Backup/Log Date/Time','backwpup'),'status'=>__('Status','backwpup'),'size'=>__('Size','backwpup'),'runtime'=>__('Runtime','backwpup')));
+			break;
+		case 'edit':
+			break;
+		case 'settings':
+			break;
+		case 'tools':
+			break;
+		case 'runnow':
+			break;
+		case 'view_log':
+			break;
+		default:
+			register_column_headers($hook,array('cb'=>'<input type="checkbox" />','id'=>__('ID','backwpup'),'jobname'=>__('Job Name','backwpup'),'type'=>__('Type','backwpup'),'next'=>__('Next Run','backwpup'),'last'=>__('Last Run','backwpup')));
+			break;
+		}
 	}	
 	
 	// Help too display
@@ -30,7 +46,7 @@ if ( !defined('ABSPATH') )
 	
 	//Options Page
 	function backwpup_options_page() {
-		global $wpdb,$backwpup_message;
+		global $wpdb,$backwpup_message,$page_hook;
 		if (!current_user_can(10)) 
 			wp_die('No rights');
 		if(!empty($backwpup_message)) 

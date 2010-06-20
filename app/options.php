@@ -34,20 +34,20 @@ if ( !defined('ABSPATH') )
 <table class="widefat" cellspacing="0">
 	<thead>
 	<tr>
-<?php print_column_headers('backwpup_options'); ?>
+<?php print_column_headers($page_hook); ?>
 	</tr>
 	</thead>
 	
 	<tfoot>
 	<tr>
-<?php print_column_headers('backwpup_options', false); ?>
+<?php print_column_headers($page_hook, false); ?>
 	</tr>
 	</tfoot>	
  
 	<tbody id="the-list" class="list:post"> 
 <?php
-	$item_columns = get_column_headers('backwpup_options');
-	$hidden = get_hidden_columns('backwpup_options');
+	$item_columns = get_column_headers($page_hook);
+	$hidden = get_hidden_columns($page_hook);
 	
 	if (is_array($jobs)) { 
 		foreach ($jobs as $jobid => $jobvalue) {
@@ -66,10 +66,10 @@ if ( !defined('ABSPATH') )
 					echo '<th scope="row" class="check-column"><input type="checkbox" name="jobs[]" value="'. esc_attr($jobid) .'" /></th>';
 					break;
 				case 'id':
-					echo '<td $attributes>'.$jobid.'</td>'; 
+					echo "<td $attributes>".$jobid."</td>"; 
 					break;
-				case 'name':
-					echo '<td $attributes><strong><a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit:','backwpup').$jobvalue['name'].'">'.$jobvalue['name'].'</a></strong>';
+				case 'jobname':
+					echo "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job')."\" title=\"".__('Edit:','backwpup').$jobvalue['name']."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
 					$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
 					$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
