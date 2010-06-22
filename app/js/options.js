@@ -1,6 +1,6 @@
 jQuery(document).ready( function($) {
 
-	function updateVisibility() {
+	$('.jobtype-select').change(function() {
 		if ( true == $('#jobtype-select-FILE').attr('checked') || true ==  $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-WPEXP').attr('checked')) {
 			$('#fileformart').show();
 			$('#toftp').show();
@@ -24,12 +24,20 @@ jQuery(document).ready( function($) {
 		} else {
 			$('#filebackup').hide();
 		}
-	}
-
-	$('.jobtype-select').change(function() {
-		updateVisibility();
 	});
 
+	$('#mailmethod').change(function() {
+		if ( 'SMTP' == $('#mailmethod').val()) {
+			$('#mailsmtp').show();
+			$('#mailsendmail').hide();
+		} else if ( 'Sendmail' == $('#mailmethod').val()) {
+			$('#mailsmtp').hide();
+			$('#mailsendmail').show();
+		} else {
+			$('#mailsmtp').hide();
+			$('#mailsendmail').hide();		
+		}
+	});
 	
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');

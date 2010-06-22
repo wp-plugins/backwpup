@@ -13,95 +13,99 @@ if ( !defined('ABSPATH') )
 <li><a href="admin.php?page=BackWPup&amp;action=settings" class="current"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
 
+<div class="clear"></div>
+
 <form method="post" action="">
 <input type="hidden" name="action" value="savecfg" />
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 
-<table class="form-table">
+<div id="poststuff" class="metabox-holder has-right-sidebar"> 
+	<div class="inner-sidebar">
+		<div id="side-sortables" class="meta-box-sortables">
+			<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
+		</div>
+	</div>
+	<div class="has-sidebar" >
+		<div id="post-body-content" class="has-sidebar-content">
+				
+			<div id="memory" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Max Memory Usage','backwpup'); ?></span></h3>
+				<div class="inside">
+					<?php 
+					echo __('PHP.ini Memory Limit:','backwpup').' '.ini_get('memory_limit').'<br />'; 
+						
+					if (empty($cfg['memorylimit']))
+						$cfg['memorylimit']='128M';
+						
+					if (!function_exists('memory_get_usage')) 
+						echo __('Set Memory limit:','backwpup').'<input name="memorylimit" type="text" value="'.$cfg['memorylimit'].'" class="small-text" />';
+					 else 
+						echo '<span class="description">'.__('Memory will be automatically increased!!!','backwpup').'</span><input name="memorylimit" type="hidden" value="'.$cfg['memorylimit'].'"  />';
 
-
-<tr valign="top"> 
-<th scope="row"><label for="memory"><?PHP _e('Max Memory Usage','backwpup'); ?></label></th> 
-<td id="memory">
-<?php 
-echo __('PHP.ini Memory Limit:','backwpup').' '.ini_get('memory_limit').'<br />'; 
-	
-if (empty($cfg['memorylimit']))
-	$cfg['memorylimit']='128M';
-	
-if (!function_exists('memory_get_usage')) 
-	echo __('Set Memory limit:','backwpup').'<input name="memorylimit" type="text" value="'.$cfg['memorylimit'].'" class="small-text" />';
- else 
-	echo '<span class="description">'.__('Memory will be automatically increased!!!','backwpup').'</span><input name="memorylimit" type="hidden" value="'.$cfg['memorylimit'].'"  />';
-
-?>
-</td> 
-</tr> 
-
-
-
-<tr valign="top">
-<th scope="row"><label for="mailtype"><?PHP _e('Mail Send:','backwpup'); ?></label></th> 
-<td id="mailtype">
-<?PHP _e('Sender Email:','backwpup'); ?><input name="mailsndemail" type="text" value="<?PHP echo $cfg['mailsndemail'];?>" class="user" /><br />
-<?PHP _e('Sender Name:','backwpup'); ?><input name="mailsndname" type="text" value="<?PHP echo $cfg['mailsndname'];?>" class="user" /><br />
-<?PHP _e('Send mail method:','backwpup'); 
-echo '<select name="mailmethod">';
-echo '<option value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
-echo '<option value="Sendmail"'.selected('Sendmail',$cfg['mailmethod'],false).'>'.__('Sendmail','backwpup').'</option>';
-echo '<option value="SMTP"'.selected('SMTP',$cfg['mailmethod'],false).'>'.__('SMTP','backwpup').'</option>';
-echo '</select>';
-?><br />
-<?PHP _e('Sendmail Path:','backwpup'); ?><input name="mailhost" type="text" value="<?PHP echo $cfg['mailsendmail'];?>" class="regular-text" /><br />
-<?PHP _e('SMTP Hostname:','backwpup'); ?><input name="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text" /><br />
-<?PHP _e('SMTP Secure Connection:','backwpup');
-echo '<select name="mailsecure">';
-echo '<option value=""'.selected('',$cfg['mailsecure'],false).'>'.__('none','backwpup').'</option>';
-echo '<option value="ssl"'.selected('ssl',$cfg['mailsecure'],false).'>SSL</option>';
-echo '<option value="tls"'.selected('tls',$cfg['mailsecure'],false).'>TLS</option>';
-echo '</select>';
-?><br />
-<?PHP _e('SMTP Username:','backwpup'); ?><input name="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="user" /><br />
-<?PHP _e('SMTP Password:','backwpup'); ?><input name="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="password" /><br />
-</td> 
-</tr>
-
-<tr valign="top">
-<th scope="row"><label for="maxlogs"><?PHP _e('Max. Number of Logs','backwpup'); ?></label></th> 
-<td>
-<input name="maxlogs" id="maxlogs" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('0=off','backwpup');?> <?PHP _e('Oldest log will deleted first.','backwpup');?></span>
-</td> 
-</tr>
-
-<tr valign="top"> 
-<th scope="row"><label for="dirlogs"><?PHP _e('Log file Folder:','backwpup'); ?></label></th> 
-<td>
-<input name="dirlogs" type="text" value="<?PHP echo $cfg['dirlogs'];?>" class="regular-text" /><br />
-</td> 
-</tr> 
-
-<tr valign="top"> 
-<th scope="row"><label for="disablewpcron"><?PHP _e('Disable WP-Cron:','backwpup'); ?></label></th> 
-<td>
-<input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/>
- <?PHP _e('Use Cron job of Hoster and disable WP_Cron','backwpup'); ?><br />
-<?PHP _e('You must set up a cron job that calls:','backwpup'); ?><br />
-<i> php -q <?PHP echo ABSPATH.'wp-cron.php'; ?></i><br /> 
-<?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 
-</td> 
-</tr> 
-
-<tr valign="top"> 
-<th scope="row"><label for="dirtemp"><?PHP _e('Temp Folder for Backups:','backwpup'); ?></label></th> 
-<td>
-<input name="dirtemp" type="text" value="<?PHP echo $cfg['dirtemp'];?>" class="regular-text" /><br />
-</td> 
-</tr> 
-
-</table>
- 
+					?>
+				</div>
+			</div>
+		
+			<div id="mailtype" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Send Mail','backwpup'); ?></span></h3>
+				<div class="inside">
+					<b><?PHP _e('Sender Email:','backwpup'); ?></b><br /><input name="mailsndemail" type="text" value="<?PHP echo $cfg['mailsndemail'];?>" class="large-text" /><br />
+					<b><?PHP _e('Sender Name:','backwpup'); ?></b><br /><input name="mailsndname" type="text" value="<?PHP echo $cfg['mailsndname'];?>" class="large-text" /><br />
+					<b><?PHP _e('Send mail method:','backwpup'); ?></b><br />
+					<?PHP 
+					echo '<select id="mailmethod" name="mailmethod">';
+					echo '<option value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
+					echo '<option value="Sendmail"'.selected('Sendmail',$cfg['mailmethod'],false).'>'.__('Sendmail','backwpup').'</option>';
+					echo '<option value="SMTP"'.selected('SMTP',$cfg['mailmethod'],false).'>'.__('SMTP','backwpup').'</option>';
+					echo '</select>';
+					?><br />
+					<label id="mailsendmail" <?PHP if ($cfg['mailmethod']!='Sendmail') echo 'style="display:none;"';?>><b><?PHP _e('Sendmail Path:','backwpup'); ?></b><br /><input name="mailsendmail" type="text" value="<?PHP echo $cfg['mailsendmail'];?>" class="large-text" /><br /></label>
+					<label id="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>>
+					<b><?PHP _e('SMTP Hostname:','backwpup'); ?></b><br /><input name="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="large-text" /><br />
+					<b><?PHP _e('SMTP Secure Connection:','backwpup'); ?></b><br />
+					<select name="mailsecure">
+					<option value=""<?PHP selected('',$cfg['mailsecure'],true); ?>><?PHP _e('none','backwpup'); ?></option>
+					<option value="ssl"<?PHP selected('ssl',$cfg['mailsecure'],true); ?>>SSL</option>
+					<option value="tls"<?PHP selected('tls',$cfg['mailsecure'],true); ?>>TLS</option>
+					</select><br />
+					<b><?PHP _e('SMTP Username:','backwpup'); ?></b><br /><input name="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="user large-text" /><br />
+					<b><?PHP _e('SMTP Password:','backwpup'); ?></b><br /><input name="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="password large-text" /><br />
+					</label>
+				</div>
+			</div>
+		
+			<div id="logs" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Logs','backwpup'); ?></span></h3>
+				<div class="inside">
+					<b><?PHP _e('Log file Folder:','backwpup'); ?></b><br />
+					<input name="dirlogs" type="text" value="<?PHP echo $cfg['dirlogs'];?>" class="large-text" /><br />
+					<b><?PHP _e('Max. Log Files in Folder:','backwpup'); ?></b><br />
+					<input name="maxlogs" id="maxlogs" size="3" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
+				</div>
+			</div>
+		
+			<div id="disablewpcron" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Disable WP-Cron','backwpup'); ?></span></h3>
+				<div class="inside">
+					<input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/> <?PHP _e('Use Cron job of Hoster and disable WP_Cron','backwpup'); ?><br />
+					<?PHP _e('You must set up a cron job that calls:','backwpup'); ?><br />
+					<i> php -q <?PHP echo ABSPATH.'wp-cron.php'; ?></i><br /> 
+					<?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 
+				</div>
+			</div>
+		
+			<div id="dirtemp" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Temp Folder','backwpup'); ?></span></h3>
+				<div class="inside">
+					<input name="dirtemp" type="text" value="<?PHP echo $cfg['dirtemp'];?>" class="large-text" /><br />
+				</div>
+			</div>
+			<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
+		</div>
+	</div>
+</div>
 <p class="submit"> 
-<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
+
 </p> 
 </form>
 </div>
