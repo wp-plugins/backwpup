@@ -162,8 +162,7 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['awsmaxbackups']=abs((int)$_POST['awsmaxbackups']);
 
 	//save chages
-	if (update_option('backwpup_jobs',$jobs)) 
-		$backwpup_message=str_replace('%1',$jobs[$jobid]['name'],__('Job \'%1\' changes saved', 'backwpup'));
+	update_option('backwpup_jobs',$jobs);
 	
 	//update schedule
 	if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
@@ -172,6 +171,8 @@ case 'saveeditjob': //Save Job settings
 	if ($jobs[$jobid]['activated']) {
 		wp_schedule_event($jobs[$jobid]['scheduletime'], 'backwpup_int_'.$jobid, 'backwpup_cron',array('jobid'=>$jobid));
 	}
+	
+	$backwpup_message=str_replace('%1',$jobs[$jobid]['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="admin.php?page=BackWPup">'.__('Jobs overview.', 'backwpup').'</a>';
 	//go to job page
 	$_REQUEST['action']='edit';
 	$_REQUEST['jobid']=$jobid;
