@@ -523,7 +523,7 @@ class backwpup_dojob {
 
 	public function export_wp() {
 		trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-		if (copy(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/wp_xml_export.php?ABSPATH='.ABSPATH.'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+		if (copy(plugins_url('wp_xml_export.php',__FILE__).'?ABSPATH='.ABSPATH.'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			//add database file to backupfiles
 			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);

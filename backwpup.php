@@ -35,8 +35,7 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_DIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.0.0');
-
+define('BACKWPUP_VERSION', '1.0.1');
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');	
 //Load functions file

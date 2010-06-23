@@ -17,5 +17,5 @@ if ( !defined('ABSPATH') )
 _e('View Log','backwpup');
 echo ' <strong>'.basename($_GET['logfile']).'</strong>';
 ?></big>
-<iframe src="<?PHP  echo wp_nonce_url(WP_PLUGIN_URL.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log-iframe.php?ABSPATH='.ABSPATH.'&amp;logfile=' . $_GET['logfile'], 'viewlognow_'.basename($_GET['logfile'])); ?>" name="Logframe" id="Logframe" width="100%" height="450" align="left" scrolling="auto" style="border: 1px solid gray" frameborder="0"></iframe>
+<iframe src="<?PHP  echo wp_nonce_url(plugins_url('options-view_log-iframe.php',__FILE__).'?ABSPATH='.ABSPATH.'&amp;logfile=' . $_GET['logfile'], 'viewlognow_'.basename($_GET['logfile'])); ?>" name="Logframe" id="Logframe" width="100%" height="450" align="left" scrolling="auto" style="border: 1px solid gray" frameborder="0"></iframe>
 </div>
