@@ -1,673 +1,834 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Daniel H&uuml;sken
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Translation of the WordPress plugin BackWPup 1.0.0 by Daniel H&uuml;sken.
+# Copyright (C) 2010 Daniel H&uuml;sken
+# This file is distributed under the same license as the BackWPup package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: BackWPup 1.0.0\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tag/backwpup\n"
-"POT-Creation-Date: 2009-08-08 09:55+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"POT-Creation-Date: 2010-06-23 17:08+0000\n"
+"PO-Revision-Date: 2010-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: app/dojob/after.php:24
-msgid "old backup files deleted!!!"
+#: app/backwpup_dojob.php:21
+msgid "[WARNING]"
 msgstr ""
 
-#: app/dojob/after.php:36
-msgid "old logs deleted!!!"
+#: app/backwpup_dojob.php:30
+msgid "[ERROR]"
 msgstr ""
 
-#: app/dojob/after.php:40
+#: app/backwpup_dojob.php:37
+msgid "[DEPRECATED]"
+msgstr ""
+
+#: app/backwpup_dojob.php:41
+msgid "[PARSING ERROR]"
+msgstr ""
+
+#: app/backwpup_dojob.php:45
+msgid "[STRICT NOTICE]"
+msgstr ""
+
+#: app/backwpup_dojob.php:49
+msgid "[RECOVERABLE ERROR]"
+msgstr ""
+
+#: app/backwpup_dojob.php:172
 #, php-format
-msgid "Backup ZIP File size is %1s"
+msgid "BackWPup Log for %1$s from %2$s at %3$s"
 msgstr ""
 
-#: app/dojob/after.php:58
+#: app/backwpup_dojob.php:185
 #, php-format
-msgid "Backup done in %1s sec."
+msgid "PHP Safe Mode is on!!! Max exec time is %1$d sec."
 msgstr ""
 
-#: app/dojob/bevore.php:34 app/dojob/bevore.php:41
-#: app/dojob/destination-mail.php:28 app/dojob/file.php:41
-#: app/dojob/file.php:44 app/functions.php:239 app/functions.php:261
-msgid "WARNING:"
-msgstr ""
-
-#: app/dojob/bevore.php:34
-#, php-format
-msgid "PHP Safe Mode is on!!! Max exec time is %1$s sec."
-msgstr ""
-
-#: app/dojob/bevore.php:41
+#: app/backwpup_dojob.php:192
 #, php-format
 msgid ""
 "Memory limit set to %1$s ,because can not use PHP: memory_get_usage() "
-"function."
+"function to dynamicli increase the Memeory!"
 msgstr ""
 
-#: app/dojob/bevore.php:45
+#: app/backwpup_dojob.php:241
 #, php-format
-msgid "Temp dir is %1$s."
+msgid "Can not create Folder: %1$s"
 msgstr ""
 
-#: app/dojob/bevore.php:49 app/dojob/bevore.php:55 app/dojob/bevore.php:77
-#: app/dojob/bevore.php:83 app/dojob/check.php:23 app/dojob/check.php:28
-#: app/dojob/check.php:35 app/dojob/db.php:23 app/dojob/db.php:33
-#: app/dojob/db.php:80 app/dojob/db.php:128 app/dojob/db.php:131
-#: app/dojob/db.php:143 app/dojob/destination-ftp.php:27
-#: app/dojob/destination-ftp.php:78 app/dojob/destination-ftp.php:94
-#: app/dojob/destination-ftp.php:104 app/dojob/destination-mail.php:23
-#: app/dojob/destination-mail.php:30 app/dojob/destination-mail.php:38
-#: app/dojob/file.php:86 app/dojob/file.php:98 app/dojob/file.php:105
-#: app/dojob/optimize.php:23 app/dojob/optimize.php:29 app/functions.php:246
-#: app/functions.php:257
-msgid "ERROR:"
-msgstr ""
-
-#: app/dojob/bevore.php:49
-msgid "Can not create Temp dir"
-msgstr ""
-
-#: app/dojob/bevore.php:55
-msgid "Can not write to Temp dir"
-msgstr ""
-
-#: app/dojob/bevore.php:77
-msgid "Can not create Backup dir"
-msgstr ""
-
-#: app/dojob/bevore.php:83
-msgid "Can not write to Backup dir"
-msgstr ""
-
-#: app/dojob/bevore.php:99
-msgid "Backup zip file save to:"
-msgstr ""
-
-#: app/dojob/check.php:7
-msgid "Run Database check..."
-msgstr ""
-
-#: app/dojob/check.php:21 app/dojob/check.php:26 app/dojob/optimize.php:21
-msgid ":"
-msgstr ""
-
-#: app/dojob/check.php:21
+#: app/backwpup_dojob.php:246
 #, php-format
-msgid "Result of table check for %1$s is: %2$s"
+msgid "Can not write to Folder: %1$s"
 msgstr ""
 
-#: app/dojob/check.php:23 app/dojob/check.php:28 app/dojob/db.php:23
-#: app/dojob/db.php:33 app/dojob/db.php:80 app/dojob/optimize.php:23
-#, php-format
-msgid "BackWPup database error %1$s for query %2$s"
-msgstr ""
-
-#: app/dojob/check.php:26
-#, php-format
-msgid "Result of table repair for %1$s is: %2$s "
-msgstr ""
-
-#: app/dojob/check.php:33
-msgid "Database check done!"
-msgstr ""
-
-#: app/dojob/check.php:35
-msgid "No Tables to check"
-msgstr ""
-
-#: app/dojob/db.php:6
-msgid "Run Database Backup..."
-msgstr ""
-
-#: app/dojob/db.php:112
-msgid "Database table to Backup: "
-msgstr ""
-
-#: app/dojob/db.php:128
-msgid "Can not create Database Backup file"
-msgstr ""
-
-#: app/dojob/db.php:131
-msgid "No Tables to Backup"
-msgstr ""
-
-#: app/dojob/db.php:135
-msgid "Database backup done!"
-msgstr ""
-
-#: app/dojob/db.php:139 app/dojob/file.php:102
-msgid "Database file size:"
-msgstr ""
-
-#: app/dojob/db.php:140
-msgid "Create Zip file from dump..."
-msgstr ""
-
-#: app/dojob/db.php:143
-msgid "Database Zip file create:"
-msgstr ""
-
-#: app/dojob/db.php:146
-msgid "Zip file created..."
-msgstr ""
-
-#: app/dojob/destination-ftp.php:11 app/dojob/destination-ftp.php:13
-msgid "FTP Client command:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:18
-msgid "FTP Server Preliminary reply:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:21
-msgid "FTP Server Completion reply:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:24
-msgid "FTP Server Intermediate reply:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:27
-msgid "FTP Server reply:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:30
-msgid "FTP Server answer:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:45
-msgid "Connected by SSL to FTP server:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:52
-msgid "Connected insecure to FTP server:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:58
-msgid "FTP server System is:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:76
-msgid "Backup File transferred to FTP Server:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:78
-msgid "Can not transfer backup to FTP server."
-msgstr ""
-
-#: app/dojob/destination-ftp.php:94
-msgid "Can not delete file on FTP Server:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:97
-msgid "files deleted on FTP Server:"
-msgstr ""
-
-#: app/dojob/destination-ftp.php:104
-msgid "Can not connect to FTP server:"
-msgstr ""
-
-#: app/dojob/destination-mail.php:17
-msgid "Sending mail..."
-msgstr ""
-
-#: app/dojob/destination-mail.php:23
-msgid "Can not increase Memory for sending Backup Archive by Mail"
-msgstr ""
-
-#: app/dojob/destination-mail.php:28 app/dojob/destination-mail.php:30
-msgid "Backup Archive too big for sending by mail"
-msgstr ""
-
-#: app/dojob/destination-mail.php:35
-msgid "BackWPup Job:"
-msgstr ""
-
-#: app/dojob/destination-mail.php:36
-msgid "Mail send!!!"
-msgstr ""
-
-#: app/dojob/destination-mail.php:38
-msgid "Can not send mail:"
-msgstr ""
-
-#: app/dojob/file.php:8
-msgid "Run file backup..."
-msgstr ""
-
-#: app/dojob/file.php:9
-msgid "Get files to backup..."
-msgstr ""
-
-#: app/dojob/file.php:39
-msgid "File to Backup:"
-msgstr ""
-
-#: app/dojob/file.php:41
-msgid "Can not read file:"
-msgstr ""
-
-#: app/dojob/file.php:44
-msgid "Is not a file or directory:"
-msgstr ""
-
-#: app/dojob/file.php:86
-msgid "No files to Backup"
-msgstr ""
-
-#: app/dojob/file.php:89
-msgid "Size off all files:"
-msgstr ""
-
-#: app/dojob/file.php:95
-msgid "Create Backup Zip file..."
-msgstr ""
-
-#: app/dojob/file.php:98
-msgid "Zip file create:"
-msgstr ""
-
-#: app/dojob/file.php:103
-msgid "Add Database dump to Backup Zip file..."
-msgstr ""
-
-#: app/dojob/file.php:105
-msgid "Zip file create Add Database dump:"
-msgstr ""
-
-#: app/dojob/file.php:109
-msgid "Backup Zip file create done!"
-msgstr ""
-
-#: app/dojob/optimize.php:7
-msgid "Run Database optimize..."
-msgstr ""
-
-#: app/dojob/optimize.php:21
-#, php-format
-msgid "Result of table optimize for %1$s is: %2$s"
-msgstr ""
-
-#: app/dojob/optimize.php:27
-msgid "Database optimize done!"
-msgstr ""
-
-#: app/dojob/optimize.php:29
-msgid "No Tables to optimize"
-msgstr ""
-
-#. #-#-#-#-#  plugin.pot (PACKAGE VERSION)  #-#-#-#-#
-#. Plugin Name of an extension
-#: app/functions.php:8 app/options.php:8
-msgid "BackWPup"
-msgstr ""
-
-#: app/functions.php:16 app/functions.php:158
-msgid "Support"
-msgstr ""
-
-#: app/functions.php:17 app/functions.php:157
-msgid "FAQ"
-msgstr ""
-
-#: app/functions.php:18
-msgid "Plugin Homepage"
-msgstr ""
-
-#: app/functions.php:19
-msgid "Plugin Home on WordPress.org"
-msgstr ""
-
-#: app/functions.php:20 app/functions.php:159
-msgid "Donate"
-msgstr ""
-
-#: app/functions.php:23
-msgid "Version:"
-msgstr ""
-
-#: app/functions.php:24
-msgid "Author:"
-msgstr ""
-
-#: app/functions.php:149
-msgid "Go to Settings Page"
-msgstr ""
-
-#: app/functions.php:149 app/options-logs.php:13 app/options-runnow.php:13
-#: app/options-settings.php:13 app/options-tools.php:13
-#: app/options-view_log.php:13 app/options.php:13
-msgid "Settings"
-msgstr ""
-
-#: app/functions.php:170
-msgid "BackWPup Job "
-msgstr ""
-
-#: app/functions.php:239
+#: app/backwpup_dojob.php:286
 #, php-format
 msgid "PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s"
 msgstr ""
 
-#: app/functions.php:244
+#: app/backwpup_dojob.php:291
 #, php-format
 msgid "Memory increased from %1$s to %2$s"
 msgstr ""
 
-#: app/functions.php:246
+#: app/backwpup_dojob.php:293
 #, php-format
 msgid "Can not increase Memory Limit is %1$s"
 msgstr ""
 
-#: app/functions.php:286
-msgid "Database &amp; File Backup"
+#: app/backwpup_dojob.php:303
+msgid "Set Blog to Maintenance Mode"
 msgstr ""
 
-#: app/functions.php:289
-msgid "Database Backup"
+#: app/backwpup_dojob.php:319
+msgid "Set Blog to normal Mode"
 msgstr ""
 
-#: app/functions.php:292
-msgid "File Backup"
+#: app/backwpup_dojob.php:335
+msgid "Run Database check..."
 msgstr ""
 
-#: app/functions.php:295
-msgid "Optimize Database Tables"
+#: app/backwpup_dojob.php:354 app/backwpup_dojob.php:356
+#: app/backwpup_dojob.php:358
+#, php-format
+msgid "Result of table check for %1$s is: %2$s"
 msgstr ""
 
-#: app/functions.php:298
-msgid "Check Database Tables"
+#: app/backwpup_dojob.php:361 app/backwpup_dojob.php:373
+#: app/backwpup_dojob.php:397 app/backwpup_dojob.php:407
+#: app/backwpup_dojob.php:448 app/backwpup_dojob.php:460
+#: app/backwpup_dojob.php:564 app/tools/db_restore.php:63
+#, php-format
+msgid "BackWPup database error %1$s for query %2$s"
 msgstr ""
 
-#: app/functions.php:313
-msgid "Logs:"
+#: app/backwpup_dojob.php:366 app/backwpup_dojob.php:368
+#: app/backwpup_dojob.php:370
+#, php-format
+msgid "Result of table repair for %1$s is: %2$s"
 msgstr ""
 
-#: app/functions.php:318
-msgid "View Log"
+#: app/backwpup_dojob.php:378
+msgid "Database check done!"
 msgstr ""
 
-#: app/functions.php:326 app/options-logs.php:95
-msgid "ERROR(S)"
+#: app/backwpup_dojob.php:380
+msgid "No Tables to check"
 msgstr ""
 
-#: app/functions.php:328 app/options-logs.php:97
-msgid "WARNING(S)"
+#: app/backwpup_dojob.php:442
+msgid "Run Database Dump to file..."
 msgstr ""
 
-#: app/functions.php:330 app/options-logs.php:99
-msgid "OK"
+#: app/backwpup_dojob.php:493
+msgid "Dump Database table: "
 msgstr ""
 
-#: app/functions.php:335 app/functions.php:353 app/options-settings.php:76
-msgid "none"
+#: app/backwpup_dojob.php:509
+msgid "Can not create Database Dump file"
 msgstr ""
 
-#: app/functions.php:338
-msgid "Scheduled Jobs:"
+#: app/backwpup_dojob.php:512
+msgid "No Tables to Dump"
 msgstr ""
 
-#: app/functions.php:342
-msgid "Edit Job"
+#: app/backwpup_dojob.php:515
+msgid "Database Dump done!"
 msgstr ""
 
-#: app/functions.php:345 app/options.php:83
-msgid "Running since:"
+#: app/backwpup_dojob.php:517
+msgid "Add Database Dump to Backup:"
 msgstr ""
 
-#: app/functions.php:345 app/options-logs.php:117 app/options-settings.php:25
-#: app/options-settings.php:31 app/options.php:83 app/options.php:96
-msgid "sec."
+#: app/backwpup_dojob.php:525
+msgid "Run Wordpress Export to XML file..."
 msgstr ""
 
-#: app/options-edit.php:3 app/options-jobs.php:8
-msgid "Edit BackWPup Job"
+#: app/backwpup_dojob.php:527
+msgid "Export to XML done!"
 msgstr ""
 
-#: app/options-edit.php:35 app/options-jobs.php:22
-msgid "Job Type"
+#: app/backwpup_dojob.php:529
+msgid "Add XML Export to Backup:"
 msgstr ""
 
-#: app/options-edit.php:44 app/options-jobs.php:31
-msgid "Change"
+#: app/backwpup_dojob.php:533
+msgid "Can not Export to XML!"
 msgstr ""
 
-#: app/options-edit.php:49 app/options-jobs.php:36
+#: app/backwpup_dojob.php:540
+msgid "Run Database optimize..."
+msgstr ""
+
+#: app/backwpup_dojob.php:557 app/backwpup_dojob.php:559
+#: app/backwpup_dojob.php:561
+#, php-format
+msgid "Result of table optimize for %1$s is: %2$s"
+msgstr ""
+
+#: app/backwpup_dojob.php:567
+msgid "Database optimize done!"
+msgstr ""
+
+#: app/backwpup_dojob.php:570
+msgid "No Tables to optimize"
+msgstr ""
+
+#: app/backwpup_dojob.php:600
+msgid "Can not read file:"
+msgstr ""
+
+#: app/backwpup_dojob.php:603
+msgid "Is not a file or directory:"
+msgstr ""
+
+#: app/backwpup_dojob.php:612
+msgid "Make a list of files to Backup ...."
+msgstr ""
+
+#: app/backwpup_dojob.php:647
+msgid "No files to Backup"
+msgstr ""
+
+#: app/backwpup_dojob.php:649
+msgid "Size off all files:"
+msgstr ""
+
+#: app/backwpup_dojob.php:657
+msgid "Create Backup Zip file..."
+msgstr ""
+
+#: app/backwpup_dojob.php:662 app/backwpup_dojob.php:682
+msgid "Add File to ZIP file:"
+msgstr ""
+
+#: app/backwpup_dojob.php:664
+msgid "Can not add File to ZIP file:"
+msgstr ""
+
+#: app/backwpup_dojob.php:668 app/backwpup_dojob.php:688
+msgid "Backup Zip file create done!"
+msgstr ""
+
+#: app/backwpup_dojob.php:670
+msgid "Can not create Backup ZIP file:"
+msgstr ""
+
+#: app/backwpup_dojob.php:680
+msgid "Create Backup Zip (PclZip) file..."
+msgstr ""
+
+#: app/backwpup_dojob.php:686
+msgid "Zip file create:"
+msgstr ""
+
+#: app/backwpup_dojob.php:705
+msgid "Can not create TAR Backup file"
+msgstr ""
+
+#: app/backwpup_dojob.php:708
+msgid "Create Backup Archive file..."
+msgstr ""
+
+#: app/backwpup_dojob.php:714
+msgid "Add File to Backup Archive:"
+msgstr ""
+
+#: app/backwpup_dojob.php:783
+msgid "Backup Archive file create done!"
+msgstr ""
+
+#: app/backwpup_dojob.php:790 app/backwpup_dojob.php:792
+#: app/backwpup_dojob.php:868 app/backwpup_dojob.php:874
+msgid "FTP Client command:"
+msgstr ""
+
+#: app/backwpup_dojob.php:797
+msgid "FTP Server Preliminary reply:"
+msgstr ""
+
+#: app/backwpup_dojob.php:800 app/backwpup_dojob.php:851
+msgid "FTP Server Completion reply:"
+msgstr ""
+
+#: app/backwpup_dojob.php:803
+msgid "FTP Server Intermediate reply:"
+msgstr ""
+
+#: app/backwpup_dojob.php:806 app/backwpup_dojob.php:809
+#: app/backwpup_dojob.php:872 app/backwpup_dojob.php:876
+msgid "FTP Server reply:"
+msgstr ""
+
+#: app/backwpup_dojob.php:833
+msgid "Connected by SSL to FTP server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:839
+msgid "Connected insecure to FTP server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:844
+msgid "Can not connect to FTP server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:870
+msgid "Server Completion reply: 227 Entering Passive Mode"
+msgstr ""
+
+#: app/backwpup_dojob.php:872
+msgid "Can not Entering Passive Mode"
+msgstr ""
+
+#: app/backwpup_dojob.php:884
+msgid "FTP Dir on Server not exists!"
+msgstr ""
+
+#: app/backwpup_dojob.php:886
+msgid "FTP Dir created!"
+msgstr ""
+
+#: app/backwpup_dojob.php:889
+msgid "FTP Dir on Server can not created!"
+msgstr ""
+
+#: app/backwpup_dojob.php:895
+msgid "Backup File transferred to FTP Server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:897
+msgid "Can not transfer backup to FTP server."
+msgstr ""
+
+#: app/backwpup_dojob.php:913
+msgid "Can not delete file on FTP Server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:916
+msgid "files deleted on FTP Server:"
+msgstr ""
+
+#: app/backwpup_dojob.php:928
+msgid "Prepare Sending backupfile with mail..."
+msgstr ""
+
+#: app/backwpup_dojob.php:931
+msgid "No file to send!"
+msgstr ""
+
+#: app/backwpup_dojob.php:953
+msgid "Send mail with SMTP"
+msgstr ""
+
+#: app/backwpup_dojob.php:957
+msgid "Send mail with Sendmail"
+msgstr ""
+
+#: app/backwpup_dojob.php:960
+msgid "Send mail with PHP mail"
+msgstr ""
+
+#: app/backwpup_dojob.php:964
+msgid "Creating mail"
+msgstr ""
+
+#: app/backwpup_dojob.php:968
+msgid "BackWPup File from"
+msgstr ""
+
+#: app/backwpup_dojob.php:976
+msgid "Backup Archive too big for sending by mail"
+msgstr ""
+
+#: app/backwpup_dojob.php:981
+msgid "Adding Attachment to mail"
+msgstr ""
+
+#: app/backwpup_dojob.php:985
+msgid "Send mail...."
+msgstr ""
+
+#: app/backwpup_dojob.php:987
+msgid "Mail send!!!"
+msgstr ""
+
+#: app/backwpup_dojob.php:989
+msgid "Can not send mail:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1003
+msgid "Can not load curl extension is needed for S3!"
+msgstr ""
+
+#: app/backwpup_dojob.php:1012
+msgid "Connected to S3 Bucket:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1015
+msgid "Backup File transferred to S3://"
+msgstr ""
+
+#: app/backwpup_dojob.php:1017
+msgid "Can not transfer backup to S3."
+msgstr ""
+
+#: app/backwpup_dojob.php:1037
+msgid "Can not delete file on S3//:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1039
+msgid "files deleted on S3 Bucket!"
+msgstr ""
+
+#: app/backwpup_dojob.php:1044
+msgid "S3 Bucket not exists:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1067
+msgid "old backup files deleted!!!"
+msgstr ""
+
+#: app/backwpup_dojob.php:1076
+#, php-format
+msgid "Backup Archive File size is %1s"
+msgstr ""
+
+#: app/backwpup_dojob.php:1108
+msgid "old Log files deleted!!!"
+msgstr ""
+
+#: app/backwpup_dojob.php:1117
+#, php-format
+msgid "Job done in %1s sec."
+msgstr ""
+
+#: app/backwpup_dojob.php:1144
+msgid "Jobname:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1145
+msgid "Jobtype:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1147
+msgid "Errors:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1149
+msgid "Warnings:"
+msgstr ""
+
+#: app/backwpup_dojob.php:1150
+msgid "BackWPup Log File from"
+msgstr ""
+
+#. #-#-#-#-#  plugin.pot (BackWPup 1.0.0)  #-#-#-#-#
+#. Plugin Name of the plugin/theme
+#: app/functions.php:8 app/options.php:8
+msgid "BackWPup"
+msgstr ""
+
+#: app/functions.php:13
+msgid "Job"
+msgstr ""
+
+#: app/functions.php:13 app/functions.php:26
+msgid "Type"
+msgstr ""
+
+#: app/functions.php:13
+msgid "Backup/Log Date/Time"
+msgstr ""
+
+#: app/functions.php:13
+msgid "Status"
+msgstr ""
+
+#: app/functions.php:13
+msgid "Size"
+msgstr ""
+
+#: app/functions.php:13
+msgid "Runtime"
+msgstr ""
+
+#: app/functions.php:26
+msgid "ID"
+msgstr ""
+
+#: app/functions.php:26
 msgid "Job Name"
 msgstr ""
 
-#: app/options-edit.php:55
-msgid "Exclude Databas Tabels:"
+#: app/functions.php:26
+msgid "Next Run"
 msgstr ""
 
-#: app/options-edit.php:75
-msgid "Backup Blog directorys"
+#: app/functions.php:26
+msgid "Last Run"
 msgstr ""
 
-#: app/options-edit.php:76 app/options-jobs.php:63
-msgid "Blog root and WP Files"
+#: app/functions.php:34 app/functions.php:165
+msgid "Support"
 msgstr ""
 
-#: app/options-edit.php:77 app/options-jobs.php:64
-msgid "Blog Content"
+#: app/functions.php:35 app/functions.php:164
+msgid "FAQ"
 msgstr ""
 
-#: app/options-edit.php:78 app/options-jobs.php:65
-msgid "Blog Plugins"
+#: app/functions.php:36
+msgid "Plugin Homepage"
 msgstr ""
 
-#: app/options-edit.php:82
-msgid "Include directorys"
+#: app/functions.php:37
+msgid "Plugin Home on WordPress.org"
 msgstr ""
 
-#: app/options-edit.php:83 app/options-jobs.php:70
-msgid "Separate with ,. Full Path like:"
+#: app/functions.php:38 app/functions.php:166
+msgid "Donate"
 msgstr ""
 
-#: app/options-edit.php:87
-msgid "Exclude files/directorys"
+#: app/functions.php:41
+msgid "Version:"
 msgstr ""
 
-#: app/options-edit.php:88 app/options-jobs.php:75
-msgid "Separate with ,"
+#: app/functions.php:42
+msgid "Author:"
 msgstr ""
 
-#: app/options-edit.php:93 app/options-jobs.php:80
-msgid "Schedule"
+#: app/functions.php:156
+msgid "Go to Settings Page"
 msgstr ""
 
-#: app/options-edit.php:96 app/options-jobs.php:83
-msgid "Run Every:"
+#: app/functions.php:156 app/options-logs.php:13 app/options-runnow.php:13
+#: app/options-settings.php:13 app/options-tools.php:14
+#: app/options-view_log.php:13 app/options.php:13
+msgid "Settings"
 msgstr ""
 
-#: app/options-edit.php:105 app/options-jobs.php:92
-msgid "Min(s)"
+#: app/functions.php:177
+msgid "BackWPup Job "
 msgstr ""
 
-#: app/options-edit.php:106
-msgid "Houer(s)"
+#: app/functions.php:219
+msgid "WP XML Export"
 msgstr ""
 
-#: app/options-edit.php:107 app/options-jobs.php:94
-msgid "Day(s)"
+#: app/functions.php:222
+msgid "Database Backup"
 msgstr ""
 
-#: app/options-edit.php:110 app/options-jobs.php:97
-msgid "Start Time:"
+#: app/functions.php:225 app/options-jobs.php:176
+msgid "File Backup"
 msgstr ""
 
-#: app/options-edit.php:124 app/options-jobs.php:111
-msgid "Start Date:"
+#: app/functions.php:228
+msgid "Optimize Database Tables"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "January"
+#: app/functions.php:231
+msgid "Check Database Tables"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "February"
+#: app/functions.php:275
+msgid "Logs:"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "March"
+#: app/functions.php:291 app/options-view_log.php:17
+msgid "View Log"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "April"
+#: app/functions.php:299 app/options-logs.php:116
+msgid "ERROR(S)"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "May"
+#: app/functions.php:301 app/options-logs.php:118
+msgid "WARNING(S)"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "June"
+#: app/functions.php:303 app/options-logs.php:120
+msgid "OK"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "July"
+#: app/functions.php:311 app/functions.php:329 app/options-settings.php:67
+msgid "none"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "August"
+#: app/functions.php:314
+msgid "Scheduled Jobs:"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "September"
+#: app/functions.php:318
+msgid "Edit Job"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "October"
+#: app/functions.php:321 app/options.php:98
+msgid "Running since:"
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "November"
+#: app/functions.php:321 app/options-logs.php:137 app/options.php:98
+#: app/options.php:111
+msgid "sec."
 msgstr ""
 
-#: app/options-edit.php:130 app/options-jobs.php:117
-msgid "December"
+#: app/options-jobs.php:8
+msgid "BackWPup Job Settings"
 msgstr ""
 
-#: app/options-edit.php:142
-msgid "Activate scheduleing"
+#: app/options-jobs.php:26
+msgid "Job Type"
 msgstr ""
 
-#: app/options-edit.php:149 app/options-jobs.php:136
-msgid "Save Backups to directory"
+#: app/options-jobs.php:38 app/options-logs.php:97 app/options.php:76
+msgid ""
+"You are about to delete this Job. \n"
+"  'Cancel' to stop, 'OK' to delete."
 msgstr ""
 
-#: app/options-edit.php:150
-msgid "Full Phath of Directory for Backup fiels"
+#: app/options-jobs.php:38 app/options-logs.php:24 app/options-logs.php:97
+#: app/options-logs.php:151 app/options.php:24 app/options.php:76
+#: app/options.php:129
+msgid "Delete"
 msgstr ""
 
-#: app/options-edit.php:153
-msgid "Max. number of Backup Files"
-msgstr ""
-
-#: app/options-edit.php:155 app/options-edit.php:167 app/options-jobs.php:142
-#: app/options-jobs.php:154 app/options-settings.php:91
-msgid "0=off"
-msgstr ""
-
-#: app/options-edit.php:155
-msgid "Oldest files will deletet first."
-msgstr ""
-
-#: app/options-edit.php:161 app/options-jobs.php:148
-msgid "Copy Backup to FTP Server"
-msgstr ""
-
-#: app/options-edit.php:163 app/options-jobs.php:150
-msgid "Ftp Hostname:"
-msgstr ""
-
-#: app/options-edit.php:164 app/options-jobs.php:151
-msgid "Ftp Username:"
-msgstr ""
-
-#: app/options-edit.php:165 app/options-jobs.php:152
-msgid "Ftp Password:"
-msgstr ""
-
-#: app/options-edit.php:166 app/options-jobs.php:153
-msgid "Ftp directory:"
-msgstr ""
-
-#: app/options-edit.php:167
-msgid "Max Backup fieles on ftp:"
-msgstr ""
-
-#: app/options-edit.php:175 app/options-jobs.php:162
-msgid "Send Mail to"
-msgstr ""
-
-#: app/options-edit.php:179
-msgid "Max Filesize for Backups via mail:"
-msgstr ""
-
-#: app/options-edit.php:179 app/options-jobs.php:166
-msgid "0=send log only."
-msgstr ""
-
-#: app/options-edit.php:182 app/options-jobs.php:169
-msgid "Send only mail on errors."
-msgstr ""
-
-#: app/options-edit.php:188 app/options-jobs.php:175
-#: app/options-settings.php:109
+#: app/options-jobs.php:41 app/options-settings.php:25
+#: app/options-settings.php:103
 msgid "Save Changes"
 msgstr ""
 
-#: app/options-jobs.php:42
-msgid "Exclude Database Tables:"
+#: app/options-jobs.php:48
+msgid "Job Schedule"
 msgstr ""
 
-#: app/options-jobs.php:62
-msgid "Backup Blog Folders"
-msgstr ""
-
-#: app/options-jobs.php:69
-msgid "Include Folders"
-msgstr ""
-
-#: app/options-jobs.php:74
-msgid "Exclude Files/Folders"
-msgstr ""
-
-#: app/options-jobs.php:93
-msgid "Hour(s)"
-msgstr ""
-
-#: app/options-jobs.php:129
+#: app/options-jobs.php:50
 msgid "Activate scheduling"
 msgstr ""
 
-#: app/options-jobs.php:137
-msgid "Full Path of Folder for Backup Files"
+#: app/options-jobs.php:52
+msgid "Run Every:"
 msgstr ""
 
-#: app/options-jobs.php:140
-msgid "Max. Number of Backup Files"
+#: app/options-jobs.php:61
+msgid "Min(s)"
 msgstr ""
 
-#: app/options-jobs.php:142
-msgid "Oldest files will deleted first."
+#: app/options-jobs.php:62
+msgid "Hour(s)"
 msgstr ""
 
-#: app/options-jobs.php:154
-msgid "Max Backup files on ftp:"
+#: app/options-jobs.php:63
+msgid "Day(s)"
 msgstr ""
 
-#: app/options-jobs.php:166
-msgid "Max File Size for sending Backups with mail:"
+#: app/options-jobs.php:66
+msgid "Start Date/Time:"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "January"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "February"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "March"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "April"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "May"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "June"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "July"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "August"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "September"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "October"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "November"
+msgstr ""
+
+#: app/options-jobs.php:75
+msgid "December"
+msgstr ""
+
+#: app/options-jobs.php:106
+msgid "Backup File Format"
+msgstr ""
+
+#: app/options-jobs.php:112
+msgid "ZIP (.zip)"
+msgstr ""
+
+#: app/options-jobs.php:113
+msgid "TAR (.tar)"
+msgstr ""
+
+#: app/options-jobs.php:115
+msgid "TAR GZIP (.tar.gz)"
+msgstr ""
+
+#: app/options-jobs.php:117
+msgid "TAR BZIP2 (.tar.bz2)"
+msgstr ""
+
+#: app/options-jobs.php:123
+msgid "Send log"
+msgstr ""
+
+#: app/options-jobs.php:125 app/options-jobs.php:255
+msgid "E-Mail-Adress:"
+msgstr ""
+
+#: app/options-jobs.php:132
+msgid "Send only E-Mail on errors."
+msgstr ""
+
+#: app/options-jobs.php:144 app/options-jobs.php:145
+msgid "Enter Job name here"
+msgstr ""
+
+#: app/options-jobs.php:150
+msgid "Database Jobs"
+msgstr ""
+
+#: app/options-jobs.php:153
+msgid "Database Tabels to Exclude:"
+msgstr ""
+
+#: app/options-jobs.php:171
+msgid "Set Blog Maintenance Mode on Database Operations"
+msgstr ""
+
+#: app/options-jobs.php:178
+msgid "Blog Folders to Backup:"
+msgstr ""
+
+#: app/options-jobs.php:188
+msgid "Blog root and WP Files"
+msgstr ""
+
+#: app/options-jobs.php:189
+msgid "Blog Content"
+msgstr ""
+
+#: app/options-jobs.php:190
+msgid "Blog Plugins"
+msgstr ""
+
+#: app/options-jobs.php:192
+msgid "Include Folders to Backup:"
+msgstr ""
+
+#: app/options-jobs.php:193 app/options-jobs.php:197
+msgid "Example:"
+msgstr ""
+
+#: app/options-jobs.php:196
+msgid "Exclude Files/Folders from Backup:"
+msgstr ""
+
+#: app/options-jobs.php:203
+msgid "Backup to Directory"
+msgstr ""
+
+#: app/options-jobs.php:213
+msgid "Full Path to Folder for Backup Files:"
+msgstr ""
+
+#: app/options-jobs.php:215
+msgid "Max. Backup Files in Folder:"
+msgstr ""
+
+#: app/options-jobs.php:215 app/options-jobs.php:231 app/options-jobs.php:247
+#: app/options-settings.php:83
+msgid "(Oldest files will deleted first.)"
+msgstr ""
+
+#: app/options-jobs.php:220
+msgid "Backup to FTP Server"
+msgstr ""
+
+#: app/options-jobs.php:222
+msgid "Hostname:"
+msgstr ""
+
+#: app/options-jobs.php:224
+msgid "Username:"
+msgstr ""
+
+#: app/options-jobs.php:226
+msgid "Password:"
+msgstr ""
+
+#: app/options-jobs.php:228
+msgid "Directory on Server:"
+msgstr ""
+
+#: app/options-jobs.php:231
+msgid "Max. Backup Files in FTP Folder:"
+msgstr ""
+
+#: app/options-jobs.php:236
+msgid "Backup to Amazon S3"
+msgstr ""
+
+#: app/options-jobs.php:238 app/options-tools.php:79
+msgid "Access Key ID:"
+msgstr ""
+
+#: app/options-jobs.php:240 app/options-tools.php:80
+msgid "Secret Access Key:"
+msgstr ""
+
+#: app/options-jobs.php:242
+msgid "Bucket:"
+msgstr ""
+
+#: app/options-jobs.php:244
+msgid "Directory in Bucket:"
+msgstr ""
+
+#: app/options-jobs.php:247
+msgid "Max. Backup Files inn Bucket Folder:"
+msgstr ""
+
+#: app/options-jobs.php:248
+msgid "Use SSL connection."
+msgstr ""
+
+#: app/options-jobs.php:253
+msgid "Backup to E-Mail"
+msgstr ""
+
+#: app/options-jobs.php:258
+msgid "Max. File Size for sending Backups with mail:"
 msgstr ""
 
 #: app/options-logs.php:8
@@ -675,87 +836,59 @@ msgid "BackWPup Logs"
 msgstr ""
 
 #: app/options-logs.php:10 app/options-runnow.php:10
-#: app/options-settings.php:10 app/options-tools.php:10
+#: app/options-settings.php:10 app/options-tools.php:11
 #: app/options-view_log.php:10 app/options.php:10
 msgid "Jobs"
 msgstr ""
 
 #: app/options-logs.php:11 app/options-runnow.php:11
-#: app/options-settings.php:11 app/options-tools.php:11
-#: app/options-view_log.php:11 app/options.php:11
+#: app/options-settings.php:11 app/options-settings.php:78
+#: app/options-tools.php:12 app/options-view_log.php:11 app/options.php:11
 msgid "Logs"
 msgstr ""
 
 #: app/options-logs.php:12 app/options-runnow.php:12
-#: app/options-settings.php:12 app/options-tools.php:12
+#: app/options-settings.php:12 app/options-tools.php:13
 #: app/options-view_log.php:12 app/options.php:12
 msgid "Tools"
 msgstr ""
 
-#: app/options-logs.php:23 app/options-logs.php:128 app/options.php:23
-#: app/options.php:110
+#: app/options-logs.php:23 app/options-logs.php:150 app/options.php:23
+#: app/options.php:128
 msgid "Bulk Actions"
 msgstr ""
 
-#: app/options-logs.php:24 app/options-logs.php:84 app/options-logs.php:129
-#: app/options.php:24 app/options.php:69 app/options.php:111
-msgid "Delete"
-msgstr ""
-
-#: app/options-logs.php:26 app/options-logs.php:131 app/options.php:26
-#: app/options.php:113
+#: app/options-logs.php:26 app/options-logs.php:153 app/options.php:26
+#: app/options.php:131
 msgid "Apply"
 msgstr ""
 
-#: app/options-logs.php:38 app/options-logs.php:50
-msgid "Job"
-msgstr ""
-
-#: app/options-logs.php:39 app/options-logs.php:51 app/options.php:40
-#: app/options.php:51
-msgid "Type"
-msgstr ""
-
-#: app/options-logs.php:40 app/options-logs.php:52
-msgid "Backup/Log Date/Time"
-msgstr ""
-
-#: app/options-logs.php:41 app/options-logs.php:53
-msgid "Status"
-msgstr ""
-
-#: app/options-logs.php:42 app/options-logs.php:54
-msgid "Size"
-msgstr ""
-
-#: app/options-logs.php:43 app/options-logs.php:55
-msgid "Runtime"
-msgstr ""
-
-#: app/options-logs.php:81
+#: app/options-logs.php:94
 msgid "View log"
 msgstr ""
 
-#: app/options-logs.php:83
+#: app/options-logs.php:96
 msgid "View"
 msgstr ""
 
-#: app/options-logs.php:84
-msgid ""
-"You are about to delete this Log and Backupfile. \n"
-"  'Cancel' to stop, 'OK' to delete."
+#: app/options-logs.php:98
+msgid "Download Log"
 msgstr ""
 
-#: app/options-logs.php:86
-msgid "Download"
+#: app/options-logs.php:100
+msgid "Download Backup"
 msgstr ""
 
-#: app/options-logs.php:109
+#: app/options-logs.php:129
 msgid "File not exists"
 msgstr ""
 
-#: app/options-logs.php:111
+#: app/options-logs.php:131
 msgid "only Log"
+msgstr ""
+
+#: app/options-runnow-iframe.php:16
+msgid "Do Job"
 msgstr ""
 
 #: app/options-runnow.php:8
@@ -774,136 +907,180 @@ msgstr ""
 msgid "Job %1 deleted"
 msgstr ""
 
-#: app/options-save.php:44
+#: app/options-save.php:43
 msgid "Logs deleted"
 msgstr ""
 
-#: app/options-save.php:52
+#: app/options-save.php:48
 msgid "Log deleted"
 msgstr ""
 
-#: app/options-save.php:70
+#: app/options-save.php:69
 msgid "Settings saved"
 msgstr ""
 
-#: app/options-save.php:83
+#: app/options-save.php:82
 msgid "Copy of"
 msgstr ""
 
-#: app/options-save.php:86
+#: app/options-save.php:85
 msgid "Job copied"
 msgstr ""
 
-#: app/options-save.php:106
+#: app/options-save.php:103
 msgid "File does not exist."
 msgstr ""
 
-#: app/options-save.php:162
-msgid "Job %1 settings saved"
+#: app/options-save.php:166
+msgid "Job '%1' changes saved"
 msgstr ""
 
 #: app/options-settings.php:8
 msgid "BackWPup Settings"
 msgstr ""
 
-#: app/options-settings.php:22
-msgid "Script Runtime"
-msgstr ""
-
-#: app/options-settings.php:25
-msgid "PHP.ini execution time:"
-msgstr ""
-
-#: app/options-settings.php:31
-msgid "Set Max. execution Time for Scripts:"
-msgstr ""
-
-#: app/options-settings.php:40
+#: app/options-settings.php:32
 msgid "Max Memory Usage"
 msgstr ""
 
-#: app/options-settings.php:43
+#: app/options-settings.php:35
 msgid "PHP.ini Memory Limit:"
 msgstr ""
 
-#: app/options-settings.php:49
+#: app/options-settings.php:41
 msgid "Set Memory limit:"
 msgstr ""
 
-#: app/options-settings.php:51
+#: app/options-settings.php:43
 msgid "Memory will be automatically increased!!!"
 msgstr ""
 
-#: app/options-settings.php:60
-msgid "Mail Send:"
+#: app/options-settings.php:50
+msgid "Send Mail"
 msgstr ""
 
-#: app/options-settings.php:62
+#: app/options-settings.php:52
+msgid "Sender Email:"
+msgstr ""
+
+#: app/options-settings.php:53
+msgid "Sender Name:"
+msgstr ""
+
+#: app/options-settings.php:54
 msgid "Send mail method:"
 msgstr ""
 
-#: app/options-settings.php:64
+#: app/options-settings.php:57
 msgid "PHP: mail()"
 msgstr ""
 
-#: app/options-settings.php:65
+#: app/options-settings.php:58
 msgid "Sendmail"
 msgstr ""
 
-#: app/options-settings.php:66
+#: app/options-settings.php:59
 msgid "SMTP"
 msgstr ""
 
-#: app/options-settings.php:72
+#: app/options-settings.php:62
 msgid "Sendmail Path:"
 msgstr ""
 
-#: app/options-settings.php:73
+#: app/options-settings.php:64
 msgid "SMTP Hostname:"
 msgstr ""
 
-#: app/options-settings.php:74
+#: app/options-settings.php:65
 msgid "SMTP Secure Connection:"
 msgstr ""
 
-#: app/options-settings.php:83
+#: app/options-settings.php:71
 msgid "SMTP Username:"
 msgstr ""
 
-#: app/options-settings.php:84
+#: app/options-settings.php:72
 msgid "SMTP Password:"
 msgstr ""
 
-#: app/options-settings.php:89
-msgid "Max. Number of Logs"
+#: app/options-settings.php:80
+msgid "Log file Folder:"
 msgstr ""
 
-#: app/options-settings.php:91
-msgid "Oldest log will deleted first."
+#: app/options-settings.php:82
+msgid "Max. Log Files in Folder:"
 msgstr ""
 
-#: app/options-settings.php:96
-msgid "Disable WP-Cron:"
+#: app/options-settings.php:88
+msgid "Disable WP-Cron"
 msgstr ""
 
-#: app/options-settings.php:99
+#: app/options-settings.php:90
 msgid "Use Cron job of Hoster and disable WP_Cron"
 msgstr ""
 
-#: app/options-settings.php:100
+#: app/options-settings.php:91
 msgid "You must set up a cron job that calls:"
 msgstr ""
 
-#: app/options-settings.php:102
+#: app/options-settings.php:93
 msgid "or URL:"
 msgstr ""
 
-#: app/options-tools.php:8
-msgid "BackWPup Restore Database"
+#: app/options-settings.php:98
+msgid "Temp Folder"
 msgstr ""
 
-#: app/options-tools.php:23
-msgid "Coming Soon"
+#: app/options-tools.php:8
+msgid "BackWPup Tools"
+msgstr ""
+
+#: app/options-tools.php:34
+msgid "Database restore"
+msgstr ""
+
+#: app/options-tools.php:37 app/options-tools.php:55
+msgid "Restore"
+msgstr ""
+
+#: app/options-tools.php:52
+msgid "SQL File to restore:"
+msgstr ""
+
+#: app/options-tools.php:58
+msgid "Copy SQL file to Blog root folder to use restore."
+msgstr ""
+
+#: app/options-tools.php:66
+msgid "Create Amazon S3 Bucket"
+msgstr ""
+
+#: app/options-tools.php:69 app/options-tools.php:83
+msgid "Create"
+msgstr ""
+
+#: app/options-tools.php:73
+msgid "Amazone S3 Bucket created."
+msgstr ""
+
+#: app/options-tools.php:75
+msgid "Can not create Amazon S3 Bucket."
+msgstr ""
+
+#: app/options-tools.php:81
+msgid "Bucket Name:"
+msgstr ""
+
+#: app/options-tools.php:82
+msgid "Bucket Region:"
+msgstr ""
+
+#: app/options-tools.php:82
+msgid "US"
+msgstr ""
+
+#: app/options-tools.php:82
+msgid "Europe"
 msgstr ""
 
 #: app/options-view_log.php:8
@@ -914,72 +1091,78 @@ msgstr ""
 msgid "Add New"
 msgstr ""
 
-#: app/options.php:38 app/options.php:49
-msgid "ID"
-msgstr ""
-
-#: app/options.php:39 app/options.php:50
-msgid "Name"
-msgstr ""
-
-#: app/options.php:41 app/options.php:52
-msgid "Next Run"
-msgstr ""
-
-#: app/options.php:42 app/options.php:53
-msgid "Last Run"
-msgstr ""
-
-#: app/options.php:66
+#: app/options.php:72
 msgid "Edit:"
 msgstr ""
 
-#: app/options.php:68
+#: app/options.php:74
 msgid "Edit"
 msgstr ""
 
-#: app/options.php:69
-msgid ""
-"You are about to delete this Job. \n"
-"  'Cancel' to stop, 'OK' to delete."
-msgstr ""
-
-#: app/options.php:70
+#: app/options.php:75
 msgid "Copy"
 msgstr ""
 
-#: app/options.php:71
+#: app/options.php:77
 msgid "Run Now"
 msgstr ""
 
-#: app/options.php:87
+#: app/options.php:102
 msgid "Inactive"
 msgstr ""
 
-#: app/options.php:96
+#: app/options.php:111
 msgid "Runtime:"
 msgstr ""
 
-#: app/options.php:98
+#: app/options.php:113
 msgid "None"
 msgstr ""
 
-#: backwpup.php:56
-msgid "Sorry, BackWPup works only under WordPress 2.8 or higher"
+#: app/tools/db_restore.php:29 app/tools/db_restore.php:48
+#: app/tools/db_restore.php:63
+msgid "ERROR:"
 msgstr ""
 
-#. Plugin URI of an extension
+#: app/tools/db_restore.php:29
+#, php-format
+msgid "Pleace set <i>$table_prefix  = '%1$s';</i> in wp-config.php"
+msgstr ""
+
+#: app/tools/db_restore.php:48
+#, php-format
+msgid "Pleace set <i>define('DB_CHARSET', '%1$s');</i> in wp-config.php"
+msgstr ""
+
+#: app/tools/db_restore.php:69
+#, php-format
+msgid "%1$s Database Querys done."
+msgstr ""
+
+#: app/tools/db_restore.php:70
+msgid "Make changes for Blogurl and ABSPATH if needed."
+msgstr ""
+
+#: app/tools/db_restore.php:79
+msgid "Restore Done. Please delete the SQL file after Restore."
+msgstr ""
+
+#: backwpup.php:53
+msgid "Sorry, BackWPup works only with WordPress 2.8 and PHP 5 or heigher!!!"
+msgstr ""
+
+#. Plugin URI of the plugin/theme
 msgid "http://danielhuesken.de/portfolio/backwpup/"
 msgstr ""
 
-#. Description of an extension
+#. Description of the plugin/theme
 msgid "Backup and more of your WordPress Blog Database and Files."
 msgstr ""
 
-#. Author of an extension
+#. Author of the plugin/theme
 msgid "Daniel H&uuml;sken"
 msgstr ""
 
-#. Author URI of an extension
+#. Author URI of the plugin/theme
 msgid "http://danielhuesken.de"
 msgstr ""
