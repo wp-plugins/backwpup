@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 0.8.1
+Stable tag: 1.0.0
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -90,7 +90,7 @@ Pleace mail only littele archives
 * fixed time display and schedule bugs
 * added some security
 * Mantinance Mode on MySQL Operations
-* new Design on Job edit page
+* new Design on some Pages
 
 = 0.8.1 =
 * use global var instat of constant for log file
