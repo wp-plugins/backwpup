@@ -143,7 +143,7 @@ class backwpup_dojob {
 		//set Backup Dir
 		$this->backupdir=untrailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($this->job['backupdir']))));
 		if (empty($this->backupdir)) 
-			$this->backupdir=get_temp_dir().'backwpup';
+			$this->backupdir=$this->tempdir;
 		//set Logs Dir
 		$this->logdir=untrailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir)) 
@@ -581,7 +581,7 @@ class backwpup_dojob {
 				if ( in_array($file, array('.', '..','.svn') ) )
 					continue;
 				foreach ($excludes as $exclusion) { //exclude dirs and files
-					if (false !== stripos($folder.'/'.$file,$exclusion))
+					if (false !== stripos($folder.'/'.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 						continue 2;
 				}
 				if (!$this->job['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',ABSPATH)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))
@@ -608,18 +608,19 @@ class backwpup_dojob {
 	}
 	
 	public function file_list() {
+
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
 		$backwpup_exclude=array(); $dirinclude=array();
-	
+
 		if (!empty($this->job['fileexclude'])) 
-			$backwpup_exclude=explode(',',$this->job['fileexclude']);
+			$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
 		//Exclude Temp dir
 		$backwpup_exclude[]=$this->tempdir;
 		//Exclude Backup dirs
 		$jobs=get_option('backwpup_jobs');
 		foreach($jobs as $jobsvale) { 
-			if (!empty($jobsvale['backupdir']))
+			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
 				$backwpup_exclude[]=$jobsvale['backupdir'];
 		}
 		$backwpup_exclude=array_unique($backwpup_exclude);

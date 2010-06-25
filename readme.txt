@@ -81,6 +81,9 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.2 =
+* fiexd bug for file excludes
+
 = 1.0.1 =
 * fiexd bug for https
 
