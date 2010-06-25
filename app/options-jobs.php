@@ -142,7 +142,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 			<div id="titlediv"> 
 				<div id="titlewrap">
 					<label class="hide-if-no-js" style="visibility:hidden" id="title-prompt-text" for="title"><?PHP _e('Enter Job name here','backwpup'); ?></label>
-					<input type="text" name="name" size="30" tabindex="1" placeholder="<?PHP _e('Enter Job name here','backwpup'); ?>" value="<?PHP echo $jobs[$jobid]['name'];?>" id="title" autocomplete="off" /> 
+					<input type="text" name="name" size="30" tabindex="1" value="<?PHP echo $jobs[$jobid]['name'];?>" id="title" autocomplete="off" /> 
 				</div> 
 			</div> 
 		
