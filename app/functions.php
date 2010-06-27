@@ -19,6 +19,7 @@ if ( !defined('ABSPATH') )
 		case 'tools':
 			break;
 		case 'runnow':
+			add_action('load-'.$hook, 'backwpup_sendNoCacheHeader');
 			add_action('admin_head-'.$hook, 'backwpup_wp_admin_head');
 			break;
 		case 'view_log':
@@ -342,6 +343,15 @@ if ( !defined('ABSPATH') )
 		echo "<meta http-equiv=\"pragma\" content=\"no-cache\" />\n";
 		echo "<meta http-equiv=\"cache-control\" content=\"no-cache\" />\n";
 	}
+	
+	
+	function backwpup_sendNoCacheHeader() {
+		header("Expires: 0");
+		header("Cache-Control: no-cache, must-revalidate");
+		header("Pragma: no-cache");
+		header("Cache-Control: post-check=0, pre-check=0");
+	}
+	
 	
 	// add all action and so on only if plugin loaded.
 	function backwpup_init() {
