@@ -339,8 +339,8 @@ if ( !defined('ABSPATH') )
 	//turn cache off
 	function backwpup_wp_admin_head () {
 		echo "<meta http-equiv=\"expires\" content=\"0\" />\n";
-		echo "<meta http-equiv=\"Pragma\" content=\"no-cache\" />\n";
-		echo "<meta http-equiv=\"Cache-Control\" content=\"no-cache\" />\n";
+		echo "<meta http-equiv=\"pragma\" content=\"no-cache\" />\n";
+		echo "<meta http-equiv=\"cache-control\" content=\"no-cache\" />\n";
 	}
 	
 	// add all action and so on only if plugin loaded.
