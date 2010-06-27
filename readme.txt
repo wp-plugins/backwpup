@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -81,6 +81,9 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.3 =
+* hopfuly fixed a chche problem on runnow
+
 = 1.0.2 =
 * fiexd bug for file excludes
 

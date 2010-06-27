@@ -19,6 +19,7 @@ if ( !defined('ABSPATH') )
 		case 'tools':
 			break;
 		case 'runnow':
+			add_action('admin_head-'.$hook, 'backwpup_wp_admin_head');
 			break;
 		case 'view_log':
 			break;
@@ -333,6 +334,13 @@ if ( !defined('ABSPATH') )
 	//add dashboard widget
 	function backwpup_add_dashboard() {
 		wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );		
+	}
+	
+	//turn cache off
+	function backwpup_wp_admin_head () {
+		echo "<meta http-equiv=\"expires\" content=\"0\" />\n";
+		echo "<meta http-equiv=\"Pragma\" content=\"no-cache\" />\n";
+		echo "<meta http-equiv=\"Cache-Control\" content=\"no-cache\" />\n";
 	}
 	
 	// add all action and so on only if plugin loaded.

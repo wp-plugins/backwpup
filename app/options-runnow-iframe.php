@@ -13,6 +13,8 @@ if (is_dir($_GET['ABSPATH']) and is_numeric($_GET['jobid'])) {
 <html>
     <head>
 	<meta http-equiv="expires" content="0">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Cache-Control" content="no-cache">
 	<title><?PHP _e('Do Job','backwpup');  ?></title>
     </head>
 	<body style="font-family:monospace;font-size:12px;white-space:nowrap;">
