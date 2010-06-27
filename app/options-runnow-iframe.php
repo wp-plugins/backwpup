@@ -1,5 +1,5 @@
 <?PHP
-if (is_dir($_GET['ABSPATH'])) {
+if (is_dir($_GET['ABSPATH']) and is_numeric($_GET['jobid'])) {
 	require_once($_GET['ABSPATH'].'/wp-load.php'); /** Setup WordPress environment */
 	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
 	ignore_user_abort(true);

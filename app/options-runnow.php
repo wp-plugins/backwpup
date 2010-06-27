@@ -17,5 +17,5 @@ if ( !defined('ABSPATH') )
 _e('Running Job','backwpup');
 echo ' <strong>'.$jobs[$jobid]['name'].'</strong>';
 ?></big>
-<iframe src="<?PHP  echo wp_nonce_url(plugins_url('options-runnow-iframe.php',__FILE__).'?ABSPATH='.ABSPATH.'&amp;jobid=' . $jobid, 'dojob-now_' . $jobid); ?>" name="Logframe" id="Logframe" width="100%" height="450" align="left" scrolling="auto" style="border: 1px solid gray" frameborder="0"></iframe>
+<iframe src="<?PHP  echo wp_nonce_url(plugins_url('options-runnow-iframe.php',__FILE__).'?ABSPATH='.ABSPATH.'&jobid=' . $jobid, 'dojob-now_' . $jobid); ?>" name="Logframe" id="Logframe" width="100%" height="450" align="left" scrolling="auto" style="border: 1px solid gray" frameborder="0"></iframe>
 </div>
