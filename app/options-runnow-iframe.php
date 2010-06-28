@@ -2,7 +2,7 @@
 if (is_dir($_GET['ABSPATH']) and is_numeric($_GET['jobid'])) {
 	require_once($_GET['ABSPATH'].'/wp-load.php'); /** Setup WordPress environment */
 	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
-	backwpup_sendNoCacheHeader();
+	backwpup_send_no_cache_header();
 	ignore_user_abort(true);
 	// flush any buffers and send the headers
 	@apache_setenv('no-gzip', 1);
@@ -14,9 +14,7 @@ if (is_dir($_GET['ABSPATH']) and is_numeric($_GET['jobid'])) {
 ?>
 <html>
     <head>
-	<meta http-equiv="expires" content="0">
-	<meta http-equiv="pragma" content="no-cache">
-	<meta http-equiv="cache-control" content="no-cache">
+	<?PHP  backwpup_meta_no_cache(); ?>
 	<title><?PHP _e('Do Job','backwpup');  ?></title>
     </head>
 	<body style="font-family:monospace;font-size:12px;white-space:nowrap;">

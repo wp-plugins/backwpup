@@ -2,7 +2,9 @@
 // don't load directly 
 if ( !defined('ABSPATH') ) 
 	die('-1');
-	
+
+global $wpdb;	
+
 ignore_user_abort(true);
 
 @set_time_limit(0); //300 is most webserver time limit.
@@ -12,7 +14,10 @@ $oldblogabspath="";
 $oldblogurl="";
 $oldtabelprefix="";
 $numcommands="";
-$blogurl=trailingslashit(get_option('siteurl'));
+if (defined(WP_SITEURL))
+	$blogurl=trailingslashit(WP_SITEURL);
+else
+	$blogurl=trailingslashit(get_option('siteurl'));
 $blogabspath=trailingslashit(ABSPATH);
 
 $file = fopen ($sqlfile, "r");
@@ -69,12 +74,20 @@ fclose($file);
 echo sprintf(__('%1$s Database Querys done.','backwpup'),$numcommands).'<br />';
 echo __('Make changes for Blogurl and ABSPATH if needed.','backwpup')."<br />";
 if (!empty($oldblogurl) and $oldblogurl!=$blogurl) {
-	mysql_query("UPDATE wp_options SET option_value = replace(option_value, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
-	mysql_query("UPDATE wp_posts SET guid = replace(guid, '".untrailingslashit($oldblogurl)."','".untrailingslashit($blogurl)."');");
-	mysql_query("UPDATE wp_posts SET post_content = replace(post_content, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
+	mysql_query("UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
+	if ($sqlerr=mysql_error()) 
+		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');")."<br />\n";
+	mysql_query("UPDATE ".$wpdb->prefix."posts SET guid = replace(guid, '".untrailingslashit($oldblogurl)."','".untrailingslashit($blogurl)."');");
+	if ($sqlerr=mysql_error())
+		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."posts SET guid = replace(guid, '".untrailingslashit($oldblogurl)."','".untrailingslashit($blogurl)."');")."<br />\n";
+	mysql_query("UPDATE ".$wpdb->prefix."posts SET post_content = replace(post_content, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');");
+	if ($sqlerr=mysql_error())
+		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."posts SET post_content = replace(post_content, '".untrailingslashit($oldblogurl)."', '".untrailingslashit($blogurl)."');")."<br />\n";
 }
 if (!empty($oldblogabspath) and $oldblogabspath!=$blogabspath) {
-	mysql_query("UPDATE wp_options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');");
+	mysql_query("UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');");
+	if ($sqlerr=mysql_error())
+		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');")."<br />\n";
 }
 echo __('Restore Done. Please delete the SQL file after Restore.','backwpup')."<br />";
 

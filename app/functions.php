@@ -19,8 +19,8 @@ if ( !defined('ABSPATH') )
 		case 'tools':
 			break;
 		case 'runnow':
-			add_action('load-'.$hook, 'backwpup_sendNoCacheHeader');
-			add_action('admin_head-'.$hook, 'backwpup_wp_admin_head');
+			add_action('load-'.$hook, 'backwpup_send_no_cache_header');
+			add_action('admin_head-'.$hook, 'backwpup_meta_no_cache');
 			break;
 		case 'view_log':
 			break;
@@ -58,32 +58,32 @@ if ( !defined('ABSPATH') )
 			$jobs=get_option('backwpup_jobs');
 		    $jobid = (int) $_REQUEST['jobid'];
 			check_admin_referer('edit-job');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-jobs.php');
+			require_once(plugin_dir_path(__FILE__).'options-jobs.php');
 			break;
 		case 'logs':
 			$cfg=get_option('backwpup');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-logs.php');
+			require_once(plugin_dir_path(__FILE__).'options-logs.php');
 			break;
 		case 'settings':
 			$cfg=get_option('backwpup');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-settings.php');
+			require_once(plugin_dir_path(__FILE__).'options-settings.php');
 			break;
 		case 'tools':
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-tools.php');
+			require_once(plugin_dir_path(__FILE__).'options-tools.php');
 			break;
 		case 'runnow':
 		    $jobid = (int) $_GET['jobid'];
 			check_admin_referer('runnow-job_' . $jobid);
 			$jobs=get_option('backwpup_jobs');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-runnow.php');
+			require_once(plugin_dir_path(__FILE__).'options-runnow.php');
 			break;
 		case 'view_log':
 			check_admin_referer('view-log_'.basename($_GET['logfile']));
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-view_log.php');
+			require_once(plugin_dir_path(__FILE__).'options-view_log.php');
 			break;
 		default:
 			$jobs=get_option('backwpup_jobs');
-			require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options.php');
+			require_once(plugin_dir_path(__FILE__).'options.php');
 			break;
 		}	
 	}
@@ -97,7 +97,7 @@ if ( !defined('ABSPATH') )
 		wp_enqueue_style('BackWpup',plugins_url('css/options.css',__FILE__),'',BACKWPUP_VERSION,'screen');
 		wp_enqueue_script('BackWpupOptions',plugins_url('js/options.js',__FILE__),'',BACKWPUP_VERSION,true);
 		//For save Options
-		require_once(WP_PLUGIN_DIR.'/'.BACKWPUP_PLUGIN_DIR.'/app/options-save.php');
+		require_once(plugin_dir_path(__FILE__).'options-save.php');
 	}
 	
     //delete Otions
@@ -162,7 +162,7 @@ if ( !defined('ABSPATH') )
 	
 	//add links on plugins page
 	function backwpup_plugin_links($links, $file) {
-		if ($file == BACKWPUP_PLUGIN_DIR.'/backwpup.php') {
+		if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
 			$links[] = '<a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>';
 			$links[] = '<a href="http://wordpress.org/tags/backwpup/" target="_blank">' . __('Support') . '</a>';
 			$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=daniel%40huesken-net%2ede&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;currency_code=EUR&amp;lc=DE&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>';
@@ -338,14 +338,14 @@ if ( !defined('ABSPATH') )
 	}
 	
 	//turn cache off
-	function backwpup_wp_admin_head () {
+	function backwpup_meta_no_cache() {
 		echo "<meta http-equiv=\"expires\" content=\"0\" />\n";
 		echo "<meta http-equiv=\"pragma\" content=\"no-cache\" />\n";
 		echo "<meta http-equiv=\"cache-control\" content=\"no-cache\" />\n";
 	}
 	
 	
-	function backwpup_sendNoCacheHeader() {
+	function backwpup_send_no_cache_header() {
 		header("Expires: 0");
 		header("Cache-Control: no-cache, must-revalidate");
 		header("Pragma: no-cache");
@@ -363,7 +363,7 @@ if ( !defined('ABSPATH') )
 		add_action('admin_menu', 'backwpup_menu_entry');
 		//Additional links on the plugin page
 		if (current_user_can(10)) 
-			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_DIR.'/backwpup.php', 'backwpup_plugin_options_link');
+			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 		if (current_user_can('install_plugins')) 		
 			add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 		//add cron intervals
