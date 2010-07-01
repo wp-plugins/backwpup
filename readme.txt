@@ -81,6 +81,9 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.5 =
+* some ABSPATH changes
+
 = 1.0.4 =
 * fixed bugs in DB restore
 * use WP functions to get plugin dirs

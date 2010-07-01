@@ -1,6 +1,6 @@
 <?PHP
-if (is_dir($_GET['ABSPATH']) and is_numeric($_GET['jobid'])) {
-	require_once($_GET['ABSPATH'].'/wp-load.php'); /** Setup WordPress environment */
+if (file_exists($_GET['wpabs'].'wp-load.php') and is_numeric(trim($_GET['jobid']))) {
+	require_once($_GET['wpabs'].'wp-load.php'); /** Setup WordPress environment */
 	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
 	backwpup_send_no_cache_header();
 	ignore_user_abort(true);

@@ -523,7 +523,7 @@ class backwpup_dojob {
 
 	public function export_wp() {
 		trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-		if (copy(plugins_url('wp_xml_export.php',__FILE__).'?ABSPATH='.ABSPATH.'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+		if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			//add database file to backupfiles
 			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'/wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
@@ -584,7 +584,7 @@ class backwpup_dojob {
 					if (false !== stripos($folder.'/'.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 						continue 2;
 				}
-				if (!$this->job['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',ABSPATH)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))
+				if (!$this->job['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',trailingslashit(ABSPATH))) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))
 					continue;
 				if (!$this->job['backupcontent'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)) and !is_dir($folder.'/'.$file))
 					continue;
