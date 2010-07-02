@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -81,6 +81,10 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.6 =
+* fixed false massage an send mail with backup
+* removed test code for blank screen and fixed it!
+
 = 1.0.5 =
 * some ABSPATH changes
 

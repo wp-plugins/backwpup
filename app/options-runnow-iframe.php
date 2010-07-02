@@ -5,9 +5,6 @@ if (file_exists($_GET['wpabs'].'wp-load.php') and is_numeric(trim($_GET['jobid']
 	backwpup_send_no_cache_header();
 	ignore_user_abort(true);
 	// flush any buffers and send the headers
-	//@apache_setenv('no-gzip', 1);
-	//@ini_set('zlib.output_compression', 0);
-	//@ini_set('implicit_flush', 1);
 	@flush();
 	@ob_flush();
 	
@@ -25,7 +22,6 @@ if (file_exists($_GET['wpabs'].'wp-load.php') and is_numeric(trim($_GET['jobid']
 </html>
 <?PHP
 } else {	
-	//header("HTTP/1.0 404 Not Found");
-	echo "No Access!!!"
+	header("HTTP/1.0 404 Not Found");
 }
 ?>

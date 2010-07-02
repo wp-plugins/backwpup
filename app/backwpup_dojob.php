@@ -984,10 +984,10 @@ class backwpup_dojob {
 		$phpmailer->AddAttachment($this->backupdir.'/'.$this->backupfile);		
 		
 		trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);
-		if (!$phpmailer->Send()) {
-			trigger_error(__('Mail send!!!','backwpup'),E_USER_NOTICE);
-		} else {
+		if (false == $phpmailer->Send()) {
 			trigger_error(__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo,E_USER_ERROR);
+		} else {
+			trigger_error(__('Mail send!!!','backwpup'),E_USER_NOTICE);
 		}	
 			
 	}
