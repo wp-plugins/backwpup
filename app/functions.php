@@ -131,7 +131,7 @@ if ( !defined('ABSPATH') )
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
 		if (empty($cfg['dirtemp'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$cfg['dirtemp']=str_replace('\\','/',stripslashes(get_temp_dir().'backwpup-'.$rand));
+			$cfg['dirtemp']=str_replace('\\','/',get_temp_dir().'backwpup-'.$rand);
 		}
 		if (empty($cfg['dirlogs'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
