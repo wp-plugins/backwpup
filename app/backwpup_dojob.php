@@ -1019,11 +1019,11 @@ class backwpup_dojob {
 			
 			if ($this->job['awsmaxbackups']>0) { //Delete old backups
 				$backupfilelist=array();
-				if (($contents = $s3->getBucket($this->job['awsBucket'])) !== false) {
+				if (($contents = $s3->getBucket($this->job['awsBucket'],$this->job['awsdir'])) !== false) {
 					foreach ($contents as $object) {
-						if ($this->job['awsdir']==dirname(str_replace('\\','/',$object['name']))) {
-							$files=basename($object['name']);
-							if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
+						if ($this->job['awsdir'].basename($object['name']) == $object['name']) {//only in the folder and not in complete bucket
+							$file=basename($object['name']);
+							if ('backwpup_'.$this->jobid.'_' == substr(basename($file),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($file),-strlen($this->backupfileformat)))
 								$backupfilelist[]=basename($object['name']);
 						}
 					}
@@ -1036,9 +1036,9 @@ class backwpup_dojob {
 							$numdeltefiles++;
 						else 
 							trigger_error(__('Can not delete file on S3//:','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$backupfilelist[$i],E_USER_ERROR);
-						if ($numdeltefiles>0)
-							trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
 					}
+					if ($numdeltefiles>0)
+						trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
 				}
 			}
 		} else {
