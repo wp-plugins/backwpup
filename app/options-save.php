@@ -55,7 +55,7 @@ case 'savecfg': //Save config form Setings page
 	$cfg['mailsndemail']=sanitize_email($_POST['mailsndemail']);
 	$cfg['mailsndname']=$_POST['mailsndname'];
 	$cfg['mailmethod']=$_POST['mailmethod'];
-	$cfg['mailsendmail']=str_replace('\\','/',stripslashes($_POST['mailsendmail']));
+	$cfg['mailsendmail']=untrailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['mailsendmail']))));
 	$cfg['mailsecure']=$_POST['mailsecure'];
 	$cfg['mailhost']=$_POST['mailhost'];
 	$cfg['mailuser']=$_POST['mailuser'];
@@ -63,8 +63,8 @@ case 'savecfg': //Save config form Setings page
 	$cfg['memorylimit']=$_POST['memorylimit'];
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
-	$cfg['dirlogs']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirlogs'])));
-	$cfg['dirtemp']=untrailingslashit(str_replace('\\','/',stripslashes($_POST['dirtemp'])));
+	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
+	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';
@@ -149,13 +149,13 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['ftphost']=$_POST['ftphost'];
 	$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
 	$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-	$jobs[$jobid]['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim(trim($_POST['ftpdir']))))));
+	$jobs[$jobid]['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['ftpdir'])))));
 	$jobs[$jobid]['ftpmaxbackups']=abs((int)$_POST['ftpmaxbackups']);
 	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
 	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
 	$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
 	$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
-	$jobs[$jobid]['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim(trim($_POST['awsdir']))))));
+	$jobs[$jobid]['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['awsdir'])))));
 	if (substr($jobs[$jobid]['awsdir'],0,1)=='/')
 		$jobs[$jobid]['awsdir']=substr($jobs[$jobid]['awsdir'],1);
 	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);

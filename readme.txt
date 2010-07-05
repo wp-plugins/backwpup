@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -81,6 +81,11 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.8 =
+* fix temp backup file not deleted if no destination folder
+* some folder fixes
+* removed some not used code
+
 = 1.0.7 =
 * added flattr button in Help
 * Fixed bug on S3 File deletion
