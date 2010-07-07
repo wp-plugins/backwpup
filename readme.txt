@@ -81,6 +81,11 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.9 =
+* change s3 class to hide warnigs
+* add option to make MySQL INSERTs shorter (smaler dump file size.)
+* add requerments checks
+
 = 1.0.8 =
 * fix temp backup file not deleted if no destination folder
 * some folder fixes

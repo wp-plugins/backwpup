@@ -136,6 +136,7 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
 	$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+	$jobs[$jobid]['dbshortinsert']=$_POST['dbshortinsert']==1 ? true : false;
 	$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;	
 	$jobs[$jobid]['fileexclude']=str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['fileexclude']))));
 	$jobs[$jobid]['dirinclude']=str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirinclude']))));

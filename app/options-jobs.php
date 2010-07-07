@@ -110,11 +110,17 @@ $todo=explode('+',$jobs[$jobid]['type']);
 						$jobs[$jobid]['fileformart']='.zip';
 				if (function_exists('gzopen') or class_exists('ZipArchive'))
 					echo '<input class="radio" type="radio"'.checked('.zip',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".zip" />'.__('ZIP (.zip)','backwpup').'<br />';
+				else
+					echo '<input class="radio" type="radio"'.checked('.zip',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".zip" disabled="disabled" />'.__('ZIP (.zip)','backwpup').'<br />';
 				echo '<input class="radio" type="radio"'.checked('.tar',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar" />'.__('TAR (.tar)','backwpup').'<br />';
 				if (function_exists('gzopen'))
-					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.gz"/>'.__('TAR GZIP (.tar.gz)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.gz" />'.__('TAR GZIP (.tar.gz)','backwpup').'<br />';
+				else
+					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.gz" disabled="disabled" />'.__('TAR GZIP (.tar.gz)','backwpup').'<br />';
 				if (function_exists('bzopen'))
-					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.bz2"/>'.__('TAR BZIP2 (.tar.bz2)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.bz2" />'.__('TAR BZIP2 (.tar.bz2)','backwpup').'<br />';
+				else
+					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('TAR BZIP2 (.tar.bz2)','backwpup').'<br />';
 				?>
 				</div>
 			</div>				
@@ -146,7 +152,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 				</div> 
 			</div> 
 		
-			<div id="databasejos" class="postbox" <?PHP if (!in_array("CHECK",$todo) and !in_array("DB",$todo) and !in_array("OPTIMIZE",$todo)) echo 'style="display:none;"';?>>
+			<div id="databasejobs" class="postbox" <?PHP if (!in_array("CHECK",$todo) and !in_array("DB",$todo) and !in_array("OPTIMIZE",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Database Jobs','backwpup'); ?></span></h3>
 				<div class="inside">
 				
@@ -167,7 +173,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 					}
 					?>
 					</div><br />
-					
+					<span id="dbshortinsert" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instat of full (with keys)','backwpup');?><br /></span>
 					<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['maintenance'],true,true);?> name="maintenance" value="1"/> <?php _e('Set Blog Maintenance Mode on Database Operations','backwpup');?><br />				
 				</div>
 			</div>		
@@ -235,17 +241,21 @@ $todo=explode('+',$jobs[$jobid]['type']);
 			<div id="toamazon" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Amazon S3','backwpup'); ?></span></h3>
 				<div class="inside">
-					<b><?PHP _e('Access Key ID:','backwpup'); ?></b><br />
-					<input name="awsAccessKey" type="text" value="<?PHP echo $jobs[$jobid]['awsAccessKey'];?>" class="large-text" /><br />
-					<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
-					<input name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="large-text" /><br />
-					<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
-					<input name="awsBucket" type="text" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" class="large-text" /><br />
-					<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
-					<input name="awsdir" type="text" value="<?PHP echo $jobs[$jobid]['awsdir'];?>" class="large-text" /><br />
-					<?PHP if (!is_numeric($jobs[$jobid]['awsmaxbackups'])) $jobs[$jobid]['awsmaxbackups']=0; ?>
-					<?PHP _e('Max. Backup Files inn Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobs[$jobid]['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-					<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['awsSSL'],true); ?> name="awsSSL" /> <?PHP _e('Use SSL connection.','backwpup'); ?><br />
+					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
+						echo "<b>".__('curl Support required','backwpup')."</b>";
+					} else { ?>
+						<b><?PHP _e('Access Key ID:','backwpup'); ?></b><br />
+						<input name="awsAccessKey" type="text" value="<?PHP echo $jobs[$jobid]['awsAccessKey'];?>" class="large-text" /><br />
+						<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
+						<input name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="large-text" /><br />
+						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
+						<input name="awsBucket" type="text" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" class="large-text" /><br />
+						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
+						<input name="awsdir" type="text" value="<?PHP echo $jobs[$jobid]['awsdir'];?>" class="large-text" /><br />
+						<?PHP if (!is_numeric($jobs[$jobid]['awsmaxbackups'])) $jobs[$jobid]['awsmaxbackups']=0; ?>
+						<?PHP _e('Max. Backup Files inn Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobs[$jobid]['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
+						<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['awsSSL'],true); ?> name="awsSSL" /> <?PHP _e('Use SSL connection.','backwpup'); ?><br />
+					<?PHP } ?>
 				</div>
 			</div>	
 

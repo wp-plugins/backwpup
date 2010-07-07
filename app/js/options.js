@@ -15,10 +15,16 @@ jQuery(document).ready( function($) {
 			$('#tomail').hide();
 		}
 		if ( true == $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-CHECK').attr('checked') || true == $('#jobtype-select-OPTIMIZE').attr('checked')) {
-			$('#databasejos').show();
+			$('#databasejobs').show();
 		} else {
-			$('#databasejos').hide();
+			$('#databasejobs').hide();
 		}
+		if ( true == $('#jobtype-select-DB').attr('checked')) {
+			$('#dbshortinsert').show();
+		} else {
+			$('#dbshortinsert').hide();
+		}
+
 		if ( true == $('#jobtype-select-FILE').attr('checked')) {
 			$('#filebackup').show();
 		} else {

@@ -417,7 +417,8 @@ class backwpup_dojob {
 			$keys = array();
 			$values = array();
 			foreach($data as $key => $value) {
-				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
+				if (!$this->job['dbshortinsert'])
+					$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
 				if($value === NULL) // Make Value NULL to string NULL
 					$value = "NULL";
 				elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
@@ -427,7 +428,11 @@ class backwpup_dojob {
 				$values[] = $value;
 			}
 			// make data dump
-			fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
+			if ($this->job['dbshortinsert'])
+				fwrite($file, "INSERT INTO `".$table."` VALUES ( ".implode(", ",$values)." );\n");
+			else
+				fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
+
 		}
 		if ($status['Engine']=='MyISAM')
 			fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
