@@ -162,6 +162,14 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
 	$jobs[$jobid]['awsmaxbackups']=abs((int)$_POST['awsmaxbackups']);
 
+	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
+		if (!class_exists('S3')) 
+			require_once('libs/S3.php');
+		$s3 = new S3($_POST['awsAccessKey'], $_POST['awsSecretKey'], false);
+		@$s3->putBucket($_POST['newawsBucket'], S3::ACL_PRIVATE, $_POST['awsRegion']);
+		$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
+	}
+	
 	//save chages
 	update_option('backwpup_jobs',$jobs);
 	

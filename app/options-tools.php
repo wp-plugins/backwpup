@@ -61,28 +61,7 @@ if ( !defined('ABSPATH') )
 					?>
 				</div>
 			</div>
-		
-			<div id="createbucket" class="postbox">
-				<h3 class="hndle"><span><?PHP _e('Create Amazon S3 Bucket','backwpup'); ?></span></h3>
-				<div class="inside">
-					<?PHP
-					if ($_POST['awsbucketcreate']==__('Create', 'backwpup') and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey']) and !empty($_POST['awsBucket'])) {
-						if (!class_exists('S3')) require_once 'libs/S3.php';
-						$s3 = new S3($_POST['awsAccessKey'], $_POST['awsSecretKey'], false);
-						if ($s3->putBucket($_POST['awsBucket'], S3::ACL_PRIVATE, $_POST['awsRegion']))
-							echo __('Amazone S3 Bucket created.', 'backwpup')."<br />";
-						else
-							echo __('Can not create Amazon S3 Bucket.', 'backwpup')."<br />";
-						
-					}
-					?>
-					<b><?php _e('Access Key ID:', 'backwpup'); ?></b><br /><input type="text" name="awsAccessKey" id="awsAccessKey" value="<?PHP echo $_POST['awsAccessKey'];?>" class="large-text" /><br />
-					<b><?php _e('Secret Access Key:', 'backwpup'); ?></b><br /><input type="text" name="awsSecretKey" id="awsSecretKey" value="<?PHP echo $_POST['awsSecretKey'];?>" class="large-text" /><br />
-					<b><?php _e('Bucket Name:', 'backwpup'); ?></b><br /><input type="text" name="awsBucket" id="awsBucket" value="<?PHP echo $_POST['awsBucket'];?>" class="large-text" /><br />
-					<b><?php _e('Bucket Region:', 'backwpup'); ?></b><br /><select name="awsRegion"><option value=""><?php _e('US', 'backwpup'); ?></option><option value="EU"><?php _e('Europe', 'backwpup'); ?></option></select><br />
-					<input type="submit" name="awsbucketcreate" class="button-primary" value="<?php _e('Create', 'backwpup'); ?>" />
-				</div>
-			</div>				
+			
 		</div>
 	</div>
 </div>

@@ -135,16 +135,16 @@ class backwpup_dojob {
 		$this->tempdir=trailingslashit($this->cfg['dirtemp']);
 		if (empty($this->tempdir) or $this->tempdir=='/') {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$this->tempdir=str_replace('\\','/',get_temp_dir().'backwpup-'.$rand.'/');
+			$this->tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
 		}
 		//set Backup Dir
 		$this->backupdir=trailingslashit($this->job['backupdir']);
 		if (empty($this->backupdir) or $this->backupdir=='/') 
-			$this->backupdir=$this->tempdir;
+			$this->backupdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'/';
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir) or $this->logdir=='/') 
-			$this->logdir=$this->tempdir.'logs/';	
+			$this->logdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';	
 		//set Backup file name only for jos that makes backups
 		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo)) 
 			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
@@ -171,8 +171,6 @@ class backwpup_dojob {
 		//PHP Error handling
 		set_error_handler("backwpup_joberrorhandler"); //set function for PHP error handling
 		//check dirs
-		if (!$this->_check_folders($this->tempdir))
-			return false;
 		if (!$this->_check_folders($this->backupdir))
 			return false;
 		//check max script execution tme
@@ -617,8 +615,9 @@ class backwpup_dojob {
 
 		if (!empty($this->job['fileexclude'])) 
 			$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
-		//Exclude Temp dir
-		$backwpup_exclude[]=$this->tempdir;
+		//Exclude Temp Files
+		$backwpup_exclude[]=$this->tempdir.DB_NAME.'.sql';
+		$backwpup_exclude[]=$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml';
 		//Exclude Backup dirs
 		$jobs=get_option('backwpup_jobs');
 		foreach($jobs as $jobsvale) { 
@@ -1007,10 +1006,11 @@ class backwpup_dojob {
 			return false;
 		}
 
-		if (!class_exists('S3')) require_once 'libs/S3.php';
+		if (!class_exists('S3')) 
+			require_once('libs/S3.php');
 	
 		$s3 = new S3($this->job['awsAccessKey'], $this->job['awsSecretKey'], $this->job['awsSSL']);
-	
+
 		if (in_array($this->job['awsBucket'],$s3->listBuckets())) {
 			trigger_error(__('Connected to S3 Bucket:','backwpup').' '.$this->job['awsBucket'],E_USER_NOTICE);
 			//Transfer Backup to S3

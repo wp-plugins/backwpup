@@ -135,11 +135,11 @@ if ( !defined('ABSPATH') )
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
 		if (empty($cfg['dirtemp'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$cfg['dirtemp']=str_replace('\\','/',get_temp_dir().'backwpup-'.$rand.'/');
+			$cfg['dirtemp']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
 		}
 		if (empty($cfg['dirlogs'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$cfg['dirlogs']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup-'.$rand.'/logs/';
+			$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'/backwpup-'.$rand.'-logs/';
 		}
 		update_option('backwpup',$cfg);
 	}
@@ -191,13 +191,12 @@ if ( !defined('ABSPATH') )
 	//DoJob
 	function backwpup_dojob($args) {
 		global $backwpup_logfile;
-		if (is_array($args)) { //cron gifes no complete array back!!!
+		if (is_array($args)) //cron gifes no complete array back!!!
 			extract($args, EXTR_SKIP );
-		} else {
+		else
 			$jobid=$args;
-		}
-		if (empty($jobid)) return false;
-		require_once(ABSPATH . 'wp-admin/includes/file.php'); //for get_tempdir();
+		if (empty($jobid)) 
+			return false;
 		require_once('backwpup_dojob.php');
 		$dojob= new backwpup_dojob($jobid);
 		unset($dojob);
@@ -355,7 +354,31 @@ if ( !defined('ABSPATH') )
 		header("Pragma: no-cache");
 		header("Cache-Control: post-check=0, pre-check=0");
 	}
-	
+
+
+	function backwpup_get_aws_buckets() {
+		require_once('libs/s3.php');
+		if (empty($_POST['awsAccessKey'])) {
+			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
+			die();
+		}
+		if (empty($_POST['awsSecretKey'])) {
+			echo '<span id="awsBucket" style="color:red;">'.__('Missing Secret Access Key!','backwpup').'</span>';
+			die();
+		}			
+		$s3 = new S3($_POST['awsAccessKey'], $_POST['awsSecretKey'], false);
+		$buckets=@$s3->listBuckets();
+		if (!is_array($buckets)) {
+			echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found! Or wrong Keys!','backwpup').'</span>';
+			die();
+		}	
+		echo '<select name="awsBucket" id="awsBucket">';
+		foreach ($buckets as $bucket) {
+			echo "<option ".selected(strtolower($_POST['selected']),strtolower($bucket),false).">".$bucket."</option>";
+		}
+		echo '</select>';
+		die();
+	}
 	
 	// add all action and so on only if plugin loaded.
 	function backwpup_init() {
@@ -377,6 +400,8 @@ if ( !defined('ABSPATH') )
 		//add Dashboard widget
 		if (current_user_can(10)) 
 			add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
+		// add ajax function
+		add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
 	} 	
 
 ?>

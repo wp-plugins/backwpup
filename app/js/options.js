@@ -45,6 +45,28 @@ jQuery(document).ready( function($) {
 		}
 	});
 	
+	function awsgetbucket() {
+		var awsAccessKey = $('#awsAccessKey').val();
+		var awsSecretKey = $('#awsSecretKey').val();
+		var awsBucket = $('#awsBucketselected').val();
+		var data = {
+			action: 'backwpup_get_aws_buckets',
+			awsAccessKey: awsAccessKey,
+			awsSecretKey: awsSecretKey,
+			selected: awsBucket
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#awsBucket').remove();
+			$('#awsBucketselected').after(response);
+		});		
+	}
+	
+	awsgetbucket();
+	$('#awsAccessKey').change(function() {awsgetbucket();});
+	$('#awsSecretKey').change(function() {awsgetbucket();});
+	
+	$('#reloadbuckets').onClick(awsgetbucket());
+	
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');
 	$('#title-prompt-text').click(function(){

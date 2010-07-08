@@ -85,6 +85,8 @@ Pleace mail only littele archives
 * change s3 class to hide warnigs
 * add option to make MySQL INSERTs shorter (smaler dump file size.)
 * add requerments checks
+* ajaxed S3 bucket selection in job settings
+* add S3 Buckt can made in job settings
 
 = 1.0.8 =
 * fix temp backup file not deleted if no destination folder

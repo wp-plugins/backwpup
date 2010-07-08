@@ -211,7 +211,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 					<?PHP 
 					if (empty($jobs[$jobid]['backupdir'])) {
 						$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-						$jobs[$jobid]['backupdir']=str_replace('\\','/',WP_CONTENT_DIR).'/backwpup-'.$rand;
+						$jobs[$jobid]['backupdir']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'/backwpup-'.$rand;
 					} 
 					if (!is_numeric($jobs[$jobid]['maxbackups']))
 						$jobs[$jobid]['maxbackups']=0;					
@@ -245,11 +245,13 @@ $todo=explode('+',$jobs[$jobid]['type']);
 						echo "<b>".__('curl Support required','backwpup')."</b>";
 					} else { ?>
 						<b><?PHP _e('Access Key ID:','backwpup'); ?></b><br />
-						<input name="awsAccessKey" type="text" value="<?PHP echo $jobs[$jobid]['awsAccessKey'];?>" class="large-text" /><br />
+						<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobs[$jobid]['awsAccessKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
-						<input name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="large-text" /><br />
+						<input id="awsSecretKey" name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
-						<input name="awsBucket" type="text" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" class="large-text" /><br />
+						<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" />
+						<span id="awsBucket" style="color:red;"><?PHP _e('Get Buckets:','backwpup'); ?></span>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US', 'backwpup'); ?></option><option value="EU"><?php _e('EU', 'backwpup'); ?></option></select><br />
 						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
 						<input name="awsdir" type="text" value="<?PHP echo $jobs[$jobid]['awsdir'];?>" class="large-text" /><br />
 						<?PHP if (!is_numeric($jobs[$jobid]['awsmaxbackups'])) $jobs[$jobid]['awsmaxbackups']=0; ?>
