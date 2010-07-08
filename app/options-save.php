@@ -65,6 +65,14 @@ case 'savecfg': //Save config form Setings page
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
 	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
+	//set def. folders
+	if (empty($cfg['dirtemp']) or $cfg['dirtemp']=='/')
+		$cfg['dirtemp']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+	if (empty($cfg['dirlogs']) or $cfg['dirlogs']=='/') {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+			$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
+	}
+
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	$_REQUEST['action']='settings';

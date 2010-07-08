@@ -133,18 +133,20 @@ class backwpup_dojob {
 			$this->backupfileformat=$this->job['fileformart'];
 		//set Temp Dir
 		$this->tempdir=trailingslashit($this->cfg['dirtemp']);
-		if (empty($this->tempdir) or $this->tempdir=='/') {
-			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+		if (empty($this->tempdir) or $this->tempdir=='/') 
 			$this->tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
-		}
 		//set Backup Dir
 		$this->backupdir=trailingslashit($this->job['backupdir']);
-		if (empty($this->backupdir) or $this->backupdir=='/') 
+		if (empty($this->backupdir) or $this->backupdir=='/') {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 			$this->backupdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'/';
+		}
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
-		if (empty($this->logdir) or $this->logdir=='/') 
-			$this->logdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';	
+		if (empty($this->logdir) or $this->logdir=='/') {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+			$this->logdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
+		}
 		//set Backup file name only for jos that makes backups
 		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo)) 
 			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
