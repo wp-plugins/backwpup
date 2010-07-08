@@ -138,8 +138,7 @@ class backwpup_dojob {
 		//set Backup Dir
 		$this->backupdir=trailingslashit($this->job['backupdir']);
 		if (empty($this->backupdir) or $this->backupdir=='/') {
-			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$this->backupdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'/';
+			$this->backupdir=$this->tempdir;
 		}
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
@@ -173,8 +172,10 @@ class backwpup_dojob {
 		//PHP Error handling
 		set_error_handler("backwpup_joberrorhandler"); //set function for PHP error handling
 		//check dirs
-		if (!$this->_check_folders($this->backupdir))
-			return false;
+		if ($this->backupdir!=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/') {
+			if (!$this->_check_folders($this->backupdir))
+				return false;
+		}
 		//check max script execution tme
 		if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
 			set_time_limit(0); //300 is most webserver time limit. 0= max time
