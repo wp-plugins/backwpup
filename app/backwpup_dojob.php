@@ -444,7 +444,9 @@ class backwpup_dojob {
 		global $wpdb;
 		trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
 		$this->maintenance_mode(true);
-
+		if (!isset($this->job['dbshortinsert']))
+			$this->job['dbshortinsert']=false;
+		
 		//Tables to backup		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 		if ($sqlerr=mysql_error($wpdb->dbh)) 

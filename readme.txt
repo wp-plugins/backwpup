@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.0.9
+Stable tag: 1.0.10
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -81,6 +81,9 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.0.10 =
+* fix  "Undefined index: dbshortinsert"
+
 = 1.0.9 =
 * change s3 class to hide warnigs
 * add option to make MySQL INSERTs shorter (smaler dump file size.)
