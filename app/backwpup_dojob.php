@@ -679,7 +679,8 @@ class backwpup_dojob {
 		
 		} else { //use PclZip
 			define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
-			if (!class_exists('PclZip')) require_once 'libs/pclzip.lib.php';
+			if (!class_exists('PclZip')) 
+				require_once(plugin_dir_path(__FILE__).'libs/pclzip.lib.php');
 		
 			//Create Zip File
 			if (is_array($this->filelist[0])) {
@@ -1012,7 +1013,7 @@ class backwpup_dojob {
 		}
 
 		if (!class_exists('S3')) 
-			require_once('libs/S3.php');
+			require_once(plugin_dir_path(__FILE__).'libs/S3.php');
 	
 		$s3 = new S3($this->job['awsAccessKey'], $this->job['awsSecretKey'], $this->job['awsSSL']);
 
