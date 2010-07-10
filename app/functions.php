@@ -357,7 +357,7 @@ if ( !defined('ABSPATH') )
 
 
 	function backwpup_get_aws_buckets() {
-		require_once(plugin_dir_path(__FILE__).'libs/s3.php');
+		require_once(plugin_dir_path(__FILE__).'libs/S3.php');
 		if (empty($_POST['awsAccessKey'])) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
 			die();
