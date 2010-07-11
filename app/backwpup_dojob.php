@@ -125,21 +125,19 @@ class backwpup_dojob {
 		if ($schedteime=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid))) //set Schedule time to next scheduled
 			$jobs[$this->jobid]['scheduletime']=$schedteime;
 		update_option('backwpup_jobs',$jobs); //Save job Settings
-		$this->job=$jobs[$this->jobid];  //Set job settings
+		$this->job=backwpup_check_job_vars($jobs[$this->jobid]);//Set and check job settings
 		//set waht to do
 		$this->todo=explode('+',$this->job['type']);
 		//set Backup File format Dir
-		if (!empty($this->job['fileformart']) or $this->job['fileformart']=='.zip' or $this->job['fileformart']=='.tar' or $this->job['fileformart']=='.tar.gz' or $this->job['fileformart']=='.tar.bz2')
-			$this->backupfileformat=$this->job['fileformart'];
+		$this->backupfileformat=$this->job['fileformart'];
 		//set Temp Dir
 		$this->tempdir=trailingslashit($this->cfg['dirtemp']);
 		if (empty($this->tempdir) or $this->tempdir=='/') 
 			$this->tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
 		//set Backup Dir
-		$this->backupdir=trailingslashit($this->job['backupdir']);
-		if (empty($this->backupdir) or $this->backupdir=='/') {
+		$this->backupdir=$this->job['backupdir'];
+		if (empty($this->backupdir))
 			$this->backupdir=$this->tempdir;
-		}
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir) or $this->logdir=='/') {
@@ -164,7 +162,7 @@ class backwpup_dojob {
 		@fputs($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_jobname\" content=\"".$this->job['name']."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_jobtype\" content=\"".$this->job['type']."\" />\n");
-		if (!empty($this->backupfile))
+		if (!empty($this->backupfile) and $this->backupdir!=$this->tempdir)
 			@fputs($fd,"<meta name=\"backwpup_backupfile\" content=\"".$this->backupdir.$this->backupfile."\" />\n");
 		@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
 		@fputs($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$this->job['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
@@ -193,7 +191,7 @@ class backwpup_dojob {
 		foreach($this->todo as $key => $value) {
 			switch ($value) {
 			case 'DB':
-				$this->dump_db($this->job['dbexclude']);
+				$this->dump_db();
 				break;
 			case 'WPEXP':
 				$this->export_wp();
@@ -222,18 +220,16 @@ class backwpup_dojob {
 		foreach($this->todo as $key => $value) {
 			switch ($value) {
 			case 'CHECK':
-				$this->check_db($this->job['dbexclude']);
+				$this->check_db();
 				break;
 			case 'OPTIMIZE':
-				$this->optimize_db($this->job['dbexclude']);
+				$this->optimize_db();
 				break;
 			}
 		}	
-	}
+	}	
 	
 	private function _check_folders($folder) {
-		$folder=str_replace("\\","/",$folder);
-		$folder=untrailingslashit(str_replace("//","/",$folder));
 		if (!is_dir($folder)) { //create dir if not exists
 			if (!mkdir($folder,0777,true)) {
 				trigger_error(sprintf(__('Can not create Folder: %1$s','backwpup'),$folder),E_USER_ERROR);
@@ -246,15 +242,21 @@ class backwpup_dojob {
 		}
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($folder.'/.htaccess')) {
-				if($file = fopen($folder.'/.htaccess', 'w')) {
+			if (!is_file($folder.'.htaccess')) {
+				if($file = fopen($folder.'.htaccess', 'w')) {
 					fwrite($file, "Order allow,deny\ndeny from all");
 					fclose($file);
 				}
 			}
 		} else {
-			if (!is_file($folder.'/index.html')) {
-				if($file = fopen($folder.'/index.html', 'w')) {
+			if (!is_file($folder.'index.html')) {
+				if($file = fopen($folder.'index.html', 'w')) {
+					fwrite($file,"\n");
+					fclose($file);
+				} 
+			}
+			if (!is_file($folder.'index.php')) {
+				if($file = fopen($folder.'index.php', 'w')) {
 					fwrite($file,"\n");
 					fclose($file);
 				} 
@@ -327,22 +329,18 @@ class backwpup_dojob {
 		}
 	}
 	
-	private function check_db($exclude_tables) {
+	private function check_db() {
 		global $wpdb;
 		
 		trigger_error(__('Run Database check...','backwpup'),E_USER_NOTICE);
 		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-		
 		//exclude tables from check
-		if (is_array($exclude_tables)) {
-			foreach($tables as $tablekey => $tablevalue) {
-				if (in_array($tablevalue,$exclude_tables))
-					unset($tables[$tablekey]);
-			}
+		foreach($tables as $tablekey => $tablevalue) {
+			if (in_array($tablevalue,$this->job['dbexclude']))
+				unset($tables[$tablekey]);
 		}
-		
-		
+	
 		//check tables
 		if (sizeof($tables)>0) {
 			$this->maintenance_mode(true);
@@ -440,24 +438,22 @@ class backwpup_dojob {
 		fwrite($file, "UNLOCK TABLES;\n");
 	}
 
-	public function dump_db($exclude_tables) {
+	public function dump_db() {
 		global $wpdb;
 		trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
 		$this->maintenance_mode(true);
-		if (!isset($this->job['dbshortinsert']))
-			$this->job['dbshortinsert']=false;
 		
 		//Tables to backup		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 		if ($sqlerr=mysql_error($wpdb->dbh)) 
 			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "SHOW TABLES FROM `'.DB_NAME.'`"),E_USER_ERROR);
-		if (is_array($exclude_tables)) {
-			foreach($tables as $tablekey => $tablevalue) {
-				if (in_array($tablevalue,$exclude_tables))
-					unset($tables[$tablekey]);
-			}
-			sort($tables);
+		
+		foreach($tables as $tablekey => $tablevalue) {
+			if (in_array($tablevalue,$this->job['dbexclude']))
+				unset($tables[$tablekey]);
 		}
+		sort($tables);
+		
 
 		if (sizeof($tables)>0) {
 			$result=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A); //get table status
@@ -539,21 +535,18 @@ class backwpup_dojob {
 		}
 	}	
 
-	public function optimize_db($exclude_tables) {
+	public function optimize_db() {
 		global $wpdb;
 		
 		trigger_error(__('Run Database optimize...','backwpup'),E_USER_NOTICE);
 		
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-
 		//exclude tables from optimize
-		if (is_array($exclude_tables)) {
-			foreach($tables as $tablekey => $tablevalue) {
-				if (in_array($tablevalue,$exclude_tables))
-					unset($tables[$tablekey]);
-			}
+		foreach($tables as $tablekey => $tablevalue) {
+			if (in_array($tablevalue,$this->job['dbexclude']))
+				unset($tables[$tablekey]);
 		}
-		
+			
 		if (sizeof($tables)>0) {
 			$this->maintenance_mode(true);
 			foreach ($tables as $table) {
@@ -616,10 +609,8 @@ class backwpup_dojob {
 
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
-		$backwpup_exclude=array(); $dirinclude=array();
 
-		if (!empty($this->job['fileexclude'])) 
-			$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
+		$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
 		//Exclude Temp Files
 		$backwpup_exclude[]=$this->tempdir.DB_NAME.'.sql';
 		$backwpup_exclude[]=$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml';
@@ -631,9 +622,8 @@ class backwpup_dojob {
 		}
 		$backwpup_exclude=array_unique($backwpup_exclude);
 	
-		//include dirs
-		if (!empty($this->job['dirinclude'])) 
-			$dirinclude=explode(',',$this->job['dirinclude']);
+		//include dirs 
+		$dirinclude=explode(',',$this->job['dirinclude']);
 		
 		if ($this->job['backuproot']) //Include extra path
 			$dirinclude[]=ABSPATH;
@@ -680,7 +670,7 @@ class backwpup_dojob {
 		} else { //use PclZip
 			define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
 			if (!class_exists('PclZip')) 
-				require_once(plugin_dir_path(__FILE__).'libs/pclzip.lib.php');
+				require_once (plugin_dir_path(__FILE__).'libs/pclzip.lib.php');
 		
 			//Create Zip File
 			if (is_array($this->filelist[0])) {
@@ -822,10 +812,6 @@ class backwpup_dojob {
 	
 	
 	public function destination_ftp() {
-		$this->job['ftpdir']=trailingslashit($this->job['ftpdir']);
-		if ($this->job['ftpdir']=='/')
-			$this->job['ftpdir']='';
-	
 	
 		if (empty($this->job['ftphost']) or empty($this->job['ftpuser']) or empty($this->job['ftppass'])) 
 			return false;
@@ -941,8 +927,8 @@ class backwpup_dojob {
 		}
 
 		//Crate PHP Mailer
-		require_once ABSPATH . WPINC . '/class-phpmailer.php';
-		require_once ABSPATH . WPINC . '/class-smtp.php';
+		require_once(ABSPATH.WPINC.'/class-phpmailer.php');
+		require_once(ABSPATH.WPINC.'/class-smtp.php');
 		$phpmailer = new PHPMailer();
 		//Setting den methode
 		if ($this->cfg['mailmethod']=="SMTP") {
@@ -1000,9 +986,6 @@ class backwpup_dojob {
 	}
 
 	public function destination_s3() {
-		$this->job['awsdir']=trailingslashit($this->job['awsdir']);
-		if ($this->job['awsdir']=='/')
-			$this->job['awsdir']='';
 		
 		if (empty($this->job['awsAccessKey']) or empty($this->job['awsSecretKey']) or empty($this->job['awsBucket'])) 
 			return false;
@@ -1055,11 +1038,11 @@ class backwpup_dojob {
 	}
 
 	public function destination_dir() {
-		if (empty($this->job['backupdir']) or $this->job['backupdir']=='/')  //Go back if no destination dir
+		if (empty($this->job['backupdir']))  //Go back if no destination dir
 			return;
 		//Delete old Backupfiles
 		$backupfilelist=array();
-		if (!empty($this->job['maxbackups']) and is_dir($this->job['backupdir'])) {
+		if (!empty($this->job['maxbackups'])) {
 			if ( $dir = @opendir($this->job['backupdir']) ) { //make file list	
 				while (($file = readdir($dir)) !== false ) {
 					if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
@@ -1095,7 +1078,7 @@ class backwpup_dojob {
 			unlink($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml');
 		}
 		
-		if ((empty($this->job['backupdir']) or $this->job['backupdir']=='/') and is_file($this->backupdir.$this->backupfile)) { //delete backup file in temp dir
+		if (empty($this->job['backupdir']) and is_file($this->backupdir.$this->backupfile)) { //delete backup file in temp dir
 			unlink($this->backupdir.$this->backupfile);
 		}
 		

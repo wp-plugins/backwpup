@@ -109,6 +109,159 @@ if ( !defined('ABSPATH') )
 		delete_option('backwpup');
 		delete_option('backwpup_jobs');
 	}
+
+	//Checking,upgrade and default job setting
+	function backwpup_check_job_vars($jobsettings) {
+		global $wpdb;
+		//check job type
+		if (!isset($jobsettings['type']) or !is_string($jobsettings['type']))
+			$jobsettings['type']='DB+FILE';
+		$todo=explode('+',strtoupper($jobsettings['type']));
+		foreach($todo as $key => $value) {
+			if (!in_array($value,backwpup_backup_types()))
+				unset($todo[$key]);
+		}
+		$jobsettings['type']=implode('+',$todo);
+		if (empty($jobsettings['type']))
+			$jobsettings['type']='DB+FILE';
+		
+		if (empty($jobsettings['name']) or !is_string($jobsettings['name']))
+			$jobsettings['name']= __('New');
+		
+		if (!isset($jobsettings['activated']) or !is_bool($jobsettings['activated']))	
+			$jobsettings['activated']=false;
+		
+		if (!isset($jobsettings['scheduletime']) or !is_numeric($jobsettings['scheduletime']))
+			$jobsettings['scheduletime']=current_time('timestamp');
+		
+		if (!isset($jobsettings['scheduleintervaltype']) or !is_int($jobsettings['scheduleintervaltype']))			
+			$jobsettings['scheduleintervaltype']=3600;
+		if ($jobsettings['scheduleintervaltype']!=60 and $jobsettings['scheduleintervaltype']!=3600 and $jobsettings['scheduleintervaltype']!=86400)
+			$jobsettings['scheduleintervaltype']=3600;
+			
+		if (!isset($jobsettings['scheduleintervalteimes']) or !is_int($jobsettings['scheduleintervalteimes']) or ($jobsettings['scheduleintervalteimes']<1 and $jobsettings['scheduleintervalteimes']>100))
+			$jobsettings['scheduleintervalteimes']=1;
+		
+		$jobsettings['scheduleinterval']=$jobsettings['scheduleintervaltype']*$jobsettings['scheduleintervalteimes'];
+		
+		if (!is_string($jobsettings['mailaddresslog']) or false === $pos=strpos($jobsettings['mailaddresslog'],'@') or false === strpos($jobsettings['mailaddresslog'],'.',$pos))
+			$jobsettings['mailaddresslog']=get_option('admin_email');
+		
+		if (!isset($jobsettings['mailerroronly']) or !is_bool($jobsettings['mailerroronly']))
+			$jobsettings['mailerroronly']=true;
+			
+		if (!isset($jobsettings['dbexclude']) or !is_array($jobsettings['dbexclude'])) {
+			$jobsettings['dbexclude']=array();
+			$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+			foreach ($tables as $table) {
+				if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
+					$jobsettings['dbexclude'][]=$table;
+			}		
+		}
+		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+		foreach($jobsettings['dbexclude'] as $key => $value) {
+			if (empty($jobsettings['dbexclude'][$key]) or !in_array($value,$tables))
+				unset($jobsettings['dbexclude'][$key]);
+		}
+			
+		if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
+			$jobsettings['dbshortinsert']=false;
+		
+		if (!isset($jobsettings['maintenance']) or !is_bool($jobsettings['maintenance']))
+			$jobsettings['maintenance']=false;
+		
+		if (!isset($jobsettings['fileexclude']) or !is_string($jobsettings['fileexclude']))
+			$jobsettings['fileexclude']='';
+		$fileexclude=explode(',',$jobsettings['fileexclude']);
+		foreach($fileexclude as $key => $value) {
+			$fileexclude[$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($fileexclude[$key]))
+				unset($fileexclude[$key]);
+		}
+		$jobsettings['fileexclude']=implode(',',$fileexclude);	
+		
+		if (!isset($jobsettings['dirinclude']) or !is_string($jobsettings['dirinclude']))
+			$jobsettings['dirinclude']='';
+		$dirinclude=explode(',',$jobsettings['dirinclude']);
+		foreach($dirinclude as $key => $value) {
+			$dirinclude[$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($dirinclude[$key]) or !is_dir($dirinclude[$key]))
+				unset($dirinclude[$key]);
+		}
+		$jobsettings['dirinclude']=implode(',',$dirinclude);		
+
+		if (!isset($jobsettings['backuproot']) or !is_bool($jobsettings['backuproot']))
+			$jobsettings['backuproot']=true;
+		
+		if (!isset($jobsettings['backupcontent']) or !is_bool($jobsettings['backupcontent']))
+			$jobsettings['backupcontent']=true;
+		
+		if (!isset($jobsettings['backupplugins']) or !is_bool($jobsettings['backupplugins']))
+			$jobsettings['backupplugins']=true;
+		
+		$fileformarts=array('.zip','.tar.gz','tar.bz2','.tar');
+		if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
+			$jobsettings['fileformart']='.zip';
+		
+		if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
+			$jobsettings['mailefilesize']=0;
+		
+		if (!isset($jobsettings['backupdir']) or (!is_dir($jobsettings['backupdir']) and !empty($jobsettings['backupdir']))) {
+			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+			$jobsettings['backupdir']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'/';		
+		}
+		$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
+		if ($jobsettings['backupdir']=='/')
+			$jobsettings['backupdir']='';
+		
+		if (!isset($jobsettings['maxbackups']) or !is_int($jobsettings['maxbackups']))
+			$jobsettings['maxbackups']=0;
+			
+		if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
+			$jobsettings['ftphost']='';
+		
+		if (!isset($jobsettings['ftpuser']) or !is_string($jobsettings['ftpuser']))	
+			$jobsettings['ftpuser']='';
+		
+		if (!isset($jobsettings['ftppass']) or !is_string($jobsettings['ftppass']))
+			$jobsettings['ftppass']='';
+
+		if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']) or $jobsettings['ftpdir']=='/')		
+			$jobsettings['ftpdir']='';
+		$jobsettings['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir']))));
+		if (substr($jobsettings['ftpdir'],0,1)=='/')
+			$jobsettings['ftpdir']=substr($jobsettings['ftpdir'],1);
+		
+		if (!isset($jobsettings['ftpmaxbackups']) or !is_int($jobsettings['ftpmaxbackups']))
+			$jobsettings['ftpmaxbackups']=0;
+		
+		if (!isset($jobsettings['awsAccessKey']) or !is_string($jobsettings['awsAccessKey']))
+			$jobsettings['awsAccessKey']='';
+			
+		if (!isset($jobsettings['awsSecretKey']) or !is_string($jobsettings['awsSecretKey']))
+			$jobsettings['awsSecretKey']='';
+		
+		if (!isset($jobsettings['awsSSL']) or !is_bool($jobsettings['awsSSL']))
+			$jobsettings['awsSSL']=true;
+		
+		if (!isset($jobsettings['awsBucket']) or !is_string($jobsettings['awsBucket']))
+			$jobsettings['awsBucket']='';
+		
+		if (!isset($jobsettings['awsdir']) or !is_string($jobsettings['awsdir']) or $jobsettings['awsdir']=='/')		
+			$jobsettings['awsdir']='';
+		$jobsettings['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['awsdir']))));
+		if (substr($jobsettings['awsdir'],0,1)=='/')
+			$jobsettings['awsdir']=substr($jobsettings['awsdir'],1);
+		
+		if (!isset($jobsettings['awsmaxbackups']) or !is_int($jobsettings['awsmaxbackups']))
+			$jobsettings['awsmaxbackups']=0;		
+		
+		if (!is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
+			$jobsettings['mailaddress']='';
+
+		return $jobsettings;
+	}
+
 	
 	//On Plugin activate
 	function backwpup_plugin_activate() {
@@ -355,18 +508,27 @@ if ( !defined('ABSPATH') )
 		header("Cache-Control: post-check=0, pre-check=0");
 	}
 
-
-	function backwpup_get_aws_buckets() {
-		require_once(plugin_dir_path(__FILE__).'libs/S3.php');
-		if (empty($_POST['awsAccessKey'])) {
+    //ajax/normal get buckests select box
+	function backwpup_get_aws_buckets($args='') {
+		if (is_array($args)) {
+			extract($args);
+			$ajax=false;
+		} else {
+			$awsAccessKey=$_POST['awsAccessKey'];
+			$awsSecretKey=$_POST['awsSecretKey'];
+			$selected=$_POST['selected'];
+			$ajax=true;
+		}
+		require_once(plugin_dir_path(__FILE__).'libs/s3.php');
+		if (empty($awsAccessKey)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
 			die();
 		}
-		if (empty($_POST['awsSecretKey'])) {
+		if (empty($awsSecretKey)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Secret Access Key!','backwpup').'</span>';
 			die();
 		}			
-		$s3 = new S3($_POST['awsAccessKey'], $_POST['awsSecretKey'], false);
+		$s3 = new S3($awsAccessKey, $awsSecretKey, false);
 		$buckets=@$s3->listBuckets();
 		if (!is_array($buckets)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found! Or wrong Keys!','backwpup').'</span>';
@@ -374,10 +536,11 @@ if ( !defined('ABSPATH') )
 		}	
 		echo '<select name="awsBucket" id="awsBucket">';
 		foreach ($buckets as $bucket) {
-			echo "<option ".selected(strtolower($_POST['selected']),strtolower($bucket),false).">".$bucket."</option>";
+			echo "<option ".selected(strtolower($selected),strtolower($bucket),false).">".$bucket."</option>";
 		}
 		echo '</select>';
-		die();
+		if ($ajax)
+			die();
 	}
 	
 	// add all action and so on only if plugin loaded.

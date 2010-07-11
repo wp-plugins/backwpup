@@ -12,9 +12,7 @@ if ( !defined('ABSPATH') )
 <input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
 <?php 
 wp_nonce_field('edit-job'); 
-if (!isset($jobs[$jobid]['type'])) 
-	$jobs[$jobid]['type']='DB+FILE';
-
+$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid]);
 $todo=explode('+',$jobs[$jobid]['type']);
 ?>
 
@@ -51,21 +49,17 @@ $todo=explode('+',$jobs[$jobid]['type']);
 					<?php 
 					_e('Run Every:', 'backwpup');
 					echo '<select name="scheduleintervalteimes">';
-					for ($i=1;$i<=60;$i++) {
+					for ($i=1;$i<=100;$i++) {
 						echo '<option value="'.$i.'"'.selected($i,$jobs[$jobid]['scheduleintervalteimes'],false).'>'.$i.'</option>';
 					}
 					echo '</select>';
-					if (empty($jobs[$jobid]['scheduleintervaltype']))
-						$jobs[$jobid]['scheduleintervaltype']=3600;
 					echo '<select name="scheduleintervaltype">';
-					echo '<option value="60"'.selected('3600',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Min(s)','backwpup').'</option>';
+					echo '<option value="60"'.selected('60',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Min(s)','backwpup').'</option>';
 					echo '<option value="3600"'.selected('3600',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Hour(s)','backwpup').'</option>';
 					echo '<option value="86400"'.selected('86400',$jobs[$jobid]['scheduleintervaltype'],false).'>'.__('Day(s)','backwpup').'</option>';
 					echo '</select><br />';
 
 					_e('Start Date/Time:', 'backwpup');echo "<br />";
-					if (empty($jobs[$jobid]['scheduletime']))
-						$jobs[$jobid]['scheduletime']=current_time('timestamp');
 										
 					echo '<select name="scheduleday">';
 					for ($i=1;$i<=31;$i++) {
@@ -106,8 +100,6 @@ $todo=explode('+',$jobs[$jobid]['type']);
 				<h3 class="hndle"><span><?PHP _e('Backup File Format','backwpup'); ?></span></h3>
 				<div class="inside">
 				<?PHP
-				if (!isset($jobs[$jobid]['fileformart']))
-						$jobs[$jobid]['fileformart']='.zip';
 				if (function_exists('gzopen') or class_exists('ZipArchive'))
 					echo '<input class="radio" type="radio"'.checked('.zip',$jobs[$jobid]['fileformart'],false).' name="fileformart" value=".zip" />'.__('ZIP (.zip)','backwpup').'<br />';
 				else
@@ -128,12 +120,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 			<div id="logmail" class="postbox">
 				<h3 class="hndle"><span><?PHP _e('Send log','backwpup'); ?></span></h3>
 				<div class="inside">
-					<?PHP _e('E-Mail-Adress:','backwpup'); 
-					if (!isset($jobs[$jobid]['mailaddresslog']))
-						$jobs[$jobid]['mailaddresslog']=get_option('admin_email');
-					if (!isset($jobs[$jobid]['mailerroronly']))
-						$jobs[$jobid]['mailerroronly']=true;
-					?>
+					<?PHP _e('E-Mail-Adress:','backwpup'); ?>
 					<input name="mailaddresslog" id="mailaddresslog" type="text" value="<?PHP echo $jobs[$jobid]['mailaddresslog'];?>" class="large-text" /><br />
 					<input class="checkbox" value="1" type="checkbox" <?php checked($jobs[$jobid]['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Send only E-Mail on errors.','backwpup'); ?>
 				</div>
@@ -160,12 +147,6 @@ $todo=explode('+',$jobs[$jobid]['type']);
 					<div id="dbexclude-pop" style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;"> 
 					<?php
 					$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-					if (!isset($jobs[$jobid]['dbexclude'])) { //def.
-						foreach ($tables as $table) {
-							if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
-								$jobs[$jobid]['dbexclude'][]=$table;
-						}
-					}
 					foreach ($tables as $table) {
 						if ($wpdb->backwpup_logs<>$table) {
 							echo '	<input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobs[$jobid]['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/> '.$table.'<br />';
@@ -183,14 +164,6 @@ $todo=explode('+',$jobs[$jobid]['type']);
 				<div class="inside">
 					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b>
 					<div style="width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;">
-						<?PHP 
-						if (!isset($jobs[$jobid]['backuproot']))
-							$jobs[$jobid]['backuproot']=true;
-						if (!isset($jobs[$jobid]['backupcontent']))
-							$jobs[$jobid]['backupcontent']=true;
-						if (!isset($jobs[$jobid]['backupplugins']))
-							$jobs[$jobid]['backupplugins']=true;
-						?>
 						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backuproot'],true,true);?> name="backuproot" value="1"/> <?php _e('Blog root and WP Files','backwpup');?><br />
 						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupcontent'],true,true);?> name="backupcontent" value="1"/> <?php _e('Blog Content','backwpup');?><br />
 						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupplugins'],true,true);?> name="backupplugins" value="1"/> <?php _e('Blog Plugins','backwpup');?>
@@ -208,14 +181,6 @@ $todo=explode('+',$jobs[$jobid]['type']);
 			<div id="todir" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Directory','backwpup'); ?></span></h3>
 				<div class="inside">
-					<?PHP 
-					if (empty($jobs[$jobid]['backupdir'])) {
-						$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-						$jobs[$jobid]['backupdir']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'/backwpup-'.$rand;
-					} 
-					if (!is_numeric($jobs[$jobid]['maxbackups']))
-						$jobs[$jobid]['maxbackups']=0;					
-					?>
 					<b><?PHP _e('Full Path to Folder for Backup Files:','backwpup'); ?></b><br />
 					<input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobs[$jobid]['backupdir'];?>" class="large-text" /><br />
 					<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobs[$jobid]['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
@@ -250,7 +215,7 @@ $todo=explode('+',$jobs[$jobid]['type']);
 						<input id="awsSecretKey" name="awsSecretKey" type="text" value="<?PHP echo $jobs[$jobid]['awsSecretKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 						<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobs[$jobid]['awsBucket'];?>" />
-						<span id="awsBucket" style="color:red;"><?PHP _e('Get Buckets:','backwpup'); ?></span>
+						<?PHP if (!empty($jobs[$jobid]['awsAccessKey']) and !empty($jobs[$jobid]['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobs[$jobid]['awsAccessKey'],'awsSecretKey'=>$jobs[$jobid]['awsSecretKey'],'selected'=>$jobs[$jobid]['awsBucket'])); ?>
 						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US', 'backwpup'); ?></option><option value="EU"><?php _e('EU', 'backwpup'); ?></option></select><br />
 						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
 						<input name="awsdir" type="text" value="<?PHP echo $jobs[$jobid]['awsdir'];?>" class="large-text" /><br />

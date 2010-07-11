@@ -61,7 +61,6 @@ jQuery(document).ready( function($) {
 		});		
 	}
 	
-	awsgetbucket();
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
 	

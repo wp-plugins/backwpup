@@ -81,6 +81,10 @@ Pleace mail only littele archives
 1. Job Page
 
 == Changelog ==
+= 1.1.0 =
+* added fuction to check/update job settings
+* added no ajax bucket list to job page
+
 = 1.0.10 =
 * fix  "Undefined index: dbshortinsert"
 
