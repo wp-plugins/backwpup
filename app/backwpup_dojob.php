@@ -8,91 +8,90 @@ if ( !defined('ABSPATH') )
 function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	global $backwpup_logfile;
 	
+	//genrate timestamp
+	if (!function_exists('memory_get_usage')) { // test if memory functions compiled in
+		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."\">".date_i18n('Y-m-d H:i.s').":</span> ";
+	} else  {
+		if (version_compare(phpversion(), '5.2.0', '<'))
+			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
+		else 
+			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
+	}
+	
 	switch ($errno) {
     case E_NOTICE:
 	case E_USER_NOTICE:
-        $errorstype = "";
-		$style='';
+		$massage=$timestamp."<span>".$errstr."</span>";
         break;
     case E_WARNING:
     case E_USER_WARNING:
-	case E_CORE_WARNING:
-	case E_COMPILE_WARNING:
-        $errorstype = __("[WARNING]");
 		$logheader=backwpup_read_logheader($backwpup_logfile); //read waring count from log header
 		$warnings=$logheader['warnings']+1;
-		$style=' style="background-color:yellow;"';
+		$massage=$timestamp."<span style=\"background-color:yellow;\">".__('[WARNING]','backwpup')." ".$errstr."</span>";
         break;
-    case E_ERROR:
     case E_USER_ERROR:
-	case E_CORE_ERROR:
-	case E_COMPILE_ERROR:
-        $errorstype = __("[ERROR]");
 		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
 		$errors=$logheader['errors']+1;
-		$style=' style="background-color:red;"';
+		$massage=$timestamp."<span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".$errstr."</span>";
         break;
 	case E_DEPRECATED:
 	case E_USER_DEPRECATED:
-        $errorstype = __("[DEPRECATED]");
-		$style='';		
-		break;
-	case E_PARSE:
-        $errorstype = __("[PARSING ERROR]");
-		$style='';		
+		$massage=$timestamp."<span>".__('[DEPRECATED]','backwpup')." ".$errstr."</span>";		
 		break;
 	case E_STRICT:
-        $errorstype = __("[STRICT NOTICE]");
-		$style='';		
+		$massage=$timestamp."<span>".__('[STRICT NOTICE]','backwpup')." ".$errstr."</span>";
 		break;
 	case E_RECOVERABLE_ERROR:
-        $errorstype = __("[RECOVERABLE ERROR]");
-		$style='';		
+		$massage=$timestamp."<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$errstr."</span>";
 		break;
 	default:
-        $errorstype = "[".$errno."]";
-		$style='';
+		$massage=$timestamp."<span>[".$errno."] ".$errstr."</span>";
         break;
     }
 	
-	$title="[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]";
-		
-	//wirte log file
-	$fd=@fopen($backwpup_logfile,"a+");
-	@fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><br />\n");
-	@fclose($fd);
-		
-	if (!defined('DOING_CRON')) {
-		echo "<span style=\"background-color:c3c3c3;\" title=\"".$title."\">".date_i18n('Y-m-d H:i.s').":</span> <span".$style.">".$errorstype." ".$errstr."</span><script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
-		@flush();
-		@ob_flush();
-	}
-	
-	//write new log header
-	if (isset($errors) or isset($warnings)) {
-		$fd=@fopen($backwpup_logfile,"r+");
-		while (!feof($fd)) {
-			$line=@fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
-				break;
-			}
-			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
-				break;
-			}
-			$filepos=ftell($fd);
-		}
+	if (!empty($massage)) {
+		//wirte log file
+		$fd=@fopen($backwpup_logfile,"a+");
+		@fputs($fd,$massage."<br />\n");
 		@fclose($fd);
-	}
 		
-	if ($errno==E_ERROR or $errno==E_CORE_ERROR or $errno==E_COMPILE_ERROR) { //Die on fatal php errors.
-		die();
+		//output on run now	
+		if (!defined('DOING_CRON')) {
+			echo $massage."<script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
+			@flush();
+			@ob_flush();
+		}
+		
+		//write new log header
+		if (isset($errors) or isset($warnings)) {
+			$fd=@fopen($backwpup_logfile,"r+");
+			while (!feof($fd)) {
+				$line=@fgets($fd);
+				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+					@fseek($fd,$filepos);
+					@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
+					break;
+				}
+				if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
+					@fseek($fd,$filepos);
+					@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
+					break;
+				}
+				$filepos=ftell($fd);
+			}
+			@fclose($fd);
+		}
+			
+		if ($errno==E_ERROR or $errno==E_CORE_ERROR or $errno==E_COMPILE_ERROR) //Die on fatal php errors.
+			die();
+		
+
+		@set_time_limit(300); //300 is most webserver time limit. 0= max time give script 5 min. mor to work.
+		//true for no more php error hadling.
+		return true;
+	} else {
+		return false;
 	}
-	//true for nor more php error hadling.
-	return true;
 }
 
 	
@@ -167,19 +166,19 @@ class backwpup_dojob {
 		@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
 		@fputs($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$this->job['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 		@fclose($fd);
-		//PHP Error handling
-		set_error_handler("backwpup_joberrorhandler"); //set function for PHP error handling
+		//set function for PHP user defineid error handling
+		if (defined(WP_DEBUG) and WP_DEBUG)
+			set_error_handler('backwpup_joberrorhandler',E_ALL | E_STRICT);
+		else 
+			set_error_handler('backwpup_joberrorhandler',E_ALL & ~E_NOTICE);
 		//check dirs
 		if ($this->backupdir!=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/') {
 			if (!$this->_check_folders($this->backupdir))
 				return false;
 		}
 		//check max script execution tme
-		if (!ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='off' or ini_get('safe_mode')=='0') {
-			set_time_limit(0); //300 is most webserver time limit. 0= max time
-		} else {
+		if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') 
 			trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_WARNING);
-		}
 		// check function for memorylimit
 		if (!function_exists('memory_get_usage')) {
 			if (empty($this->cfg['memorylimit']))
@@ -201,20 +200,18 @@ class backwpup_dojob {
 				break;
 			}
 		}
-		
-		if (isset($this->filelist[0][79001])) { // Zip Files and put it to destionation if filelist isnt empty
+
+		if (isset($this->filelist[0][79001])) { // Make backup file
 			if ($this->backupfileformat==".zip")
 				$this->zip_files();
 			elseif ($this->backupfileformat==".tar.gz" or $this->backupfileformat==".tar.bz2" or $this->backupfileformat==".tar")
 				$this->tar_pack_files();
-			else
-				return;
-			if (!file_exists($this->backupdir.$this->backupfile))
-				return;
+		}
+		if (file_exists($this->backupdir.$this->backupfile)) {  // Put backup file to destination
 			$this->destination_mail();
 			$this->destination_ftp();
 			$this->destination_s3();
-			$this->destination_dir();		
+			$this->destination_dir();
 		}
 		
 		foreach($this->todo as $key => $value) {
@@ -269,6 +266,11 @@ class backwpup_dojob {
 		//fail back if fuction not exist
 		if (!function_exists('memory_get_usage'))
 			return true;
+
+		if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
+			trigger_error(sprintf(__('PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
+			return false;
+		}
 			
 		//calc mem to bytes
 		if (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='K')
@@ -280,13 +282,18 @@ class backwpup_dojob {
 		else
 			$memory=trim(ini_get('memory_limit'));
 		
+		//use real memory at php version 5.2.0
+		if (version_compare(phpversion(), '5.2.0', '<'))
+			$memnow=memory_get_usage();
+		else 
+			$memnow=memory_get_usage(true);
+		
+		//need memory
+		$needmemory=$memnow+$memneed;
+		
 		// increase Memory	
-		if (memory_get_usage()+$memneed>$memory) { 
-			if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-				trigger_error(sprintf(__('PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
-				return false;
-			}
-			$newmemory=round((memory_get_usage()+$memneed)/1024/1024)+1;
+		if ($needmemory>$memory) { 
+			$newmemory=round($needmemory/1024/1024)+1;
 			if ($oldmem=ini_set('memory_limit', $newmemory.'M')) 
 				trigger_error(sprintf(__('Memory increased from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')),E_USER_NOTICE);
 			else 
@@ -438,7 +445,7 @@ class backwpup_dojob {
 		fwrite($file, "UNLOCK TABLES;\n");
 	}
 
-	public function dump_db() {
+	private function dump_db() {
 		global $wpdb;
 		trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
 		$this->maintenance_mode(true);
@@ -522,7 +529,7 @@ class backwpup_dojob {
 		$this->maintenance_mode(false);
 	}	
 
-	public function export_wp() {
+	private function export_wp() {
 		trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
 		if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
@@ -535,7 +542,7 @@ class backwpup_dojob {
 		}
 	}	
 
-	public function optimize_db() {
+	private function optimize_db() {
 		global $wpdb;
 		
 		trigger_error(__('Run Database optimize...','backwpup'),E_USER_NOTICE);
@@ -605,7 +612,7 @@ class backwpup_dojob {
 		}	
 	}
 	
-	public function file_list() {
+	private function file_list() {
 
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
@@ -648,7 +655,7 @@ class backwpup_dojob {
 	
 	}	
 
-	public function zip_files() {
+	private function zip_files() {
 		
 		if (class_exists('ZipArchive')) {  //use php zip lib
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
@@ -689,7 +696,7 @@ class backwpup_dojob {
 		}
 	}
 	
-	public function tar_pack_files() {
+	private function tar_pack_files() {
 		
 		if ($this->backupfileformat=='.tar.gz') {
 			$tarbackup=gzopen($this->backupdir.$this->backupfile,'w9');
@@ -782,7 +789,7 @@ class backwpup_dojob {
 	}
 	
 		
-	public function _ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function
+	private function _ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function
 		$return=ftp_raw($ftp_conn_id,$command);
 		if (strtoupper(substr(trim($command),0,4))=="PASS") {
 			trigger_error(__('FTP Client command:','backwpup').' PASS *******',E_USER_NOTICE);
@@ -811,7 +818,7 @@ class backwpup_dojob {
 	}
 	
 	
-	public function destination_ftp() {
+	private function destination_ftp() {
 	
 		if (empty($this->job['ftphost']) or empty($this->job['ftpuser']) or empty($this->job['ftppass'])) 
 			return false;
@@ -915,7 +922,7 @@ class backwpup_dojob {
 
 	}	
 
-	public function destination_mail() {
+	private function destination_mail() {
 		if (empty($this->job['mailaddress']))
 			return false;
 			
@@ -985,7 +992,7 @@ class backwpup_dojob {
 			
 	}
 
-	public function destination_s3() {
+	private function destination_s3() {
 		
 		if (empty($this->job['awsAccessKey']) or empty($this->job['awsSecretKey']) or empty($this->job['awsBucket'])) 
 			return false;
@@ -1037,7 +1044,7 @@ class backwpup_dojob {
 		}
 	}
 
-	public function destination_dir() {
+	private function destination_dir() {
 		if (empty($this->job['backupdir']))  //Go back if no destination dir
 			return;
 		//Delete old Backupfiles

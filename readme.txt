@@ -35,7 +35,7 @@ I can give no WARRANTY to any backups...
 
 == Frequently Asked Questions ==
 = Requires =
-* PHP 5
+* PHP 5.0.0
 * Wordpress 2.8
 * curl (for Amazon S3 Support)
 * gzip (for PCLZIP and gzip archives)
@@ -84,6 +84,8 @@ Pleace mail only littele archives
 = 1.1.0 =
 * added fuction to check/update job settings
 * added no ajax bucket list to job page
+* changed error handling a bit and remove PHP errors that can't handeld.
+* fixed problem with not compiled --enable-memory-limit in php
 
 = 1.0.10 =
 * fix  "Undefined index: dbshortinsert"
