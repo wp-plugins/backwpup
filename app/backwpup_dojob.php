@@ -181,10 +181,8 @@ class backwpup_dojob {
 			trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_WARNING);
 		// check function for memorylimit
 		if (!function_exists('memory_get_usage')) {
-			if (empty($this->cfg['memorylimit']))
-				$this->cfg['memorylimit']='128M';
-			ini_set('memory_limit', $this->cfg['memorylimit']);
-			trigger_error(sprintf(__('Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamicli increase the Memeory!','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
+			ini_set('memory_limit', apply_filters( 'admin_memory_limit', '256M' )); //Wordpress default
+			trigger_error(sprintf(__('Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamicly increase the Memeory!','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
 		}
 		//run job parts
 		foreach($this->todo as $key => $value) {
@@ -928,11 +926,6 @@ class backwpup_dojob {
 			
 		trigger_error(__('Prepare Sending backupfile with mail...','backwpup'),E_USER_NOTICE);
 			
-		if (!is_file($this->backupdir.$this->backupfile)) {
-			trigger_error(__('No file to send!','backwpup'),E_USER_ERROR);
-			return false;
-		}
-
 		//Crate PHP Mailer
 		require_once(ABSPATH.WPINC.'/class-phpmailer.php');
 		require_once(ABSPATH.WPINC.'/class-smtp.php');
@@ -980,7 +973,7 @@ class backwpup_dojob {
 		}
 		
 		trigger_error(__('Adding Attachment to mail','backwpup'),E_USER_NOTICE);
-		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*4);
+		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*5);
 		$phpmailer->AddAttachment($this->backupdir.$this->backupfile);		
 		
 		trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);

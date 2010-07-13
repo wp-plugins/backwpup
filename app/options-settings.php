@@ -27,25 +27,7 @@ if ( !defined('ABSPATH') )
 	</div>
 	<div class="has-sidebar" >
 		<div id="post-body-content" class="has-sidebar-content">
-				
-			<div id="memory" class="postbox">
-				<h3 class="hndle"><span><?PHP _e('Max Memory Usage','backwpup'); ?></span></h3>
-				<div class="inside">
-					<?php 
-					echo __('PHP.ini Memory Limit:','backwpup').' '.ini_get('memory_limit').'<br />'; 
 						
-					if (empty($cfg['memorylimit']))
-						$cfg['memorylimit']='128M';
-						
-					if (!function_exists('memory_get_usage')) 
-						echo __('Set Memory limit:','backwpup').'<input name="memorylimit" type="text" value="'.$cfg['memorylimit'].'" class="small-text" />';
-					 else 
-						echo '<span class="description">'.__('Memory will be automatically increased!!!','backwpup').'</span><input name="memorylimit" type="hidden" value="'.$cfg['memorylimit'].'"  />';
-
-					?>
-				</div>
-			</div>
-		
 			<div id="mailtype" class="postbox">
 				<h3 class="hndle"><span><?PHP _e('Send Mail','backwpup'); ?></span></h3>
 				<div class="inside">

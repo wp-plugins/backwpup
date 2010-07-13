@@ -86,6 +86,7 @@ Pleace mail only littele archives
 * added no ajax bucket list to job page
 * changed error handling a bit and remove PHP errors that can't handeld.
 * fixed problem with not compiled --enable-memory-limit in php
+* removed setting for memory limit use WP filter and default now (256M)
 
 = 1.0.10 =
 * fix  "Undefined index: dbshortinsert"

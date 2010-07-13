@@ -265,10 +265,6 @@ if ( !defined('ABSPATH') )
 	
 	//On Plugin activate
 	function backwpup_plugin_activate() {
-		//delete old log table
-		global $wpdb;
-		$wpdb->backwpup_logs = $wpdb->prefix.'backwpup_logs';
-		$wpdb->query("DROP TABLE IF EXISTS ".$wpdb->backwpup_logs);
 		//add cron jobs
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
@@ -284,7 +280,6 @@ if ( !defined('ABSPATH') )
 	    if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	    if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 		if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-		if (empty($cfg['memorylimit'])) $cfg['memorylimit']='128M';
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
 		if (empty($cfg['dirtemp'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
