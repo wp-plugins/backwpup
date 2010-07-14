@@ -87,6 +87,8 @@ Pleace mail only littele archives
 * changed error handling a bit and remove PHP errors that can't handeld.
 * fixed problem with not compiled --enable-memory-limit in php
 * removed setting for memory limit use WP filter and default now (256M)
+* now a time limit of 5 mins is set again for job execution but it will be resettet on every message. (prevent never ending jobs.)
+* added a shutdown function if __destruct not called for job.
 
 = 1.0.10 =
 * fix  "Undefined index: dbshortinsert"

@@ -86,7 +86,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 			die();
 		
 
-		@set_time_limit(300); //300 is most webserver time limit. 0= max time give script 5 min. mor to work.
+		@set_time_limit(300); //300 is most webserver time limit. 0= max time! Give script 5 min. more to work.
 		//true for no more php error hadling.
 		return true;
 	} else {
@@ -94,7 +94,75 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	}
 }
 
-	
+//Job shutdown function for abort
+function backwpup_jobshutdown() {
+	global $backwpup_logfile;
+		$logheader=backwpup_read_logheader($backwpup_logfile); //read waring count from log header
+		$cfg=get_option('backwpup'); //load config
+		$jobs=get_option('backwpup_jobs'); //load job options
+		
+		if (!empty($jobs[$logheader['jobid']]['stoptime'])) //abort if job exits normaly
+			return;
+			
+		backwpup_joberrorhandler(E_USER_WARNING, __('Job shutdown function is working! Please delete temp Backupfiles by hand.','backwpup'), __FILE__, __LINE__);
+		
+		//try to get last error
+		$lasterror=error_get_last();
+		backwpup_joberrorhandler($lasterror['type'], __('Last ERROR:','backwpup').' '.$lasterror['message'], $lasterror['file'], $lasterror['line']);
+		
+		//set Temp Dir
+		$tempdir=trailingslashit($cfg['dirtemp']);
+		if ($tempdir=='/') 
+			$tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+		
+		if (is_file($tempdir.DB_NAME.'.sql') ) { //delete sql temp file
+			unlink($tempdir.DB_NAME.'.sql');
+		}
+		
+		if (is_file($tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml') ) { //delete WP XML Export temp file
+			unlink($tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml');
+		}
+			
+		$jobs[$logheader['jobid']]['stoptime']=current_time('timestamp');
+		$jobs[$logheader['jobid']]['lastrun']=$jobs[$logheader['jobid']]['starttime'];
+		$jobs[$logheader['jobid']]['lastruntime']=$jobs[$logheader['jobid']]['stoptime']-$jobs[$logheader['jobid']]['starttime'];
+		update_option('backwpup_jobs',$jobs); //Save Settings
+
+		//write runtime header
+		$fd=@fopen($backwpup_logfile,"r+");
+		while (!feof($fd)) {
+			$line=@fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
+				@fseek($fd,$filepos);
+				@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$jobs[$logheader['jobid']]['lastruntime']."\" />",100)."\n");
+				break;
+			}
+			$filepos=ftell($fd);
+		}
+		@fclose($fd);
+		//logfile end
+		$fd=fopen($backwpup_logfile,"a+");
+		fputs($fd,"</body>\n</html>\n");
+		fclose($fd);
+		restore_error_handler();
+		$logdata=backwpup_read_logheader($backwpup_logfile);
+		//Send mail with log
+		$sendmail=false;
+		if ($logdata['errors']>0 and $jobs[$logheader['jobid']]['mailerroronly'] and !empty($jobs[$logheader['jobid']]['mailaddresslog']))
+			$sendmail=true;
+		if (!$jobs[$logheader['jobid']]['mailerroronly'] and !empty($jobs[$logheader['jobid']]['mailaddresslog']))
+			$sendmail=true;
+		if ($sendmail) {
+			$mailbody=__("Jobname:","backwpup")." ".$logdata['name']."\n";
+			$mailbody.=__("Jobtype:","backwpup")." ".$logdata['type']."\n";
+			if (!empty($logdata['errors'])) 
+				$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
+			if (!empty($logdata['warnings']))
+				$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
+			wp_mail($jobs[$logheader['jobid']]['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$jobs[$logheader['jobid']]['starttime']).': '.$jobs[$logheader['jobid']]['name'] ,$mailbody,'',array($backwpup_logfile));
+		}	
+}
+
 /**
 * BackWPup PHP class for WordPress
 *
@@ -115,7 +183,11 @@ class backwpup_dojob {
 	private $job=array();
 	
 	public function __construct($jobid) {
-		global $backwpup_logfile;
+		global $backwpup_logfile,$backwpup_dojob;
+		@ini_get('safe_mode','Off'); //disable safe mode
+		//Set no user abort
+		@ini_set('ignore_user_abort','Off'); //Set PHP ini setting
+		ignore_user_abort(true);			//user can't abort script (close windows or so.)
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
 		$jobs=get_option('backwpup_jobs'); //load jobdata
@@ -171,6 +243,8 @@ class backwpup_dojob {
 			set_error_handler('backwpup_joberrorhandler',E_ALL | E_STRICT);
 		else 
 			set_error_handler('backwpup_joberrorhandler',E_ALL & ~E_NOTICE);
+		//set a schutdown function.
+		register_shutdown_function('backwpup_jobshutdown');
 		//check dirs
 		if ($this->backupdir!=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/') {
 			if (!$this->_check_folders($this->backupdir))

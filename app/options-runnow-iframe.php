@@ -3,11 +3,9 @@ if (file_exists($_GET['wpabs'].'wp-load.php') and is_numeric(trim($_GET['jobid']
 	require_once($_GET['wpabs'].'wp-load.php'); /** Setup WordPress environment */
 	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
 	backwpup_send_no_cache_header();
-	ignore_user_abort(true);
 	// flush any buffers and send the headers
 	@flush();
 	@ob_flush();
-	
 ?>
 <html>
     <head>

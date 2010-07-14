@@ -346,8 +346,8 @@ if ( !defined('ABSPATH') )
 		if (empty($jobid)) 
 			return false;
 		require_once('backwpup_dojob.php');
-		$dojob= new backwpup_dojob($jobid);
-		unset($dojob);
+		$backwpup_dojob= new backwpup_dojob($jobid);
+		unset($backwpup_dojob);
 		return $backwpup_logfile;
 	}
 	
