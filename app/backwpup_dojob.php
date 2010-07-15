@@ -737,7 +737,9 @@ class backwpup_dojob {
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive;
 			if ($res=$zip->open($this->backupdir.$this->backupfile,ZIPARCHIVE::CREATE) === TRUE) {
-				foreach($this->filelist as $key => $files) {
+				foreach($this->filelist as $key => $files) {			
+					if (!is_file($files[79001])) //check file exists
+						continue;
 					if ($zip->addFile($files[79001], $files[79003])) {
 						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
 					} else {
