@@ -162,12 +162,90 @@ $todo=explode('+',$jobs[$jobid]['type']);
 			<div id="filebackup" class="postbox" <?PHP if (!in_array("FILE",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('File Backup','backwpup'); ?></span></h3>
 				<div class="inside">
-					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b>
-					<div style="width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;">
-						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backuproot'],true,true);?> name="backuproot" value="1"/> <?php _e('Blog root and WP Files','backwpup');?><br />
-						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupcontent'],true,true);?> name="backupcontent" value="1"/> <?php _e('Blog Content','backwpup');?><br />
-						<input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupplugins'],true,true);?> name="backupplugins" value="1"/> <?php _e('Blog Plugins','backwpup');?>
-					</div><br />
+					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b><br />&nbsp;<br />
+					<div>
+						<div style="width:20%; float: left;">
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backuproot'],true,true);?> name="backuproot" value="1"/> <?php _e('root','backwpup');?></b><br />
+							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
+							<?PHP
+							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
+							$folder=untrailingslashit(str_replace('\\','/',ABSPATH));
+							if ( $dir = @opendir( $folder ) ) {
+								while (($file = readdir( $dir ) ) !== false ) {
+									if ( !in_array($file, array('.', '..','.svn')) and is_dir($folder.'/'.$file) and !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+										echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',$jobs[$jobid]['backuprootexcludedirs']),true,false).' name="backuprootexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
+								}
+								@closedir( $dir );
+							}
+							?>
+							</div>
+						</div>
+						<div style="width:20%;float: left;">
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupcontent'],true,true);?> name="backupcontent" value="1"/> <?php _e('Content','backwpup');?></b><br />
+							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
+							<?PHP
+							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
+							$folder=untrailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
+							if ( $dir = @opendir( $folder ) ) {
+								while (($file = readdir( $dir ) ) !== false ) {
+									if ( !in_array($file, array('.', '..','.svn')) and is_dir($folder.'/'.$file) and !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+										echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',$jobs[$jobid]['backupcontentexcludedirs']),true,false).' name="backupcontentexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
+								}
+								@closedir( $dir );
+							}
+							?>
+							</div>
+						</div>
+						<div style="width:20%; float: left;">
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupplugins'],true,true);?> name="backupplugins" value="1"/> <?php _e('Plugins','backwpup');?></b><br />
+							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
+							<?PHP
+							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
+							$folder=untrailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
+							if ( $dir = @opendir( $folder ) ) {
+								while (($file = readdir( $dir ) ) !== false ) {
+									if ( !in_array($file, array('.', '..','.svn')) and is_dir($folder.'/'.$file) and !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+										echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',$jobs[$jobid]['backuppluginsexcludedirs']),true,false).' name="backuppluginsexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
+								}
+								@closedir( $dir );
+							}
+							?>
+							</div>
+						</div>
+						<div style="width:20%; float: left;">
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupthemes'],true,true);?> name="backupthemes" value="1"/> <?php _e('Themes','backwpup');?></b><br />
+							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
+							<?PHP
+							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
+							$folder=untrailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes'));
+							if ( $dir = @opendir( $folder ) ) {
+								while (($file = readdir( $dir ) ) !== false ) {
+									if ( !in_array($file, array('.', '..','.svn')) and is_dir($folder.'/'.$file) and !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+										echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',$jobs[$jobid]['backupthemesexcludedirs']),true,false).' name="backupthemesexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
+								}
+								@closedir( $dir );
+							}
+							?>
+							</div>
+						</div>
+						<div style="width:20%; float: left;">
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobs[$jobid]['backupuploads'],true,true);?> name="backupuploads" value="1"/> <?php _e('Blog Uploads','backwpup');?></b><br />
+							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
+							<?PHP
+							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
+							$folder=untrailingslashit(backwpup_get_upload_dir());
+							if ( $dir = @opendir( $folder ) ) {
+								while (($file = readdir( $dir ) ) !== false ) {
+									if ( !in_array($file, array('.', '..','.svn')) and is_dir($folder.'/'.$file) and !in_array($folder.'/'.$file,backwpup_get_exclude_wp_dirs($folder)))
+										echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',$jobs[$jobid]['backupuploadsexcludedirs']),true,false).' name="backupuploadsexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
+								}
+								@closedir( $dir );
+							}
+							?>
+							</div>
+						</div>
+					</div>
+					<br />&nbsp;<br />
 					<b><?PHP _e('Include Folders to Backup:','backwpup'); ?></b><br />
 					<?PHP _e('Example:','backwpup'); ?> <?PHP echo str_replace('\\','/',ABSPATH); ?>,...<br />
 					<input name="dirinclude" id="dirinclude" type="text" value="<?PHP echo $jobs[$jobid]['dirinclude'];?>" class="large-text" /><br />

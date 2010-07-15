@@ -67,7 +67,7 @@ case 'savecfg': //Save config form Setings page
 	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
 	//set def. folders
 	if (empty($cfg['dirtemp']) or $cfg['dirtemp']=='/')
-		$cfg['dirtemp']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+		$cfg['dirtemp']=str_replace('\\','/',trailingslashit(backwpup_get_upload_dir()));
 	if (empty($cfg['dirlogs']) or $cfg['dirlogs']=='/') {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 			$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
@@ -142,14 +142,21 @@ case 'saveeditjob': //Save Job settings
 	$jobs[$jobid]['scheduleintervalteimes']=(int)$_POST['scheduleintervalteimes'];
 	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;	
-	$jobs[$jobid]['dbexclude']=$_POST['dbexclude'];
+	$jobs[$jobid]['dbexclude']=(array)$_POST['dbexclude'];
 	$jobs[$jobid]['dbshortinsert']=$_POST['dbshortinsert']==1 ? true : false;
 	$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;	
 	$jobs[$jobid]['fileexclude']=stripslashes($_POST['fileexclude']);
 	$jobs[$jobid]['dirinclude']=stripslashes($_POST['dirinclude']);
 	$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
+	$jobs[$jobid]['backuprootexcludedirs']=(array)$_POST['backuprootexcludedirs'];
 	$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
+	$jobs[$jobid]['backupcontentexcludedirs']=(array)$_POST['backupcontentexcludedirs'];
 	$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
+	$jobs[$jobid]['backuppluginsexcludedirs']=(array)$_POST['backuppluginsexcludedirs'];
+	$jobs[$jobid]['backupthemes']= $_POST['backupthemes']==1 ? true : false;
+	$jobs[$jobid]['backupthemesexcludedirs']=(array)$_POST['backupthemesexcludedirs'];
+	$jobs[$jobid]['backupuploads']= $_POST['backupuploads']==1 ? true : false;
+	$jobs[$jobid]['backupuploadsexcludedirs']=(array)$_POST['backupuploadsexcludedirs'];
 	$jobs[$jobid]['fileformart']=$_POST['fileformart'];
 	$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
 	$jobs[$jobid]['backupdir']=stripslashes($_POST['backupdir']);

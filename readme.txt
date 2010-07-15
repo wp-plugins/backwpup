@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.0.10
+Stable tag: 1.1.0
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -84,11 +84,12 @@ Pleace mail only littele archives
 = 1.1.0 =
 * added fuction to check/update job settings
 * added no ajax bucket list to job page
-* changed error handling a bit and remove PHP errors that can't handeld.
+* changed error handling a bit and remove PHP errors that can't handeld
 * fixed problem with not compiled --enable-memory-limit in php
 * removed setting for memory limit use WP filter and default now (256M)
 * now a time limit of 5 mins is set again for job execution but it will be resettet on every message. (prevent never ending jobs.)
-* added a shutdown function if __destruct not called for job.
+* added a shutdown function if __destruct not called for job
+* added more flexible Backup file selection
 
 = 1.0.10 =
 * fix  "Undefined index: dbshortinsert"

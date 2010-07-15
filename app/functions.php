@@ -163,7 +163,8 @@ if ( !defined('ABSPATH') )
 			if (empty($jobsettings['dbexclude'][$key]) or !in_array($value,$tables))
 				unset($jobsettings['dbexclude'][$key]);
 		}
-			
+		sort($jobsettings['dbexclude']);
+		
 		if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 			$jobsettings['dbshortinsert']=false;
 		
@@ -178,6 +179,7 @@ if ( !defined('ABSPATH') )
 			if (empty($fileexclude[$key]))
 				unset($fileexclude[$key]);
 		}
+		sort($fileexclude);
 		$jobsettings['fileexclude']=implode(',',$fileexclude);	
 		
 		if (!isset($jobsettings['dirinclude']) or !is_string($jobsettings['dirinclude']))
@@ -188,6 +190,7 @@ if ( !defined('ABSPATH') )
 			if (empty($dirinclude[$key]) or !is_dir($dirinclude[$key]))
 				unset($dirinclude[$key]);
 		}
+		sort($dirinclude);
 		$jobsettings['dirinclude']=implode(',',$dirinclude);		
 
 		if (!isset($jobsettings['backuproot']) or !is_bool($jobsettings['backuproot']))
@@ -198,6 +201,57 @@ if ( !defined('ABSPATH') )
 		
 		if (!isset($jobsettings['backupplugins']) or !is_bool($jobsettings['backupplugins']))
 			$jobsettings['backupplugins']=true;
+		
+		if (!isset($jobsettings['backupthemes']) or !is_bool($jobsettings['backupthemes']))
+			$jobsettings['backupthemes']=true;
+
+		if (!isset($jobsettings['backupuploads']) or !is_bool($jobsettings['backupuploads']))
+			$jobsettings['backupuploads']=true;
+
+		if (!isset($jobsettings['backuprootexcludedirs']) or !is_array($jobsettings['backuprootexcludedirs']))
+			$jobsettings['backuprootexcludedirs']=array();
+		foreach($jobsettings['backuprootexcludedirs'] as $key => $value) {
+			$jobsettings['backuprootexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($jobsettings['backuprootexcludedirs'][$key]) or $jobsettings['backuprootexcludedirs'][$key]=='/' or !is_dir($jobsettings['backuprootexcludedirs'][$key]))
+				unset($jobsettings['backuprootexcludedirs'][$key]);
+		}
+		sort($jobsettings['backuprootexcludedirs']);
+
+		if (!isset($jobsettings['backupcontentexcludedirs']) or !is_array($jobsettings['backupcontentexcludedirs']))
+			$jobsettings['backupcontentexcludedirs']=array();
+		foreach($jobsettings['backupcontentexcludedirs'] as $key => $value) {
+			$jobsettings['backupcontentexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($jobsettings['backupcontentexcludedirs'][$key]) or $jobsettings['backupcontentexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupcontentexcludedirs'][$key]))
+				unset($jobsettings['backupcontentexcludedirs'][$key]);
+		}
+		sort($jobsettings['backupcontentexcludedirs']);
+
+		if (!isset($jobsettings['backuppluginsexcludedirs']) or !is_array($jobsettings['backuppluginsexcludedirs']))
+			$jobsettings['backuppluginsexcludedirs']=array();
+		foreach($jobsettings['backuppluginsexcludedirs'] as $key => $value) {
+			$jobsettings['backuppluginsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($jobsettings['backuppluginsexcludedirs'][$key]) or $jobsettings['backuppluginsexcludedirs'][$key]=='/' or !is_dir($jobsettings['backuppluginsexcludedirs'][$key]))
+				unset($jobsettings['backuppluginsexcludedirs'][$key]);
+		}
+		sort($jobsettings['backuppluginsexcludedirs']);
+
+		if (!isset($jobsettings['backupthemesexcludedirs']) or !is_array($jobsettings['backupthemesexcludedirs']))
+			$jobsettings['backupthemesexcludedirs']=array();
+		foreach($jobsettings['backupthemesexcludedirs'] as $key => $value) {
+			$jobsettings['backupthemesexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($jobsettings['backupthemesexcludedirs'][$key]) or $jobsettings['backupthemesexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupthemesexcludedirs'][$key]))
+				unset($jobsettings['backupthemesexcludedirs'][$key]);
+		}
+		sort($jobsettings['backupthemesexcludedirs']);
+
+		if (!isset($jobsettings['backupuploadsexcludedirs']) or !is_array($jobsettings['backupuploadsexcludedirs']))
+			$jobsettings['backupuploadsexcludedirs']=array();
+		foreach($jobsettings['backupuploadsexcludedirs'] as $key => $value) {
+			$jobsettings['backupuploadsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+			if (empty($jobsettings['backupuploadsexcludedirs'][$key]) or $jobsettings['backupuploadsexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupuploadsexcludedirs'][$key]))
+				unset($jobsettings['backupuploadsexcludedirs'][$key]);
+		}
+		sort($jobsettings['backupuploadsexcludedirs']);
 		
 		$fileformarts=array('.zip','.tar.gz','tar.bz2','.tar');
 		if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
@@ -283,7 +337,7 @@ if ( !defined('ABSPATH') )
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
 		if (empty($cfg['dirtemp'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$cfg['dirtemp']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+			$cfg['dirtemp']=backwpup_get_upload_dir();
 		}
 		if (empty($cfg['dirlogs'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
@@ -495,7 +549,6 @@ if ( !defined('ABSPATH') )
 		echo "<meta http-equiv=\"cache-control\" content=\"no-cache\" />\n";
 	}
 	
-	
 	function backwpup_send_no_cache_header() {
 		header("Expires: 0");
 		header("Cache-Control: no-cache, must-revalidate");
@@ -503,6 +556,54 @@ if ( !defined('ABSPATH') )
 		header("Cache-Control: post-check=0, pre-check=0");
 	}
 
+	function backwpup_get_upload_dir() {
+		global $switched;
+		$upload_path = get_option( 'upload_path' );
+		$upload_path = trim($upload_path);
+		$main_override = defined( 'MULTISITE' ) && is_main_site();
+		if ( empty($upload_path) ) {
+			$dir = WP_CONTENT_DIR . '/uploads';
+		} else {
+			$dir = $upload_path;
+			if ( 'wp-content/uploads' == $upload_path ) {
+				$dir = WP_CONTENT_DIR . '/uploads';
+			} elseif ( 0 !== strpos($dir, ABSPATH) ) {
+				// $dir is absolute, $upload_path is (maybe) relative to ABSPATH
+				$dir = path_join( ABSPATH, $dir );
+			}
+		}	
+		if ( defined('UPLOADS') && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
+			$dir = ABSPATH . UPLOADS;
+		}
+		if ( is_multisite() && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
+			if ( defined( 'BLOGUPLOADDIR' ) )
+				$dir = untrailingslashit(BLOGUPLOADDIR);
+		}	
+		return str_replace('\\','/',trailingslashit($dir));
+	}
+	
+	function backwpup_get_exclude_wp_dirs($folder) {
+		$folder=trailingslashit(str_replace('\\','/',$folder));
+		$excludedir=array();
+		if (false !== stripos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
+			$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
+		if (false !== stripos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
+			$excludedir[]=trailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
+		if (false !== stripos(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR))!=$folder)
+			$excludedir[]=trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
+		if (false !== stripos(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),$folder) and str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/')!=$folder)
+			$excludedir[]=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/');
+		if (false !== stripos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
+			$excludedir[]=backwpup_get_upload_dir();
+		//Exclude Backup dirs
+		$jobs=get_option('backwpup_jobs');
+		foreach($jobs as $jobsvale) { 
+			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
+				$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+		}
+		return $excludedir;
+	}
+		
     //ajax/normal get buckests select box
 	function backwpup_get_aws_buckets($args='') {
 		if (is_array($args)) {

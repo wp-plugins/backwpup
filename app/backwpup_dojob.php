@@ -113,7 +113,7 @@ function backwpup_jobshutdown() {
 		//set Temp Dir
 		$tempdir=trailingslashit($cfg['dirtemp']);
 		if ($tempdir=='/') 
-			$tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+			$tempdir=backwpup_get_upload_dir();
 		
 		if (is_file($tempdir.DB_NAME.'.sql') ) { //delete sql temp file
 			unlink($tempdir.DB_NAME.'.sql');
@@ -171,6 +171,7 @@ class backwpup_dojob {
    
 	private $jobid=0;
 	private $filelist=array();
+	private $tempfilelist=array();
 	private $todo=array();
 	private $allfilesize=0;
 	private $backupfile='';
@@ -204,7 +205,7 @@ class backwpup_dojob {
 		//set Temp Dir
 		$this->tempdir=trailingslashit($this->cfg['dirtemp']);
 		if (empty($this->tempdir) or $this->tempdir=='/') 
-			$this->tempdir=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/';
+			$this->tempdir=backwpup_get_upload_dir();
 		//set Backup Dir
 		$this->backupdir=$this->job['backupdir'];
 		if (empty($this->backupdir))
@@ -246,7 +247,7 @@ class backwpup_dojob {
 		//set a schutdown function.
 		register_shutdown_function('backwpup_jobshutdown');
 		//check dirs
-		if ($this->backupdir!=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'uploads/') {
+		if ($this->backupdir!=backwpup_get_upload_dir()) {
 			if (!$this->_check_folders($this->backupdir))
 				return false;
 		}
@@ -648,7 +649,7 @@ class backwpup_dojob {
 		}	
 	}
 
-	private function _file_list_folder( $folder = '', $levels = 100, $excludes) {
+	private function _file_list_folder( $folder = '', $levels = 100, $excludes,$excludedirs=array()) {
 		if( empty($folder) )
 			return false;
 		if( ! $levels )
@@ -661,17 +662,12 @@ class backwpup_dojob {
 					if (false !== stripos($folder.'/'.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 						continue 2;
 				}
-				if (!$this->job['backuproot'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',trailingslashit(ABSPATH))) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and !is_dir($folder.'/'.$file))
-					continue;
-				if (!$this->job['backupcontent'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_CONTENT_DIR)) and false === stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)) and !is_dir($folder.'/'.$file))
-					continue;
-				if (!$this->job['backupplugins'] and false !== stripos($folder.'/'.$file,str_replace('\\','/',WP_PLUGIN_DIR)))
-					continue;
-				if ( is_dir( $folder . '/' . $file ) ) {
-					$this->_file_list_folder( $folder . '/' . $file, $levels - 1, $excludes);
+				if ( is_dir( $folder . '/' . $file )) {
+					if (!in_array(trailingslashit($folder.'/'.$file),$excludedirs))
+						$this->_file_list_folder( $folder . '/' . $file, $levels - 1, $excludes);
 				} elseif (is_file( $folder . '/' . $file )) {
 					if (is_readable($folder . '/' . $file)) { //add file to filelist
-						$this->filelist[]=array(79001=>$folder.'/' .$file,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$folder.'/') . $file);
+						$this->tempfilelist[]=$folder.'/'.$file;
 						$this->allfilesize=$this->allfilesize+filesize($folder . '/' . $file);
 					} else {
 						trigger_error(__('Can not read file:','backwpup').' '.$folder . '/' . $file,E_USER_WARNING);
@@ -688,29 +684,30 @@ class backwpup_dojob {
 
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
-
+		
+		$this->tempfilelist=array();
+		
 		$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
 		//Exclude Temp Files
 		$backwpup_exclude[]=$this->tempdir.DB_NAME.'.sql';
 		$backwpup_exclude[]=$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml';
-		//Exclude Backup dirs
-		$jobs=get_option('backwpup_jobs');
-		foreach($jobs as $jobsvale) { 
-			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-				$backwpup_exclude[]=$jobsvale['backupdir'];
-		}
-		$backwpup_exclude=array_unique($backwpup_exclude);
+		$backwpup_exclude=array_unique($backwpup_exclude,SORT_STRING);
 	
-		//include dirs 
-		$dirinclude=explode(',',$this->job['dirinclude']);
+		//File list for blog folders
+		if ($this->job['backuproot'])
+			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge($this->job['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)));	
+		if ($this->job['backupcontent'])
+			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge($this->job['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
+		if ($this->job['backupplugins'])
+			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge($this->job['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
+		if ($this->job['backupthemes']) 
+			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes')),100,$backwpup_exclude,array_merge($this->job['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
+		if ($this->job['backupuploads'])
+			$this->_file_list_folder(untrailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
 		
-		if ($this->job['backuproot']) //Include extra path
-			$dirinclude[]=ABSPATH;
-		if ($this->job['backupcontent'] and ((strtolower(str_replace('\\','/',substr(WP_CONTENT_DIR,0,strlen(ABSPATH))))!=strtolower(str_replace('\\','/',ABSPATH)) and $this->job['backuproot']) or !$this->job['backuproot']))
-			$dirinclude[]=WP_CONTENT_DIR;
-		if ($this->job['backupplugins'] and ((strtolower(str_replace('\\','/',substr(WP_PLUGIN_DIR,0,strlen(ABSPATH))))!=strtolower(str_replace('\\','/',ABSPATH)) and $this->job['backuproot']) or !$this->job['backuproot']) and  ((strtolower(str_replace('\\','/',substr(WP_PLUGIN_DIR,0,strlen(WP_CONTENT_DIR))))!=strtolower(str_replace('\\','/',WP_CONTENT_DIR)) and $this->job['backupcontent']) or !$this->job['backupcontent']))
-			$dirinclude[]=WP_PLUGIN_DIR;	
-		$dirinclude=array_unique($dirinclude);
+	    //include dirs 
+		$dirinclude=explode(',',$this->job['dirinclude']);
+		$dirinclude=array_unique($dirinclude,SORT_STRING);
 		//Crate file list
 		if (is_array($dirinclude)) {
 			foreach($dirinclude as $dirincludevalue) {
@@ -719,6 +716,13 @@ class backwpup_dojob {
 			}
 		}
 
+		$this->tempfilelist=array_unique($this->tempfilelist,SORT_STRING); //all files only one time in list
+		sort($this->tempfilelist);
+		foreach ($this->tempfilelist as $files) {
+			$this->filelist[]=array(79001=>$files,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$files));
+		}
+		$this->tempfilelist=array();
+		
 		if (!is_array($this->filelist[0])) {
 			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
 		} else {
@@ -789,6 +793,11 @@ class backwpup_dojob {
 		
 		foreach($this->filelist as $key => $files) {
 				trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+				
+				//check file exists
+				if (!is_file($files[79001]))
+					continue;
+				
 				// Get file information
 				$file_information = stat($files[79001]);
 
