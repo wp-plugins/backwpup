@@ -323,9 +323,8 @@ if ( !defined('ABSPATH') )
 		$jobs=get_option('backwpup_jobs');
 		if (is_array($jobs)) { 
 			foreach ($jobs as $jobid => $jobvalue) {
-				if ($jobvalue['activated']) {
+				if ($jobvalue['activated'] and wp_get_schedule('backwpup_cron',array('jobid'=>$jobid)) === false) 
 					wp_schedule_event($jobvalue['scheduletime'], 'backwpup_int_'.$jobid, 'backwpup_cron',array('jobid'=>$jobid));
-				}
 			}
 		}
 		//Set defaults
@@ -350,13 +349,7 @@ if ( !defined('ABSPATH') )
 	function backwpup_plugin_deactivate() {
 		//remove cron jobs
 		$jobs=get_option('backwpup_jobs');
-		if (is_array($jobs)) { 
-			foreach ($jobs as $jobid => $jobvalue) {
-				if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-					wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
-				}
-			}
-		}
+		wp_clear_scheduled_hook('backwpup_cron');
 	}
 	
 	//add edit setting to plugins page
@@ -575,10 +568,13 @@ if ( !defined('ABSPATH') )
 		if ( defined('UPLOADS') && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
 			$dir = ABSPATH . UPLOADS;
 		}
-		if ( is_multisite() && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
-			if ( defined( 'BLOGUPLOADDIR' ) )
-				$dir = untrailingslashit(BLOGUPLOADDIR);
-		}	
+		if (function_exists('is_multisite')) {
+			if ( is_multisite() && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
+				if ( defined( 'BLOGUPLOADDIR' ) )
+					$dir = untrailingslashit(BLOGUPLOADDIR);
+			}
+		}
+		
 		return str_replace('\\','/',trailingslashit($dir));
 	}
 	
@@ -615,7 +611,7 @@ if ( !defined('ABSPATH') )
 			$selected=$_POST['selected'];
 			$ajax=true;
 		}
-		require_once(plugin_dir_path(__FILE__).'libs/s3.php');
+		require_once(plugin_dir_path(__FILE__).'libs/S3.php');
 		if (empty($awsAccessKey)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
 			die();

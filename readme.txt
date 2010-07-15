@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -82,7 +82,8 @@ Pleace mail only littele archives
 
 == Changelog ==
 = 1.1.1 =
-*
+* fixed S3 lib not found bug again.
+* improved reschedule on activation problem.
 
 = 1.1.0 =
 * added fuction to check/update job settings

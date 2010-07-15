@@ -194,8 +194,8 @@ class backwpup_dojob {
 		$jobs=get_option('backwpup_jobs'); //load jobdata
 		$jobs[$this->jobid]['starttime']=current_time('timestamp'); //set start time for job
 		$jobs[$this->jobid]['stoptime']='';	   //Set stop time for job
-		if ($schedteime=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid))) //set Schedule time to next scheduled
-			$jobs[$this->jobid]['scheduletime']=$schedteime;
+		if ($jobs[$this->jobid]['activated'] and wp_get_schedule('backwpup_cron',array('jobid'=>$this->jobid)) !== false) //set Schedule time to next scheduled
+			$jobs[$this->jobid]['scheduletime']=wp_next_scheduled('backwpup_cron',array('jobid'=>$this->jobid));
 		update_option('backwpup_jobs',$jobs); //Save job Settings
 		$this->job=backwpup_check_job_vars($jobs[$this->jobid]);//Set and check job settings
 		//set waht to do
