@@ -280,7 +280,7 @@ class backwpup_dojob {
 			elseif ($this->backupfileformat==".tar.gz" or $this->backupfileformat==".tar.bz2" or $this->backupfileformat==".tar")
 				$this->tar_pack_files();
 		}
-		if (file_exists($this->backupdir.$this->backupfile)) {  // Put backup file to destination
+		if (is_file($this->backupdir.$this->backupfile)) {  // Put backup file to destination
 			$this->destination_mail();
 			$this->destination_ftp();
 			$this->destination_s3();
