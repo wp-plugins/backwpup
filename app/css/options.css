@@ -1,0 +1,12 @@
+.column-id {
+	width:40px;text-align:center;
+}
+.column-runtime, .column-last, .column-next , .column-status {
+	width:125px;
+}
+.column-type {
+	width:125px;
+}
+.column-size {
+	width:75px;
+}
