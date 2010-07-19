@@ -10,6 +10,7 @@ if ( !defined('ABSPATH') )
 <ul class="subsubsub"> 
 <li><a href="admin.php?page=BackWPup"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
 <li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li>
+<li><a href="admin.php?page=BackWPup&amp;action=backups"><?PHP _e('Backups','backwpup'); ?></a> |</li>
 <li><a href="admin.php?page=BackWPup&amp;action=tools" class="current"><?PHP _e('Tools','backwpup'); ?></a> |</li>
 <li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
 </ul>
