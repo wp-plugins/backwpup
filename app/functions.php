@@ -603,9 +603,11 @@ if ( !defined('ABSPATH') )
 			$excludedir[]=backwpup_get_upload_dir();
 		//Exclude Backup dirs
 		$jobs=get_option('backwpup_jobs');
-		foreach((array)$jobs as $jobsvale) {
-			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-				$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+		if (is_array($jobs)) {
+			foreach($jobs as $jobsvale) {
+				if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
+					$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+			}
 		}
 		return $excludedir;
 	}

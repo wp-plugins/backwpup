@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
 Requires at least: 2.8
 Tested up to: 3.0.0
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -81,6 +81,11 @@ Place mail only little archives
 1. Job Page
 
 == Changelog ==
+= 1.2.1 =
+* fixed "Wrong parameter count for array_unique()" for old php version
+* added php version to log header
+* added mysql version to log header
+
 = 1.2.0 =
 * Backup file size now in log file
 * Paged Logs Table

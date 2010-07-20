@@ -184,7 +184,7 @@ class backwpup_dojob {
 	private $job=array();
 
 	public function __construct($jobid) {
-		global $backwpup_logfile,$backwpup_dojob;
+		global $backwpup_logfile,$wpdb;
 		@ini_get('safe_mode','Off'); //disable safe mode
 		//Set no user abort
 		@ini_set('ignore_user_abort','Off'); //Set PHP ini setting
@@ -228,6 +228,8 @@ class backwpup_dojob {
 		$fd=@fopen($backwpup_logfile,"a+");
 		@fputs($fd,"<html>\n<head>\n");
 		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
+		@fputs($fd,"<meta name=\"php_version\" content=\"".phpversion()."\" />\n");
+		@fputs($fd,"<meta name=\"mysql_version\" content=\"".$wpdb->get_var("SELECT VERSION() AS version")."\" />\n");
 		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 		@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 		@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
@@ -652,7 +654,7 @@ class backwpup_dojob {
 		}
 	}
 
-	private function _file_list_folder( $folder = '', $levels = 100, $excludes,$excludedirs=array()) {
+	private function _file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array()) {
 		if( empty($folder) )
 			return false;
 		if( ! $levels )
@@ -694,7 +696,7 @@ class backwpup_dojob {
 		//Exclude Temp Files
 		$backwpup_exclude[]=$this->tempdir.DB_NAME.'.sql';
 		$backwpup_exclude[]=$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml';
-		$backwpup_exclude=array_unique($backwpup_exclude,SORT_STRING);
+		$backwpup_exclude=array_unique($backwpup_exclude);
 
 		//File list for blog folders
 		if ($this->job['backuproot'])
@@ -709,17 +711,17 @@ class backwpup_dojob {
 			$this->_file_list_folder(untrailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
 
 	    //include dirs
-		$dirinclude=explode(',',$this->job['dirinclude']);
-		$dirinclude=array_unique($dirinclude,SORT_STRING);
-		//Crate file list
-		if (is_array($dirinclude)) {
+		if (!empty($this->job['dirinclude'])) {
+			$dirinclude=explode(',',$this->job['dirinclude']);
+			$dirinclude=array_unique($dirinclude);
+			//Crate file list for includes
 			foreach($dirinclude as $dirincludevalue) {
 				if (is_dir($dirincludevalue))
 					$this->_file_list_folder(untrailingslashit(str_replace('\\','/',$dirincludevalue)),100,$backwpup_exclude);
 			}
 		}
-
-		$this->tempfilelist=array_unique($this->tempfilelist,SORT_STRING); //all files only one time in list
+		
+		$this->tempfilelist=array_unique($this->tempfilelist); //all files only one time in list
 		sort($this->tempfilelist);
 		foreach ($this->tempfilelist as $files) {
 			$this->filelist[]=array(79001=>$files,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$files));
