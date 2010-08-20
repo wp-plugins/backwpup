@@ -227,10 +227,6 @@ if ( !defined('ABSPATH') )
 				$jobsettings['cron']=date('i',$jobsettings['scheduletime']).' '.date_i18n('G',$jobsettings['scheduletime']).' */'.$jobsettings['scheduleintervalteimes'].' * *';
 			}
 			$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);
-			unset($jobsettings['scheduletime']);
-			unset($jobsettings['scheduleintervaltype']);
-			unset($jobsettings['scheduleintervalteimes']);
-			unset($jobsettings['scheduleinterval']);
 		}
 
 		if (!isset($jobsettings['cron']) or !is_string($jobsettings['cron']))

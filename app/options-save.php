@@ -359,7 +359,11 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['rscdir']=stripslashes($_POST['rscdir']);
 	$jobs[$jobid]['rscmaxbackups']=(int)$_POST['rscmaxbackups'];
 	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
-
+	//unset ol vars
+	unset($jobs[$jobid]['scheduletime']);
+	unset($jobs[$jobid]['scheduleintervaltype']);
+	unset($jobs[$jobid]['scheduleintervalteimes']);
+	unset($jobs[$jobid]['scheduleinterval']);
 
 	$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid]); //check vars and set def.
 
