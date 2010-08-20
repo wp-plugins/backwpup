@@ -7,18 +7,12 @@ if ( !defined('ABSPATH') )
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup Tools", "backwpup"); ?></h2>
 
-<ul class="subsubsub"> 
-<li><a href="admin.php?page=BackWPup"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=backups"><?PHP _e('Backups','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=tools" class="current"><?PHP _e('Tools','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=settings"><?PHP _e('Settings','backwpup'); ?></a></li>
-</ul>
+<?php backwpup_option_submenues(); ?>
 
 <div class="clear"></div> 
 
 <form method="post" action="">
-<input type="hidden" name="action" value="tools" />
+<input type="hidden" name="subpage" value="tools" />
 <input type="hidden" name="page" value="BackWPup" />
 <?php  wp_nonce_field('backwpup-tools'); ?>
 

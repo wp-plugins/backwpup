@@ -5,12 +5,14 @@ jQuery(document).ready( function($) {
 			$('#fileformart').show();
 			$('#toftp').show();
 			$('#toamazon').show();
+			$('#torsc').show();
 			$('#todir').show();
 			$('#tomail').show();
 		} else {
 			$('#fileformart').hide();
 			$('#toftp').hide();
 			$('#toamazon').hide();
+			$('#torsc').hide();
 			$('#todir').hide();
 			$('#tomail').hide();
 		}
@@ -53,7 +55,7 @@ jQuery(document).ready( function($) {
 			action: 'backwpup_get_aws_buckets',
 			awsAccessKey: awsAccessKey,
 			awsSecretKey: awsSecretKey,
-			selected: awsBucket
+			awsselected: awsBucket
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#awsBucket').remove();
@@ -63,8 +65,25 @@ jQuery(document).ready( function($) {
 	
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
+
+	function rscgetcontainer() {
+		var rscUsername = $('#rscUsername').val();
+		var rscAPIKey = $('#rscAPIKey').val();
+		var rscContainer = $('#rscContainerselected').val();
+		var data = {
+			action: 'backwpup_get_rsc_container',
+			rscUsername: rscUsername,
+			rscAPIKey: rscAPIKey,
+			rscselected: rscContainer
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#rscContainer').remove();
+			$('#rscContainerselected').after(response);
+		});		
+	}
 	
-	$('#reloadbuckets').onClick(awsgetbucket());
+	$('#rscUsername').change(function() {rscgetcontainer();});
+	$('#rscAPIKey').change(function() {rscgetcontainer();});
 	
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');

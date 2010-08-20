@@ -34,8 +34,17 @@
 * @link http://undesigned.org.za/2007/10/22/amazon-s3-php-class
 * @version 0.4.0
 */
+/**
+* Amazon S3 PHP class extende from Daniel Hüsken
+*
+* @link http://danielhuesken.de
+* @version 0.4.0.1
+* added REDUCED_REDUNDANCY support
+* fixed case sensitive bucket locations
+* removed curl opt CURLOPT_FOLLOWLOCATION because opdenbasedir warnings
+*/
 class S3 {
-	// ACL flags
+	// ACL flags 
 	const ACL_PRIVATE = 'private';
 	const ACL_PUBLIC_READ = 'public-read';
 	const ACL_PUBLIC_READ_WRITE = 'public-read-write';
@@ -210,7 +219,7 @@ class S3 {
 		if ($location !== false) {
 			$dom = new DOMDocument;
 			$createBucketConfiguration = $dom->createElement('CreateBucketConfiguration');
-			$locationConstraint = $dom->createElement('LocationConstraint', strtoupper($location));
+			$locationConstraint = $dom->createElement('LocationConstraint', $location);
 			$createBucketConfiguration->appendChild($locationConstraint);
 			$dom->appendChild($createBucketConfiguration);
 			$rest->data = $dom->saveXML();
@@ -296,9 +305,10 @@ class S3 {
 	* @param constant $acl ACL constant
 	* @param array $metaHeaders Array of x-amz-meta-* headers
 	* @param array $requestHeaders Array of request headers or content type as a string
+	* @param boolean $rrs put files with REDUCED_REDUNDANCY
 	* @return boolean
 	*/
-	public static function putObject($input, $bucket, $uri, $acl = self::ACL_PRIVATE, $metaHeaders = array(), $requestHeaders = array()) {
+	public static function putObject($input, $bucket, $uri, $acl = self::ACL_PRIVATE, $metaHeaders = array(), $requestHeaders = array(),$rrs = false) {
 		if ($input === false) return false;
 		$rest = new S3Request('PUT', $bucket, $uri);
 
@@ -348,6 +358,7 @@ class S3 {
 
 			$rest->setAmzHeader('x-amz-acl', $acl);
 			foreach ($metaHeaders as $h => $v) $rest->setAmzHeader('x-amz-meta-'.$h, $v);
+			if ($rrs) $rest->setAmzHeader('x-amz-storage-class', 'REDUCED_REDUNDANCY'); 
 			$rest->getResponse();
 		} else
 			$rest->response->error = array('code' => 0, 'message' => 'Missing input parameters');
@@ -371,10 +382,11 @@ class S3 {
 	* @param constant $acl ACL constant
 	* @param array $metaHeaders Array of x-amz-meta-* headers
 	* @param string $contentType Content type
+	* @param boolean $rrs put files with REDUCED_REDUNDANCY
 	* @return boolean
 	*/
-	public static function putObjectFile($file, $bucket, $uri, $acl = self::ACL_PRIVATE, $metaHeaders = array(), $contentType = null) {
-		return self::putObject(self::inputFile($file), $bucket, $uri, $acl, $metaHeaders, $contentType);
+	public static function putObjectFile($file, $bucket, $uri, $acl = self::ACL_PRIVATE, $metaHeaders = array(), $contentType = null, $rrs=false) {
+		return self::putObject(self::inputFile($file), $bucket, $uri, $acl, $metaHeaders, $contentType, $rrs);
 	}
 
 

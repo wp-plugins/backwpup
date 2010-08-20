@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export
+Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav
 Requires at least: 2.8
 Tested up to: 3.0.0
 Stable tag: 1.2.1
@@ -35,7 +35,7 @@ I can give no WARRANTY to any backups...
 
 == Frequently Asked Questions ==
 = Requires =
-* PHP 5.0.0
+* PHP 5.2.0
 * WordPress 2.8
 * curl (for Amazon S3 Support)
 * gzip (for PCLZIP and gzip archives)
@@ -81,12 +81,23 @@ Place mail only little archives
 1. Job Page
 
 == Changelog ==
+= 1.3.0 =
+* added S3 new region codes for bucket creation
+* added S3 REDUCED REDUNDANCY support on put Backups
+* jobs will aborted after 10 min. and can't run twice
+* use curl for xml dump and copy if curl not works
+* increasd min. PHP version to 5.2.0, because than all works
+* use linux cron based scheduing times
+* added rackspacecloud.com support
+* use WP 3.1 table creation
+* added plugin checks for folder and new scheduling
+
 = 1.2.1 =
 * fixed "Wrong parameter count for array_unique()" for old php version
 * added php version to log header
 * added mysql version to log header
 
-= 1.2.0 =
+= 1.2.0 = 
 * Backup file size now in log file
 * Paged Logs Table
 * added Backup Archives Page

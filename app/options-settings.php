@@ -2,28 +2,24 @@
 // don't load directly 
 if ( !defined('ABSPATH') ) 
 	die('-1');
+
+$cfg=get_option('backwpup');
 ?>
 <div class="wrap">
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e("BackWPup Settings", "backwpup"); ?></h2>
-<ul class="subsubsub"> 
-<li><a href="admin.php?page=BackWPup"><?PHP _e('Jobs','backwpup'); ?></a> |</li> 
-<li><a href="admin.php?page=BackWPup&amp;action=logs"><?PHP _e('Logs','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=backups"><?PHP _e('Backups','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=tools"><?PHP _e('Tools','backwpup'); ?></a> |</li>
-<li><a href="admin.php?page=BackWPup&amp;action=settings" class="current"><?PHP _e('Settings','backwpup'); ?></a></li>
-</ul>
+<?php backwpup_option_submenues(); ?>
 
 <div class="clear"></div>
 
 <form method="post" action="">
-<input type="hidden" name="action" value="savecfg" />
+<input type="hidden" name="subpage" value="settings" />
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 
 <div id="poststuff" class="metabox-holder has-right-sidebar"> 
 	<div class="inner-sidebar">
 		<div id="side-sortables" class="meta-box-sortables">
-			<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
+			<input type="submit" name="submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
 		</div>
 	</div>
 	<div class="has-sidebar" >

@@ -4,19 +4,18 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 1.2.1
+Version: 1.3.0
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
 */
 
 /*
-	Copyright 2009  Daniel Hüsken  (email : daniel@huesken-net.de)
+	Copyright 2010  Daniel Hüsken  (email : daniel@huesken-net.de)
 
     This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
+    it under the terms of the GNU General Public License, version 2, as 
+    published by the Free Software Foundation.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -25,7 +24,7 @@ Domain Path: /lang/
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // don't load directly
@@ -35,7 +34,7 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.2.1');
+define('BACKWPUP_VERSION', '1.3.0');
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
@@ -44,14 +43,8 @@ require_once(plugin_dir_path(__FILE__).'app/functions.php');
 register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
-//Plugin uninstall
-register_uninstall_hook(__FILE__, 'backwpup_plugin_uninstall');
-
-//Version check
-if (version_compare($wp_version, '2.8', '<') and version_compare(phpversion(), '5.0.0', '<')) { // Let only Activate on WordPress Version 2.8 or higher
-	add_action('admin_notices', create_function('', 'echo \'<div id="message" class="error fade"><p><strong>' . __('Sorry, BackWPup works only with WordPress 2.8 and PHP 5.0.0 or higher!!!','backwpup') . '</strong></p></div>\';'));
-} else {
-	//Plugin init
-	add_action('plugins_loaded', 'backwpup_init');
-}
+//Plugin init
+add_action('plugins_loaded', 'backwpup_init');
+//Admin message
+add_action('admin_notices', 'backwpup_admin_notice'); 
 ?>
