@@ -21,6 +21,7 @@ Backup and more your Blog.
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
+* Store backup to RackSpaceCloud
 * Send Log/Backup by eMail
 
 
