@@ -61,7 +61,7 @@ $todo=explode('+',$jobvalue['type']);
 						else
 							$minutes=explode(',',$cronstr['minutes']);
 						?>
-						<select name="cronminutes[]" id="month" style="height:65px;" multiple="multiple">
+						<select name="cronminutes[]" id="cronminutes" style="height:65px;" multiple="multiple">
 						<option value="*"<?PHP selected(in_array('*',$minutes,true),true,true); ?>><?PHP _e('Any (*)','backwpup'); ?></option>
 						<?PHP
 						for ($i=0;$i<60;$i=$i+5) {
@@ -78,7 +78,7 @@ $todo=explode('+',$jobvalue['type']);
 						else
 							$hours=explode(',',$cronstr['hours']);
 						?>
-						<select name="cronhours[]" id="month" style="height:65px;" multiple="multiple">
+						<select name="cronhours[]" id="cronhours" style="height:65px;" multiple="multiple">
 						<option value="*"<?PHP selected(in_array('*',$hours,true),true,true); ?>><?PHP _e('Any (*)','backwpup'); ?></option>
 						<?PHP
 						for ($i=0;$i<24;$i++) {
@@ -95,7 +95,7 @@ $todo=explode('+',$jobvalue['type']);
 						else
 							$mday=explode(',',$cronstr['mday']);
 						?>
-						<select name="cronmday[]" id="month" style="height:65px;" multiple="multiple">
+						<select name="cronmday[]" id="cronmday" style="height:65px;" multiple="multiple">
 						<option value="*"<?PHP selected(in_array('*',$mday,true),true,true); ?>><?PHP _e('Any (*)','backwpup'); ?></option>
 						<?PHP
 						for ($i=1;$i<=31;$i++) {
@@ -113,7 +113,7 @@ $todo=explode('+',$jobvalue['type']);
 						else
 							$mon=explode(',',$cronstr['mon']);
 						?>
-						<select name="cronmon[]" id="month" style="height:65px;" multiple="multiple">
+						<select name="cronmon[]" id="cronmon" style="height:65px;" multiple="multiple">
 						<option value="*"<?PHP selected(in_array('*',$mon,true),true,true); ?>><?PHP _e('Any (*)','backwpup'); ?></option>
 						<option value="1"<?PHP selected(in_array('1',$mon,true),true,true); ?>><?PHP _e('January'); ?></option>
 						<option value="2"<?PHP selected(in_array('2',$mon,true),true,true); ?>><?PHP _e('February'); ?></option>
@@ -131,7 +131,7 @@ $todo=explode('+',$jobvalue['type']);
 					</div>
 					<div style="width:130px; float: right;">
 						<b><?PHP _e('Weekday:','backwpup'); ?></b><br />
-						<select name="cronwday[]" id="weekday" style="height:65px;" multiple="multiple">
+						<select name="cronwday[]" id="cronwday" style="height:65px;" multiple="multiple">
 						<?PHP 
 						if (strstr($cronstr['wday'],'*/'))
 							$wday=explode('/',$cronstr['wday']);
@@ -149,7 +149,10 @@ $todo=explode('+',$jobvalue['type']);
 						</select>
 					</div>
 					<br class="clear" />
-					<?PHP _e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i>'.$jobvalue['cron'].'</i>'; ?>
+					<?PHP 
+					_e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i>'.$jobvalue['cron'].'</i><br />'; 
+					_e('Next runtime:'); echo ' '.date('D, j M Y H:i',backwpup_cron_next($jobvalue['cron']));
+					?>
 				</div>
 			</div>
 

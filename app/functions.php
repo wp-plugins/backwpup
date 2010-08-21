@@ -216,15 +216,15 @@ if ( !defined('ABSPATH') )
 			$jobsettings['activated']=false;
 
 		//upgrade ode schedule
-		if (isset($jobsettings['scheduletime']) and isset($jobsettings['scheduleintervaltype']) and isset($jobsettings['scheduleintervalteimes'])) {  //Upgrade to cron string
+		if (!isset($jobsettings['cron']) and isset($jobsettings['scheduletime']) and isset($jobsettings['scheduleintervaltype']) and isset($jobsettings['scheduleintervalteimes'])) {  //Upgrade to cron string
 			if ($jobsettings['scheduleintervaltype']==60) { //Min
 				$jobsettings['cron']='*/'.$jobsettings['scheduleintervalteimes'].' * * * *';
 			}
 			if ($jobsettings['scheduleintervaltype']==3600) { //Houer
-				$jobsettings['cron']=date('i',$jobsettings['scheduletime']).' */'.$jobsettings['scheduleintervalteimes'].' * * *';
+				$jobsettings['cron']=(date('i',$jobsettings['scheduletime'])*1).' */'.$jobsettings['scheduleintervalteimes'].' * * *';
 			}
 			if ($jobsettings['scheduleintervaltype']==86400) {  //Days
-				$jobsettings['cron']=date('i',$jobsettings['scheduletime']).' '.date_i18n('G',$jobsettings['scheduletime']).' */'.$jobsettings['scheduleintervalteimes'].' * *';
+				$jobsettings['cron']=(date('i',$jobsettings['scheduletime'])*1).' '.date('G',$jobsettings['scheduletime']).' */'.$jobsettings['scheduleintervalteimes'].' * *';
 			}
 			$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);
 		}
