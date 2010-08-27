@@ -458,13 +458,13 @@ class WP_List_Table {
 	 *
 	 * @since 3.1.0
 	 * @access protected
+	 *
+	 * @param bool $with_id Wether to set the id attribute or not
 	 */
 	function print_column_headers( $with_id = true ) {
 		$screen = $this->_screen;
 
 		list( $columns, $hidden, $sortable ) = $this->get_column_headers();
-
-		$styles = array();
 
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
@@ -485,8 +485,6 @@ class WP_List_Table {
 			if ( in_array( $column_key, $hidden ) )
 				$style = 'display:none;';
 
-			if ( isset( $styles[$screen->id] ) && isset( $styles[$screen->id][$column_key] ) )
-				$style .= ' ' . $styles[$screen->id][$column_key];
 			$style = ' style="' . $style . '"';
 
 			if ( 'cb' == $column_key )

@@ -1,11 +1,11 @@
 .column-id {
 	width:40px;text-align:center;
 }
-.column-runtime, .column-last, .column-next , .column-status {
+.column-runtime, .column-last, .column-next , .column-status , .column-type {
 	width:125px;
 }
-.column-type {
-	width:125px;
+.column-info {
+	width:175px;
 }
 .column-size {
 	width:75px;

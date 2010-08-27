@@ -29,6 +29,38 @@ function backwpup_job_operations($action) {
 		$jobs[$newjobid]['activated']=false;
 		update_option('backwpup_jobs',$jobs);
 		break;
+	case 'clear': //Abort Job
+		$jobid = (int) $_GET['jobid'];
+		check_admin_referer('clear-job_'.$jobid);
+		$jobs=get_option('backwpup_jobs');
+		if (is_file($jobs[$jobid]['logfile'])) {
+			$fd=fopen($jobs[$jobid]['logfile'],"a+");
+			fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Cleand by User!!!','backwpup')."</span><br />\n");
+			fputs($fd,"</body>\n</html>\n");
+			fclose($fd);
+			$logheader=backwpup_read_logheader($jobs[$jobid]['logfile']); //read waring count from log header
+			$logheader['errors']++;
+			//write new log header
+			$fd=@fopen($jobs[$jobid]['logfile'],"r+");
+			while (!feof($fd)) {
+				$line=@fgets($fd);
+				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+					@fseek($fd,$filepos);
+					@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
+					break;
+				}
+				$filepos=ftell($fd);
+			}
+			@fclose($fd);
+		}
+		$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
+		$jobs[$jobid]['stoptime']=current_time('timestamp');
+		$jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
+		$jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
+		$jobs[$jobid]['starttime']='';
+		$jobs[$jobid]['logfile']='';
+		update_option('backwpup_jobs',$jobs);
+		break;
 	}
 }
 

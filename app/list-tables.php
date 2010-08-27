@@ -23,7 +23,18 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}	
 	
 	function prepare_items() {
+		global $mode;
 		$this->items=get_option('backwpup_jobs');
+		$mode = empty( $_REQUEST['mode'] ) ? 'list' : $_REQUEST['mode'];
+	}
+	
+	function pagination( $which ) {
+		global $mode;
+
+		parent::pagination( $which );
+
+		if ( 'top' == $which )
+			$this->view_switcher( $mode );
 	}
 	
 	function no_items() {
@@ -43,6 +54,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 		$posts_columns['id'] = __('ID','backwpup');
 		$posts_columns['jobname'] = __('Job Name','backwpup');
 		$posts_columns['type'] = __('Type','backwpup');
+		$posts_columns['info'] = __('Information','backwpup');
 		$posts_columns['next'] = __('Next Run','backwpup');
 		$posts_columns['last'] = __('Last Run','backwpup');
 		return $posts_columns;
@@ -66,6 +78,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 	
 	function single_row( $jobid, $jobvalue, $style = '' ) {
+		global $mode;
 		list( $columns, $hidden ) = $this->get_column_headers();
 		$r = "<tr id='jodid-$jobid'$style>";
 		foreach ( $columns as $column_name => $column_display_name ) {
@@ -87,10 +100,14 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'jobname':
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job')."\" title=\"".__('Edit:','backwpup').$jobvalue['name']."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
-					$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
-					$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
-					$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=runnow&jobid='.$jobid, 'runnow-job_'.$jobid) . "\">" . __('Run Now','backwpup') . "</a>";
+					if (empty($jobvalue['logfile']) and empty($jobvalue['starttime'])) {
+						$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
+						$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
+						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+						$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=runnow&jobid='.$jobid, 'runnow-job_'.$jobid) . "\">" . __('Run Now','backwpup') . "</a>";
+					} else {
+						$actions['clear'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=clear&jobid='.$jobid, 'clear-job_'.$jobid) . "\">" . __('Abort','backwpup') . "</a>";
+					}
 					$action_count = count($actions);
 					$i = 0;
 					$r .=  '<br /><div class="row-actions">';
@@ -101,21 +118,43 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					}
 					$r .=  '</div>';
 					$r .=  '</td>';
-					break;
+					break;	
 				case 'type':
 					$r .=  "<td $attributes>";
 					$r .=  backwpup_backup_types($jobvalue['type'],false);
 					$r .=  "</td>";
-					break;	
+					break;
+				case 'info':
+					$r .=  "<td $attributes>";
+					if (in_array('FILE',explode('+',$jobvalue['type']))) {
+						$files=backwpup_calc_file_size($jobvalue);
+						$r .=  __("Files Size:","backwpup")." ".backwpup_formatBytes($files['size'])."<br />";
+						if ( 'excerpt' == $mode ) {
+							$r .=  __("Files count:","backwpup")." ".$files['num']."<br />";
+						}
+					}
+					if (in_array('DB',explode('+',$jobvalue['type'])) or in_array('OPTIMIZE',explode('+',$jobvalue['type'])) or in_array('CHECK',explode('+',$jobvalue['type']))) {
+						$dbsize=backwpup_calc_db_size($jobvalue);
+						$r .=  "DB Size: ".backwpup_formatBytes($dbsize['size'])."<br />";
+						if ( 'excerpt' == $mode ) {
+							$r .=  __("DB Tables:","backwpup")." ".$dbsize['num']."<br />";
+							$r .=  __("DB Rows:","backwpup")." ".$dbsize['rows']."<br />";
+						}
+					}
+					$r .=  "</td>";
+					break;
 				case 'next':
 					$r .= "<td $attributes>";
 					if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
 						$runtime=current_time('timestamp')-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
-					} elseif (!empty($jobvalue['cronnextrun']) and $jobvalue['activated']) {
+					} elseif ($jobvalue['activated']) {
 						$r .=  date(get_option('date_format'),$jobvalue['cronnextrun']).'<br />'. date(get_option('time_format'),$jobvalue['cronnextrun']);
 					} else {
 						$r .= __('Inactive','backwpup');
+					}
+					if ( 'excerpt' == $mode ) {
+						$r .= '<br />'.__('<a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a>:','backwpup').' '.$jobvalue['cron'];
 					}
 					$r .=  "</td>";
 					break;

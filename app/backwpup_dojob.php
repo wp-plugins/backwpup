@@ -12,10 +12,7 @@ function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
 	if (!function_exists('memory_get_usage')) { // test if memory functions compiled in
 		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."\">".date_i18n('Y-m-d H:i.s').":</span> ";
 	} else  {
-		if (version_compare(phpversion(), '5.2.0', '<'))
-			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage())."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage())."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
-		else
-			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
+		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
 	}
 
 	switch ($errno) {
@@ -163,13 +160,29 @@ class backwpup_dojob {
 			set_error_handler('backwpup_joberrorhandler',E_ALL & ~E_NOTICE);
 		//find out if job already running and abort if
 		if ($jobs[$this->jobid]['starttime']>0 and empty($jobs[$this->jobid]['stoptime'])) {
-			if ($jobs[$this->jobid]['starttime']+600>current_time('timestamp')) { //Abort old jo if work longer as 10 min. because websever has 300 sec timeout
+			if ($jobs[$this->jobid]['starttime']+600<current_time('timestamp')) { //Abort old jo if work longer as 10 min. because websever has 300 sec timeout
 				trigger_error(__('Working Job will closed!!! And a new started!!!','backwpup'),E_USER_WARNING);
 				//old logfile end
-				$fd=fopen($jobs[$this->jobid]['logfile'],"a+");
-				fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span>".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
-				fputs($fd,"</body>\n</html>\n");
-				fclose($fd);			
+				if (is_file($jobs[$this->jobid]['logfile'])) {
+					$fd=fopen($jobs[$this->jobid]['logfile'],"a+");
+					fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
+					fputs($fd,"</body>\n</html>\n");
+					fclose($fd);
+					$logheader=backwpup_read_logheader($jobs[$this->jobid]['logfile']); //read waring count from log header
+					$logheader['errors']++;
+					//write new log header
+					$fd=@fopen($jobs[$this->jobid]['logfile'],"r+");
+					while (!feof($fd)) {
+						$line=@fgets($fd);
+						if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+							@fseek($fd,$filepos);
+							@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
+							break;
+						}
+						$filepos=ftell($fd);
+					}
+					@fclose($fd);
+				}
 			} else {
 				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$this->job['name']),E_USER_ERROR);
 				return false;
@@ -178,8 +191,8 @@ class backwpup_dojob {
 		//Set job start settings
 		$jobs[$this->jobid]['starttime']=current_time('timestamp'); //set start time for job
 		$jobs[$this->jobid]['stoptime']='';	   //Set stop time for job
-		$jobs[$this->jobid]['logfile']=$this->logdir.$this->logfile;	   //Set stop time for job
-		$jobs[$this->jobid]['cronnextrun']=backwpup_cron_next($jobs[$this->jobid]['cron']);
+		$jobs[$this->jobid]['logfile']=$this->logdir.$this->logfile;	   //Set current logfile
+		$jobs[$this->jobid]['cronnextrun']=backwpup_cron_next($jobs[$this->jobid]['cron']);  //set next run
 		update_option('backwpup_jobs',$jobs); //Save job Settings
 		//set waht to do
 		$this->todo=explode('+',$this->job['type']);
@@ -440,7 +453,6 @@ class backwpup_dojob {
 		fwrite($file, "--\n");
 		fwrite($file, "-- Dumping data for table $table\n");
 		fwrite($file, "--\n\n");
-		fwrite($file, "LOCK TABLES `".$table."` WRITE;\n\n");
 		if ($status['Engine']=='MyISAM')
 			fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 
@@ -468,7 +480,6 @@ class backwpup_dojob {
 		}
 		if ($status['Engine']=='MyISAM')
 			fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
-		fwrite($file, "UNLOCK TABLES;\n");
 	}
 
 	private function dump_db() {
@@ -640,21 +651,21 @@ class backwpup_dojob {
 				if ( in_array($file, array('.', '..','.svn') ) )
 					continue;
 				foreach ($excludes as $exclusion) { //exclude dirs and files
-					if (false !== stripos($folder.'/'.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
+					if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 						continue 2;
 				}
-				if ( is_dir( $folder . '/' . $file )) {
-					if (!in_array(trailingslashit($folder.'/'.$file),$excludedirs))
-						$this->_file_list_folder( $folder . '/' . $file, $levels - 1, $excludes);
-				} elseif (is_file( $folder . '/' . $file )) {
-					if (is_readable($folder . '/' . $file)) { //add file to filelist
-						$this->tempfilelist[]=$folder.'/'.$file;
-						$this->allfilesize=$this->allfilesize+filesize($folder . '/' . $file);
+				if ( is_dir( $folder.$file )) {
+					if (!in_array(trailingslashit($folder.$file),$excludedirs))
+						$this->_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes);
+				} elseif (is_file( $folder.$file )) {
+					if (is_readable($folder.$file)) { //add file to filelist
+						$this->tempfilelist[]=$folder.$file;
+						$this->allfilesize=$this->allfilesize+filesize($folder.$file);
 					} else {
-						trigger_error(__('Can not read file:','backwpup').' '.$folder . '/' . $file,E_USER_WARNING);
+						trigger_error(__('Can not read file:','backwpup').' '.$folder.$file,E_USER_WARNING);
 					}
 				} else {
-					trigger_error(__('Is not a file or directory:','backwpup').' '.$folder . '/' . $file,E_USER_WARNING);
+					trigger_error(__('Is not a file or directory:','backwpup').' '.$folder.$file,E_USER_WARNING);
 				}
 			}
 			@closedir( $dir );
@@ -676,15 +687,15 @@ class backwpup_dojob {
 
 		//File list for blog folders
 		if ($this->job['backuproot'])
-			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge($this->job['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)));
+			$this->_file_list_folder(trailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge($this->job['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)));
 		if ($this->job['backupcontent'])
-			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge($this->job['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
+			$this->_file_list_folder(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge($this->job['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
 		if ($this->job['backupplugins'])
-			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge($this->job['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
+			$this->_file_list_folder(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge($this->job['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
 		if ($this->job['backupthemes'])
-			$this->_file_list_folder(untrailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes')),100,$backwpup_exclude,array_merge($this->job['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
+			$this->_file_list_folder(trailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes')),100,$backwpup_exclude,array_merge($this->job['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
 		if ($this->job['backupuploads'])
-			$this->_file_list_folder(untrailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
+			$this->_file_list_folder(trailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
 
 	    //include dirs
 		if (!empty($this->job['dirinclude'])) {
@@ -693,21 +704,26 @@ class backwpup_dojob {
 			//Crate file list for includes
 			foreach($dirinclude as $dirincludevalue) {
 				if (is_dir($dirincludevalue))
-					$this->_file_list_folder(untrailingslashit(str_replace('\\','/',$dirincludevalue)),100,$backwpup_exclude);
+					$this->_file_list_folder(untrailingslashit($dirincludevalue),100,$backwpup_exclude);
 			}
 		}
 		
 		$this->tempfilelist=array_unique($this->tempfilelist); //all files only one time in list
 		sort($this->tempfilelist);
-		foreach ($this->tempfilelist as $files) {
-			$this->filelist[]=array(79001=>$files,79003=>str_replace(str_replace('\\','/',trailingslashit(ABSPATH)),'',$files));
-		}
+		//Check abs path
+		if (ABSPATH=='/' or ABSPATH=='')
+			$removepath='';
+		else
+			$removepath=trailingslashit(ABSPATH);
+		//make file list
+		foreach ($this->tempfilelist as $files) 
+			$this->filelist[]=array(79001=>$files,79003=>str_replace($removepath,'',$files));
 		$this->tempfilelist=array();
 
 		if (!is_array($this->filelist[0])) {
 			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
 		} else {
-			trigger_error(__('Size off all files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
+			trigger_error(__('Size of all files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
 		}
 
 	}
@@ -1246,6 +1262,7 @@ class backwpup_dojob {
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['lastruntime']=$jobs[$this->jobid]['stoptime']-$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['logfile']='';
+		$jobs[$this->jobid]['starttime']='';
 		update_option('backwpup_jobs',$jobs); //Save Settings
 		$this->job['stoptime']=$jobs[$this->jobid]['stoptime'];
 		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];

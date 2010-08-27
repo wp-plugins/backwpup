@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -82,6 +82,15 @@ Place mail only little archives
 1. Job Page
 
 == Changelog ==
+= 1.3.1 =
+* added File and DB size information
+* removed "LOCK TABLE" in sql dumps
+* fixed bug in automatic job abortion
+* fixed bug in ABSPATH if it '/'
+* fiexd bug in save settings
+* fiexd bugs if no jobs exists
+* added link to clear running jobs
+
 = 1.3.0 =
 * added S3 new region codes for bucket creation
 * added S3 REDUCED REDUNDANCY support on put Backups
