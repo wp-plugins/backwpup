@@ -123,7 +123,7 @@ class backwpup_dojob {
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
 		$jobs=get_option('backwpup_jobs'); //load jobdata
-		$this->job=backwpup_check_job_vars($jobs[$this->jobid]);//Set and check job settings
+		$this->job=backwpup_check_job_vars($jobs[$this->jobid],$this->jobid);//Set and check job settings
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir) or $this->logdir=='/') {
@@ -159,30 +159,28 @@ class backwpup_dojob {
 		else
 			set_error_handler('backwpup_joberrorhandler',E_ALL & ~E_NOTICE);
 		//find out if job already running and abort if
-		if ($jobs[$this->jobid]['starttime']>0 and empty($jobs[$this->jobid]['stoptime'])) {
+		if ($jobs[$this->jobid]['starttime']>0 and !empty($jobs[$this->jobid]['logfile'])) {
 			if ($jobs[$this->jobid]['starttime']+600<current_time('timestamp')) { //Abort old jo if work longer as 10 min. because websever has 300 sec timeout
 				trigger_error(__('Working Job will closed!!! And a new started!!!','backwpup'),E_USER_WARNING);
 				//old logfile end
-				if (is_file($jobs[$this->jobid]['logfile'])) {
-					$fd=fopen($jobs[$this->jobid]['logfile'],"a+");
-					fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
-					fputs($fd,"</body>\n</html>\n");
-					fclose($fd);
-					$logheader=backwpup_read_logheader($jobs[$this->jobid]['logfile']); //read waring count from log header
-					$logheader['errors']++;
-					//write new log header
-					$fd=@fopen($jobs[$this->jobid]['logfile'],"r+");
-					while (!feof($fd)) {
-						$line=@fgets($fd);
-						if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-							@fseek($fd,$filepos);
-							@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
-							break;
-						}
-						$filepos=ftell($fd);
+				$fd=fopen($jobs[$this->jobid]['logfile'],"a+");
+				fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
+				fputs($fd,"</body>\n</html>\n");
+				fclose($fd);
+				$logheader=backwpup_read_logheader($jobs[$this->jobid]['logfile']); //read waring count from log header
+				$logheader['errors']++;
+				//write new log header
+				$fd=@fopen($jobs[$this->jobid]['logfile'],"r+");
+				while (!feof($fd)) {
+					$line=@fgets($fd);
+					if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+						@fseek($fd,$filepos);
+						@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
+						break;
 					}
-					@fclose($fd);
+					$filepos=ftell($fd);
 				}
+				@fclose($fd);
 			} else {
 				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$this->job['name']),E_USER_ERROR);
 				return false;
@@ -190,7 +188,6 @@ class backwpup_dojob {
 		}
 		//Set job start settings
 		$jobs[$this->jobid]['starttime']=current_time('timestamp'); //set start time for job
-		$jobs[$this->jobid]['stoptime']='';	   //Set stop time for job
 		$jobs[$this->jobid]['logfile']=$this->logdir.$this->logfile;	   //Set current logfile
 		$jobs[$this->jobid]['cronnextrun']=backwpup_cron_next($jobs[$this->jobid]['cron']);  //set next run
 		update_option('backwpup_jobs',$jobs); //Save job Settings
@@ -213,7 +210,7 @@ class backwpup_dojob {
 		}
 		//set Backup file name only for jos that makes backups
 		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo))
-			$this->backupfile='backwpup_'.$this->jobid.'_'.date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
+			$this->backupfile=$this->job['fileprefix'].date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
 		//check max script execution tme
 		if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1')
 			trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_WARNING);
@@ -979,7 +976,7 @@ class backwpup_dojob {
 			$backupfilelist=array();
 			if ($filelist=ftp_nlist($ftp_conn_id, $this->job['ftpdir'])) {
 				foreach($filelist as $files) {
-					if ('backwpup_'.$this->jobid.'_' == substr(basename($files),0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
+					if ($this->job['fileprefix'] == substr(basename($files),0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr(basename($files),-strlen($this->backupfileformat)))
 						$backupfilelist[]=basename($files);
 				}
 				if (sizeof($backupfilelist)>0) {
@@ -1094,7 +1091,7 @@ class backwpup_dojob {
 					foreach ($contents as $object) {
 						$file=basename($object['name']);
 						if ($this->job['awsdir'].$file == $object['name']) {//only in the folder and not in complete bucket
-							if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
 								$backupfilelist[]=$file;
 						}
 					}
@@ -1181,7 +1178,7 @@ class backwpup_dojob {
 					foreach ($contents as $object) {
 						$file=basename($object);
 						if ($this->job['rscdir'].$file == $object) {//only in the folder and not in complete bucket
-							if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
 								$backupfilelist[]=$file;
 						}
 					}
@@ -1213,7 +1210,7 @@ class backwpup_dojob {
 		if (!empty($this->job['maxbackups'])) {
 			if ( $dir = @opendir($this->job['backupdir']) ) { //make file list
 				while (($file = readdir($dir)) !== false ) {
-					if ('backwpup_'.$this->jobid.'_' == substr($file,0,strlen('backwpup_'.$this->jobid.'_')) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+					if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
 						$backupfilelist[]=$file;
 				}
 				@closedir( $dir );
@@ -1258,13 +1255,11 @@ class backwpup_dojob {
 		}
 	
 		$jobs=get_option('backwpup_jobs');
-		$jobs[$this->jobid]['stoptime']=current_time('timestamp');
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
-		$jobs[$this->jobid]['lastruntime']=$jobs[$this->jobid]['stoptime']-$jobs[$this->jobid]['starttime'];
+		$jobs[$this->jobid]['lastruntime']=current_time('timestamp')-$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['logfile']='';
 		$jobs[$this->jobid]['starttime']='';
 		update_option('backwpup_jobs',$jobs); //Save Settings
-		$this->job['stoptime']=$jobs[$this->jobid]['stoptime'];
 		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];
 		$this->job['lastruntime']=$jobs[$this->jobid]['lastruntime'];
 		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),$this->job['lastruntime']),E_USER_NOTICE);	
@@ -1328,7 +1323,7 @@ class backwpup_dojob {
 				$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
 			if (!empty($logdata['warnings']))
 				$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
-			wp_mail($this->job['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['starttime']).': '.$this->job['name'] ,$mailbody,'',array($this->logdir.$this->logfile));
+			wp_mail($this->job['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['lastruntime']).': '.$this->job['name'] ,$mailbody,'',array($this->logdir.$this->logfile));
 		}
 	}
 }

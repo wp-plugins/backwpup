@@ -79,7 +79,7 @@ $cfg=get_option('backwpup');
 					<input name="dirtemp" type="text" value="<?PHP echo $cfg['dirtemp'];?>" class="large-text" /><br />
 				</div>
 			</div>
-			<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
+			<input type="submit" name="submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
 		</div>
 	</div>
 </div>

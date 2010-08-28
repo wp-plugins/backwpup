@@ -128,7 +128,7 @@ function backwpup_backups_operations($action) {
 
 		$num=0;
 		foreach ($deletebackups as $backups) {
-			$jobvalue=backwpup_check_job_vars($jobs[$backups['jobid']]); //Check job values
+			$jobvalue=backwpup_check_job_vars($jobs[$backups['jobid']],$backups['jobid']); //Check job values
 			if ($backups['type']=='FOLDER') {
 				if (is_file($backups['file']))
 					unlink($backups['file']);
@@ -369,6 +369,7 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['backupthemesexcludedirs']=(array)$_POST['backupthemesexcludedirs'];
 	$jobs[$jobid]['backupuploads']= $_POST['backupuploads']==1 ? true : false;
 	$jobs[$jobid]['backupuploadsexcludedirs']=(array)$_POST['backupuploadsexcludedirs'];
+	$jobs[$jobid]['fileprefix']=$_POST['fileprefix'];
 	$jobs[$jobid]['fileformart']=$_POST['fileformart'];
 	$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
 	$jobs[$jobid]['backupdir']=stripslashes($_POST['backupdir']);
@@ -397,7 +398,7 @@ function backwpup_save_job() { //Save Job settings
 	unset($jobs[$jobid]['scheduleintervalteimes']);
 	unset($jobs[$jobid]['scheduleinterval']);
 
-	$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid]); //check vars and set def.
+	$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid],$jobid); //check vars and set def.
 
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
 		if (!class_exists('S3'))
@@ -424,10 +425,8 @@ function backwpup_save_job() { //Save Job settings
 
 	//save chages
 	update_option('backwpup_jobs',$jobs);
-
+	$_POST['jobid']=$jobid;
 	$backwpup_message.=str_replace('%1',$jobs[$jobid]['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="admin.php?page=BackWPup">'.__('Jobs overview.', 'backwpup').'</a>';
 	return $backwpup_message;
-	//go to job page
-	$_REQUEST['jobid']=$jobid;
 }
 ?>

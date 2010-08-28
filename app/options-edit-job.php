@@ -5,9 +5,7 @@ if ( !defined('ABSPATH') )
 
 check_admin_referer('edit-job');
 global $wpdb;	
-$jobs=get_option('backwpup_jobs');
 $jobid = (int) $_REQUEST['jobid'];
-$jobvalue=backwpup_check_job_vars($jobs[$jobid]);
 ?>
 <div class="wrap">
 	<div id="icon-tools" class="icon32"><br /></div>
@@ -18,7 +16,8 @@ $jobvalue=backwpup_check_job_vars($jobs[$jobid]);
 <input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
 <?php
 wp_nonce_field('edit-job');
-$jobvalue=backwpup_check_job_vars($jobvalue);
+$jobs=get_option('backwpup_jobs');
+$jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
 $todo=explode('+',$jobvalue['type']);
 ?>
 
@@ -157,22 +156,27 @@ $todo=explode('+',$jobvalue['type']);
 			</div>
 
 			<div id="fileformart" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup File Format','backwpup'); ?></span></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup File','backwpup'); ?></span></h3>
 				<div class="inside">
+				<b><?PHP _e('File Prefix:','backwpup'); ?></b><br />
+				<input name="fileprefix" type="text" value="<?PHP echo $jobvalue['fileprefix'];?>" class="large-text" /><br />
+				<b><?PHP _e('File Formart:','backwpup'); ?></b><br />
 				<?PHP
 				if (function_exists('gzopen') or class_exists('ZipArchive'))
-					echo '<input class="radio" type="radio"'.checked('.zip',$jobvalue['fileformart'],false).' name="fileformart" value=".zip" />'.__('ZIP (.zip)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.zip',$jobvalue['fileformart'],false).' name="fileformart" value=".zip" />'.__('Zip','backwpup').'<br />';
 				else
-					echo '<input class="radio" type="radio"'.checked('.zip',$jobvalue['fileformart'],false).' name="fileformart" value=".zip" disabled="disabled" />'.__('ZIP (.zip)','backwpup').'<br />';
-				echo '<input class="radio" type="radio"'.checked('.tar',$jobvalue['fileformart'],false).' name="fileformart" value=".tar" />'.__('TAR (.tar)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.zip',$jobvalue['fileformart'],false).' name="fileformart" value=".zip" disabled="disabled" />'.__('Zip','backwpup').'<br />';
+				echo '<input class="radio" type="radio"'.checked('.tar',$jobvalue['fileformart'],false).' name="fileformart" value=".tar" />'.__('Tar','backwpup').'<br />';
 				if (function_exists('gzopen'))
-					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.gz" />'.__('TAR GZIP (.tar.gz)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.gz" />'.__('Tar GZip','backwpup').'<br />';
 				else
-					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.gz" disabled="disabled" />'.__('TAR GZIP (.tar.gz)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.gz',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.gz" disabled="disabled" />'.__('Tar GZip','backwpup').'<br />';
 				if (function_exists('bzopen'))
-					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" />'.__('TAR BZIP2 (.tar.bz2)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" />'.__('Tar BZip2','backwpup').'<br />';
 				else
-					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('TAR BZIP2 (.tar.bz2)','backwpup').'<br />';
+					echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('Tar BZip2','backwpup').'<br />';	
+				_e('Example:','backwpup'); 
+				echo '<br /><i>'.$jobvalue['fileprefix'].date_i18n('Y-m-d_H-i-s').$jobvalue['fileformart'].'</i>';
 				?>
 				</div>
 			</div>

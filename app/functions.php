@@ -79,7 +79,7 @@ if ( !defined('ABSPATH') )
 		default:
 			echo "<div class=\"wrap\">";
 			echo "<div id=\"icon-tools\" class=\"icon32\"><br /></div>";
-			echo "<h2>".__('BackWPup', 'backwpup')."&nbsp;<a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid=0', 'edit-job')."\" class=\"button add-new-h2\">".esc_html__('Add New')."</a></h2>";
+			echo "<h2>".__('BackWPup', 'backwpup')."&nbsp;<a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=edit', 'edit-job')."\" class=\"button add-new-h2\">".esc_html__('Add New')."</a></h2>";
 			backwpup_option_submenues();
 			echo "<form id=\"posts-filter\" action=\"\" method=\"post\">";
 			echo "<input type=\"hidden\" name=\"page\" value=\"BackWPup\" />";
@@ -195,7 +195,7 @@ if ( !defined('ABSPATH') )
 	
 
 	//Checking,upgrade and default job setting
-	function backwpup_check_job_vars($jobsettings) {
+	function backwpup_check_job_vars($jobsettings,$jobid='') {
 		global $wpdb;
 		//check job type
 		if (!isset($jobsettings['type']) or !is_string($jobsettings['type']))
@@ -343,10 +343,13 @@ if ( !defined('ABSPATH') )
 		}
 		sort($jobsettings['backupuploadsexcludedirs']);
 
-		$fileformarts=array('.zip','.tar.gz','tar.bz2','.tar');
+		$fileformarts=array('.zip','.tar.gz','.tar.bz2','.tar');
 		if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
 			$jobsettings['fileformart']='.zip';
-
+		
+		if (!isset($jobsettings['fileprefix']) or !is_string($jobsettings['fileprefix']))
+			$jobsettings['fileprefix']='backwpup_'.$jobid.'_';
+		
 		if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
 			$jobsettings['mailefilesize']=0;
 
@@ -807,7 +810,7 @@ if ( !defined('ABSPATH') )
 		}
 
 		foreach ($jobs as $jobid => $jobvalue) { //go job by job
-			$jobvalue=backwpup_check_job_vars($jobvalue); //Check job values
+			$jobvalue=backwpup_check_job_vars($jobvalue,$jobid); //Check job values
 			$todo=explode('+',$jobvalue['type']); //only for backup jobs
 			if (!in_array('FILE',$todo) and !in_array('DB',$todo) and !in_array('WPEXP',$todo))
 				continue;
@@ -1194,9 +1197,6 @@ if ( !defined('ABSPATH') )
 		}
 		if (!is_dir($cfg['dirtemp'])) { // check Temp folder
 			$message.=__('- Temp Folder not exists:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
-		}
-		if (!is_writable($cfg['dirtemp'])) { // check Temp folder
-			$message.=__('- Temp Folder not writeable:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
 		}
 		if (!is_writable($cfg['dirtemp'])) { // check Temp folder
 			$message.=__('- Temp Folder not writeable:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
