@@ -610,7 +610,7 @@ if ( !defined('ABSPATH') )
 			$count=0;
 			foreach ($logfiles as $logfile) {
 				$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
-				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
+				echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
 				if (empty($logdata['name']))
 					echo $logdata['type'];
 				else
