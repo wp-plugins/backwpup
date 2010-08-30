@@ -100,7 +100,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'jobname':
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job')."\" title=\"".__('Edit:','backwpup').$jobvalue['name']."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
-					if (empty($jobvalue['logfile']) and !empty($jobvalue['starttime'])) {
+					if (empty($jobvalue['logfile']) and empty($jobvalue['starttime'])) {
 						$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";

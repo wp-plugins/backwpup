@@ -937,8 +937,8 @@ if ( !defined('ABSPATH') )
 		}
 		//Sort list
 		$tmp = Array();
-		foreach($files as &$ma)
-			$tmp[] = &$ma["time"];
+		foreach($files as $ma)
+			$tmp[] = $ma["time"];
 		array_multisort($tmp, SORT_DESC, $files);
 		return $files;
 	}
