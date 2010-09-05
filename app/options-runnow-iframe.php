@@ -9,7 +9,7 @@ if (file_exists($_GET['wpabs'].'wp-load.php') and is_numeric(trim($_GET['jobid']
 ?>
 <html>
     <head>
-	<?PHP  backwpup_meta_no_cache(); ?>
+	<?PHP backwpup_meta_no_cache(); ?>
 	<title><?PHP _e('Do Job','backwpup');  ?></title>
     </head>
 	<body style="font-family:monospace;font-size:12px;white-space:nowrap;">

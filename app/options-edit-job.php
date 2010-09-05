@@ -11,6 +11,9 @@ $jobid = (int) $_REQUEST['jobid'];
 	<div id="icon-tools" class="icon32"><br /></div>
 <h2><?php _e('BackWPup Job Settings', 'backwpup'); ?></h2>
 
+<?PHP backwpup_option_submenues(); ?>
+<div class="clear"></div>
+
 <form method="post" action="">
 <input type="hidden" name="subpage" value="edit" />
 <input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
