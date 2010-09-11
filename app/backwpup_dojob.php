@@ -940,7 +940,7 @@ class backwpup_dojob {
 		$this->_ftp_raw_helper($ftp_conn_id,'SYST');
 		//PASV
 		trigger_error(__('FTP Client command:','backwpup').' PASV',E_USER_NOTICE);
-		if ($this->job['ftppasv'])
+		if ($this->job['ftppasv']) {
 			if (ftp_pasv($ftp_conn_id, true))
 				trigger_error(__('Server Completion reply: 227 Entering Passive Mode','backwpup'),E_USER_NOTICE);
 			else
