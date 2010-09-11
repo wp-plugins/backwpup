@@ -699,7 +699,7 @@ class backwpup_dojob {
 			//Crate file list for includes
 			foreach($dirinclude as $dirincludevalue) {
 				if (is_dir($dirincludevalue))
-					$this->_file_list_folder(untrailingslashit($dirincludevalue),100,$backwpup_exclude);
+					$this->_file_list_folder(trailingslashit($dirincludevalue),100,$backwpup_exclude);
 			}
 		}
 		
@@ -940,10 +940,12 @@ class backwpup_dojob {
 		$this->_ftp_raw_helper($ftp_conn_id,'SYST');
 		//PASV
 		trigger_error(__('FTP Client command:','backwpup').' PASV',E_USER_NOTICE);
-		if (ftp_pasv($ftp_conn_id, true))
-			trigger_error(__('Server Completion reply: 227 Entering Passive Mode','backwpup'),E_USER_NOTICE);
-		else
-		trigger_error(__('FTP Server reply:','backwpup').' '.__('Can not Entering Passive Mode','backwpup'),E_USER_WARNING);
+		if ($this->job['ftppasv'])
+			if (ftp_pasv($ftp_conn_id, true))
+				trigger_error(__('Server Completion reply: 227 Entering Passive Mode','backwpup'),E_USER_NOTICE);
+			else
+				trigger_error(__('FTP Server reply:','backwpup').' '.__('Can not Entering Passive Mode','backwpup'),E_USER_WARNING);
+		}
 		//ALLO show no erros in log if do not work
 		trigger_error(__('FTP Client command:','backwpup').' ALLO',E_USER_NOTICE);
 		ftp_alloc($ftp_conn_id,filesize($this->backupdir.$this->backupfile),$result);

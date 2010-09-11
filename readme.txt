@@ -77,11 +77,19 @@ PHP normally abort Script that works longer then 30s but the Plugin try too swit
 I have build in many options to Optimize the Mailing but the mailing lib uses high Memory.
 Place mail only little archives
 
+= FTP Warnings =
+Please deactivate Pasive Mode and try it again.
+
 == Screenshots ==
 
 1. Job Page
 
 == Changelog ==
+= 1.3.5 =
+* fixed problem with folder include
+* added option to deactivate FTP passive mode
+* fixed bug for prasing errors because PHP 5 move PHP 5 functions in a seperate file
+
 = 1.3.4 =
 * fixed warning in send mail
 * bug fixes

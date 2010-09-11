@@ -379,6 +379,7 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
 	$jobs[$jobid]['ftpdir']=stripslashes($_POST['ftpdir']);
 	$jobs[$jobid]['ftpmaxbackups']=(int)$_POST['ftpmaxbackups'];
+	$jobs[$jobid]['ftppasv']= $_POST['ftppasv']==1 ? true : false;
 	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
 	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
 	$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
