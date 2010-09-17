@@ -18,7 +18,7 @@ if ( !defined('ABSPATH') )
 			echo '<div id="message" class="updated fade"><p><strong>'.$backwpup_message.'</strong></p></div>';
 		switch($_REQUEST['subpage']) {
 		case 'edit':
-			include_once('options-edit-job.php');
+			require_once(dirname(__FILE__).'/options-edit-job.php');
 			break;
 		case 'logs':
 			echo "<div class=\"wrap\">";
@@ -34,10 +34,10 @@ if ( !defined('ABSPATH') )
 			echo "</div>";
 			break;
 		case 'settings':
-			include_once('options-settings.php');
+			require_once(dirname(__FILE__).'/options-settings.php');
 			break;
 		case 'tools':
-			include_once('options-tools.php');
+			require_once(dirname(__FILE__).'/options-tools.php');
 			break;
 		case 'backups':
 			echo "<div class=\"wrap\">";
@@ -125,7 +125,7 @@ if ( !defined('ABSPATH') )
 		switch($_REQUEST['subpage']) {
 		case 'logs':
 			if (!empty($_REQUEST['action'])) {
-				include_once('options-save.php');
+				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_log_operations($_REQUEST['action']);
 			}
 			$table = new BackWPup_Logs_Table;
@@ -134,13 +134,13 @@ if ( !defined('ABSPATH') )
 			break;
 		case 'edit':
 			if (!empty($_POST['submit'])) {
-				include_once('options-save.php');
+				require_once(dirname(__FILE__).'/options-save.php');
 				$backwpup_message=backwpup_save_job();
 			}
 			break;
 		case 'settings':
 			if (!empty($_POST['submit'])) {
-				include_once('options-save.php');
+				require_once(dirname(__FILE__).'/options-save.php');
 				$backwpup_message=backwpup_save_settings();
 			}
 			break;
@@ -148,7 +148,7 @@ if ( !defined('ABSPATH') )
 			break;
 		case 'backups':
 			if (!empty($_REQUEST['action'])) {
-				include_once('options-save.php');
+				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_backups_operations($_REQUEST['action']);
 			}
 			$table = new BackWPup_Backups_Table;
@@ -161,7 +161,7 @@ if ( !defined('ABSPATH') )
 			break;
 		default:
 			if (!empty($_REQUEST['action'])) {
-				include_once('options-save.php');
+				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_job_operations($_REQUEST['action']);
 			}
 			$table = new BackWPup_Jobs_Table;
@@ -276,7 +276,7 @@ if ( !defined('ABSPATH') )
 		global $backwpup_logfile;
 		if (empty($jobid))
 			return false;
-		include_once('backwpup_dojob.php');
+		require_once(dirname(__FILE__).'/backwpup_dojob.php');
 		$backwpup_dojob= new backwpup_dojob($jobid);
 		unset($backwpup_dojob);
 		return $backwpup_logfile;
@@ -731,13 +731,15 @@ if ( !defined('ABSPATH') )
 		if (!backwpup_env_checks())
 			return;
 		//iclude php5 functions
-		include_once('functions5.php');
+		require_once(dirname(__FILE__).'/functions5.php');
+		//load tables Classes
+		require_once(dirname(__FILE__).'/list-tables.php');
 		//Disabele WP_Corn
 		$cfg=get_option('backwpup');
 		if ($cfg['disablewpcron'])
 			define('DISABLE_WP_CRON',true);
 		//add Menu
-		add_action('admin_menu', 'backwpup_admin_menu');
+			add_action('admin_menu', 'backwpup_admin_menu');
 		//Additional links on the plugin page
 		if (current_user_can(10))
 			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
@@ -756,8 +758,6 @@ if ( !defined('ABSPATH') )
 		// add ajax function
 		add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
 		add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
-		//load tables Classes
-		include_once('list-tables.php');
 	}
 
 ?>

@@ -251,9 +251,9 @@ if ( !defined('ABSPATH') )
 		$donefolders=array();
 		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
 			if (!class_exists('S3'))
-				include_once('libs/S3.php');
+				require_once(dirname(__FILE__).'/libs/S3.php');
 			if (!class_exists('CF_Authentication'))
-				include_once('libs/rackspace/cloudfiles.php');
+				require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 		}
 
 		foreach ($jobs as $jobid => $jobvalue) { //go job by job
@@ -352,15 +352,13 @@ if ( !defined('ABSPATH') )
 					if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], base64_decode($jobvalue['ftppass']))) {
 						$loginok=true;
 					} else { //if PHP ftp login don't work use raw login
-						if (substr(trim(ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser'])),0,3)<400) {
-							if (substr(trim(ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']))),0,3)<400) {
-								$loginok=true;
-							}
-						}
+						ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser']);
+						ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']));
+						$loginok=true;
 					}
 				}
 				if ($loginok) {
-					ftp_pasv($ftp_conn_id, true);
+					ftp_pasv($ftp_conn_id, $jobvalue['ftppasv']);
 					if ($ftpfilelist=ftp_nlist($ftp_conn_id, $jobvalue['ftpdir'])) {
 						foreach($ftpfilelist as $ftpfiles) {
 							if (substr(basename($ftpfiles),0,1)=='.' or !(strtolower(substr($ftpfiles,-4))=='.zip' or strtolower(substr($ftpfiles,-4))=='.tar'  or strtolower(substr($ftpfiles,-7))=='.tar.gz'  or strtolower(substr($ftpfiles,-8))=='.tar.bz2'))
@@ -402,7 +400,7 @@ if ( !defined('ABSPATH') )
 			$ajax=true;
 		}
 		if (!class_exists('S3'))
-			include_once('libs/S3.php');
+			require_once(dirname(__FILE__).'/libs/S3.php');
 		if (empty($awsAccessKey)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
 			if ($ajax)
@@ -449,7 +447,7 @@ if ( !defined('ABSPATH') )
 			$ajax=true;
 		}
 		if (!class_exists('CF_Authentication'))
-			include_once('libs/rackspace/cloudfiles.php');
+			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 
 		if (empty($rscUsername)) {
 			echo '<span id="rscContainer" style="color:red;">'.__('Missing Username!','backwpup').'</span>';

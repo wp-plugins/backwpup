@@ -671,7 +671,10 @@ class backwpup_dojob {
 
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
-
+		
+		//Check free memory for file list
+		$this->need_free_memory(2097152); //2MB free memory for filelist
+		//empty filelist
 		$this->tempfilelist=array();
 
 		$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
@@ -718,7 +721,8 @@ class backwpup_dojob {
 		if (!is_array($this->filelist[0])) {
 			trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
 		} else {
-			trigger_error(__('Size of all files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
+			trigger_error(__('Files to Backup:','backwpup').' '.count($this->filelist),E_USER_NOTICE);
+			trigger_error(__('Size of all Files:','backwpup').' '.backwpup_formatBytes($this->allfilesize),E_USER_NOTICE);
 		}
 
 	}
@@ -733,7 +737,10 @@ class backwpup_dojob {
 					if (!is_file($files[79001])) //check file exists
 						continue;
 					if ($zip->addFile($files[79001], $files[79003])) {
-						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+						if ($this->cfg['logfilelist'])
+							trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+						else 
+							@set_time_limit(300); //Set time limit higer every file
 					} else {
 						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$files[79001],E_USER_ERROR);
 					}
@@ -747,14 +754,16 @@ class backwpup_dojob {
 		} else { //use PclZip
 			define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
 			if (!class_exists('PclZip'))
-				include_once('libs/pclzip.lib.php');
+				require_once(dirname(__FILE__).'/libs/pclzip.lib.php');
 
 			//Create Zip File
 			if (is_array($this->filelist[0])) {
 				$this->need_free_memory(10485760); //10MB free memory for zip
 				trigger_error(__('Create Backup Zip (PclZip) file...','backwpup'),E_USER_NOTICE);
-				foreach($this->filelist as $key => $files) {
-					trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+				if ($this->cfg['logfilelist']) {
+					foreach($this->filelist as $key => $files) {
+						trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+					}
 				}
 				$zipbackupfile = new PclZip($this->backupdir.$this->backupfile);
 				if (0==$zipbackupfile -> create($this->filelist,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
@@ -786,8 +795,11 @@ class backwpup_dojob {
 		$this->need_free_memory(1048576); //1MB free memory for zip
 
 		foreach($this->filelist as $key => $files) {
-				trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
-
+				if ($this->cfg['logfilelist'])
+					trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
+				else 
+					@set_time_limit(300); //Set time limit higer every file
+					
 				//check file exists
 				if (!is_readable($files[79001]))
 					continue;
@@ -864,35 +876,6 @@ class backwpup_dojob {
 	}
 
 
-	private function _ftp_raw_helper($ftp_conn_id,$command) { //FTP Comands helper function
-		$return=ftp_raw($ftp_conn_id,$command);
-		if (strtoupper(substr(trim($command),0,4))=="PASS") {
-			trigger_error(__('FTP Client command:','backwpup').' PASS *******',E_USER_NOTICE);
-		} else {
-			trigger_error(__('FTP Client command:','backwpup').' '.$command,E_USER_NOTICE);
-		}
-		foreach ($return as $returnline) {
-			$code=substr(trim($returnline),0,3);
-			if ($code>=100 and $code<200) {
-				trigger_error(__('FTP Server Preliminary reply:','backwpup').' '.$returnline,E_USER_NOTICE);
-				return true;
-			} elseif ($code>=200 and $code<300) {
-				trigger_error(__('FTP Server Completion reply:','backwpup').' '.$returnline,E_USER_NOTICE);
-				return true;
-			} elseif ($code>=300 and $code<400) {
-				trigger_error(__('FTP Server Intermediate reply:','backwpup').' '.$returnline,E_USER_NOTICE);
-				return true;
-			} elseif ($code>=400)  {
-				trigger_error(__('FTP Server reply:','backwpup').' '.$returnline,E_USER_ERROR);
-				return false;
-			} else {
-				trigger_error(__('FTP Server reply:','backwpup').' '.$returnline,E_USER_NOTICE);
-				return $return;
-			}
-		}
-	}
-
-
 	private function destination_ftp() {
 
 		if (empty($this->job['ftphost']) or empty($this->job['ftpuser']) or empty($this->job['ftppass']))
@@ -921,35 +904,44 @@ class backwpup_dojob {
 
 		//FTP Login
 		$loginok=false;
-		if (@ftp_login($ftp_conn_id, $this->job['ftpuser'], base64_decode($this->job['ftppass']))) {
-			trigger_error(__('FTP Server Completion reply:','backwpup').' 230 User '.$this->job['ftpuser'].' logged in.',E_USER_NOTICE);
-			$loginok=true;
+		trigger_error(__('FTP Client command:','backwpup').' USER '.$this->job['ftpuser'],E_USER_NOTICE);
+		if ($loginok=ftp_login($ftp_conn_id, $this->job['ftpuser'], base64_decode($this->job['ftppass']))) {
+			trigger_error(__('FTP Server reply:','backwpup').' User '.$this->job['ftpuser'].' logged in.',E_USER_NOTICE);
 		} else { //if PHP ftp login don't work use raw login
-			if ($this->_ftp_raw_helper($ftp_conn_id,'USER '.$this->job['ftpuser'])) {
-				if ($this->_ftp_raw_helper($ftp_conn_id,'PASS '.base64_decode($this->job['ftppass']))) {
+			$return=ftp_raw($ftp_conn_id,'USER '.$this->job['ftpuser']); 
+			trigger_error(__('FTP Server reply:','backwpup').' '.$return[0],E_USER_NOTICE);
+			if (substr(trim($return[0]),0,3)<=400) {
+				trigger_error(__('FTP Client command:','backwpup').' PASS *******',E_USER_NOTICE);
+				$return=ftp_raw($ftp_conn_id,'PASS '.base64_decode($this->job['ftppass']));
+				trigger_error(__('FTP Server reply:','backwpup').' '.$return[0],E_USER_NOTICE);
+				if (substr(trim($return[0]),0,3)<=400) 
 					$loginok=true;
-				}
 			}
 		}
 
-		//if (ftp_login($ftp_conn_id, $jobs[$jobid]['ftpuser'], $jobs[$jobid]['ftppass'])) {
 		if (!$loginok)
 			return false;
 
-		//SYSTYPE
-		$this->_ftp_raw_helper($ftp_conn_id,'SYST');
 		//PASV
 		trigger_error(__('FTP Client command:','backwpup').' PASV',E_USER_NOTICE);
 		if ($this->job['ftppasv']) {
 			if (ftp_pasv($ftp_conn_id, true))
-				trigger_error(__('Server Completion reply: 227 Entering Passive Mode','backwpup'),E_USER_NOTICE);
+				trigger_error(__('FTP Server reply:','backwpup').' '.__('Entering Passive Mode','backwpup'),E_USER_NOTICE);
 			else
 				trigger_error(__('FTP Server reply:','backwpup').' '.__('Can not Entering Passive Mode','backwpup'),E_USER_WARNING);
+		} else {
+			if (ftp_pasv($ftp_conn_id, false))
+				trigger_error(__('FTP Server reply:','backwpup').' '.__('Entering Normal Mode','backwpup'),E_USER_NOTICE);
+			else
+				trigger_error(__('FTP Server reply:','backwpup').' '.__('Can not Entering Normal Mode','backwpup'),E_USER_WARNING);		
 		}
-		//ALLO show no erros in log if do not work
-		trigger_error(__('FTP Client command:','backwpup').' ALLO',E_USER_NOTICE);
-		ftp_alloc($ftp_conn_id,filesize($this->backupdir.$this->backupfile),$result);
-		trigger_error(__('FTP Server reply:','backwpup').' '.$result,E_USER_NOTICE);
+		//SYSTYPE
+		trigger_error(__('FTP Client command:','backwpup').' SYST',E_USER_NOTICE);
+		$systype=ftp_systype($ftp_conn_id);
+		if ($systype) 
+			trigger_error(__('FTP Server reply:','backwpup').' '.$systype,E_USER_NOTICE);
+		else
+			trigger_error(__('FTP Server reply:','backwpup').' '.__('Error getting SYSTYPE','backwpup'),E_USER_ERROR);
 
 		//test ftp dir and create it f not exists
 		$ftpdirs=explode("/", untrailingslashit($this->job['ftpdir']));
@@ -1073,7 +1065,7 @@ class backwpup_dojob {
 		}
 
 		if (!class_exists('S3'))
-			include_once('libs/S3.php');
+			require_once(dirname(__FILE__).'/libs/S3.php');
 
 		$s3 = new S3($this->job['awsAccessKey'], $this->job['awsSecretKey'], $this->job['awsSSL']);
 
@@ -1125,7 +1117,7 @@ class backwpup_dojob {
 		}
 
 		if (!class_exists('CF_Authentication')) 
-			include_once('libs/rackspace/cloudfiles.php');
+			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 		
 		
 		$auth = new CF_Authentication($this->job['rscUsername'], $this->job['rscAPIKey']);
@@ -1323,7 +1315,7 @@ class backwpup_dojob {
 				$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
 			if (!empty($logdata['warnings']))
 				$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
-			wp_mail($this->job['mailaddresslog'],__('BackWPup Log File from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['lastrun']).': '.$this->job['name'] ,$mailbody,'',array($this->logdir.$this->logfile));
+			wp_mail($this->job['mailaddresslog'],__('BackWPup Log from','backwpup').' '.date_i18n('Y-m-d H:i').': '.$this->job['name'] ,$mailbody,'',array($this->logdir.$this->logfile));
 		}
 	}
 }

@@ -280,6 +280,7 @@ function backwpup_save_settings() {
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['memorylimit']=$_POST['memorylimit'];
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
+	$cfg['logfilelist']=$_POST['logfilelist']==1 ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
 	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
