@@ -193,6 +193,9 @@ if ( !defined('ABSPATH') )
 		
 		if (!isset($jobsettings['ftppasv']) or !is_bool($jobsettings['ftppasv']))
 			$jobsettings['ftppasv']=true;
+		
+		if (!isset($jobsettings['ftpssl']) or !is_bool($jobsettings['ftpssl']))
+			$jobsettings['ftpssl']=false;
 
 		if (!isset($jobsettings['awsAccessKey']) or !is_string($jobsettings['awsAccessKey']))
 			$jobsettings['awsAccessKey']='';
@@ -337,24 +340,21 @@ if ( !defined('ABSPATH') )
 				if (false !== strpos($jobvalue['ftphost'],':')) //look for port
 					list($ftphost,$ftpport)=explode(':',$jobvalue,2);
 
-				$SSL=false;
-				if (function_exists('ftp_ssl_connect')) { //make SSL FTP connection
+				if (function_exists('ftp_ssl_connect') and $jobvalue['ftpssl']) { //make SSL FTP connection
 					$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
-					if ($ftp_conn_id)
-						$SSL=true;
-				}
-				if (!$ftp_conn_id) { //make normal FTP conection if SSL not work
+				} elseif (!$jobvalue['ftpssl']) { //make normal FTP conection if SSL not work
 					$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
 				}
+				$loginok=false;
 				if ($ftp_conn_id) {
 					//FTP Login
-					$loginok=false;
 					if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], base64_decode($jobvalue['ftppass']))) {
 						$loginok=true;
 					} else { //if PHP ftp login don't work use raw login
 						ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser']);
-						ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']));
-						$loginok=true;
+						$return=ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']));
+						if (substr(trim($return[0]),0,3)<=400)
+							$loginok=true;
 					}
 				}
 				if ($loginok) {

@@ -3,98 +3,6 @@
 if ( !defined('ABSPATH') )
 	die('-1');
 
-
-//function for PHP error handling
-function backwpup_joberrorhandler($errno, $errstr, $errfile, $errline) {
-	global $backwpup_logfile;
-    
-	//genrate timestamp
-	if (!function_exists('memory_get_usage')) { // test if memory functions compiled in
-		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."\">".date_i18n('Y-m-d H:i.s').":</span> ";
-	} else  {
-		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$errline."|File: ".basename($errfile)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
-	}
-
-	switch ($errno) {
-    case E_NOTICE:
-	case E_USER_NOTICE:
-		$massage=$timestamp."<span>".$errstr."</span>";
-        break;
-    case E_WARNING:
-    case E_USER_WARNING:
-		$logheader=backwpup_read_logheader($backwpup_logfile); //read waring count from log header
-		$warnings=$logheader['warnings']+1;
-		$massage=$timestamp."<span style=\"background-color:yellow;\">".__('[WARNING]','backwpup')." ".$errstr."</span>";
-        break;
-	case E_ERROR: 
-    case E_USER_ERROR:
-		$logheader=backwpup_read_logheader($backwpup_logfile); //read error count from log header
-		$errors=$logheader['errors']+1;
-		$massage=$timestamp."<span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".$errstr."</span>";
-        break;
-	case E_DEPRECATED:
-	case E_USER_DEPRECATED:
-		$massage=$timestamp."<span>".__('[DEPRECATED]','backwpup')." ".$errstr."</span>";
-		break;
-	case E_STRICT:
-		$massage=$timestamp."<span>".__('[STRICT NOTICE]','backwpup')." ".$errstr."</span>";
-		break;
-	case E_RECOVERABLE_ERROR:
-		$massage=$timestamp."<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$errstr."</span>";
-		break;
-	default:
-		$massage=$timestamp."<span>[".$errno."] ".$errstr."</span>";
-        break;
-    }
-
-	if (!empty($massage)) {
-		//wirte log file
-		$fd=@fopen($backwpup_logfile,'a+');
-		@fputs($fd,$massage."<br />\n");
-		@fclose($fd);
-
-		//output on run now
-		if (!defined('DOING_CRON')) {
-			echo $massage."<script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
-			@flush();
-			@ob_flush();
-		}
-
-		//write new log header
-		if (isset($errors) or isset($warnings)) {
-			$fd=@fopen($backwpup_logfile,'r+');
-			while (!feof($fd)) {
-				$line=@fgets($fd);
-				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-					@fseek($fd,$filepos);
-					@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
-					break;
-				}
-				if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
-					@fseek($fd,$filepos);
-					@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
-					break;
-				}
-				$filepos=ftell($fd);
-			}
-			@fclose($fd);
-		}
-
-		if ($errno==E_ERROR or $errno==E_CORE_ERROR or $errno==E_COMPILE_ERROR) {//Die on fatal php errors.
-			$fd=@fopen($backwpup_logfile,'a+');
-			fputs($fd,"</body>\n</html>\n");
-			fclose($fd);
-			die();
-		}
-		//300 is most webserver time limit. 0= max time! Give script 5 min. more to work.
-		@set_time_limit(300); 
-		//true for no more php error hadling.
-		return true;
-	} else {
-		return false;
-	}
-}
-
 /**
 * BackWPup PHP class for WordPress
 *
@@ -109,14 +17,14 @@ class backwpup_dojob {
 	private $backupfile='';
 	private $backupfileformat='.zip';
 	private $backupdir='';
-	private $logdir='';
-	private $logfile='';
+	public  $logdir='';
+	public  $logfile='';
 	private $tempdir='';
 	private $cfg=array();
 	private $job=array();
 
 	public function __construct($jobid) {
-		global $wpdb,$backwpup_logfile;
+		global $wpdb;
 		@ini_get('safe_mode','Off'); //disable safe mode
 		@ini_set('ignore_user_abort','Off'); //Set PHP ini setting
 		ignore_user_abort(true);			//user can't abort script (close windows or so.)
@@ -135,8 +43,7 @@ class backwpup_dojob {
 			return false;		
 		//set Log file name
 		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
-		//set global for error handling
-		$backwpup_logfile=$this->logdir.$this->logfile;
+		//create log file
 		$fd=fopen($this->logdir.$this->logfile,'w+');
 		//Create log file header
 		@fputs($fd,"<html>\n<head>\n");
@@ -155,9 +62,9 @@ class backwpup_dojob {
 		@fclose($fd);	
 		//set function for PHP user defineid error handling
 		if (defined(WP_DEBUG) and WP_DEBUG)
-			set_error_handler('backwpup_joberrorhandler',E_ALL | E_STRICT);
+			set_error_handler(array($this,'joberrorhandler'),E_ALL | E_STRICT);
 		else
-			set_error_handler('backwpup_joberrorhandler',E_ALL & ~E_NOTICE);
+			set_error_handler(array($this,'joberrorhandler'),E_ALL & ~E_NOTICE);
 		//find out if job already running and abort if
 		if ($jobs[$this->jobid]['starttime']>0 and !empty($jobs[$this->jobid]['logfile'])) {
 			if ($jobs[$this->jobid]['starttime']+600<current_time('timestamp')) { //Abort old jo if work longer as 10 min. because websever has 300 sec timeout
@@ -261,6 +168,99 @@ class backwpup_dojob {
 		$this->job_end(); //call regualar job end
 	}
 
+	//function for PHP error handling
+	public function joberrorhandler() {
+		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
+		
+		//genrate timestamp
+		if (!function_exists('memory_get_usage')) { // test if memory functions compiled in
+			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."\">".date_i18n('Y-m-d H:i.s').":</span> ";
+		} else  {
+			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
+		}
+
+		switch ($args[0]) {
+		case E_NOTICE:
+		case E_USER_NOTICE:
+			$massage=$timestamp."<span>".$args[1]."</span>";
+			break;
+		case E_WARNING:
+		case E_USER_WARNING:
+			$logheader=backwpup_read_logheader($this->logdir.$this->logfile); //read waring count from log header
+			$warnings=$logheader['warnings']+1;
+			$massage=$timestamp."<span style=\"background-color:yellow;\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
+			break;
+		case E_ERROR: 
+		case E_USER_ERROR:
+			$logheader=backwpup_read_logheader($this->logdir.$this->logfile); //read error count from log header
+			$errors=$logheader['errors']+1;
+			$massage=$timestamp."<span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
+			break;
+		case E_DEPRECATED:
+		case E_USER_DEPRECATED:
+			$massage=$timestamp."<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
+			break;
+		case E_STRICT:
+			$massage=$timestamp."<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
+			break;
+		case E_RECOVERABLE_ERROR:
+			$massage=$timestamp."<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
+			break;
+		default:
+			$massage=$timestamp."<span>[".$args[0]."] ".$args[1]."</span>";
+			break;
+		}
+
+		if (!empty($massage)) {
+			//wirte log file
+			$fd=fopen($this->logdir.$this->logfile,'a+');
+			@fputs($fd,$massage."<br />\n");
+			@fclose($fd);
+
+			//output on run now
+			if (!defined('DOING_CRON')) {
+				echo $massage."<script type=\"text/javascript\">window.scrollBy(0, 15);</script><br />\n";
+				@flush();
+				@ob_flush();
+			}
+
+			//write new log header
+			if (isset($errors) or isset($warnings)) {
+				if ($fd=fopen($this->logdir.$this->logfile,'r+')) {
+					while (!feof($fd)) {
+						$line=@fgets($fd);
+						if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+							@fseek($fd,$filepos);
+							@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
+							break;
+						}
+						if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
+							@fseek($fd,$filepos);
+							@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
+							break;
+						}
+						$filepos=ftell($fd);
+					}
+					@fclose($fd);
+				}
+			}
+
+			if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
+				if ($fd=fopen($this->logdir.$this->logfile,'a+')) {
+					fputs($fd,"</body>\n</html>\n");
+					fclose($fd);
+				}
+				die();
+			}
+			//300 is most webserver time limit. 0= max time! Give script 5 min. more to work.
+			@set_time_limit(300); 
+			//true for no more php error hadling.
+			return true;
+		} else {
+			return false;
+		}
+	}	
+	
 	private function _check_folders($folder) {
 		if (!is_dir($folder)) { //create dir if not exists
 			if (!mkdir($folder,0777,true)) {
@@ -886,20 +886,27 @@ class backwpup_dojob {
 		if (false !== strpos($this->job['ftphost'],':')) //look for port
 			list($ftphost,$ftpport)=explode(':',$this->job['ftphost'],2);
 
-		if (function_exists('ftp_ssl_connect')) { //make SSL FTP connection
-			$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
-			if ($ftp_conn_id) 
-				trigger_error(__('Connected by SSL to FTP server:','backwpup').' '.$this->job['ftphost'],E_USER_NOTICE);
-		}
-		if (!$ftp_conn_id) { //make normal FTP conection if SSL not work
+		if ($this->job['ftpssl']) { //make SSL FTP connection
+			if (function_exists('ftp_ssl_connect')) {
+				$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
+				if ($ftp_conn_id) 
+					trigger_error(__('Connected by SSL-FTP to Server:','backwpup').' '.$this->job['ftphost'],E_USER_NOTICE);
+				else {
+					trigger_error(__('Can not connect by SSL-FTP to Server:','backwpup').' '.$this->job['ftphost'],E_USER_ERROR);
+					return false;
+				}
+			} else {
+				trigger_error(__('PHP Function to connect with SSL-FTP to Server not exists!','backwpup'),E_USER_ERROR);
+				return false;			
+			}
+		} else { //make normal FTP conection if SSL not work
 			$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
 			if ($ftp_conn_id) 
-				trigger_error(__('Connected insecure to FTP server:','backwpup').' '.$this->job['ftphost'],E_USER_NOTICE);
-		}
-
-		if (!$ftp_conn_id) {
-			trigger_error(__('Can not connect to FTP server:','backwpup').' '.$this->job['ftphost'],E_USER_ERROR);
-			return false;
+				trigger_error(__('Connected to FTP Server:','backwpup').' '.$this->job['ftphost'],E_USER_NOTICE);
+			else {
+				trigger_error(__('Can not connect to FTP Server:','backwpup').' '.$this->job['ftphost'],E_USER_ERROR);
+				return false;
+			}
 		}
 
 		//FTP Login

@@ -128,6 +128,7 @@ if ( !defined('ABSPATH') )
 				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_log_operations($_REQUEST['action']);
 			}
+			require_once(dirname(__FILE__).'/list-tables.php');
 			$table = new BackWPup_Logs_Table;
 			$table->check_permissions();
 			$table->prepare_items();
@@ -151,6 +152,7 @@ if ( !defined('ABSPATH') )
 				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_backups_operations($_REQUEST['action']);
 			}
+			require_once(dirname(__FILE__).'/list-tables.php');
 			$table = new BackWPup_Backups_Table;
 			$table->check_permissions();
 			$table->prepare_items();
@@ -164,6 +166,7 @@ if ( !defined('ABSPATH') )
 				require_once(dirname(__FILE__).'/options-save.php');
 				backwpup_job_operations($_REQUEST['action']);
 			}
+			require_once(dirname(__FILE__).'/list-tables.php');
 			$table = new BackWPup_Jobs_Table;
 			$table->check_permissions();
 			$table->prepare_items();
@@ -732,8 +735,6 @@ if ( !defined('ABSPATH') )
 			return;
 		//iclude php5 functions
 		require_once(dirname(__FILE__).'/functions5.php');
-		//load tables Classes
-		require_once(dirname(__FILE__).'/list-tables.php');
 		//Disabele WP_Corn
 		$cfg=get_option('backwpup');
 		if ($cfg['disablewpcron'])

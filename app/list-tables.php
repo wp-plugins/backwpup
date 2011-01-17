@@ -79,7 +79,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	
 	function single_row( $jobid, $jobvalue, $style = '' ) {
 		global $mode;
-		list( $columns, $hidden ) = $this->get_column_headers();
+		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id='jodid-$jobid'$style>";
 		foreach ( $columns as $column_name => $column_display_name ) {
 			$class = "class=\"$column_name column-$column_name\"";
@@ -206,7 +206,14 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
-			rsort($logfiles);
+			if ( !isset( $_REQUEST['orderby'] ) or $_REQUEST['orderby']=='log') {
+				if ( $_REQUEST['order']=='asc')
+					sort($logfiles);
+				else
+					rsort($logfiles);
+			}
+			if (!isset( $_REQUEST['orderby'] ) and !isset( $_REQUEST['order'] ))
+				rsort($logfiles);
 		}
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );
@@ -223,6 +230,12 @@ class BackWPup_Logs_Table extends WP_List_Table {
 			'per_page' => $per_page
 		) );
 
+	}
+
+	function get_sortable_columns() {
+		return array(
+			'log'    => 'log',
+		);
 	}
 	
 	function no_items() {
@@ -248,10 +261,6 @@ class BackWPup_Logs_Table extends WP_List_Table {
 		return $posts_columns;
 	}
 
-	function get_sortable_columns() {
-		return array();
-	}	
-
 	function get_hidden_columns() {
 		return (array) get_user_option( 'backwpup_logs_columnshidden' );
 	}
@@ -267,7 +276,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 	}
 	
 	function single_row( $logfile, $logdata, $style = '' ) {
-		list( $columns, $hidden ) = $this->get_column_headers();
+		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id='".basename($logfile)."'$style>";
 		foreach ( $columns as $column_name => $column_display_name ) {
 			$class = "class=\"$column_name column-$column_name\"";
@@ -429,7 +438,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	}
 	
 	function single_row( $backup, $jobvalue, $style = '' ) {
-		list( $columns, $hidden ) = $this->get_column_headers();
+		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id='$logfile'$style>";
 		foreach ( $columns as $column_name => $column_display_name ) {
 			$class = "class=\"$column_name column-$column_name\"";

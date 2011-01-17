@@ -1,10 +1,10 @@
 === BackWPup ===
-Contributors: danielhuesken
+Contributors: danielhuesken, zlli
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.3.6
+Stable tag: 1.3.7
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -85,6 +85,10 @@ Please deactivate Pasive Mode and try it again.
 1. Job Page
 
 == Changelog ==
+= 1.3.7 =
+* make SSL-FTP as option
+
+
 = 1.3.6 =
 * long file list not longer displayed in logs.
 * Added option to see detailed file list

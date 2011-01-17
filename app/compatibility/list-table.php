@@ -69,7 +69,6 @@ class WP_List_Table {
 	 * @access protected
 	 */
 	function WP_List_Table( $args ) {
-
 		$args = wp_parse_args( $args, array(
 			'screen' => '',
 			'plural' => '',
@@ -82,13 +81,15 @@ class WP_List_Table {
 		if ( is_string( $this->_screen ) )
 			$this->_screen = convert_to_screen( $this->_screen );
 
+		add_filter( 'manage_' . $this->_screen->id . '_columns', array( $this, 'get_columns' ) );
+
 		if ( !$args['plural'] )
 			$args['plural'] = $this->_screen->base;
 
 		$this->_args = $args;
 
 		if ( $args['ajax'] ) {
-			wp_enqueue_script( 'admin-table' );
+			wp_enqueue_script( 'list-table' );
 			add_action( 'admin_footer', array( $this, '_js_vars' ) );
 		}
 	}
@@ -174,6 +175,37 @@ class WP_List_Table {
 	}
 
 	/**
+	 * Get an associative array ( id => link ) with the list
+	 * of views available on this table.
+	 *
+	 * @since 3.1.0
+	 * @access protected
+	 *
+	 * @return array
+	 */
+	function get_views() {
+		return array();
+	}
+
+	/**
+	 * Display the bulk actions dropdown.
+	 *
+	 * @since 3.1.0
+	 * @access public
+	 */
+	function views() {
+		$views = $this->get_views();
+		$views = apply_filters( 'views_' . $this->_screen->base, $views );
+
+		if ( empty( $views ) )
+			return;
+
+		echo "<ul class='subsubsub'>\n";
+		echo implode( " |</li>\n", $views ) . "</li>\n";
+		echo "</ul>";
+	}
+
+	/**
 	 * Get an associative array ( option_name => option_title ) with the list
 	 * of bulk actions available on this table.
 	 *
@@ -213,6 +245,51 @@ class WP_List_Table {
 		echo "</select>\n";
 
 		echo "<input type='submit' value='" . esc_attr__( 'Apply' ) . "' name='doaction$two' id='doaction$two' class='button-secondary action' />\n";
+	}
+
+	/**
+	 * Get the current action selected from the bulk actions dropdown.
+	 *
+	 * @since 3.1.0
+	 * @access public
+	 *
+	 * @return string|bool The action name or False if no action was selected
+	 */
+	function current_action() {
+		if ( isset( $_REQUEST['action'] ) && -1 != $_REQUEST['action'] )
+			return $_REQUEST['action'];
+
+		if ( isset( $_REQUEST['action2'] ) && -1 != $_REQUEST['action2'] )
+			return $_REQUEST['action2'];
+		
+		return false;
+	}
+
+	/**
+	 * Generate row actions div
+	 *
+	 * @since 3.1.0
+	 * @access protected
+	 *
+	 * @param array $actions The list of actions
+	 * @return string
+	 */
+	function row_actions( $actions ) {
+		$action_count = count( $actions );
+		$i = 0;
+
+		if ( !$action_count )
+			return '';
+
+		$out = '<div class="row-actions">';
+		foreach ( $actions as $action => $link ) {
+			++$i;
+			( $i == $action_count ) ? $sep = '' : $sep = ' | ';
+			$out .= "<span class='$action'>$link$sep</span>";
+		}
+		$out .= '</div>';
+
+		return $out;
 	}
 
 	/**
@@ -326,6 +403,22 @@ class WP_List_Table {
 	}
 
 	/**
+	 * Get number of items to display on a single page
+	 *
+	 * @since 3.1.0
+	 * @access protected
+	 *
+	 * @return int
+	 */	
+	function get_items_per_page( $option, $default = 20 ) {
+		$per_page = (int) get_user_option( $option );
+		if ( empty( $per_page ) || $per_page < 1 )
+			$per_page = $default;
+
+		return (int) apply_filters( $option, $per_page );
+	}
+
+	/**
 	 * Display the pagination.
 	 *
 	 * @since 3.1.0
@@ -422,18 +515,6 @@ class WP_List_Table {
 	}
 
 	/**
-	 * Get a list of hidden columns.
-	 *
-	 * @since 3.1.0
-	 * @access private
-	 *
-	 * @return array
-	 */
-	function get_hidden_columns() {
-		return (array) get_user_option( 'manage' . $this->_screen->id. 'columnshidden' );
-	}
-
-	/**
 	 * Get a list of all, hidden and sortable columns, with filter applied
 	 *
 	 * @since 3.1.0
@@ -441,11 +522,11 @@ class WP_List_Table {
 	 *
 	 * @return array
 	 */
-	function get_column_headers() {
+	function get_column_info() {
 		if ( !isset( $this->_column_headers ) ) {
-			$columns = apply_filters( 'manage_' . $this->_screen->id . '_columns', $this->get_columns() );
+			$columns = get_column_headers( $this->_screen );
+			$hidden = get_hidden_columns( $this->_screen );
 			$sortable = apply_filters( 'manage_' . $this->_screen->id . '_sortable_columns', $this->get_sortable_columns() );
-			$hidden = $this->get_hidden_columns();
 
 			$this->_column_headers = array( $columns, $hidden, $sortable );
 		}
@@ -464,7 +545,7 @@ class WP_List_Table {
 	function print_column_headers( $with_id = true ) {
 		$screen = $this->_screen;
 
-		list( $columns, $hidden, $sortable ) = $this->get_column_headers();
+		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 
@@ -624,12 +705,69 @@ class WP_List_Table {
 	 * @access protected
 	 */
 	function display_rows() {
-		die( 'function WP_List_Table::display_rows() must be over-ridden in a sub-class.' );
+		foreach ( $this->items as $item )
+			$this->single_row( $item );
 	}
 
 	/**
-	 * Handle an incoming ajax request ( called from admin-ajax.php )
+	 * Generates content for a single row of the table
 	 *
+	 * @since 3.1.0
+	 * @access protected
+	 *
+	 * @param $object $item The current item
+	 */
+	function single_row( $item ) {
+		static $row_class = '';
+		$row_class = ( $row_class == '' ? ' class="alternate"' : '' );
+
+		echo '<tr' . $row_class . '>';
+		echo $this->single_row_columns( $item );
+		echo '</tr>';
+	}
+
+	/**
+	 * Generates the columns for a single row of the table
+	 *
+	 * @since 3.1.0
+	 * @access protected
+	 *
+	 * @param $object $item The current item
+	 */
+	function single_row_columns( $item ) {
+		list( $columns, $hidden ) = $this->get_column_info();
+
+		foreach ( $columns as $column_name => $column_display_name ) {
+			$class = "class=\"$column_name column-$column_name\"";
+
+			$style = '';
+			if ( in_array( $column_name, $hidden ) )
+				$style = ' style="display:none;"';
+
+			$attributes = "$class$style";
+
+			if ( 'cb' == $column_name ) {
+				echo '<th scope="row" class="check-column">';
+				echo $this->column_cb( $item );
+				echo '</th>';
+			}
+			elseif ( method_exists( $this, 'column_' . $column_name ) ) {
+				echo "<td $attributes>";
+				echo call_user_func( array( $this, 'column_' . $column_name ), $item );
+				echo "</td>";
+			}
+			else {
+				echo "<td $attributes>";
+				echo $this->column_default( $item, $column_name );
+				echo "</td>";
+			}
+		}
+	}
+
+	/**
+	 * Handle an incoming ajax request (called from admin-ajax.php)
+	 *
+	 * @since 3.1.0
 	 * @access public
 	 */
 	function ajax_response() {
