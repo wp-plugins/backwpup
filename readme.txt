@@ -22,6 +22,7 @@ Backup and more your Blog.
 * Store backup to FTP Server
 * Store backup to Amazon S3
 * Store backup to RackSpaceCloud
+* Store backup to DropBox
 * Send Log/Backup by eMail
 
 
@@ -85,9 +86,9 @@ Please deactivate Pasive Mode and try it again.
 1. Job Page
 
 == Changelog ==
-= 1.3.7 =
+= 1.4.0 =
 * make SSL-FTP as option
-
+* added Dropbox support (zlli)
 
 = 1.3.6 =
 * long file list not longer displayed in logs.

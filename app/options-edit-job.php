@@ -393,7 +393,19 @@ $todo=explode('+',$jobvalue['type']);
 					<?PHP } ?>
 				</div>
 			</div>
-
+			
+			<div id="toftp" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span></h3>
+				<div class="inside">
+					<b><?PHP _e('Email:','backwpup'); ?></b><br />
+					<input name="dropemail" type="text" value="<?PHP echo $jobvalue['dropemail'];?>" class="large-text" /><br />
+					<b><?PHP _e('Password:','backwpup'); ?></b><br />
+					<input name="dropepass" type="password" value="<?PHP echo $jobvalue['dropepass'];?>" class="password large-text" /><br />
+					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
+					<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
+				</div>
+			</div>
+			
 			<div id="tomail" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to E-Mail','backwpup'); ?></span></h3>
 				<div class="inside">

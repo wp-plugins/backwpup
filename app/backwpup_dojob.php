@@ -149,6 +149,7 @@ class backwpup_dojob {
 		if (is_file($this->backupdir.$this->backupfile)) {  // Put backup file to destination
 			$this->destination_mail();
 			$this->destination_ftp();
+			$this->destination_dropbox();
 			$this->destination_s3();
 			$this->destination_rsc();
 			$this->destination_dir();
@@ -1225,6 +1226,24 @@ class backwpup_dojob {
 					trigger_error($numdeltefiles.' '.__('old backup files deleted!!!','backwpup'),E_USER_NOTICE);
 			}
 		}
+	}
+	
+	private function destination_dropbox(){
+		if (empty($this->job['dropemail']) or empty($this->job['dropepass']))
+		return;
+		
+		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
+			trigger_error(__('Can not load curl extension is needed for Dropbox!','backwpup'),E_USER_ERROR);
+			return;
+		}
+		
+		if (!class_exists('DropboxUploader'))
+		require_once (dirname(__FILE__).'/libs/DropboxUploader.php');
+		$dropemail = $this->job['dropemail'];
+		$droppass = $this->job['dropepass'];
+		$dropdir = $this->job['dropedir'];
+		$uploader = new DropboxUploader($dropemail, $droppass);
+		$uploader->upload($this->backupdir.$this->backupfile,$dropdir);	
 	}
 	
 	private function job_end() {
