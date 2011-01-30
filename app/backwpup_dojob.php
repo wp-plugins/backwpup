@@ -1003,12 +1003,12 @@ class backwpup_dojob {
 
 		trigger_error(__('Prepare Sending backup file with mail...','backwpup'),E_USER_NOTICE);
 
-		//Crate PHP Mailer
-		include_once(ABSPATH.WPINC.'/class-phpmailer.php');
-		include_once(ABSPATH.WPINC.'/class-smtp.php');
+		//Create PHP Mailer
+		require_once(ABSPATH.WPINC.'/class-phpmailer.php');
 		$phpmailer = new PHPMailer();
 		//Setting den methode
 		if ($this->cfg['mailmethod']=="SMTP") {
+			require_once(ABSPATH.WPINC.'/class-smtp.php');
 			$smtpport=25;
 			$smtphost=$this->cfg['mailhost'];
 			if (false !== strpos($this->cfg['mailhost'],':')) //look for port
@@ -1238,12 +1238,13 @@ class backwpup_dojob {
 		}
 		
 		if (!class_exists('DropboxUploader'))
-		require_once (dirname(__FILE__).'/libs/DropboxUploader.php');
-		$dropemail = $this->job['dropemail'];
-		$droppass = $this->job['dropepass'];
-		$dropdir = $this->job['dropedir'];
-		$uploader = new DropboxUploader($dropemail, $droppass);
-		$uploader->upload($this->backupdir.$this->backupfile,$dropdir);	
+		try {
+			require_once (dirname(__FILE__).'/libs/DropboxUploader.php');
+			$uploader = new DropboxUploader($this->job['dropemail'], base64_decode($this->job['dropepass']));
+			$uploader->upload($this->backupdir.$this->backupfile,$this->job['dropedir']);
+		} catch (Exception $e) {
+			trigger_error(__('DropBox:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+		} 
 	}
 	
 	private function job_end() {
@@ -1335,13 +1336,46 @@ class backwpup_dojob {
 		if (!$this->job['mailerroronly'] and !empty($this->job['mailaddresslog']))
 			$sendmail=true;
 		if ($sendmail) {
+			//Create PHP Mailer
+			require_once(ABSPATH.WPINC.'/class-phpmailer.php');
+			$phpmailer = new PHPMailer();
+			//Setting den methode
+			if ($this->cfg['mailmethod']=="SMTP") {
+				require_once(ABSPATH.WPINC.'/class-smtp.php');
+				$smtpport=25;
+				$smtphost=$this->cfg['mailhost'];
+				if (false !== strpos($this->cfg['mailhost'],':')) //look for port
+					list($smtphost,$smtpport)=explode(':',$this->cfg['mailhost'],2);
+				$phpmailer->Host=$smtphost;
+				$phpmailer->Port=$smtpport;
+				$phpmailer->SMTPSecure=$this->cfg['mailsecure'];
+				$phpmailer->Username=$this->cfg['mailuser'];
+				$phpmailer->Password=base64_decode($this->cfg['mailpass']);
+				if (!empty($this->cfg['mailuser']) and !empty($this->cfg['mailpass']))
+					$phpmailer->SMTPAuth=true;
+				$phpmailer->IsSMTP();
+			} elseif ($this->cfg['mailmethod']=="Sendmail") {
+				$phpmailer->Sendmail=$this->cfg['mailsendmail'];
+				$phpmailer->IsSendmail();
+			} else {
+				$phpmailer->IsMail();
+			}
+			
 			$mailbody=__("Jobname:","backwpup")." ".$logdata['name']."\n";
 			$mailbody.=__("Jobtype:","backwpup")." ".$logdata['type']."\n";
 			if (!empty($logdata['errors']))
 				$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
 			if (!empty($logdata['warnings']))
 				$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
-			wp_mail($this->job['mailaddresslog'],__('BackWPup Log from','backwpup').' '.date_i18n('Y-m-d H:i').': '.$this->job['name'] ,$mailbody,'',array($this->logdir.$this->logfile));
+			
+			$phpmailer->From     = $this->cfg['mailsndemail'];
+			$phpmailer->FromName = $this->cfg['mailsndname'];
+			$phpmailer->AddAddress($this->job['mailaddresslog']);
+			$phpmailer->Subject  =  __('BackWPup Logfile','backwpup').' '.$this->logfile.': '.$this->job['name'];
+			$phpmailer->IsHTML(false);
+			$phpmailer->Body  =  $mailbody;
+			$phpmailer->AddAttachment($this->logdir.$this->logfile);
+			$phpmailer->Send();
 		}
 	}
 }

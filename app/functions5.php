@@ -239,6 +239,19 @@ if ( !defined('ABSPATH') )
 		if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 			$jobsettings['rscmaxbackups']=0;
 
+			
+		if (!isset($jobsettings['dropemail']) or !is_string($jobsettings['dropemail']))
+			$jobsettings['dropemail']='';
+
+		if (!isset($jobsettings['dropepass']) or !is_string($jobsettings['dropepass']))
+			$jobsettings['dropepass']='';
+
+		if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
+			$jobsettings['dropedir']='';
+		$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['dropedir']))));
+		if (substr($jobsettings['dropedir'],0,1)=='/')
+			$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);			
+			
 		if (!is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
 			$jobsettings['mailaddress']='';
 

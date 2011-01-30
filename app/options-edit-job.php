@@ -400,7 +400,7 @@ $todo=explode('+',$jobvalue['type']);
 					<b><?PHP _e('Email:','backwpup'); ?></b><br />
 					<input name="dropemail" type="text" value="<?PHP echo $jobvalue['dropemail'];?>" class="large-text" /><br />
 					<b><?PHP _e('Password:','backwpup'); ?></b><br />
-					<input name="dropepass" type="password" value="<?PHP echo $jobvalue['dropepass'];?>" class="password large-text" /><br />
+					<input name="dropepass" type="password" value="<?PHP echo base64_decode($jobvalue['dropepass']);?>" class="password large-text" /><br />
 					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
 					<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
 				</div>

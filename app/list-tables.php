@@ -1,10 +1,10 @@
 <?PHP
 //backwarts copatibility lower than wp 3.1
 if (!class_exists('WP_List_Table')) {
-	if (is_file(trailingslashit(ABSPATH).'wp-admin/includes/list-table.php'))
-		include_once( trailingslashit(ABSPATH).'wp-admin/includes/list-table.php' );
+	if (is_file(trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php'))
+		include_once( trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php' );
 	else
-		include_once('compatibility/list-table.php');
+		include_once('compatibility/class-wp-list-table.php');
 }
 
 class BackWPup_Jobs_Table extends WP_List_Table {

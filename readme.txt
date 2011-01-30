@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.3.7
+Stable tag: 1.4.1
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -86,6 +86,10 @@ Please deactivate Pasive Mode and try it again.
 1. Job Page
 
 == Changelog ==
+= 1.4.1 =
+* Dropbox changes
+* fixed problem on send log with mail
+
 = 1.4.0 =
 * make SSL-FTP as option
 * added Dropbox support (zlli)
