@@ -89,6 +89,7 @@ Please deactivate Pasive Mode and try it again.
 = 1.4.1 =
 * Dropbox changes
 * fixed problem on send log with mail
+* Security fix (thanks Massa Danilo)
 
 = 1.4.0 =
 * make SSL-FTP as option
