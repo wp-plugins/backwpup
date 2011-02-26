@@ -22,6 +22,7 @@ wp_nonce_field('edit-job');
 $jobs=get_option('backwpup_jobs');
 $jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
 $todo=explode('+',$jobvalue['type']);
+$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
 
 <div id="poststuff" class="metabox-holder has-right-sidebar">
@@ -331,7 +332,8 @@ $todo=explode('+',$jobvalue['type']);
 					<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
 					</div>
 			</div>
-
+			
+			<?PHP if (in_array('FTP',$dests)) { ?>
 			<div id="toftp" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to FTP Server','backwpup'); ?></span></h3>
 				<div class="inside">
@@ -349,7 +351,9 @@ $todo=explode('+',$jobvalue['type']);
 					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftppasv'],true); ?> name="ftppasv" /> <?PHP _e('Use FTP Passiv mode.','backwpup'); ?><br />			
 				</div>
 			</div>
+			<?PHP } ?>
 
+			<?PHP if (in_array('S3',$dests)) { ?>
 			<div id="toamazon" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Amazon S3','backwpup'); ?></span></h3>
 				<div class="inside">
@@ -359,20 +363,21 @@ $todo=explode('+',$jobvalue['type']);
 						<b><?PHP _e('Access Key ID:','backwpup'); ?></b><br />
 						<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
-						<input id="awsSecretKey" name="awsSecretKey" type="text" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
+						<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 						<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
 						<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US Classic', 'backwpup'); ?><option value="us-west-1"><?php _e('US-West', 'backwpup'); ?></option><option value="EU"><?php _e('Europe', 'backwpup'); ?><option value="ap-southeast-1"><?php _e('Asia Pacific', 'backwpup'); ?></option></select><br />
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option></select><br />
 						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
 						<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
 						<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-						<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsSSL'],true); ?> name="awsSSL" /> <?PHP _e('Use SSL connection.','backwpup'); ?><br />
 						<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
 					<?PHP } ?>
 				</div>
 			</div>
-
+			<?PHP } ?>
+			
+			<?PHP if (in_array('RSC',$dests)) { ?>
 			<div id="torsc" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Rackspace Cloud','backwpup'); ?></span></h3>
 				<div class="inside">
@@ -393,7 +398,9 @@ $todo=explode('+',$jobvalue['type']);
 					<?PHP } ?>
 				</div>
 			</div>
+			<?PHP } ?>
 			
+			<?PHP if (in_array('DROPBOX',$dests)) { ?>
 			<div id="toftp" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span></h3>
 				<div class="inside">
@@ -405,6 +412,7 @@ $todo=explode('+',$jobvalue['type']);
 					<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
 				</div>
 			</div>
+			<?PHP } ?>
 			
 			<div id="tomail" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to E-Mail','backwpup'); ?></span></h3>

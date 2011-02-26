@@ -29,36 +29,72 @@ function backwpup_job_operations($action) {
 		$jobs[$newjobid]['activated']=false;
 		update_option('backwpup_jobs',$jobs);
 		break;
+	case 'export': //Copy Job
+		$jobs=get_option('backwpup_jobs');
+		if (is_array($_REQUEST['jobs'])) {
+			check_admin_referer('bulk-jobs');
+			foreach ($_REQUEST['jobs'] as $jobid) {
+				$jobsexport[$jobid]=$jobs[$jobid];
+			}
+		}
+		$export=serialize($jobsexport);
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+		header("Content-Type: text/plain");
+		header("Content-Type: application/force-download");
+		header("Content-Type: application/octet-stream");
+		header("Content-Type: application/download");
+		header("Content-Disposition: attachment; filename=".sanitize_key(get_bloginfo('name'))."_BackWPupExport.txt;");
+		header("Content-Transfer-Encoding: 8bit");
+		header("Content-Length: ".strlen($export));
+		echo $export;
+		die();		
+		break;
 	case 'clear': //Abort Job
 		$jobid = (int) $_GET['jobid'];
 		check_admin_referer('clear-job_'.$jobid);
 		$jobs=get_option('backwpup_jobs');
+		$cfg=get_option('backwpup'); //Load Settings
+
 		if (is_file($jobs[$jobid]['logfile'])) {
-			$fd=fopen($jobs[$jobid]['logfile'],"a+");
-			fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Cleand by User!!!','backwpup')."</span><br />\n");
-			fputs($fd,"</body>\n</html>\n");
-			fclose($fd);
 			$logheader=backwpup_read_logheader($jobs[$jobid]['logfile']); //read waring count from log header
-			$logheader['errors']++;
+			$fd=fopen($jobs[$jobid]['logfile'],"a+");
+			fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Cleand by User!!!','backwpup')."</span><br />\n");
+			fwrite($fd,"</body>\n</html>\n");
+			fclose($fd);
+			$logheader['errors']=$logheader['errors']+1;
 			//write new log header
-			$fd=@fopen($jobs[$jobid]['logfile'],"r+");
+			$fd=fopen($jobs[$jobid]['logfile'],"r+");
 			while (!feof($fd)) {
-				$line=@fgets($fd);
-				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-					@fseek($fd,$filepos);
-					@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
+				$line=fgets($fd);
+				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+					fseek($fd,$filepos);
+					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
 					break;
 				}
 				$filepos=ftell($fd);
 			}
-			@fclose($fd);
+			fclose($fd);
 		}
+		if ($cfg['gzlogs'] and function_exists('gzopen') and file_exists($jobs[$jobid]['logfile'])) {
+			$fd=fopen($jobs[$jobid]['logfile'],'r');
+			$zd=gzopen($jobs[$jobid]['logfile'].'.gz','w9');
+			while (!feof($fd)) {
+				gzwrite($zd,fread($fd,4096));
+			}
+			gzclose($zd);
+			fclose($fd);
+			unlink($jobs[$jobid]['logfile']);
+			$jobs[$jobid]['logfile']=$jobs[$jobid]['logfile'].'.gz';
+		}	
 		$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
 		$jobs[$jobid]['stoptime']=current_time('timestamp');
 		$jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
 		$jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
 		$jobs[$jobid]['starttime']='';
 		$jobs[$jobid]['logfile']='';
+		$jobs[$jobid]['lastlogfile']=$jobs[$jobid]['logfile'];
 		update_option('backwpup_jobs',$jobs);
 		break;
 	}
@@ -120,8 +156,8 @@ function backwpup_backups_operations($action) {
 
 		$jobs=get_option('backwpup_jobs'); //Load jobs
 		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
-				if (!class_exists('S3'))
-					require_once(plugin_dir_path(__FILE__).'libs/S3.php');
+				if (!class_exists('CFRuntime'))
+					require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 				if (!class_exists('CF_Authentication'))
 					require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
 		}
@@ -133,10 +169,10 @@ function backwpup_backups_operations($action) {
 				if (is_file($backups['file']))
 					unlink($backups['file']);
 			} elseif ($backups['type']=='S3') {
-				if (class_exists('S3')) {
+				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
-						$s3 = new S3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey'], $jobvalue['awsSSL']);
-						$s3->deleteObject($jobvalue['awsBucket'],$backups['file']);
+						$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+						$s3->delete_object($jobvalue['awsBucket'],$backups['file']);
 					}
 				}
 			} elseif ($backups['type']=='RSC') {
@@ -187,7 +223,7 @@ function backwpup_backups_operations($action) {
 		update_option('backwpup_backups_chache',backwpup_get_backup_files());
 		break;
 	case 'download': //Download Backup
-		check_admin_referer('download-backup_'.basename($_GET['file']));
+		check_admin_referer('download-backup');
 		if (is_file($_GET['file'])) {
 			header("Pragma: public");
 			header("Expires: 0");
@@ -206,30 +242,32 @@ function backwpup_backups_operations($action) {
 		}
 		break;
 	case 'downloads3': //Download S3 Backup
-		//check_admin_referer('download-backup_'.basename($_GET['file']));
-		require_once(plugin_dir_path(__FILE__).'libs/S3.php');
+		check_admin_referer('download-backup');
+		require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
-		$s3 = new S3($jobs[$jobid]['awsAccessKey'], $jobs[$jobid]['awsSecretKey'],$jobs[$jobid]['awsSSL']);
-		if ($contents = $s3->getObjectInfo($jobs[$jobid]['awsBucket'],$_GET['file'])) {
+		$s3 = new AmazonS3($jobs[$jobid]['awsAccessKey'], $jobs[$jobid]['awsSecretKey']);
+		$s3file=$s3->get_object($jobs[$jobid]['awsBucket'], $_GET['file']);
+		if ($s3file->status==200) {
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			header("Content-Type: ".$s3file->header->_info->content_type);
 			header("Content-Type: application/force-download");
 			header("Content-Type: application/octet-stream");
 			header("Content-Type: application/download");
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
-			//header("Content-Length: ".$contents['size']);
-			var_dump($s3->getObject($jobs[$jobid]['awsBucket'], $_GET['file']));
+			header("Content-Length: ".$s3file->header->_info->size_download);
+			echo $s3file->body;
 			die();
 		} else {
-			header('HTTP/1.0 404 Not Found');
-			die(__('File does not exist.', 'backwpup'));
+			header('HTTP/1.0 '.$s3file->status.' Not Found');
+			die();
 		}
 		break;
 	case 'downloadrsc': //Download RSC Backup
-		//check_admin_referer('download-backup_'.basename($_GET['file']));
+		check_admin_referer('download-backup');
 		require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
@@ -277,6 +315,7 @@ function backwpup_save_settings() {
 	$cfg['disablewpcron']=$_POST['disablewpcron']==1 ? true : false;
 	$cfg['logfilelist']=$_POST['logfilelist']==1 ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
+	$cfg['gzlogs']=$_POST['gzlogs']==1 ? true : false;
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
 	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
 	//set def. folders
@@ -382,7 +421,6 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['dropedir']=$_POST['dropedir'];
 	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
 	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
-	$jobs[$jobid]['awsSSL']= $_POST['awsSSL']==1 ? true : false;
 	$jobs[$jobid]['awsrrs']= $_POST['awsrrs']==1 ? true : false;
 	$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
 	$jobs[$jobid]['awsdir']=stripslashes($_POST['awsdir']);
@@ -402,10 +440,10 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid],$jobid); //check vars and set def.
 
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
-		if (!class_exists('S3'))
-			require_once('libs/S3.php');
-		$s3 = new S3($_POST['awsAccessKey'], $_POST['awsSecretKey'], false);
-		@$s3->putBucket($_POST['newawsBucket'], S3::ACL_PRIVATE, $_POST['awsRegion']);
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+		$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
+		$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
 		$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
 	}
 

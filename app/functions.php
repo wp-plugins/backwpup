@@ -215,6 +215,7 @@ if ( !defined('ABSPATH') )
 	    if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 		if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 		if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
+		if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 		if (empty($cfg['dirtemp'])) {
 			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 			$cfg['dirtemp']=backwpup_get_upload_dir();
@@ -335,9 +336,15 @@ if ( !defined('ABSPATH') )
 		if (!is_readable($logfile))
 			return false;
 		//Read file
-		$fp = @fopen( $logfile, 'r' );
-		$file_data = @fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
-		@fclose( $fp );
+		if (strtolower(substr($logfile,-3))==".gz") {
+			$fp = gzopen( $logfile, 'r' );
+			$file_data = gzread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
+			gzclose( $fp );
+		} else {
+			$fp = fopen( $logfile, 'r' );
+			$file_data = fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
+			fclose( $fp );
+		}
 
 		//get data form file
 		foreach ($headers as $keyword => $field) {
@@ -364,7 +371,7 @@ if ( !defined('ABSPATH') )
 		$logfiles=array();
 		if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
-				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5))
+				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
@@ -699,13 +706,13 @@ if ( !defined('ABSPATH') )
 			$checks=false;
 		}
 		if (!is_dir($cfg['dirlogs'])) { // check logs folder
-			$message.=__('- Logs Folder not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+			$message.=__('- Logs Folder not exists (Try too create it on first Job run):','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 		}
 		if (!is_writable($cfg['dirlogs'])) { // check logs folder
 			$message.=__('- Logs Folder not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 		}
 		if (!is_dir($cfg['dirtemp'])) { // check Temp folder
-			$message.=__('- Temp Folder not exists:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
+			$message.=__('- Temp Folder not exists (Try too create it on first Job run):','backwpup') . ' '.$cfg['dirtemp'].'<br />';
 		}
 		if (!is_writable($cfg['dirtemp'])) { // check Temp folder
 			$message.=__('- Temp Folder not writeable:','backwpup') . ' '.$cfg['dirtemp'].'<br />';

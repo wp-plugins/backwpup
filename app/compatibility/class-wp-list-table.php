@@ -198,7 +198,7 @@ class WP_List_Table {
 
 		if ( ! empty( $_REQUEST['orderby'] ) )
 			echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
-		if ( ! empty( $_REQUEST['order'] ) ) 
+		if ( ! empty( $_REQUEST['order'] ) )
 			echo '<input type="hidden" name="order" value="' . esc_attr( $_REQUEST['order'] ) . '" />';
 ?>
 <p class="search-box">
@@ -420,13 +420,7 @@ class WP_List_Table {
 		if ( $pending_comments )
 			echo '<strong>';
 
-		$link = "<a href='" . add_query_arg( 'p', $post_id, admin_url('edit-comments.php') ) . "' title='$pending_phrase' class='post-com-count'><span class='comment-count'>%s</span></a>";
-
-		comments_number(
-			sprintf( $link, /* translators: comment count link */ _x( '0', 'comment count' ) ),
-			sprintf( $link, /* translators: comment count link */ _x( '1', 'comment count' ) ),
-			sprintf( $link, /* translators: comment count link: % will be substituted by comment count */ _x( '%', 'comment count' ) )
-		);
+		echo "<a href='" . esc_url( add_query_arg( 'p', $post_id, admin_url( 'edit-comments.php' ) ) ) . "' title='" . esc_attr( $pending_phrase ) . "' class='post-com-count'><span class='comment-count'>" . number_format_i18n( get_comments_number() ) . "</span></a>";
 
 		if ( $pending_comments )
 			echo '</strong>';
@@ -482,7 +476,7 @@ class WP_List_Table {
 		$current = $this->get_pagenum();
 
 		$current_url = ( is_ssl() ? 'https://' : 'http://' ) . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-		
+
 		$current_url = remove_query_arg( array( 'hotkeys_highlight_last', 'hotkeys_highlight_first' ), $current_url );
 
 		$page_links = array();

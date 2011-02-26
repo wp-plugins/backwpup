@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.4.1
+Stable tag: 1.5.0
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -38,7 +38,7 @@ I can give no WARRANTY to any backups...
 == Frequently Asked Questions ==
 = Requires =
 * PHP 5.2.0
-* WordPress 2.8
+* WordPress 2.8 better 3.1
 * curl (for Amazon S3 Support)
 * gzip (for PCLZIP and gzip archives)
 * bzip2 (for bzip2 archives)
@@ -47,10 +47,10 @@ I can give no WARRANTY to any backups...
 in the root folder of the Archive. <i>DBName</i>.sql
 
 = Where is the WordPress Export File =
-in the root folder of the Archive. wordpress.<i>jjjj-mm-dd</i>.xml
+in the root folder of the Archive. <i>blogname</i>.wordpress.<i>jjjj-mm-dd</i>.xml
 
 = Zip File Support =
-Plugin use PCLZIP lib if not PHP uses zip extension
+Plugin use PCLZIP lib if PHP not uses zip extension
 
 = Maintenance Mode =
 Supported Plugins
@@ -81,11 +81,33 @@ Place mail only little archives
 = FTP Warnings =
 Please deactivate Pasive Mode and try it again.
 
+= Disabe some destionations for Backups =
+You can set in wp-config.php the following:
+<i>define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX');</i>
+all listed destinations are allowed than.
+Destinations are:
+* MAIL = mail (can't excluded)
+* DIR = Directory (can't excluded)
+* S3 = Amazon S3
+* RSC = RackSpaceCloud
+* FTP = FTP Server
+* DROPBOX = Dropbox
+
 == Screenshots ==
 
 1. Job Page
 
 == Changelog ==
+= 1.5.0 =
+* use AWS SDK ver.1.2.4 now for Amazon S3
+* Update rackspase cloud files to ver.1.7.6
+* Added Job setteing import/export
+* Download link for last backup in Jobs tab
+* Link for last Log in Jobs tab
+* Logs can now compressed
+* Backup destinations can now be disabled (see help)
+* Bug fixes and improvements
+
 = 1.4.1 =
 * Dropbox changes
 * fixed problem on send log with mail

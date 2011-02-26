@@ -11,7 +11,7 @@ if ( !defined('ABSPATH') )
 
 <div class="clear"></div> 
 
-<form method="post" action="">
+<form enctype="multipart/form-data" method="post" action="">
 <input type="hidden" name="subpage" value="tools" />
 <input type="hidden" name="page" value="BackWPup" />
 <?php  wp_nonce_field('backwpup-tools'); ?>
@@ -52,6 +52,69 @@ if ( !defined('ABSPATH') )
 						} else {
 							echo __('Copy SQL file to Blog root folder to use restore.', 'backwpup')."<br />";
 						}
+					}
+					?>
+				</div>
+			</div>
+			
+			<div id="import" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Import Jobs settings','backwpup'); ?></span></h3>
+				<div class="inside">
+					<?php _e('Select File to import:', 'backwpup'); ?> <input name="importfile" type="file" />
+					<input type="submit" name="upload" value="<?php _e('Upload', 'backwpup'); ?>" /><br />
+					<?PHP
+					if (is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
+						_e('Select Jobs to Import:', 'backwpup'); echo "<br />";
+						$import=file_get_contents($_FILES['importfile']['tmp_name']);
+						$oldjobs=get_option('backwpup_jobs');
+						foreach ( unserialize($import) as $jobid => $jobvalue ) {
+							echo $jobid.". ".$jobvalue['name']." <select name=\"importtype[".$jobid."]\" title=\"".__('Import Type', 'backwpup')."\"><option value=\"not\">".__('No Import', 'backwpup')."</option>";
+							if (is_array($oldjobs[$jobid]))
+								echo "<option value=\"over\">".__('Overwrite', 'backwpup')."</option><option value=\"append\">".__('Append', 'backwpup')."</option>"; 
+							else
+								echo "<option value=\"over\">".__('Import', 'backwpup')."</option>";
+							echo "</select><br />";
+						}
+						echo "<input type=\"hidden\" name=\"importfile\" value=\"".urlencode($import)."\" />";
+						echo "<input type=\"submit\" name=\"import\" class=\"button-primary\" value=\"".__('Import', 'backwpup')."\" />";
+					}
+					if ($_POST['import']==__('Import', 'backwpup') and !empty($_POST['importfile'])) {
+						$oldjobs=get_option('backwpup_jobs');
+						$import=unserialize(urldecode($_POST['importfile']));
+						foreach ( $_POST['importtype'] as $id => $type ) {
+							if ($type=='over') {
+								unset($oldjobs[$id]);
+								$oldjobs[$id]=$import[$id];
+								$oldjobs[$id]['activated']=false;
+								$oldjobs[$id]['cronnextrun']='';
+								$oldjobs[$id]['starttime']='';
+								$oldjobs[$id]['logfile']='';
+								$oldjobs[$id]['lastlogfile']='';
+								$oldjobs[$id]['lastrun']='';
+								$oldjobs[$id]['lastruntime']='';
+								$oldjobs[$id]['lastbackupdownloadurl']='';								
+							} elseif ($type=='append') {
+								if (is_array($oldjobs)) { //generate a new id for new job
+									foreach ($oldjobs as $jobkey => $jobvalue) {
+										if ($jobkey>$heighestid) $heighestid=$jobkey;
+									}
+									$jobid=$heighestid+1;
+								} else {
+									$jobid=1;
+								}
+								$oldjobs[$jobid]=$import[$id];
+								$oldjobs[$jobid]['activated']=false;
+								$oldjobs[$jobid]['cronnextrun']='';
+								$oldjobs[$jobid]['starttime']='';
+								$oldjobs[$jobid]['logfile']='';
+								$oldjobs[$jobid]['lastlogfile']='';
+								$oldjobs[$jobid]['lastrun']='';
+								$oldjobs[$jobid]['lastruntime']='';
+								$oldjobs[$jobid]['lastbackupdownloadurl']='';
+							} 
+						}
+						update_option('backwpup_jobs',$oldjobs);
+						_e('Jobs imported!', 'backwpup');
 					}
 					?>
 				</div>

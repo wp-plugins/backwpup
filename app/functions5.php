@@ -203,9 +203,6 @@ if ( !defined('ABSPATH') )
 		if (!isset($jobsettings['awsSecretKey']) or !is_string($jobsettings['awsSecretKey']))
 			$jobsettings['awsSecretKey']='';
 
-		if (!isset($jobsettings['awsSSL']) or !is_bool($jobsettings['awsSSL']))
-			$jobsettings['awsSSL']=true;
-
 		if (!isset($jobsettings['awsrrs']) or !is_bool($jobsettings['awsrrs']))
 			$jobsettings['awsrrs']=false;
 
@@ -260,19 +257,22 @@ if ( !defined('ABSPATH') )
 	
 	
 	//ajax/normal get backup files and infos
-	function backwpup_get_backup_files() {
+	function backwpup_get_backup_files($onlyjobid='') {
 		$jobs=(array)get_option('backwpup_jobs'); //Load jobs
+		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 		$filecounter=0;
 		$files=array();
 		$donefolders=array();
 		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
-			if (!class_exists('S3'))
-				require_once(dirname(__FILE__).'/libs/S3.php');
+			if (!class_exists('CFRuntime'))
+				require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 			if (!class_exists('CF_Authentication'))
 				require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 		}
 
 		foreach ($jobs as $jobid => $jobvalue) { //go job by job
+			if (!empty($onlyjobid) and $jobid!=$onlyjobid)
+				continue;
 			$jobvalue=backwpup_check_job_vars($jobvalue,$jobid); //Check job values
 			$todo=explode('+',$jobvalue['type']); //only for backup jobs
 			if (!in_array('FILE',$todo) and !in_array('DB',$todo) and !in_array('WPEXP',$todo))
@@ -289,7 +289,7 @@ if ( !defined('ABSPATH') )
 							$files[$filecounter]['jobid']=$jobid;
 							$files[$filecounter]['file']=$jobvalue['backupdir'].$file;
 							$files[$filecounter]['filename']=$file;
-							$files[$filecounter]['downloadurl']=wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=download&file='.$jobvalue['backupdir'].$file, 'download-backup_'.$file);
+							$files[$filecounter]['downloadurl']='admin.php?page=BackWPup&subpage=backups&action=download&file='.$jobvalue['backupdir'].$file;
 							$files[$filecounter]['filesize']=filesize($jobvalue['backupdir'].$file);
 							$files[$filecounter]['time']=filemtime($jobvalue['backupdir'].$file);
 							$filecounter++;
@@ -300,19 +300,19 @@ if ( !defined('ABSPATH') )
 				}
 			}
 			//Get files/filinfo from S3
-			if (class_exists('S3') and !in_array($jobvalue['awsAccessKey'].'|'.$jobvalue['awsBucket'].'|'.$jobvalue['awsdir'],$donefolders)) {
+			if (class_exists('AmazonS3') and in_array('S3',$dests) and !in_array($jobvalue['awsAccessKey'].'|'.$jobvalue['awsBucket'].'|'.$jobvalue['awsdir'],$donefolders)) {
 				if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
-					$s3 = new S3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey'], $jobvalue['awsSSL']);
-					if (($contents = $s3->getBucket($jobvalue['awsBucket'],$jobvalue['awsdir'])) !== false) {
-						foreach ($contents as $object) {
-							if (strtolower(substr($object['name'],-4))=='.zip' or strtolower(substr($object['name'],-4))=='.tar'  or strtolower(substr($object['name'],-7))=='.tar.gz'  or strtolower(substr($object['name'],-8))=='.tar.bz2') {
+					$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+					if (($contents = $s3->list_objects($jobvalue['awsBucket'],array('prefix'=>$jobvalue['awsdir']))) !== false) {
+						foreach ($contents->body->Contents as $object) {
+							if (strtolower(substr($object->Key,-4))=='.zip' or strtolower(substr($object->Key,-4))=='.tar'  or strtolower(substr($object->Key,-7))=='.tar.gz'  or strtolower(substr($object->Key,-8))=='.tar.bz2') {
 								$files[$filecounter]['type']='S3';
 								$files[$filecounter]['jobid']=$jobid;
-								$files[$filecounter]['file']=$object['name'];
-								$files[$filecounter]['filename']=basename($object['name']);
-								$files[$filecounter]['downloadurl']=wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=downloads3&file='.$object['name'].'&jobid='.$jobid, 'downloads3-backup_'.$object['name']);
-								$files[$filecounter]['filesize']=$object['size'];
-								$files[$filecounter]['time']=$object['time'];
+								$files[$filecounter]['file']=(string)$object->Key;
+								$files[$filecounter]['filename']=basename($object->Key);
+								$files[$filecounter]['downloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
+								$files[$filecounter]['filesize']=(string)$object->Size;
+								$files[$filecounter]['time']=strtotime($object->LastModified);
 								$filecounter++;
 							}
 						}
@@ -321,7 +321,7 @@ if ( !defined('ABSPATH') )
 				}
 			}
 			//Get files/filinfo from RSC
-			if (class_exists('CF_Authentication') and !in_array($jobvalue['rscUsername'].'|'.$jobvalue['rscContainer'].'|'.$jobvalue['rscdir'],$donefolders)) {
+			if (class_exists('CF_Authentication') and in_array('RSC',$dests) and !in_array($jobvalue['rscUsername'].'|'.$jobvalue['rscContainer'].'|'.$jobvalue['rscdir'],$donefolders)) {
 				if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
 					$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
 					$auth->ssl_use_cabundle();
@@ -336,7 +336,7 @@ if ( !defined('ABSPATH') )
 								$files[$filecounter]['jobid']=$jobid;
 								$files[$filecounter]['file']=$object->name;
 								$files[$filecounter]['filename']=basename($object->name);
-								$files[$filecounter]['downloadurl']=wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid, 'downloadrsc-backup_'.$object->name);
+								$files[$filecounter]['downloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
 								$files[$filecounter]['filesize']=$object->content_length;
 								$files[$filecounter]['time']=$object->last_modified;
 								$filecounter++;
@@ -347,7 +347,7 @@ if ( !defined('ABSPATH') )
 				}
 			}
 			//Get files/filinfo from FTP
-			if (!empty($jobvalue['ftphost']) and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and !in_array($jobvalue['ftphost'].'|'.$jobvalue['ftpuser'].'|'.$jobvalue['ftpdir'],$donefolders)) {
+			if (!empty($jobvalue['ftphost']) and in_array('FTP',$dests) and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and !in_array($jobvalue['ftphost'].'|'.$jobvalue['ftpuser'].'|'.$jobvalue['ftpdir'],$donefolders)) {
 				$ftpport=21;
 				$ftphost=$jobvalue['ftphost'];
 				if (false !== strpos($jobvalue['ftphost'],':')) //look for port
@@ -412,8 +412,8 @@ if ( !defined('ABSPATH') )
 			$awsselected=$_POST['awsselected'];
 			$ajax=true;
 		}
-		if (!class_exists('S3'))
-			require_once(dirname(__FILE__).'/libs/S3.php');
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		if (empty($awsAccessKey)) {
 			echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
 			if ($ajax)
@@ -428,9 +428,10 @@ if ( !defined('ABSPATH') )
 			else
 				return;
 		}
-		$s3 = new S3($awsAccessKey, $awsSecretKey, false);
-		$buckets=@$s3->listBuckets();
-		if (!is_array($buckets)) {
+		$s3 = new AmazonS3($awsAccessKey, $awsSecretKey);
+		$buckets=$s3->list_buckets();
+		//print_r($buckets);
+		if ($buckets->status!=200) {
 			echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found! Or wrong Keys!','backwpup').'</span>';
 			if ($ajax)
 				die();
@@ -438,8 +439,8 @@ if ( !defined('ABSPATH') )
 				return;
 		}
 		echo '<select name="awsBucket" id="awsBucket">';
-		foreach ($buckets as $bucket) {
-			echo "<option ".selected(strtolower($awsselected),strtolower($bucket),false).">".$bucket."</option>";
+		foreach ($buckets->body->Buckets->Bucket as $bucket) {
+			echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
 		}
 		echo '</select>';
 		if ($ajax)

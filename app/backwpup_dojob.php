@@ -17,6 +17,7 @@ class backwpup_dojob {
 	private $backupfile='';
 	private $backupfileformat='.zip';
 	private $backupdir='';
+	private $lastbackupdownloadurl='';
 	public  $logdir='';
 	public  $logfile='';
 	private $tempdir='';
@@ -31,7 +32,6 @@ class backwpup_dojob {
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
 		$jobs=get_option('backwpup_jobs'); //load jobdata
-		$this->job=backwpup_check_job_vars($jobs[$this->jobid],$this->jobid);//Set and check job settings
 		//set Logs Dir
 		$this->logdir=trailingslashit($this->cfg['dirlogs']);
 		if (empty($this->logdir) or $this->logdir=='/') {
@@ -41,25 +41,28 @@ class backwpup_dojob {
 		//Check log file dir
 		if (!$this->_check_folders($this->logdir))
 			return false;		
+		//check exists gzip functions
+		if(!function_exists('gzopen'))
+			$this->cfg['gzlogs']=false;
 		//set Log file name
 		$this->logfile='backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 		//create log file
-		$fd=fopen($this->logdir.$this->logfile,'w+');
+		$fd=fopen($this->logdir.$this->logfile,'w');
 		//Create log file header
-		@fputs($fd,"<html>\n<head>\n");
-		@fputs($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-		@fputs($fd,"<meta name=\"php_version\" content=\"".phpversion()."\" />\n");
-		@fputs($fd,"<meta name=\"mysql_version\" content=\"".$wpdb->get_var("SELECT VERSION() AS version")."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
-		@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
-		@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
-		@fputs($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_jobname\" content=\"".$this->job['name']."\" />\n");
-		@fputs($fd,"<meta name=\"backwpup_jobtype\" content=\"".$this->job['type']."\" />\n");
-		@fputs($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
-		@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
-		@fputs($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$this->job['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
-		@fclose($fd);	
+		fwrite($fd,"<html>\n<head>\n");
+		fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
+		fwrite($fd,"<meta name=\"php_version\" content=\"".phpversion()."\" />\n");
+		fwrite($fd,"<meta name=\"mysql_version\" content=\"".$wpdb->get_var("SELECT VERSION() AS version")."\" />\n");
+		fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
+		fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
+		fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
+		fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$this->jobid."\" />\n");
+		fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$jobs[$this->jobid]['name']."\" />\n");
+		fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$jobs[$this->jobid]['type']."\" />\n");
+		fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
+		fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
+		fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$jobs[$this->jobid]['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
+		fclose($fd);
 		//set function for PHP user defineid error handling
 		if (defined(WP_DEBUG) and WP_DEBUG)
 			set_error_handler(array($this,'joberrorhandler'),E_ALL | E_STRICT);
@@ -70,25 +73,25 @@ class backwpup_dojob {
 			if ($jobs[$this->jobid]['starttime']+600<current_time('timestamp')) { //Abort old jo if work longer as 10 min. because websever has 300 sec timeout
 				trigger_error(__('Working Job will closed!!! And a new started!!!','backwpup'),E_USER_WARNING);
 				//old logfile end
-				$fd=fopen($jobs[$this->jobid]['logfile'],'a+');
-				fputs($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
-				fputs($fd,"</body>\n</html>\n");
+				$fd=fopen($jobs[$this->jobid]['logfile'],'a');
+				fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Aborted working to long!!!','backwpup')."</span><br />\n");
 				fclose($fd);
 				$logheader=backwpup_read_logheader($jobs[$this->jobid]['logfile']); //read waring count from log header
 				$logheader['errors']++;
 				//write new log header
-				$fd=@fopen($jobs[$this->jobid]['logfile'],'r+');
+				$fd=fopen($jobs[$this->jobid]['logfile'],'r+');
 				while (!feof($fd)) {
-					if (stripos(@fgets($fd),"<meta name=\"backwpup_errors\"") !== false) {
-						@fseek($fd,$filepos);
-						@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
+					if (stripos(fgets($fd),"<meta name=\"backwpup_errors\"") !== false) {
+						fseek($fd,$filepos);
+						fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
 						break;
 					}
 					$filepos=ftell($fd);
 				}
-				@fclose($fd);
+				fclose($fd);
+				$this->job_end($jobs[$this->jobid]['logfile']);
 			} else {
-				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$this->job['name']),E_USER_ERROR);
+				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$jobs[$this->jobid]['name']),E_USER_ERROR);
 				return false;
 			}
 		}
@@ -96,7 +99,11 @@ class backwpup_dojob {
 		$jobs[$this->jobid]['starttime']=current_time('timestamp'); //set start time for job
 		$jobs[$this->jobid]['logfile']=$this->logdir.$this->logfile;	   //Set current logfile
 		$jobs[$this->jobid]['cronnextrun']=backwpup_cron_next($jobs[$this->jobid]['cron']);  //set next run
+		$jobs[$this->jobid]['lastbackupdownloadurl']='';
+		$jobs[$this->jobid]['lastlogfile']=$this->logdir.$this->logfile;
+		$jobs[$this->jobid]['cronnextrun']=backwpup_cron_next($jobs[$this->jobid]['cron']);  //set next run
 		update_option('backwpup_jobs',$jobs); //Save job Settings
+		$this->job=backwpup_check_job_vars($jobs[$this->jobid],$this->jobid);//Set and check job settings
 		//set waht to do
 		$this->todo=explode('+',$this->job['type']);
 		//set Backup File format
@@ -146,12 +153,18 @@ class backwpup_dojob {
 			elseif ($this->backupfileformat==".tar.gz" or $this->backupfileformat==".tar.bz2" or $this->backupfileformat==".tar")
 				$this->tar_pack_files();
 		}
+
 		if (is_file($this->backupdir.$this->backupfile)) {  // Put backup file to destination
+			$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			$this->destination_mail();
-			$this->destination_ftp();
-			$this->destination_dropbox();
-			$this->destination_s3();
-			$this->destination_rsc();
+			if (in_array('FTP',$dests))	
+				$this->destination_ftp();
+			if (in_array('DROPBOX',$dests))
+				$this->destination_dropbox();
+			if (in_array('S3',$dests))
+				$this->destination_s3();
+			if (in_array('RSC',$dests))
+				$this->destination_rsc();
 			$this->destination_dir();
 		}
 
@@ -166,7 +179,33 @@ class backwpup_dojob {
 			}
 		}
 		
-		$this->job_end(); //call regualar job end
+		//delete old logs
+		if (!empty($this->cfg['maxlogs'])) {
+			if ( $dir = opendir($this->logdir) ) { //make file list
+				while (($file = readdir($dir)) !== false ) {
+					if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and (".html" == substr($file,-5) or ".html.gz" == substr($file,-8)))
+						$logfilelist[]=$file;
+				}
+				closedir( $dir );
+			}
+			if (sizeof($logfilelist)>0) {
+				rsort($logfilelist);
+				$numdeltefiles=0;
+				for ($i=$this->cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
+					unlink($this->logdir.$logfilelist[$i]);
+					$numdeltefiles++;
+				}
+				if ($numdeltefiles>0)
+					trigger_error($numdeltefiles.' '.__('old Log files deleted!!!','backwpup'),E_USER_NOTICE);
+			}
+		}
+		
+		if ($filesize=filesize($this->backupdir.$this->backupfile))
+			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes($filesize)),E_USER_NOTICE);
+
+		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),current_time('timestamp')-$this->job['starttime']),E_USER_NOTICE);
+		
+		$this->job_end();		
 	}
 
 	//function for PHP error handling
@@ -214,9 +253,9 @@ class backwpup_dojob {
 
 		if (!empty($massage)) {
 			//wirte log file
-			$fd=fopen($this->logdir.$this->logfile,'a+');
-			@fputs($fd,$massage."<br />\n");
-			@fclose($fd);
+			$fd=fopen($this->logdir.$this->logfile,'a');
+			fwrite($fd,$massage."<br />\n");
+			fclose($fd);
 
 			//output on run now
 			if (!defined('DOING_CRON')) {
@@ -227,30 +266,26 @@ class backwpup_dojob {
 
 			//write new log header
 			if (isset($errors) or isset($warnings)) {
-				if ($fd=fopen($this->logdir.$this->logfile,'r+')) {
-					while (!feof($fd)) {
-						$line=@fgets($fd);
-						if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
-							@fseek($fd,$filepos);
-							@fputs($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
-							break;
-						}
-						if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
-							@fseek($fd,$filepos);
-							@fputs($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
-							break;
-						}
-						$filepos=ftell($fd);
+				$fd=fopen($this->logdir.$this->logfile,'r+');
+				while (!feof($fd)) {
+					$line=fgets($fd);
+					if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+						fseek($fd,$filepos);
+						fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
+						break;
 					}
-					@fclose($fd);
+					if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
+						fseek($fd,$filepos);
+						fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
+						break;
+					}
+					$filepos=ftell($fd);
 				}
+				fclose($fd);
 			}
 
 			if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
-				if ($fd=fopen($this->logdir.$this->logfile,'a+')) {
-					fputs($fd,"</body>\n</html>\n");
-					fclose($fd);
-				}
+				$this->send_log_mail();
 				die();
 			}
 			//300 is most webserver time limit. 0= max time! Give script 5 min. more to work.
@@ -355,7 +390,7 @@ class backwpup_dojob {
 				update_option('plugin_maintenance-mode',$mamo);
 			} else { //WP Support
 				$fdmain=fopen(trailingslashit(ABSPATH).'.maintenance','w');
-				fputs($fdmain,'<?php $upgrading = ' . time() . '; ?>');
+				fwrite($fdmain,'<?php $upgrading = ' . time() . '; ?>');
 				fclose($fdmain);
 			}
 		} else {
@@ -505,7 +540,7 @@ class backwpup_dojob {
 				$status[$statusdata['Name']]=$statusdata;
 			}
 
-			if ($file = @fopen($this->tempdir.DB_NAME.'.sql', 'w')) {
+			if ($file = fopen($this->tempdir.DB_NAME.'.sql', 'w')) {
 				fwrite($file, "-- ---------------------------------------------------------\n");
 				fwrite($file, "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n");
 				fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");
@@ -580,14 +615,14 @@ class backwpup_dojob {
 			if (!$return) {
 				trigger_error(__('cURL:','backwpup').' '.curl_error($ch),E_USER_ERROR);
 			} else {
-				$fd=fopen($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml',"w+");
+				$fd=fopen($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml',"w+");
 				fwrite($fd,$return);
 				fclose($fd);
 			}
 			curl_close($ch);
 		} elseif (ini_get('allow_url_fopen')==true or ini_get('allow_url_fopen')==1 or strtolower(ini_get('allow_url_fopen'))=="on") {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 				trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			} else {
 				trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
@@ -595,11 +630,11 @@ class backwpup_dojob {
 		} else {
 			trigger_error(__('Can not Export to XML! no cURL or allow_url_fopen Support!','backwpup'),E_USER_WARNING);
 		}
-		if (is_readable($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+		if (is_readable($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			//add database file to backupfiles
-			trigger_error(__('Add XML Export to Backup:','backwpup').' wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
-			$this->allfilesize+=filesize($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml');
-			$this->filelist[]=array(79001=>$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>'wordpress.' . date( 'Y-m-d' ) . '.xml');
+			trigger_error(__('Add XML Export to Backup:','backwpup').' '.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
+			$this->allfilesize+=filesize($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
+			$this->filelist[]=array(79001=>$this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
 		}
 	}
 	
@@ -1067,50 +1102,62 @@ class backwpup_dojob {
 		if (empty($this->job['awsAccessKey']) or empty($this->job['awsSecretKey']) or empty($this->job['awsBucket']))
 			return;
 
-		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-			trigger_error(__('Can not load curl extension is needed for S3!','backwpup'),E_USER_ERROR);
-			return;
-		}
 
-		if (!class_exists('S3'))
-			require_once(dirname(__FILE__).'/libs/S3.php');
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+		
+		try {
+			$s3 = new AmazonS3($this->job['awsAccessKey'], $this->job['awsSecretKey']);
 
-		$s3 = new S3($this->job['awsAccessKey'], $this->job['awsSecretKey'], $this->job['awsSSL']);
+			if ($s3->if_bucket_exists($this->job['awsBucket'])) {
+				trigger_error(__('Connected to S3 Bucket:','backwpup').' '.$this->job['awsBucket'],E_USER_NOTICE);
 
-		if (in_array($this->job['awsBucket'],$s3->listBuckets())) {
-			trigger_error(__('Connected to S3 Bucket:','backwpup').' '.$this->job['awsBucket'],E_USER_NOTICE);
-			//Transfer Backup to S3
-			if ($s3->putObjectFile($this->backupdir.$this->backupfile, $this->job['awsBucket'], $this->job['awsdir'].$this->backupfile, S3::ACL_PRIVATE,array(),null,$this->job['awsrrs']))  //transfere file to S3
-				trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$this->backupfile,E_USER_NOTICE);
-			else
-				trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
-
-			if ($this->job['awsmaxbackups']>0) { //Delete old backups
-				$backupfilelist=array();
-				if (($contents = $s3->getBucket($this->job['awsBucket'],$this->job['awsdir'])) !== false) {
-					foreach ($contents as $object) {
-						$file=basename($object['name']);
-						if ($this->job['awsdir'].$file == $object['name']) {//only in the folder and not in complete bucket
-							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
-								$backupfilelist[]=$file;
+				//Transfer Backup to S3
+				if ($this->job['awsrrs']) //set reduced redundancy or not
+					$storage=AmazonS3::STORAGE_REDUCED;
+				else 
+					$storage=AmazonS3::STORAGE_STANDARD;
+					
+				if ($s3->create_object($this->job['awsBucket'], $this->job['awsdir'].$this->backupfile, array('fileUpload' => $this->backupdir.$this->backupfile,'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage)))  {//transfere file to S3
+					trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$this->backupfile,E_USER_NOTICE);
+					$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloads3&file='.$this->job['awsdir'].$this->backupfile.'&jobid='.$this->jobid;
+				} else {
+					trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
+				}
+				
+				if ($this->job['awsmaxbackups']>0) { //Delete old backups
+					$backupfilelist=array();
+					if (($contents = $s3->list_objects($this->job['awsBucket'],array('prefix'=>$this->job['awsdir']))) !== false) {
+						foreach ($contents->body->Contents as $object) {
+							$file=basename($object->Key);
+							if ($this->job['awsdir'].$file == $object->Key) {//only in the folder and not in complete bucket
+								if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+									$backupfilelist[]=$file;
+							}
 						}
 					}
-				}
-				if (sizeof($backupfilelist)>0) {
-					rsort($backupfilelist);
-					$numdeltefiles=0;
-					for ($i=$this->job['awsmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						if ($s3->deleteObject($this->job['awsBucket'], $this->job['awsdir'].$backupfilelist[$i])) //delte files on S3
-							$numdeltefiles++;
-						else
-							trigger_error(__('Can not delete file on S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$backupfilelist[$i],E_USER_ERROR);
+					if (sizeof($backupfilelist)>0) {
+						rsort($backupfilelist);
+						$numdeltefiles=0;
+						for ($i=$this->job['awsmaxbackups'];$i<sizeof($backupfilelist);$i++) {
+							if ($s3->delete_object($this->job['awsBucket'], $this->job['awsdir'].$backupfilelist[$i])) //delte files on S3
+								$numdeltefiles++;
+							else
+								trigger_error(__('Can not delete file on S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$backupfilelist[$i],E_USER_ERROR);
+						}
+						if ($numdeltefiles>0)
+							trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
 					}
-					if ($numdeltefiles>0)
-						trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
-				}
+				}					
+					
+			
+
+			} else {
+				trigger_error(__('S3 Bucket not exists:','backwpup').' '.$this->job['awsBucket'],E_USER_ERROR);
 			}
-		} else {
-			trigger_error(__('S3 Bucket not exists:','backwpup').' '.$this->job['awsBucket'],E_USER_ERROR);
+		} catch (Exception $e) {
+			trigger_error(__('Amazon S3 API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			return;
 		}
 	}
 
@@ -1165,11 +1212,12 @@ class backwpup_dojob {
 			//	$backwpupcontainer->create_paths($this->job['rscdir']); 
 			$backwpupbackup = $backwpupcontainer->create_object($this->job['rscdir'].$this->backupfile);
 
-			if ($backwpupbackup->load_from_filename($this->backupdir.$this->backupfile))
+			if ($backwpupbackup->load_from_filename($this->backupdir.$this->backupfile)) {
 				trigger_error(__('Backup File transferred to RSC://','backwpup').$this->job['rscContainer'].'/'.$this->job['rscdir'].$this->backupfile,E_USER_NOTICE);
-			else
+				$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloadrsc&file='.$this->job['rscdir'].$this->backupfile.'&jobid='.$this->jobid;
+			} else {
 				trigger_error(__('Can not transfer backup to RSC.','backwpup'),E_USER_ERROR);
-
+			}
 			
 			if ($this->job['rscmaxbackups']>0) { //Delete old backups
 				$backupfilelist=array();
@@ -1205,6 +1253,7 @@ class backwpup_dojob {
 	private function destination_dir() {
 		if (empty($this->job['backupdir']))  //Go back if no destination dir
 			return;
+		$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=download&file='.$this->backupdir.$this->backupfile;
 		//Delete old Backupfiles
 		$backupfilelist=array();
 		if (!empty($this->job['maxbackups'])) {
@@ -1240,95 +1289,79 @@ class backwpup_dojob {
 		if (!class_exists('DropboxUploader'))
 		try {
 			require_once (dirname(__FILE__).'/libs/DropboxUploader.php');
+			trigger_error(__('Connect to DropBox ...','backwpup'),E_USER_NOTICE);
 			$uploader = new DropboxUploader($this->job['dropemail'], base64_decode($this->job['dropepass']));
 			$uploader->upload($this->backupdir.$this->backupfile,$this->job['dropedir']);
+			trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
 		} catch (Exception $e) {
 			trigger_error(__('DropBox:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
 		} 
 	}
 	
-	private function job_end() {
-		
-		if ($filesize=filesize($this->backupdir.$this->backupfile))
-			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes($filesize)),E_USER_NOTICE);
-
-		//delete old logs
-		if (!empty($this->cfg['maxlogs'])) {
-			if ( $dir = @opendir($this->logdir) ) { //make file list
-				while (($file = readdir($dir)) !== false ) {
-					if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and ".html" == substr($file,-5))
-						$logfilelist[]=$file;
-				}
-				@closedir( $dir );
-			}
-			if (sizeof($logfilelist)>0) {
-				rsort($logfilelist);
-				$numdeltefiles=0;
-				for ($i=$this->cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
-					unlink($this->logdir.$logfilelist[$i]);
-					$numdeltefiles++;
-				}
-				if ($numdeltefiles>0)
-					trigger_error($numdeltefiles.' '.__('old Log files deleted!!!','backwpup'),E_USER_NOTICE);
-			}
-		}
-	
-		$jobs=get_option('backwpup_jobs');
-		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
-		$jobs[$this->jobid]['lastruntime']=current_time('timestamp')-$jobs[$this->jobid]['starttime'];
-		$jobs[$this->jobid]['logfile']='';
-		$jobs[$this->jobid]['starttime']='';
-		update_option('backwpup_jobs',$jobs); //Save Settings
-		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];
-		$this->job['lastruntime']=$jobs[$this->jobid]['lastruntime'];
-		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),$this->job['lastruntime']),E_USER_NOTICE);	
-	
-	}
-	
-	public function __destruct() {
+	private function job_end($logfile ='') {
+		if (empty($logfile)) $logfile=$this->logdir.$this->logfile;
+		restore_error_handler();
 
 		if (!($filesize=@filesize($this->backupdir.$this->backupfile))) //Set the filezie corectly
 			$filesize=0;
 		
 		//clean up
-		if (is_file($this->tempdir.DB_NAME.'.sql') ) { //delete sql temp file
-			unlink($this->tempdir.DB_NAME.'.sql');
-		}
-
-		if (is_file($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml') ) { //delete WP XML Export temp file
-			unlink($this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml');
-		}
+		@unlink($this->tempdir.DB_NAME.'.sql');
+		@unlink($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
 
 		if (empty($this->job['backupdir']) and is_file($this->backupdir.$this->backupfile)) { //delete backup file in temp dir
 			unlink($this->backupdir.$this->backupfile);
 		}
-
+		$jobs=get_option('backwpup_jobs');	
+		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
+		$jobs[$this->jobid]['lastruntime']=current_time('timestamp')-$jobs[$this->jobid]['starttime'];
+		$jobs[$this->jobid]['logfile']='';
+		$jobs[$this->jobid]['starttime']='';
+		$jobs[$this->jobid]['lastbackupdownloadurl']=$this->lastbackupdownloadurl;
+		update_option('backwpup_jobs',$jobs); //Save Settings
+		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];
+		$this->job['lastruntime']=$jobs[$this->jobid]['lastruntime'];
+			
 		//write heder info
-		$fd=@fopen($this->logdir.$this->logfile,'r+');
+		$fd=fopen($logfile,'r+');
 		$found=0;
 		while (!feof($fd)) {
-			$line=@fgets($fd);
+			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$this->job['lastruntime']."\" />",100)."\n");
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$this->job['lastruntime']."\" />",100)."\n");
 				$found++;
 			}
 			if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
-				@fseek($fd,$filepos);
-				@fputs($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100)."\n");
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100)."\n");
 				$found++;
 			}
 			if ($found>=2)
 				break;
 			$filepos=ftell($fd);
 		}
-		@fclose($fd);
-		//logfile end
-		$fd=fopen($this->logdir.$this->logfile,'a+');
-		fputs($fd,"</body>\n</html>\n");
 		fclose($fd);
-		restore_error_handler();
-		$logdata=backwpup_read_logheader($this->logdir.$this->logfile);
+		//logfile end
+		$fd=fopen($logfile,'a');
+		fwrite($fd,"</body>\n</html>\n");
+		fclose($fd);
+		//gzip logfile
+		if ($this->cfg['gzlogs']) {
+			$fd=fopen($logfile,'r');
+			$zd=gzopen($logfile.'.gz','w9');
+			while (!feof($fd)) {
+				gzwrite($zd,fread($fd,4096));
+			}
+			gzclose($zd);
+			fclose($fd);
+			unlink($logfile);
+			$logfile=$logfile.'.gz';
+			$jobs=get_option('backwpup_jobs');
+			$jobs[$this->jobid]['lastlogfile']=$logfile;
+			update_option('backwpup_jobs',$jobs); //Save Settings
+		}	
+		$logdata=backwpup_read_logheader($logfile);
 		//Send mail with log
 		$sendmail=false;
 		if ($logdata['errors']>0 and $this->job['mailerroronly'] and !empty($this->job['mailaddresslog']))
@@ -1371,12 +1404,12 @@ class backwpup_dojob {
 			$phpmailer->From     = $this->cfg['mailsndemail'];
 			$phpmailer->FromName = $this->cfg['mailsndname'];
 			$phpmailer->AddAddress($this->job['mailaddresslog']);
-			$phpmailer->Subject  =  __('BackWPup Logfile','backwpup').' '.$this->logfile.': '.$this->job['name'];
+			$phpmailer->Subject  =  __('BackWPup Log from','backwpup').' '.date_i18n('Y-m-d H:i',$this->job['lastrun']).': '.$this->job['name'];
 			$phpmailer->IsHTML(false);
 			$phpmailer->Body  =  $mailbody;
-			$phpmailer->AddAttachment($this->logdir.$this->logfile);
+			$phpmailer->AddAttachment($logfile);
 			$phpmailer->Send();
-		}
+		}	
 	}
 }
 ?>

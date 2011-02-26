@@ -43,6 +43,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function get_bulk_actions() {
 		$actions = array();
+		$actions['export'] = __( 'Export' );
 		$actions['delete'] = __( 'Delete' );
 
 		return $actions;
@@ -103,6 +104,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					if (empty($jobvalue['logfile']) and empty($jobvalue['starttime'])) {
 						$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
+						$actions['export'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=export&jobs[]='.$jobid, 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 						$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=runnow&jobid='.$jobid, 'runnow-job_'.$jobid) . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
@@ -163,10 +165,15 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					if ($jobvalue['lastrun']) {
 						$r .=  date_i18n(get_option('date_format'),$jobvalue['lastrun']).'<br />'. date_i18n(get_option('time_format'),$jobvalue['lastrun']); 
 						if (isset($jobvalue['lastruntime']))
-							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup');
+							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
 					} else {
 						$r .= __('None','backwpup');
 					}
+					if (!empty($jobvalue['lastbackupdownloadurl']))
+						$r .="<a href=\"" . wp_nonce_url($jobvalue['lastbackupdownloadurl'], 'download-backup') . "\" title=\"".__('Download last Backup','backwpup')."\">" . __('Download','backwpup') . "</a> | ";
+					if (!empty($jobvalue['lastlogfile']))
+						$r .="<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$jobvalue['lastlogfile'], 'view-log_'.basename($jobvalue['lastlogfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
+
 					$r .=  "</td>";
 					break;
 			}
@@ -202,7 +209,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 		$logfiles=array();
 		if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
-				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  '.html' == substr($file,-5)) 
+				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8))) 
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
@@ -465,7 +472,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					} 
 					$actions = array();
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=delete&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file'].':'.$backup['jobid'].':'.$backup['type']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
-					$actions['download'] = "<a href=\"" . $backup['downloadurl'] . "\">" . __('Download','backwpup') . "</a>";
+					$actions['download'] = "<a href=\"" . wp_nonce_url($backup['downloadurl'], 'download-backup') . "\">" . __('Download','backwpup') . "</a>";
 					$action_count = count($actions);
 					$i = 0;
 					$r .= '<br /><div class="row-actions">';
