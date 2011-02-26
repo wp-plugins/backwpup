@@ -100,7 +100,7 @@ Destinations are:
 == Changelog ==
 = 1.5.1 =
 * changed user capability from '10' to 'export'
-* Updatet AWS SDK to ver.1.2.5
+* Updatet AWS SDK to ver.1.2.5 for Amazon S3
 
 = 1.5.0 =
 * use AWS SDK ver.1.2.4 now for Amazon S3
