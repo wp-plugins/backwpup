@@ -5,14 +5,14 @@ if ( !defined('ABSPATH') )
 
 	//Thems Option menu entry
 	function backwpup_admin_menu() {
-		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), '10', 'BackWPup','backwpup_options_page') ;
+		$hook = add_management_page(__('BackWPup','backwpup'), __('BackWPup','backwpup'), 'export', 'BackWPup','backwpup_options_page') ;
 		add_action('load-'.$hook, 'backwpup_options_load');
 	}
 
 	//Options Page
 	function backwpup_options_page() {
 		global $table,$backwpup_message,$page_hook;
-		if (!current_user_can(10))
+		if (!current_user_can('export'))
 			wp_die('You do not have sufficient permissions to access this page.');
 		if(!empty($backwpup_message))
 			echo '<div id="message" class="updated fade"><p><strong>'.$backwpup_message.'</strong></p></div>';
@@ -96,7 +96,7 @@ if ( !defined('ABSPATH') )
 	function backwpup_options_load() {
 		global $current_screen,$table,$backwpup_message;
 		
-		if (!current_user_can(10))
+		if (!current_user_can('export'))
 			wp_die('You do not have sufficient permissions to access this page.');
 		//Css for Admin Section
 		wp_enqueue_style('BackWpup',plugins_url('css/options.css',__FILE__),'',BACKWPUP_VERSION,'screen');
@@ -749,7 +749,7 @@ if ( !defined('ABSPATH') )
 		//add Menu
 			add_action('admin_menu', 'backwpup_admin_menu');
 		//Additional links on the plugin page
-		if (current_user_can(10))
+		if (current_user_can('export'))
 			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 		if (current_user_can('install_plugins'))
 			add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
@@ -761,7 +761,7 @@ if ( !defined('ABSPATH') )
 		if (!(wp_next_scheduled('backwpup_cron')))
 			wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
 		//add Dashboard widget
-		if (current_user_can(10))
+		if (current_user_can('export'))
 			add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 		// add ajax function
 		add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');

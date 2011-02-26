@@ -34,7 +34,7 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.5.0');
+define('BACKWPUP_VERSION', '1.5.1');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
 	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX');
