@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 1.5.1
+Version: 1.5.2
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -34,7 +34,9 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.5.1');
+define('BACKWPUP_VERSION', '1.5.2');
+//Set User Capability
+define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
 	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX');
@@ -46,8 +48,31 @@ require_once(dirname(__FILE__).'/app/functions.php');
 register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
-//Plugin init
-add_action('plugins_loaded', 'backwpup_plugins_loaded');
 //Admin message
 add_action('admin_notices', 'backwpup_admin_notice'); 
+if (backwpup_env_checks()) {
+	//include php5 functions
+	require_once(dirname(__FILE__).'/app/functions5.php');
+	//add Menu
+	add_action('admin_menu', 'backwpup_admin_menu');
+	//add cron intervals
+	add_filter('cron_schedules', 'backwpup_intervals');
+	//Actions for Cron job
+	add_action('backwpup_cron', 'backwpup_cron');
+	//add Dashboard widget
+	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
+	//Additional links on the plugin page
+	add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
+	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
+	// add ajax function
+	add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
+	add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
+	//Disabele WP_Corn
+	$cfg=get_option('backwpup');
+	if ($cfg['disablewpcron'])
+		define('DISABLE_WP_CRON',true);
+	//test if cron active
+	if (!(wp_next_scheduled('backwpup_cron')))
+		wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
+}
 ?>
