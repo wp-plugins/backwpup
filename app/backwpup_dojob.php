@@ -92,7 +92,7 @@ class backwpup_dojob {
 				$this->job_end($jobs[$this->jobid]['logfile']);
 			} else {
 				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$jobs[$this->jobid]['name']),E_USER_ERROR);
-				return false;
+				$this->job_end();
 			}
 		}
 		//Set job start settings
@@ -106,24 +106,26 @@ class backwpup_dojob {
 		$this->job=backwpup_check_job_vars($jobs[$this->jobid],$this->jobid);//Set and check job settings
 		//set waht to do
 		$this->todo=explode('+',$this->job['type']);
-		//set Backup File format
-		$this->backupfileformat=$this->job['fileformart'];
 		//set Temp Dir
 		$this->tempdir=trailingslashit($this->cfg['dirtemp']);
 		if (empty($this->tempdir) or $this->tempdir=='/')
 			$this->tempdir=backwpup_get_upload_dir();
-		//set Backup Dir
-		$this->backupdir=$this->job['backupdir'];
-		if (empty($this->backupdir))
-			$this->backupdir=$this->tempdir;
-		//check backup dir
-		if ($this->backupdir!=backwpup_get_upload_dir()) {
-			if (!$this->_check_folders($this->backupdir))
-				return false;
-		}
-		//set Backup file name only for jos that makes backups
-		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo))
+		//only for jos that makes backups
+		if (in_array('FILE',$this->todo) or in_array('DB',$this->todo) or in_array('WPEXP',$this->todo)) {
+			//set Backup File format
+			$this->backupfileformat=$this->job['fileformart'];
+			//set Backup Dir
+			$this->backupdir=$this->job['backupdir'];
+			if (empty($this->backupdir))
+				$this->backupdir=$this->tempdir;
+			//check backup dir				
+			if ($this->backupdir!=backwpup_get_upload_dir()) {
+				if (!$this->_check_folders($this->backupdir))
+					return false;
+			}
+			//set Backup file Name
 			$this->backupfile=$this->job['fileprefix'].date_i18n('Y-m-d_H-i-s').$this->backupfileformat;
+		}
 		//check max script execution tme
 		if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1')
 			trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_WARNING);
@@ -165,6 +167,8 @@ class backwpup_dojob {
 				$this->destination_s3();
 			if (in_array('RSC',$dests))
 				$this->destination_rsc();
+			if (in_array('MSAZURE',$dests))
+				$this->destination_msazure();
 			$this->destination_dir();
 		}
 
@@ -1002,9 +1006,10 @@ class backwpup_dojob {
 			}
 		}
 
-		if (ftp_put($ftp_conn_id, $this->job['ftpdir'].$this->backupfile, $this->backupdir.$this->backupfile, FTP_BINARY))  //transfere file
+		if (ftp_put($ftp_conn_id, $this->job['ftpdir'].$this->backupfile, $this->backupdir.$this->backupfile, FTP_BINARY)) { //transfere file
 			trigger_error(__('Backup File transferred to FTP Server:','backwpup').' '.$this->job['ftpdir'].$this->backupfile,E_USER_NOTICE);
-		else
+			$this->lastbackupdownloadurl="ftp://".$this->job['ftpuser'].":".base64_decode($this->job['ftppass'])."@".$this->job['ftphost'].$this->job['ftpdir'].$this->backupfile;
+		} else
 			trigger_error(__('Can not transfer backup to FTP server.','backwpup'),E_USER_ERROR);
 
 		if ($this->job['ftpmaxbackups']>0) { //Delete old backups
@@ -1238,7 +1243,7 @@ class backwpup_dojob {
 						if ($backwpupcontainer->delete_object($this->job['rscdir'].$backupfilelist[$i])) //delte files on Cloud
 							$numdeltefiles++;
 						else
-							trigger_error(__('Can not delete file on RSC://','backwpup').$this->job['rscContainer'].'/'.$this->job['rscdir'].$backupfilelist[$i],E_USER_ERROR);
+							trigger_error(__('Can not delete file on RSC://','backwpup').$this->job['rscContainer'].$this->job['rscdir'].$backupfilelist[$i],E_USER_ERROR);
 					}
 					if ($numdeltefiles>0)
 						trigger_error($numdeltefiles.' '.__('files deleted on Racspase Cloud Container!','backwpup'),E_USER_NOTICE);
@@ -1249,6 +1254,72 @@ class backwpup_dojob {
 		} 
 	}
 	
+	private function destination_msazure() {
+
+		if (empty($this->job['msazureHost']) or empty($this->job['msazureAccName']) or empty($this->job['msazureKey']) or empty($this->job['msazureContainer']))
+			return;
+
+		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
+			trigger_error(__('Can not load curl extension is needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
+			return;
+		}
+
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
+			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+		}
+				
+		try {
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($this->job['msazureHost'],$this->job['msazureAccName'],$this->job['msazureKey']);
+
+			if(!$storageClient->containerExists($this->job['msazureContainer'])) {
+				trigger_error(__('Microsoft Azure Container not exists:','backwpup').' '.$this->job['msazureContainer'],E_USER_ERROR);
+				return;
+			} else {
+				trigger_error(__('Connected to Microsoft Azure Container:','backwpup').' '.$this->job['msazureContainer'],E_USER_NOTICE);
+			}
+			
+			if (filesize($this->backupdir.$this->backupfile)<Microsoft_WindowsAzure_Storage_Blob::MAX_BLOB_SIZE) { //for files bigger tha 64MB
+				$result = $storageClient->putBlob($this->job['msazureContainer'], $this->job['msazuredir'].$this->backupfile, $this->backupdir.$this->backupfile);
+			} else {
+				$result = $storageClient->putLargeBlob($this->job['msazureContainer'], $this->job['msazuredir'].$this->backupfile, $this->backupdir.$this->backupfile);
+			}
+
+			if ($result->Name==$this->job['msazuredir'].$this->backupfile) {
+				trigger_error(__('Backup File transferred to azure://','backwpup').$this->job['msazuredir'].$this->backupfile,E_USER_NOTICE);
+				$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloadmsazure&file='.$this->job['msazuredir'].$this->backupfile.'&jobid='.$this->jobid;
+			} else {
+				trigger_error(__('Can not transfer backup to Microsoft Azure.','backwpup'),E_USER_ERROR);
+			}
+
+			if ($this->job['msazuremaxbackups']>0) { //Delete old backups
+				$backupfilelist=array();
+				$blobs = $storageClient->listBlobs($this->job['msazureContainer'],$this->job['msazuredir']);
+				if (is_array($blobs)) {
+					foreach ($blobs as $blob) {
+						$file=basename($blob->Name);
+						if ($this->job['msazuredir'].$file == $blob->Name) {//only in the folder and not in complete bucket
+							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+								$backupfilelist[]=$file;
+						}
+					}
+				}
+				if (sizeof($backupfilelist)>0) {
+					rsort($backupfilelist);
+					$numdeltefiles=0;
+					for ($i=$this->job['msazuremaxbackups'];$i<sizeof($backupfilelist);$i++) {
+						$storageClient->deleteBlob($this->job['msazureContainer'],$this->job['msazuredir'].$backupfilelist[$i]); //delte files on Cloud
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error($numdeltefiles.' '.__('files deleted on Microsoft Azure Container!','backwpup'),E_USER_NOTICE);
+				}
+			}
+			
+		} catch (Exception $e) {
+			trigger_error(__('Microsoft Azure API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+		} 
+	}
 	
 	private function destination_dir() {
 		if (empty($this->job['backupdir']))  //Go back if no destination dir

@@ -367,11 +367,36 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 						<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
 						<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option></select><br />
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
 						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
 						<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
 						<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
 						<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
+					<?PHP } ?>
+				</div>
+			</div>
+			<?PHP } ?>
+
+			<?PHP if (in_array('MSAZURE',$dests)) { ?>
+			<div id="tomsazure" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+				<h3 class="hndle"><span><?PHP _e('Backup to Micosoft Azure (Blob)','backwpup'); ?></span></h3>
+				<div class="inside">
+					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
+						echo "<b>".__('curl Support required','backwpup')."</b>";
+					} else { ?>
+						<b><?PHP _e('Host:','backwpup'); ?></b><br />
+						<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
+						<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
+						<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
+						<b><?PHP _e('Access Key:','backwpup'); ?></b><br />
+						<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
+						<b><?PHP _e('Container:','backwpup'); ?></b><br />
+						<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
+						<?PHP if (!empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey'])) backwpup_get_msazure_container(array('msazureHost'=>$jobvalue['msazureHost'],'msazureAccName'=>$jobvalue['msazureAccName'],'msazureKey'=>$jobvalue['msazureKey'],'msazureselected'=>$jobvalue['msazureContainer'])); ?>
+						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
+						<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
+						<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
+						<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
 					<?PHP } ?>
 				</div>
 			</div>
@@ -401,7 +426,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			<?PHP } ?>
 			
 			<?PHP if (in_array('DROPBOX',$dests)) { ?>
-			<div id="toftp" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+			<div id="todropbox" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span></h3>
 				<div class="inside">
 					<b><?PHP _e('Email:','backwpup'); ?></b><br />

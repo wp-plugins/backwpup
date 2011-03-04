@@ -1,10 +1,10 @@
 === BackWPup ===
 Contributors: danielhuesken, zlli
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, webdav, dropbox
+Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, azure, dropbox
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.5.2
+Stable tag: 1.5.5
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -21,6 +21,7 @@ Backup and more your Blog.
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
+* Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
 * Store backup to DropBox
 * Send Log/Backup by eMail
@@ -92,12 +93,19 @@ Destinations are:
 * RSC = RackSpaceCloud
 * FTP = FTP Server
 * DROPBOX = Dropbox
+* MSAZURE = Microsoft Azure (Blob)
 
 == Screenshots ==
 
 1. Job Page
 
 == Changelog ==
+= 1.5.5 =
+* Updatet AWS SDK to ver.1.2.6 for Amazon S3
+* Added AWS Regin "Northeast" (Japan)
+* Added Microsoft Azure (Blob) as backup destination
+* bug fixes
+
 = 1.5.2 =
 * changes for user checking
 * removed Plugin init action

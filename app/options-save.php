@@ -156,10 +156,13 @@ function backwpup_backups_operations($action) {
 
 		$jobs=get_option('backwpup_jobs'); //Load jobs
 		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
-				if (!class_exists('CFRuntime'))
-					require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
-				if (!class_exists('CF_Authentication'))
-					require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
+			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+			if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+				require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+			if (!class_exists('CFRuntime'))
+				require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+			if (!class_exists('CF_Authentication'))
+				require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
 		}
 
 		$num=0;
@@ -173,6 +176,13 @@ function backwpup_backups_operations($action) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
 						$s3->delete_object($jobvalue['awsBucket'],$backups['file']);
+					}
+				}
+			} elseif ($backups['type']=='MSAZURE') {
+				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
+					if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
+						$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
+						$storageClient->deleteBlob($jobvalue['msazureContainer'],$backups['file']);
 					}
 				}
 			} elseif ($backups['type']=='RSC') {
@@ -265,6 +275,29 @@ function backwpup_backups_operations($action) {
 			header('HTTP/1.0 '.$s3file->status.' Not Found');
 			die();
 		}
+		break;
+	case 'downloadmsazure': //Download Microsoft Azure Backup
+		check_admin_referer('download-backup');
+		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+		$jobs=get_option('backwpup_jobs');
+		$jobid=$_GET['jobid'];
+		$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobs[$jobid]['msazureHost'],$jobs[$jobid]['msazureAccName'],$jobs[$jobid]['msazureKey']);
+
+		header("Pragma: public");
+		header("Expires: 0");
+		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+		//header("Content-Type: ".$s3file->header->_info->content_type);
+		header("Content-Type: application/force-download");
+		header("Content-Type: application/octet-stream");
+		header("Content-Type: application/download");
+		header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
+		header("Content-Transfer-Encoding: binary");
+		//header("Content-Length: ".$s3file->header->_info->size_download);
+		echo $storageClient->getBlobData($jobs[$jobid]['msazureContainer'], $_GET['file']);
+		die();
+
 		break;
 	case 'downloadrsc': //Download RSC Backup
 		check_admin_referer('download-backup');
@@ -425,6 +458,12 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
 	$jobs[$jobid]['awsdir']=stripslashes($_POST['awsdir']);
 	$jobs[$jobid]['awsmaxbackups']=(int)$_POST['awsmaxbackups'];
+	$jobs[$jobid]['msazureHost']=$_POST['msazureHost'];
+	$jobs[$jobid]['msazureAccName']=$_POST['msazureAccName'];
+	$jobs[$jobid]['msazureKey']=$_POST['msazureKey'];
+	$jobs[$jobid]['msazureContainer']=$_POST['msazureContainer'];
+	$jobs[$jobid]['msazuredir']=stripslashes($_POST['msazuredir']);
+	$jobs[$jobid]['msazuremaxbackups']=(int)$_POST['msazuremaxbackups'];
 	$jobs[$jobid]['rscUsername']=$_POST['rscUsername'];
 	$jobs[$jobid]['rscAPIKey']=$_POST['rscAPIKey'];
 	$jobs[$jobid]['rscContainer']=$_POST['rscContainer'];
@@ -442,11 +481,30 @@ function backwpup_save_job() { //Save Job settings
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
-		$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
-		$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
-		$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
+		try {
+			$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
+			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
+			$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
+		} catch (Exception $e) {
+			$backwpup_message=__($e->getMessage(),'backwpup');
+		}
 	}
 
+	if (!empty($_POST['newmsazureContainer'])  and !empty($_POST['msazureHost']) and !empty($_POST['msazureAccName']) and !empty($_POST['msazureKey'])) { //create new s3 bucket if needed
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
+			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+		}
+		try {
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($_POST['msazureHost'],$_POST['msazureAccName'],$_POST['msazureKey']);
+			$result = $storageClient->createContainer($_POST['newmsazureContainer']);
+			$jobs[$jobid]['msazureContainer']=$result->Name;
+		} catch (Exception $e) {
+			$backwpup_message=__($e->getMessage(),'backwpup');
+		}
+	}	
+	
+	
 	if (!empty($_POST['rscUsername']) and !empty($_POST['rscAPIKey']) and !empty($_POST['newrscContainer'])) { //create new Rackspase Container if needed
 		if (!class_exists('CF_Authentication'))
 			require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');

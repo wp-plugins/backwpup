@@ -5,14 +5,18 @@ jQuery(document).ready( function($) {
 			$('#fileformart').show();
 			$('#toftp').show();
 			$('#toamazon').show();
+			$('#tomsazure').show();
 			$('#torsc').show();
+			$('#todropbox').show();
 			$('#todir').show();
 			$('#tomail').show();
 		} else {
 			$('#fileformart').hide();
 			$('#toftp').hide();
 			$('#toamazon').hide();
+			$('#tomsazure').hide();
 			$('#torsc').hide();
+			$('#todropbox').hide();
 			$('#todir').hide();
 			$('#tomail').hide();
 		}
@@ -66,6 +70,28 @@ jQuery(document).ready( function($) {
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
 
+	function msazuregetcontainer() {
+		var msazureHost = $('#msazureHost').val();
+		var msazureAccName = $('#msazureAccName').val();
+		var msazureKey = $('#msazureKey').val();
+		var msazureContainer = $('#msazureContainerselected').val();
+		var data = {
+			action: 'backwpup_get_msazure_container',
+			msazureHost: msazureHost,
+			msazureAccName: msazureAccName,
+			msazureKey: msazureKey,
+			msazureselected: msazureContainer
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#msazureContainer').remove();
+			$('#msazureContainerselected').after(response);
+		});		
+	}
+	
+	$('#msazureHost').change(function() {msazuregetcontainer();});
+	$('#msazureAccName').change(function() {msazuregetcontainer();});
+	$('#msazureKey').change(function() {msazuregetcontainer();});
+	
 	function rscgetcontainer() {
 		var rscUsername = $('#rscUsername').val();
 		var rscAPIKey = $('#rscAPIKey').val();

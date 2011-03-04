@@ -469,6 +469,8 @@ class BackWPup_Backups_Table extends WP_List_Table {
 						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />ftp://".$jobvalue['ftphost'].dirname($backup['file'])."/";
 					} elseif ($backup['type']=='RSC') {
 						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />RSC://".$jobvalue['rscContainer']."/".dirname($backup['file'])."/";
+					} elseif ($backup['type']=='MSAZURE') {
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />azure://".$jobvalue['msazureContainer']."/".dirname($backup['file'])."/";
 					} 
 					$actions = array();
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=delete&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file'].':'.$backup['jobid'].':'.$backup['type']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";

@@ -217,7 +217,28 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 
 	if (!isset($jobsettings['awsmaxbackups']) or !is_int($jobsettings['awsmaxbackups']))
 		$jobsettings['awsmaxbackups']=0;
+		
+	if (!isset($jobsettings['msazureHost']) or !is_string($jobsettings['msazureHost']))
+		$jobsettings['msazureHost']='blob.core.windows.net';
 
+	if (!isset($jobsettings['msazureAccName']) or !is_string($jobsettings['msazureAccName']))
+		$jobsettings['msazureAccName']='';
+
+	if (!isset($jobsettings['msazureKey']) or !is_string($jobsettings['msazureKey']))
+		$jobsettings['msazureKey']='';
+
+	if (!isset($jobsettings['msazureContainer']) or !is_string($jobsettings['msazureContainer']))
+		$jobsettings['msazureContainer']='';
+
+	if (!isset($jobsettings['msazuredir']) or !is_string($jobsettings['msazuredir']) or $jobsettings['msazuredir']=='/')
+		$jobsettings['msazuredir']='';
+	$jobsettings['msazuredir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['msazuredir']))));
+	if (substr($jobsettings['msazuredir'],0,1)=='/')
+		$jobsettings['msazuredir']=substr($jobsettings['msazuredir'],1);
+
+	if (!isset($jobsettings['msazuremaxbackups']) or !is_int($jobsettings['msazuremaxbackups']))
+		$jobsettings['msazuremaxbackups']=0;	
+		
 	if (!isset($jobsettings['rscUsername']) or !is_string($jobsettings['rscUsername']))
 		$jobsettings['rscUsername']='';
 
@@ -264,6 +285,9 @@ function backwpup_get_backup_files($onlyjobid='') {
 	$files=array();
 	$donefolders=array();
 	if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
+		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		if (!class_exists('CF_Authentication'))
@@ -320,6 +344,28 @@ function backwpup_get_backup_files($onlyjobid='') {
 				$donefolders[]=$jobvalue['awsAccessKey'].'|'.$jobvalue['awsBucket'].'|'.$jobvalue['awsdir'];
 			}
 		}
+		//Get files/filinfo from Microsoft Azure
+		if (class_exists('Microsoft_WindowsAzure_Storage_Blob') and in_array('MSAZURE',$dests) and !in_array($jobvalue['msazureAccName'].'|'.$jobvalue['msazureKey'].'|'.$jobvalue['msazureContainer'].'|'.$jobvalue['msazuredir'],$donefolders)) {
+			if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
+				$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
+				$blobs = $storageClient->listBlobs($jobvalue['msazureContainer'],$jobvalue['msazuredir']);
+				if (is_array($blobs)) {
+					foreach ($blobs as $blob) {
+						if (strtolower(substr($blob->Name,-4))=='.zip' or strtolower(substr($blob->Name,-4))=='.tar'  or strtolower(substr($blob->Name,-7))=='.tar.gz'  or strtolower(substr($blob->Name,-8))=='.tar.bz2') {
+							$files[$filecounter]['type']='MSAZURE';
+							$files[$filecounter]['jobid']=$jobid;
+							$files[$filecounter]['file']=$blob->Name;
+							$files[$filecounter]['filename']=basename($blob->Name);
+							$files[$filecounter]['downloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
+							$files[$filecounter]['filesize']=$blob->size;
+							$files[$filecounter]['time']=strtotime($blob->lastmodified);
+							$filecounter++;
+						}
+					}
+				}
+				$donefolders[]=$jobvalue['msazureAccName'].'|'.$jobvalue['msazureKey'].'|'.$jobvalue['msazureContainer'].'|'.$jobvalue['msazuredir'];
+			}
+		}		
 		//Get files/filinfo from RSC
 		if (class_exists('CF_Authentication') and in_array('RSC',$dests) and !in_array($jobvalue['rscUsername'].'|'.$jobvalue['rscContainer'].'|'.$jobvalue['rscdir'],$donefolders)) {
 			if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
@@ -382,10 +428,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 						$files[$filecounter]['filename']=basename($ftpfiles);
 						$files[$filecounter]['downloadurl']="ftp://".$jobvalue['ftpuser'].":".base64_decode($jobvalue['ftppass'])."@".$jobvalue['ftphost'].$ftpfiles;
 						$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
-						if ('backwpup_log_' == substr(basename($ftpfiles),0,strlen('backwpup_log_'))) {
-							$filnameparts=explode('_',substr(basename($ftpfiles),0,strpos(basename($ftpfiles),'.')));
-							$files[$filecounter]['time']=strtotime($filnameparts[2].' '.str_replace('-',':',$filnameparts[3]));
-						}
+						$files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
 						$filecounter++;
 					}
 				}
@@ -428,11 +471,18 @@ function backwpup_get_aws_buckets($args='') {
 		else
 			return;
 	}
-	$s3 = new AmazonS3($awsAccessKey, $awsSecretKey);
-	$buckets=$s3->list_buckets();
-	//print_r($buckets);
+	try {
+		$s3 = new AmazonS3($awsAccessKey, $awsSecretKey);
+		$buckets=$s3->list_buckets();
+	} catch (Exception $e) {
+		echo '<span id="awsBucket" style="color:red;">'.__($e->getMessage(),'backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
 	if ($buckets->status!=200) {
-		echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found! Or wrong Keys!','backwpup').'</span>';
+		echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found!','backwpup').'</span>';
 		if ($ajax)
 			die();
 		else
@@ -477,9 +527,9 @@ function backwpup_get_rsc_container($args='') {
 		else
 			return;
 	}
-	$auth = new CF_Authentication($rscUsername, $rscAPIKey);
 
 	try {
+		$auth = new CF_Authentication($rscUsername, $rscAPIKey);
 		$auth->authenticate();
 		$conn = new CF_Connection($auth);
 		$containers=$conn->get_containers();
@@ -507,5 +557,70 @@ function backwpup_get_rsc_container($args='') {
 			die();
 		else
 			return;
+}
+
+//ajax/normal get buckests select box
+function backwpup_get_msazure_container($args='') {
+	if (is_array($args)) {
+		extract($args);
+		$ajax=false;
+	} else {
+		$msazureHost=$_POST['msazureHost'];
+		$msazureAccName=$_POST['msazureAccName'];
+		$msazureKey=$_POST['msazureKey'];
+		$msazureselected=$_POST['msazureselected'];
+		$ajax=true;
+	}
+	if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
+		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+		require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+	}
+	if (empty($msazureHost)) {
+		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Hostname!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (empty($msazureAccName)) {
+		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Account Name!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (empty($msazureKey)) {
+		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Access Key!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	try {
+		$storageClient = new Microsoft_WindowsAzure_Storage_Blob($msazureHost,$msazureAccName,$msazureKey);
+		$Containers=$storageClient->listContainers();
+	} catch (Exception $e) {
+		echo '<span id="msazureContainer" style="color:red;">'.$e->getMessage().'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (empty($Containers)) {
+		echo '<span id="msazureContainer" style="color:red;">'.__('No Container found!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	echo '<select name="msazureContainer" id="msazureContainer">';
+	foreach ($Containers as $Container) {
+		echo "<option ".selected(strtolower($msazureselected),strtolower($Container->Name),false).">".$Container->Name."</option>";
+	}
+	echo '</select>';
+	if ($ajax)
+		die();
+	else
+		return;
 }	
 ?>

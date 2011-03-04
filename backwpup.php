@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 1.5.2
+Version: 1.5.5
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -34,12 +34,12 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.5.2');
+define('BACKWPUP_VERSION', '1.5.5');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
-	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX');
+	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX,MSAZURE');
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
@@ -67,6 +67,7 @@ if (backwpup_env_checks()) {
 	// add ajax function
 	add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
 	add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
+	add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
 	//Disabele WP_Corn
 	$cfg=get_option('backwpup');
 	if ($cfg['disablewpcron'])
