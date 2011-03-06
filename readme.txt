@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, azure, dropbox
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.5.5
+Stable tag: 1.6.0
 
 Backup and more of your WordPress Blog Database and Files
 
@@ -40,7 +40,7 @@ I can give no WARRANTY to any backups...
 = Requires =
 * PHP 5.2.0
 * WordPress 2.8 better 3.1
-* curl (for Amazon S3 Support)
+* curl (for Amazon S3, MS Azur, RackSpace,Dropbox Support)
 * gzip (for PCLZIP and gzip archives)
 * bzip2 (for bzip2 archives)
 
@@ -100,6 +100,12 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 1.6.0 =
+* new dropbox class to use all functions (download, delete, list)
+* added usefull inks in job edit page
+* renamed functions.php to resolve problems with false includes of other plugins
+* improvements
+
 = 1.5.5 =
 * Updatet AWS SDK to ver.1.2.6 for Amazon S3
 * Added AWS Regin "Northeast" (Japan)

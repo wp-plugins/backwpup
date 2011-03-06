@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 1.5.5
+Version: 1.6.0
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -34,16 +34,20 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.5.5');
+define('BACKWPUP_VERSION', '1.6.0');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
 	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX,MSAZURE');
+//Set Dropbox Aplication Keys
+define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
+//Set Dropbox Aplication Keys
+define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
-require_once(dirname(__FILE__).'/app/functions.php');
+require_once(dirname(__FILE__).'/app/php-functions.php');
 //Plugin activate
 register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate
@@ -52,7 +56,7 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 add_action('admin_notices', 'backwpup_admin_notice'); 
 if (backwpup_env_checks()) {
 	//include php5 functions
-	require_once(dirname(__FILE__).'/app/functions5.php');
+	require_once(dirname(__FILE__).'/app/php5-functions.php');
 	//add Menu
 	add_action('admin_menu', 'backwpup_admin_menu');
 	//add cron intervals

@@ -1135,10 +1135,8 @@ class backwpup_dojob {
 					if (($contents = $s3->list_objects($this->job['awsBucket'],array('prefix'=>$this->job['awsdir']))) !== false) {
 						foreach ($contents->body->Contents as $object) {
 							$file=basename($object->Key);
-							if ($this->job['awsdir'].$file == $object->Key) {//only in the folder and not in complete bucket
-								if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
-									$backupfilelist[]=$file;
-							}
+							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+								$backupfilelist[]=$file;
 						}
 					}
 					if (sizeof($backupfilelist)>0) {
@@ -1161,7 +1159,7 @@ class backwpup_dojob {
 				trigger_error(__('S3 Bucket not exists:','backwpup').' '.$this->job['awsBucket'],E_USER_ERROR);
 			}
 		} catch (Exception $e) {
-			trigger_error(__('Amazon S3 API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			trigger_error(__('Amazon S3 API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 			return;
 		}
 	}
@@ -1200,7 +1198,7 @@ class backwpup_dojob {
 					$is_container=false;
 			}	
 		} catch (Exception $e) {
-			trigger_error(__('Rackspase Cloud API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 			return;
 		}
 		
@@ -1250,7 +1248,7 @@ class backwpup_dojob {
 				}
 			}	
 		} catch (Exception $e) {
-			trigger_error(__('Rackspase Cloud API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
 	}
 	
@@ -1298,10 +1296,8 @@ class backwpup_dojob {
 				if (is_array($blobs)) {
 					foreach ($blobs as $blob) {
 						$file=basename($blob->Name);
-						if ($this->job['msazuredir'].$file == $blob->Name) {//only in the folder and not in complete bucket
-							if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
-								$backupfilelist[]=$file;
-						}
+						if ($this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+							$backupfilelist[]=$file;
 					}
 				}
 				if (sizeof($backupfilelist)>0) {
@@ -1317,7 +1313,7 @@ class backwpup_dojob {
 			}
 			
 		} catch (Exception $e) {
-			trigger_error(__('Microsoft Azure API:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			trigger_error(__('Microsoft Azure API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
 	}
 	
@@ -1350,23 +1346,64 @@ class backwpup_dojob {
 	
 	private function destination_dropbox(){
 		if (empty($this->job['dropemail']) or empty($this->job['dropepass']))
-		return;
+			return;
 		
 		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
 			trigger_error(__('Can not load curl extension is needed for Dropbox!','backwpup'),E_USER_ERROR);
 			return;
 		}
 		
-		if (!class_exists('DropboxUploader'))
+		if (!class_exists('Dropbox'))
+			require_once (dirname(__FILE__).'/libs/dropbox.php');
+		
 		try {
-			require_once (dirname(__FILE__).'/libs/DropboxUploader.php');
-			trigger_error(__('Connect to DropBox ...','backwpup'),E_USER_NOTICE);
-			$uploader = new DropboxUploader($this->job['dropemail'], base64_decode($this->job['dropepass']));
-			$uploader->upload($this->backupdir.$this->backupfile,$this->job['dropedir']);
-			trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			// get the tokens 
+			$response = $dropbox->token($this->job['dropemail'], base64_decode($this->job['dropepass']));
+
+			if (!empty($response['token']) and !empty($response['secret'])) {
+				$info=$dropbox->accountInfo();
+				trigger_error(__('Authed to DropBox API from ','backwpup').$info['display_name'],E_USER_NOTICE);
+			} else {
+				trigger_error(__('Can not Auth with DropBox API:','backwpup').' '.$response['error'],E_USER_ERROR);
+				return;
+			}
+
+			// put the file 
+			$response = $dropbox->filesPost($this->job['dropedir'], $this->backupdir.$this->backupfile); 
+			if ($response['result']=="winner!") {
+				$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloaddropbox&file='.$this->job['dropedir'].$this->backupfile.'&jobid='.$this->jobid;
+				trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
+			} else {
+				trigger_error(__('Can not transfere Backup file to DropBox:','backwpup').' '.$response['error'],E_USER_ERROR);
+			}	
+
+			if ($this->job['dropemaxbackups']>0) { //Delete old backups
+				$backupfilelist=array();
+				$metadata = $dropbox->metadata($this->job['dropedir']);
+				if (is_array($metadata)) {
+					foreach ($metadata['contents'] as $data) {
+						$file=basename($data['path']);
+						if ($data['is_dir']!=true and $this->job['fileprefix'] == substr($file,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($file,-strlen($this->backupfileformat)))
+							$backupfilelist[]=$file;
+					}
+				}
+				if (sizeof($backupfilelist)>0) {
+					rsort($backupfilelist);
+					$numdeltefiles=0;
+					for ($i=$this->job['dropemaxbackups'];$i<sizeof($backupfilelist);$i++) {
+						$dropbox->fileopsDelete($this->job['dropedir'].$backupfilelist[$i]); //delte files on Cloud
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error($numdeltefiles.' '.__('files deleted on DropBox Folder!','backwpup'),E_USER_NOTICE);
+				}
+			}	
 		} catch (Exception $e) {
-			trigger_error(__('DropBox:','backwpup').' '.__($e->getMessage(),'backwpup'),E_USER_ERROR);
+			trigger_error(__('DropBox API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
+
+
 	}
 	
 	private function job_end($logfile ='') {

@@ -461,16 +461,23 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					$r .= '<th scope="row" class="check-column"><input type="checkbox" name="backupfiles[]" value="'. esc_attr($backup['file'].':'.$backup['jobid'].':'.$backup['type']) .'" /></th>';
 					break;
 				case 'backup':
+					$dir=dirname($backup['file']);
+					if ($dir=='.')
+						$dir='';
+					else
+						$dir.='/';
 					if ($backup['type']=='FOLDER') {
-						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />".dirname($backup['file'])."/";
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />".$dir;
 					} elseif ($backup['type']=='S3') {
-						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />S3://".$jobvalue['awsBucket']."/".dirname($backup['file'])."/";
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />S3://".$jobvalue['awsBucket']."/".$dir;
 					} elseif ($backup['type']=='FTP') {
-						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />ftp://".$jobvalue['ftphost'].dirname($backup['file'])."/";
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />ftp://".$jobvalue['ftphost'].$dir;
 					} elseif ($backup['type']=='RSC') {
-						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />RSC://".$jobvalue['rscContainer']."/".dirname($backup['file'])."/";
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />RSC://".$jobvalue['rscContainer']."/".$dir;
 					} elseif ($backup['type']=='MSAZURE') {
-						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />azure://".$jobvalue['msazureContainer']."/".dirname($backup['file'])."/";
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />azure://".$jobvalue['msazureContainer']."/".$dir;
+					} elseif ($backup['type']=='DROPBOX') {
+						$r .= "<td $attributes><strong>".basename($backup['file'])."</strong><br />dropbox:/".$dir;
 					} 
 					$actions = array();
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=delete&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file'].':'.$backup['jobid'].':'.$backup['type']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";

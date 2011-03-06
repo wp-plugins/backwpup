@@ -163,7 +163,9 @@ function backwpup_backups_operations($action) {
 				require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 			if (!class_exists('CF_Authentication'))
 				require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
-		}
+			if (!class_exists('Dropbox'))
+				require_once(dirname(__FILE__).'/libs/dropbox.php');
+			}
 
 		$num=0;
 		foreach ($deletebackups as $backups) {
@@ -185,7 +187,15 @@ function backwpup_backups_operations($action) {
 						$storageClient->deleteBlob($jobvalue['msazureContainer'],$backups['file']);
 					}
 				}
-			} elseif ($backups['type']=='RSC') {
+			} elseif ($backups['type']=='DROPBOX') {
+				if (class_exists('Dropbox')) {
+					if (!empty($jobvalue['dropemail']) and !empty($jobvalue['dropepass'])) {
+						$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+						$dropbox->token($jobvalue['dropemail'], base64_decode($jobvalue['dropepass']));
+						$dropbox->fileopsDelete($backups['file']);
+					}
+				}
+			}elseif ($backups['type']=='RSC') {
 				if (class_exists('CF_Authentication')) {
 					if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
 						$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
@@ -256,8 +266,12 @@ function backwpup_backups_operations($action) {
 		require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
-		$s3 = new AmazonS3($jobs[$jobid]['awsAccessKey'], $jobs[$jobid]['awsSecretKey']);
-		$s3file=$s3->get_object($jobs[$jobid]['awsBucket'], $_GET['file']);
+		try {
+			$s3 = new AmazonS3($jobs[$jobid]['awsAccessKey'], $jobs[$jobid]['awsSecretKey']);
+			$s3file=$s3->get_object($jobs[$jobid]['awsBucket'], $_GET['file']);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
 		if ($s3file->status==200) {
 			header("Pragma: public");
 			header("Expires: 0");
@@ -276,6 +290,36 @@ function backwpup_backups_operations($action) {
 			die();
 		}
 		break;
+	case 'downloaddropbox': //Download Dropbox Backup
+		check_admin_referer('download-backup');
+		require_once(dirname(__FILE__).'/libs/dropbox.php');
+		$jobs=get_option('backwpup_jobs');
+		$jobid=$_GET['jobid'];
+		try {
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox->token($jobs[$jobid]['dropemail'], base64_decode($jobs[$jobid]['dropepass']));
+			$dropfile = $dropbox->filesGet($_GET['file']);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
+		if (!empty($dropfile['content_type'])) {
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			header("Content-Type: ".$dropfile['content_type']);
+			header("Content-Type: application/force-download");
+			header("Content-Type: application/octet-stream");
+			header("Content-Type: application/download");
+			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
+			header("Content-Transfer-Encoding: binary");
+			header("Content-Length: ".$dropfile['bytes']);
+			echo base64_decode($dropfile['data']);
+			die();
+		} else {
+			header('HTTP/1.0 '.$s3file->status.' Not Found');
+			die();
+		}
+		break;
 	case 'downloadmsazure': //Download Microsoft Azure Backup
 		check_admin_referer('download-backup');
 		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
@@ -283,52 +327,58 @@ function backwpup_backups_operations($action) {
 			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
-		$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobs[$jobid]['msazureHost'],$jobs[$jobid]['msazureAccName'],$jobs[$jobid]['msazureKey']);
-
-		header("Pragma: public");
-		header("Expires: 0");
-		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-		//header("Content-Type: ".$s3file->header->_info->content_type);
-		header("Content-Type: application/force-download");
-		header("Content-Type: application/octet-stream");
-		header("Content-Type: application/download");
-		header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
-		header("Content-Transfer-Encoding: binary");
-		//header("Content-Length: ".$s3file->header->_info->size_download);
-		echo $storageClient->getBlobData($jobs[$jobid]['msazureContainer'], $_GET['file']);
-		die();
-
+		try {
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobs[$jobid]['msazureHost'],$jobs[$jobid]['msazureAccName'],$jobs[$jobid]['msazureKey']);
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			//header("Content-Type: ".$s3file->header->_info->content_type);
+			header("Content-Type: application/force-download");
+			header("Content-Type: application/octet-stream");
+			header("Content-Type: application/download");
+			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
+			header("Content-Transfer-Encoding: binary");
+			//header("Content-Length: ".$s3file->header->_info->size_download);
+			echo $storageClient->getBlobData($jobs[$jobid]['msazureContainer'], $_GET['file']);
+			die();
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
 		break;
 	case 'downloadrsc': //Download RSC Backup
 		check_admin_referer('download-backup');
 		require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
-		$auth = new CF_Authentication($jobs[$jobid]['rscUsername'], $jobs[$jobid]['rscAPIKey']);
-		$auth->ssl_use_cabundle();
-		if ($auth->authenticate()) {
-			$conn = new CF_Connection($auth);
-			$conn->ssl_use_cabundle();
-			$backwpupcontainer = $conn->get_container($jobs[$jobid]['rscContainer']);
-			$backupfile=$backwpupcontainer->get_object($_GET['file']);
-			header("Pragma: public");
-			header("Expires: 0");
-			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-			header("Content-Type: ".$backupfile->content_type);
-			header("Content-Type: application/force-download");
-			header("Content-Type: application/octet-stream");
-			header("Content-Type: application/download");
-			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
-			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".$backupfile->content_length);
-			$output = fopen("php://output", "w");
-			$backupfile->stream($output);
-			fclose($output);
-			die();
-		} else {
-			header('HTTP/1.0 404 Not Found');
-			die(__('File does not exist.', 'backwpup'));
-		}
+		try {
+			$auth = new CF_Authentication($jobs[$jobid]['rscUsername'], $jobs[$jobid]['rscAPIKey']);
+			$auth->ssl_use_cabundle();
+			if ($auth->authenticate()) {
+				$conn = new CF_Connection($auth);
+				$conn->ssl_use_cabundle();
+				$backwpupcontainer = $conn->get_container($jobs[$jobid]['rscContainer']);
+				$backupfile=$backwpupcontainer->get_object($_GET['file']);
+				header("Pragma: public");
+				header("Expires: 0");
+				header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+				header("Content-Type: ".$backupfile->content_type);
+				header("Content-Type: application/force-download");
+				header("Content-Type: application/octet-stream");
+				header("Content-Type: application/download");
+				header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
+				header("Content-Transfer-Encoding: binary");
+				header("Content-Length: ".$backupfile->content_length);
+				$output = fopen("php://output", "w");
+				$backupfile->stream($output);
+				fclose($output);
+				die();
+			} else {
+				header('HTTP/1.0 404 Not Found');
+				die(__('File does not exist.', 'backwpup'));
+			}
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
 		break;
 	}
 }
@@ -451,6 +501,7 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['ftppasv']= $_POST['ftppasv']==1 ? true : false;
 	$jobs[$jobid]['dropemail']=$_POST['dropemail'];
 	$jobs[$jobid]['dropepass']=base64_encode($_POST['dropepass']);
+	$jobs[$jobid]['dropemaxbackups']=(int)$_POST['dropemaxbackups'];
 	$jobs[$jobid]['dropedir']=$_POST['dropedir'];
 	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
 	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];

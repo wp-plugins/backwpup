@@ -355,12 +355,12 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 
 			<?PHP if (in_array('S3',$dests)) { ?>
 			<div id="toamazon" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup to Amazon S3','backwpup'); ?></span></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup to Amazon S3','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><img src="http://www.assoc-amazon.de/e/ir?t=hueskennet-21&l=ur2&o=3" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" /></h3>
 				<div class="inside">
 					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
 						echo "<b>".__('curl Support required','backwpup')."</b>";
 					} else { ?>
-						<b><?PHP _e('Access Key ID:','backwpup'); ?></b><br />
+						<b><?PHP _e('Access Key ID:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
 						<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
 						<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
@@ -379,7 +379,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 
 			<?PHP if (in_array('MSAZURE',$dests)) { ?>
 			<div id="tomsazure" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup to Micosoft Azure (Blob)','backwpup'); ?></span></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup to Micosoft Azure (Blob)','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
 					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
 						echo "<b>".__('curl Support required','backwpup')."</b>";
@@ -388,7 +388,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 						<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
 						<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
 						<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
-						<b><?PHP _e('Access Key:','backwpup'); ?></b><br />
+						<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
 						<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Container:','backwpup'); ?></b><br />
 						<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
@@ -404,14 +404,14 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			
 			<?PHP if (in_array('RSC',$dests)) { ?>
 			<div id="torsc" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup to Rackspace Cloud','backwpup'); ?></span></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup to Rackspace Cloud','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.rackspacecloud.com/2073.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
 					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
 						echo "<b>".__('curl Support required','backwpup')."</b>";
 					} else { ?>
 						<b><?PHP _e('Username:','backwpup'); ?></b><br />
 						<input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
-						<b><?PHP _e('API Key:','backwpup'); ?></b><br />
+						<b><?PHP _e('API Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://manage.rackspacecloud.com/APIAccess.do" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
 						<input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
 						<b><?PHP _e('Container:','backwpup'); ?></b><br />
 						<input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
@@ -427,7 +427,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			
 			<?PHP if (in_array('DROPBOX',$dests)) { ?>
 			<div id="todropbox" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
 					<b><?PHP _e('Email:','backwpup'); ?></b><br />
 					<input name="dropemail" type="text" value="<?PHP echo $jobvalue['dropemail'];?>" class="large-text" /><br />
@@ -435,6 +435,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 					<input name="dropepass" type="password" value="<?PHP echo base64_decode($jobvalue['dropepass']);?>" class="password large-text" /><br />
 					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
 					<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
+					<?PHP _e('Max. Backup Files in Dopbox Folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
 				</div>
 			</div>
 			<?PHP } ?>
