@@ -50,7 +50,7 @@ if ( !defined('ABSPATH') )
 							<input type="submit" name="dbrestore" class="button-primary" value="<?php _e('Restore', 'backwpup'); ?>" />
 							<?PHP
 						} else {
-							echo __('Copy SQL file to Blog root folder to use restore.', 'backwpup')."<br />";
+							echo __('Copy SQL file to blog root folder to use for a restoration.', 'backwpup')."<br />";
 						}
 					}
 					?>

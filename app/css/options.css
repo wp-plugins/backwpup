@@ -10,3 +10,15 @@
 .column-size {
 	width:75px;
 }
+input.large-text,
+textarea.large-text {
+	width: 99%;
+}
+input.regular-text,
+#adduser .form-field input {
+	width: 25em;
+}
+
+input.small-text {
+	width: 50px;
+}

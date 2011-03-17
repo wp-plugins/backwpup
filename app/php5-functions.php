@@ -256,12 +256,18 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 
 	if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 		$jobsettings['rscmaxbackups']=0;
+		
+	if (isset($jobsettings['dropemail']))
+		unset($jobsettings['dropemail']);
+		
+	if (isset($jobsettings['dropepass']))
+		unset($jobsettings['dropepass']);
+		
+	if (!isset($jobsettings['dropetoken']) or !is_string($jobsettings['dropetoken']))
+		$jobsettings['dropetoken']='';
 	
-	if (!isset($jobsettings['dropemail']) or !is_string($jobsettings['dropemail']))
-		$jobsettings['dropemail']='';
-
-	if (!isset($jobsettings['dropepass']) or !is_string($jobsettings['dropepass']))
-		$jobsettings['dropepass']='';
+	if (!isset($jobsettings['dropesecret']) or !is_string($jobsettings['dropesecret']))
+		$jobsettings['dropesecret']='';
 
 	if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
 		$jobsettings['dropedir']='';
@@ -286,7 +292,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 	$filecounter=0;
 	$files=array();
 	$donefolders=array();
-	if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
+	if (function_exists('curl_exec')) {
 		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
@@ -294,7 +300,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		if (!class_exists('CF_Authentication'))
 			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
-		if (!class_exists('Dropbox'))
+		if (!class_exists('Dropbox') and function_exists('json_decode'))
 			require_once(dirname(__FILE__).'/libs/dropbox.php');
 	}
 
@@ -328,11 +334,12 @@ function backwpup_get_backup_files($onlyjobid='') {
 			}
 		}
 		//Get files/filinfo from Dropbox
-		if (class_exists('Dropbox') and in_array('DROPBOX',$dests) and !in_array($jobvalue['dropemail'].'|'.$jobvalue['dropepass'].'|'.$jobvalue['dropedir'],$donefolders)) {
-			if (!empty($jobvalue['dropemail']) and !empty($jobvalue['dropepass'])) {
+		if (class_exists('Dropbox') and in_array('DROPBOX',$dests) and !in_array($jobvalue['dropetoken'].'|'.$jobvalue['dropesecret'].'|'.$jobvalue['dropedir'],$donefolders)) {
+			if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 				try {
 					$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-					$dropbox->token($jobvalue['dropemail'], base64_decode($jobvalue['dropepass']));
+					$dropbox->setOAuthToken($jobvalue['dropetoken']);
+					$dropbox->setOAuthTokenSecret($jobvalue['dropesecret']);
 					$contents = $dropbox->metadata($jobvalue['dropedir']);
 					if (is_array($contents)) {
 						foreach ($contents['contents'] as $object) {
@@ -348,7 +355,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 							}
 						}
 					}
-					$donefolders[]=$jobvalue['dropemail'].'|'.$jobvalue['dropepass'].'|'.$jobvalue['dropedir'];
+					$donefolders[]=$jobvalue['dropetoken'].'|'.$jobvalue['dropesecret'].'|'.$jobvalue['dropedir'];
 				} catch (Exception $e) {
 				}
 			}
@@ -432,7 +439,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 			}
 		}
 		//Get files/filinfo from FTP
-		if (!empty($jobvalue['ftphost']) and in_array('FTP',$dests) and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and !in_array($jobvalue['ftphost'].'|'.$jobvalue['ftpuser'].'|'.$jobvalue['ftpdir'],$donefolders)) {
+		if (!empty($jobvalue['ftphost']) and in_array('FTP',$dests) and function_exists('ftp_connect') and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and !in_array($jobvalue['ftphost'].'|'.$jobvalue['ftpuser'].'|'.$jobvalue['ftpdir'],$donefolders)) {
 			$ftpport=21;
 			$ftphost=$jobvalue['ftphost'];
 			if (false !== strpos($jobvalue['ftphost'],':')) //look for port

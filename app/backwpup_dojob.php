@@ -158,18 +158,42 @@ class backwpup_dojob {
 
 		if (is_file($this->backupdir.$this->backupfile)) {  // Put backup file to destination
 			$dests=explode(',',strtoupper(BACKWPUP_DESTS));
-			$this->destination_mail();
-			if (in_array('FTP',$dests))	
-				$this->destination_ftp();
-			if (in_array('DROPBOX',$dests))
-				$this->destination_dropbox();
-			if (in_array('S3',$dests))
-				$this->destination_s3();
-			if (in_array('RSC',$dests))
-				$this->destination_rsc();
-			if (in_array('MSAZURE',$dests))
-				$this->destination_msazure();
-			$this->destination_dir();
+			if (!empty($this->job['mailaddress'])) {
+				$this->destination_mail();
+			}
+			if (in_array('FTP',$dests) and !empty($this->job['ftphost']) and !empty($this->job['ftpuser']) and !empty($this->job['ftppass']))	 {
+				if (function_exists('ftp_connect')) 
+					$this->destination_ftp();
+				else 
+					trigger_error(__('FTP extension needed for FTP!','backwpup'),E_USER_ERROR);
+			}
+			if (in_array('DROPBOX',$dests) and !empty($this->job['dropetoken']) and !empty($this->job['dropesecret'])) {
+				if (function_exists('curl_exec') and function_exists('json_decode')) 
+					$this->destination_dropbox();
+				else
+					trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
+			}
+			if (in_array('S3',$dests) and !empty($this->job['awsAccessKey']) and !empty($this->job['awsSecretKey']) and !empty($this->job['awsBucket'])) {
+				if (function_exists('curl_exec')) 
+					$this->destination_s3();
+				else 
+					trigger_error(__('Curl extension needed for Amazon S3!','backwpup'),E_USER_ERROR);
+			}
+			if (in_array('RSC',$dests) and !empty($this->job['rscUsername']) and !empty($this->job['rscAPIKey']) and !empty($this->job['rscContainer'])) {
+				if (function_exists('curl_exec')) 
+					$this->destination_rsc();
+				else 
+					trigger_error(__('Curl extension needed for RackSpaceCloud!','backwpup'),E_USER_ERROR);
+			}
+			if (in_array('MSAZURE',$dests) and !empty($this->job['msazureHost']) and !empty($this->job['msazureAccName']) and !empty($this->job['msazureKey']) and !empty($this->job['msazureContainer'])) {
+				if (function_exists('curl_exec')) 
+					$this->destination_msazure();
+				else 
+					trigger_error(__('Curl extension needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
+			}
+			if (!empty($this->job['backupdir'])) {
+				$this->destination_dir();
+			}
 		}
 
 		foreach($this->todo as $key => $value) {
@@ -303,7 +327,7 @@ class backwpup_dojob {
 	
 	private function _check_folders($folder) {
 		if (!is_dir($folder)) { //create dir if not exists
-			if (!mkdir($folder,0777,true)) {
+			if (!mkdir($folder,0755,true)) {
 				trigger_error(sprintf(__('Can not create Folder: %1$s','backwpup'),$folder),E_USER_ERROR);
 				return false;
 			}
@@ -460,7 +484,7 @@ class backwpup_dojob {
 	}
 
 	private function dump_db_table($table,$status,$file) {
-
+		$this->need_free_memory(1048576); //1MB free memory for dump
 		// create dump
 		fwrite($file, "\n");
 		fwrite($file, "--\n");
@@ -535,7 +559,6 @@ class backwpup_dojob {
 		}
 		sort($tables);
 
-
 		if (sizeof($tables)>0) {
 			$result=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A); //get table status
 			if ($sqlerr=mysql_error($wpdb->dbh))
@@ -595,7 +618,6 @@ class backwpup_dojob {
 			trigger_error(__('No Tables to Dump','backwpup'),E_USER_WARNING);
 		}
 
-		
 		//add database file to backupfiles
 		if (is_readable($this->tempdir.DB_NAME.'.sql')) {
 			trigger_error(__('Add Database Dump to Backup:','backwpup').' '.DB_NAME.'.sql '.backwpup_formatBytes(filesize($this->tempdir.DB_NAME.'.sql')),E_USER_NOTICE);
@@ -607,26 +629,27 @@ class backwpup_dojob {
 	}
 
 	private function export_wp() {
-		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
+		$this->need_free_memory(1048576); //1MB free memory
+		if (function_exists('curl_exec')) {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
 			$ch = curl_init();
 			curl_setopt($ch, CURLOPT_URL, plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10));
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 			$return=curl_exec($ch);
 			if (!$return) {
 				trigger_error(__('cURL:','backwpup').' '.curl_error($ch),E_USER_ERROR);
 			} else {
-				$fd=fopen($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml',"w+");
+				$fd=fopen($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml',"w+");
 				fwrite($fd,$return);
 				fclose($fd);
 			}
 			curl_close($ch);
 		} elseif (ini_get('allow_url_fopen')==true or ini_get('allow_url_fopen')==1 or strtolower(ini_get('allow_url_fopen'))=="on") {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 				trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			} else {
 				trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
@@ -634,11 +657,11 @@ class backwpup_dojob {
 		} else {
 			trigger_error(__('Can not Export to XML! no cURL or allow_url_fopen Support!','backwpup'),E_USER_WARNING);
 		}
-		if (is_readable($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+		if (is_readable($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 			//add database file to backupfiles
-			trigger_error(__('Add XML Export to Backup:','backwpup').' '.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
-			$this->allfilesize+=filesize($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
-			$this->filelist[]=array(79001=>$this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
+			trigger_error(__('Add XML Export to Backup:','backwpup').' '.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml '.backwpup_formatBytes(filesize($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')),E_USER_NOTICE);
+			$this->allfilesize+=filesize($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
+			$this->filelist[]=array(79001=>$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml',79003=>preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
 		}
 	}
 	
@@ -768,7 +791,6 @@ class backwpup_dojob {
 	}
 
 	private function zip_files() {
-
 		if (class_exists('ZipArchive')) {  //use php zip lib
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive;
@@ -790,7 +812,6 @@ class backwpup_dojob {
 			} else {
 				trigger_error(__('Can not create Backup ZIP file:','backwpup').' '.$res,E_USER_ERROR);
 			}
-
 		} else { //use PclZip
 			define( 'PCLZIP_TEMPORARY_DIR', $this->tempdir );
 			if (!class_exists('PclZip'))
@@ -832,7 +853,7 @@ class backwpup_dojob {
 			trigger_error(__('Create Backup Archive file...','backwpup'),E_USER_NOTICE);
 		}
 
-		$this->need_free_memory(1048576); //1MB free memory for zip
+		$this->need_free_memory(1048576); //1MB free memory for tar
 
 		foreach($this->filelist as $key => $files) {
 				if ($this->cfg['logfilelist'])
@@ -846,10 +867,33 @@ class backwpup_dojob {
 
 				// Get file information
 				$file_information = stat($files[79001]);
-
+				//split filename larger than 100 chars
+				if (strlen($files[79003])<=100) {
+					$filename=$files[79003];
+					$filenameprefix="";
+				} else {
+					$filenameofset=strlen($files[79003])-100;
+					$dividor=strpos($files[79003],'/',$filenameofset);
+					$filename=substr($files[79003],$dividor+1);
+					$filenameprefix=substr($files[79003],0,$dividor);
+					if (strlen($filename)>100)
+						trigger_error(__('File Name to Long to save corectly in TAR Backup Archive:','backwpup').' '.$files[79003],E_USER_WARNING);
+					if (strlen($filenameprefix)>155)
+						trigger_error(__('File Path to Long to save corectly in TAR Backup Archive:','backwpup').' '.$files[79003],E_USER_WARNING);
+				}
+				//Set file user/group name if linux
+				$fileowner="Unknown";
+				$filegroup="Unknown";
+				if (function_exists('posix_getpwuid')) {
+					$info=posix_getpwuid($file_information['uid']);
+					$fileowner=$info['name'];
+					$info=posix_getgrgid($file_information['gid']);
+					$filegroup=$info['name'];
+				}
+				
 				// Generate the TAR header for this file
 				$header = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
-						  substr($files[79003],0,100),  				//name of file  100
+						  $filename,  									//name of file  100
 						  sprintf("%07o", $file_information['mode']), 	//file mode  8
 						  sprintf("%07o", $file_information['uid']),	//owner user ID  8
 						  sprintf("%07o", $file_information['gid']),	//owner group ID  8
@@ -858,13 +902,13 @@ class backwpup_dojob {
 						  "        ",									//checksum for header  8
 						  0,											//type of file  0 or null = File, 5=Dir
 						  "",											//name of linked file  100
-						  "ustar ",										//USTAR indicator  6
-						  " ",											//USTAR version  2
-						  "Unknown",									//owner user name 32
-						  "Unknown",									//owner group name 32
+						  "ustar",										//USTAR indicator  6
+						  "00",											//USTAR version  2
+						  $fileowner,									//owner user name 32
+						  $filegroup,									//owner group name 32
 						  "",											//device major number 8
 						  "",											//device minor number 8
-						  substr($files[79003],101),					//prefix for file name 155
+						  $filenameprefix,								//prefix for file name 155
 						  "");											//fill block 512K
 
 				// Computes the unsigned Checksum of a file's header
@@ -917,10 +961,6 @@ class backwpup_dojob {
 
 
 	private function destination_ftp() {
-
-		if (empty($this->job['ftphost']) or empty($this->job['ftpuser']) or empty($this->job['ftppass']))
-			return false;
-
 		$ftpport=21;
 		$ftphost=$this->job['ftphost'];
 		if (false !== strpos($this->job['ftphost'],':')) //look for port
@@ -1038,11 +1078,7 @@ class backwpup_dojob {
 	}
 
 	private function destination_mail() {
-		if (empty($this->job['mailaddress']))
-			return false;
-
 		trigger_error(__('Prepare Sending backup file with mail...','backwpup'),E_USER_NOTICE);
-
 		//Create PHP Mailer
 		require_once(ABSPATH.WPINC.'/class-phpmailer.php');
 		$phpmailer = new PHPMailer();
@@ -1104,10 +1140,6 @@ class backwpup_dojob {
 
 	private function destination_s3() {
 
-		if (empty($this->job['awsAccessKey']) or empty($this->job['awsSecretKey']) or empty($this->job['awsBucket']))
-			return;
-
-
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		
@@ -1166,17 +1198,8 @@ class backwpup_dojob {
 
 	private function destination_rsc() {
 
-		if (empty($this->job['rscUsername']) or empty($this->job['rscAPIKey']) or empty($this->job['rscContainer']))
-			return;
-
-		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-			trigger_error(__('Can not load curl extension is needed for Rackspase Cloud!','backwpup'),E_USER_ERROR);
-			return;
-		}
-
 		if (!class_exists('CF_Authentication')) 
 			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
-		
 		
 		$auth = new CF_Authentication($this->job['rscUsername'], $this->job['rscAPIKey']);
 		$auth->ssl_use_cabundle();
@@ -1202,7 +1225,6 @@ class backwpup_dojob {
 			return;
 		}
 		
-	
 		if (!$is_container) {
 			trigger_error(__('Rackspase Cloud Container not exists:','backwpup').' '.$this->job['rscContainer'],E_USER_ERROR);
 			return;
@@ -1253,14 +1275,6 @@ class backwpup_dojob {
 	}
 	
 	private function destination_msazure() {
-
-		if (empty($this->job['msazureHost']) or empty($this->job['msazureAccName']) or empty($this->job['msazureKey']) or empty($this->job['msazureContainer']))
-			return;
-
-		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-			trigger_error(__('Can not load curl extension is needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
-			return;
-		}
 
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
@@ -1318,8 +1332,6 @@ class backwpup_dojob {
 	}
 	
 	private function destination_dir() {
-		if (empty($this->job['backupdir']))  //Go back if no destination dir
-			return;
 		$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=download&file='.$this->backupdir.$this->backupfile;
 		//Delete old Backupfiles
 		$backupfilelist=array();
@@ -1345,30 +1357,34 @@ class backwpup_dojob {
 	}
 	
 	private function destination_dropbox(){
-		if (empty($this->job['dropemail']) or empty($this->job['dropepass']))
-			return;
-		
-		if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-			trigger_error(__('Can not load curl extension is needed for Dropbox!','backwpup'),E_USER_ERROR);
-			return;
-		}
 		
 		if (!class_exists('Dropbox'))
 			require_once (dirname(__FILE__).'/libs/dropbox.php');
 		
+		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*1.3); 
+		
 		try {
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			// get the tokens 
-			$response = $dropbox->token($this->job['dropemail'], base64_decode($this->job['dropepass']));
-
-			if (!empty($response['token']) and !empty($response['secret'])) {
-				$info=$dropbox->accountInfo();
-				trigger_error(__('Authed to DropBox API from ','backwpup').$info['display_name'],E_USER_NOTICE);
+			// set the tokens 
+			$dropbox->setOAuthToken($this->job['dropetoken']);
+			$dropbox->setOAuthTokenSecret($this->job['dropesecret']);
+			$info=$dropbox->accountInfo();
+			if (!empty($info['uid'])) {
+				trigger_error(__('Authed to DropBox from ','backwpup').$info['display_name'],E_USER_NOTICE);
+			}
+			//Check Quota
+			$dropboxfreespase=$info['quota_info']['quota']-$info['quota_info']['shared']-$info['quota_info']['normal'];
+			if (filesize($this->backupdir.$this->backupfile)>$dropboxfreespase) {
+				trigger_error(__('No free space left on DropBox!!!','backwpup'),E_USER_ERROR);
+				return;
 			} else {
-				trigger_error(__('Can not Auth with DropBox API:','backwpup').' '.$response['error'],E_USER_ERROR);
+				trigger_error(__('Free Space on DropBox: ','backwpup').backwpup_formatBytes($dropboxfreespase),E_USER_NOTICE);
+			}
+			//Check Backup File Size max 300MB allowed
+			if (filesize($this->backupdir.$this->backupfile)>314572800) {
+				trigger_error(__('DropBox API only allow upload files lower than 300MB!!!','backwpup'),E_USER_ERROR);
 				return;
 			}
-
 			// put the file 
 			$response = $dropbox->filesPost($this->job['dropedir'], $this->backupdir.$this->backupfile); 
 			if ($response['result']=="winner!") {
@@ -1402,8 +1418,6 @@ class backwpup_dojob {
 		} catch (Exception $e) {
 			trigger_error(__('DropBox API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
-
-
 	}
 	
 	private function job_end($logfile ='') {
@@ -1412,14 +1426,15 @@ class backwpup_dojob {
 
 		if (!($filesize=@filesize($this->backupdir.$this->backupfile))) //Set the filezie corectly
 			$filesize=0;
-		
+
 		//clean up
 		@unlink($this->tempdir.DB_NAME.'.sql');
-		@unlink($this->tempdir.sanitize_key(get_bloginfo('name')).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
+		@unlink($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
 
 		if (empty($this->job['backupdir']) and is_file($this->backupdir.$this->backupfile)) { //delete backup file in temp dir
 			unlink($this->backupdir.$this->backupfile);
 		}
+
 		$jobs=get_option('backwpup_jobs');	
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['lastruntime']=current_time('timestamp')-$jobs[$this->jobid]['starttime'];
@@ -1429,7 +1444,7 @@ class backwpup_dojob {
 		update_option('backwpup_jobs',$jobs); //Save Settings
 		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];
 		$this->job['lastruntime']=$jobs[$this->jobid]['lastruntime'];
-			
+	
 		//write heder info
 		$fd=fopen($logfile,'r+');
 		$found=0;

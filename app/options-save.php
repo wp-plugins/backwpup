@@ -189,9 +189,10 @@ function backwpup_backups_operations($action) {
 				}
 			} elseif ($backups['type']=='DROPBOX') {
 				if (class_exists('Dropbox')) {
-					if (!empty($jobvalue['dropemail']) and !empty($jobvalue['dropepass'])) {
+					if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 						$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-						$dropbox->token($jobvalue['dropemail'], base64_decode($jobvalue['dropepass']));
+						$dropbox->setOAuthToken($jobvalue['dropetoken']);
+						$dropbox->setOAuthTokenSecret($jobvalue['dropesecret']);
 						$dropbox->fileopsDelete($backups['file']);
 					}
 				}
@@ -297,7 +298,8 @@ function backwpup_backups_operations($action) {
 		$jobid=$_GET['jobid'];
 		try {
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox->token($jobs[$jobid]['dropemail'], base64_decode($jobs[$jobid]['dropepass']));
+			$dropbox->setOAuthToken($jobs[$jobid]['dropetoken']);
+			$dropbox->setOAuthTokenSecret($jobs[$jobid]['dropesecret']);
 			$dropfile = $dropbox->filesGet($_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -316,7 +318,7 @@ function backwpup_backups_operations($action) {
 			echo base64_decode($dropfile['data']);
 			die();
 		} else {
-			header('HTTP/1.0 '.$s3file->status.' Not Found');
+			header('HTTP/1.0 404 Not Found');
 			die();
 		}
 		break;
@@ -374,7 +376,7 @@ function backwpup_backups_operations($action) {
 				die();
 			} else {
 				header('HTTP/1.0 404 Not Found');
-				die(__('File does not exist.', 'backwpup'));
+				die();
 			}
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -499,8 +501,6 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['ftpmaxbackups']=(int)$_POST['ftpmaxbackups'];
 	$jobs[$jobid]['ftpssl']= $_POST['ftpssl']==1 ? true : false;
 	$jobs[$jobid]['ftppasv']= $_POST['ftppasv']==1 ? true : false;
-	$jobs[$jobid]['dropemail']=$_POST['dropemail'];
-	$jobs[$jobid]['dropepass']=base64_encode($_POST['dropepass']);
 	$jobs[$jobid]['dropemaxbackups']=(int)$_POST['dropemaxbackups'];
 	$jobs[$jobid]['dropedir']=$_POST['dropedir'];
 	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
@@ -537,7 +537,7 @@ function backwpup_save_job() { //Save Job settings
 			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
 			$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
 		} catch (Exception $e) {
-			$backwpup_message=__($e->getMessage(),'backwpup');
+			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
 	}
 
@@ -551,7 +551,7 @@ function backwpup_save_job() { //Save Job settings
 			$result = $storageClient->createContainer($_POST['newmsazureContainer']);
 			$jobs[$jobid]['msazureContainer']=$result->Name;
 		} catch (Exception $e) {
-			$backwpup_message=__($e->getMessage(),'backwpup');
+			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
 	}	
 	
@@ -567,10 +567,27 @@ function backwpup_save_job() { //Save Job settings
 				$public_container->make_private();
 			}
 		} catch (Exception $e) {
-			$backwpup_message=__($e->getMessage(),'backwpup');
+			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
 	}
-
+	
+	if ($_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
+		if (!class_exists('Dropbox'))
+			require_once (dirname(__FILE__).'/libs/dropbox.php');
+		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+		// request request tokens
+		$response = $dropbox->oAuthRequestToken();
+		// save job id and referer
+		update_option('backwpup_dropboxrequest',array('jobid'=>$_GET['jobid'],'oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret'],'referer'=>$_ENV["HTTP_REFERER"]));
+		// let the user authorize (user will be redirected)
+		$response = $dropbox->oAuthAuthorize($response['oauth_token'], plugins_url('dropbox-auth.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH));
+	}
+	if ($_POST['dropboxauth']==__('Delete!', 'backwpup')) {
+		$jobs[$jobid]['dropetoken']='';
+		$jobs[$jobid]['dropesecret']='';
+		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
+	}
+	
 	//save chages
 	update_option('backwpup_jobs',$jobs);
 	$_POST['jobid']=$jobid;

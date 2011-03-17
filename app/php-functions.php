@@ -99,7 +99,11 @@ function backwpup_options_load() {
 		return;
 	//Css for Admin Section
 	wp_enqueue_style('BackWpup',plugins_url('css/options.css',__FILE__),'',BACKWPUP_VERSION,'screen');
+	wp_enqueue_script('common');
+	wp_enqueue_script('wp-lists');
+	wp_enqueue_script('postbox');
 	wp_enqueue_script('BackWpupOptions',plugins_url('js/options.js',__FILE__),'',BACKWPUP_VERSION,true);
+
 	add_contextual_help($current_screen,
 		'<div class="metabox-prefs">'.
 		'<a href="http://wordpress.org/tags/backwpup" target="_blank">'.__('Support').'</a>'.
@@ -117,7 +121,7 @@ function backwpup_options_load() {
 		__('Author:', 'backwpup').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>'.
 		'</div>'
 	);
-	
+		
 	if ($_REQUEST['action2']!='-1' and !empty($_REQUEST['doaction2']))
 		$_REQUEST['action']=$_REQUEST['action2'];
 
@@ -133,7 +137,7 @@ function backwpup_options_load() {
 		$table->prepare_items();
 		break;
 	case 'edit':
-		if (!empty($_POST['submit'])) {
+		if (!empty($_POST['submit']) or !empty($_POST['dropboxauth'])) {
 			require_once(dirname(__FILE__).'/options-save.php');
 			$backwpup_message=backwpup_save_job();
 		}
@@ -710,14 +714,20 @@ function backwpup_env_checks() {
 		$message.=__('- PHP 5.2.0 or higher needed!','backwpup') . '<br />';
 		$checks=false;
 	}
+	if (!is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
+		@mkdir($cfg['dirlogs'],0755,true);
+	}
 	if (!is_dir($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Logs Folder not exists (Try too create it on first Job run):','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=__('- Logs Folder not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
 	if (!is_writable($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Logs Folder not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
+	if (!is_dir($cfg['dirtemp'])) { // create Temp folder if it not exists
+		@mkdir($cfg['dirtemp'],0755,true);
+	}
 	if (!is_dir($cfg['dirtemp'])) { // check Temp folder
-		$message.=__('- Temp Folder not exists (Try too create it on first Job run):','backwpup') . ' '.$cfg['dirtemp'].'<br />';
+		$message.=__('- Temp Folder not exists:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
 	}
 	if (!is_writable($cfg['dirtemp'])) { // check Temp folder
 		$message.=__('- Temp Folder not writeable:','backwpup') . ' '.$cfg['dirtemp'].'<br />';

@@ -109,7 +109,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 					</div>
 					<br class="clear" />
 					<div style="width:130px; float: left;">
-						<b><?PHP _e('Months:','backwpup'); ?></b><br />
+						<b><?PHP _e('Day of Month:','backwpup'); ?></b><br />
 						<?PHP 
 						if (strstr($cronstr['mon'],'*/'))
 							$mon=explode('/',$cronstr['mon']);
@@ -133,7 +133,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 						</select>
 					</div>
 					<div style="width:130px; float: right;">
-						<b><?PHP _e('Weekday:','backwpup'); ?></b><br />
+						<b><?PHP _e('Day of Week:','backwpup'); ?></b><br />
 						<select name="cronwday[]" id="cronwday" style="height:65px;" multiple="multiple">
 						<?PHP 
 						if (strstr($cronstr['wday'],'*/'))
@@ -190,7 +190,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 				<div class="inside">
 					<?PHP _e('E-Mail-Adress:','backwpup'); ?>
 					<input name="mailaddresslog" id="mailaddresslog" type="text" value="<?PHP echo $jobvalue['mailaddresslog'];?>" class="large-text" /><br />
-					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Send only E-Mail on errors.','backwpup'); ?>
+					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Only send an e-mail if there are errors.','backwpup'); ?>
 				</div>
 			</div>
 
@@ -211,7 +211,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 				<h3 class="hndle"><span><?PHP _e('Database Jobs','backwpup'); ?></span></h3>
 				<div class="inside">
 
-					<b><?PHP _e('Database Tabels to Exclude:','backwpup'); ?></b>
+					<b><?PHP _e('Database tables to <span style="color:red;">ex</span>clude:','backwpup'); ?></b>
 					<div id="dbexclude-pop" style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;">
 					<?php
 					$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
@@ -222,7 +222,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 					}
 					?>
 					</div><br />
-					<span id="dbshortinsert" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>><input class="checkbox" type="checkbox"<?php checked($jobvalue['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instat of full (with keys)','backwpup');?><br /></span>
+					<span id="dbshortinsert" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>><input class="checkbox" type="checkbox"<?php checked($jobvalue['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instead of full (with keys)','backwpup');?><br /></span>
 					<input class="checkbox" type="checkbox"<?php checked($jobvalue['maintenance'],true,true);?> name="maintenance" value="1"/> <?php _e('Set Blog Maintenance Mode on Database Operations','backwpup');?><br />
 				</div>
 			</div>
@@ -329,8 +329,9 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 				<div class="inside">
 					<b><?PHP _e('Full Path to Folder for Backup Files:','backwpup'); ?></b><br />
 					<input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobvalue['backupdir'];?>" class="large-text" /><br />
+					<span class="description"><?PHP _e('(Leave it empty to store Backups not local!)','backwpup');?></span><br />
 					<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
-					</div>
+				</div>
 			</div>
 			
 			<?PHP if (in_array('FTP',$dests)) { ?>
@@ -346,96 +347,86 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 					<b><?PHP _e('Directory on Server:','backwpup'); ?></b><br />
 					<input name="ftpdir" type="text" value="<?PHP echo $jobvalue['ftpdir'];?>" class="large-text" /><br />
 					<?PHP if (!is_numeric($jobvalue['ftpmaxbackups'])) $jobvalue['ftpmaxbackups']=0; ?>
-					<?PHP _e('Max. Backup Files in FTP Folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
+					<?PHP _e('Max. Backup Files in FTP Folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftpssl'],true); ?> name="ftpssl" /> <?PHP _e('Use SSL-FTP Connection.','backwpup'); ?><br />
 					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftppasv'],true); ?> name="ftppasv" /> <?PHP _e('Use FTP Passiv mode.','backwpup'); ?><br />			
 				</div>
 			</div>
 			<?PHP } ?>
 
-			<?PHP if (in_array('S3',$dests)) { ?>
+			<?PHP if (in_array('S3',$dests) and function_exists('curl_exec')) { ?>
 			<div id="toamazon" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Amazon S3','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><img src="http://www.assoc-amazon.de/e/ir?t=hueskennet-21&l=ur2&o=3" width="1" height="1" border="0" alt="" style="border:none !important; margin:0px !important;" /></h3>
 				<div class="inside">
-					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-						echo "<b>".__('curl Support required','backwpup')."</b>";
-					} else { ?>
-						<b><?PHP _e('Access Key ID:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-						<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
-						<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
-						<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
-						<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
-						<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
-						<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
-						<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
-						<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
-						<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-						<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
-					<?PHP } ?>
+					<b><?PHP _e('Access Key ID:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
+					<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
+					<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
+					<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
+					<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
+					<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
+					<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
+					<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
+					<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
+					<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
 				</div>
 			</div>
 			<?PHP } ?>
 
-			<?PHP if (in_array('MSAZURE',$dests)) { ?>
+			<?PHP if (in_array('MSAZURE',$dests) and function_exists('curl_exec')) { ?>
 			<div id="tomsazure" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Micosoft Azure (Blob)','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
-					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-						echo "<b>".__('curl Support required','backwpup')."</b>";
-					} else { ?>
-						<b><?PHP _e('Host:','backwpup'); ?></b><br />
-						<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
-						<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
-						<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
-						<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-						<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
-						<b><?PHP _e('Container:','backwpup'); ?></b><br />
-						<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
-						<?PHP if (!empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey'])) backwpup_get_msazure_container(array('msazureHost'=>$jobvalue['msazureHost'],'msazureAccName'=>$jobvalue['msazureAccName'],'msazureKey'=>$jobvalue['msazureKey'],'msazureselected'=>$jobvalue['msazureContainer'])); ?>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
-						<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
-						<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
-						<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-					<?PHP } ?>
+					<b><?PHP _e('Host:','backwpup'); ?></b><br />
+					<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
+					<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
+					<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
+					<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
+					<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
+					<b><?PHP _e('Container:','backwpup'); ?></b><br />
+					<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
+					<?PHP if (!empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey'])) backwpup_get_msazure_container(array('msazureHost'=>$jobvalue['msazureHost'],'msazureAccName'=>$jobvalue['msazureAccName'],'msazureKey'=>$jobvalue['msazureKey'],'msazureselected'=>$jobvalue['msazureContainer'])); ?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
+					<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
+					<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
+					<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 				</div>
 			</div>
 			<?PHP } ?>
 			
-			<?PHP if (in_array('RSC',$dests)) { ?>
+			<?PHP if (in_array('RSC',$dests) and function_exists('curl_exec')) { ?>
 			<div id="torsc" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Rackspace Cloud','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://www.rackspacecloud.com/2073.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
-					<?PHP if (!(extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll'))) {
-						echo "<b>".__('curl Support required','backwpup')."</b>";
-					} else { ?>
-						<b><?PHP _e('Username:','backwpup'); ?></b><br />
-						<input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
-						<b><?PHP _e('API Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://manage.rackspacecloud.com/APIAccess.do" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-						<input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
-						<b><?PHP _e('Container:','backwpup'); ?></b><br />
-						<input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
-						<?PHP if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey'])) backwpup_get_rsc_container(array('rscUsername'=>$jobvalue['rscUsername'],'rscAPIKey'=>$jobvalue['rscAPIKey'],'rscselected'=>$jobvalue['rscContainer'])); ?>
-						&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newrscContainer" type="text" value="" class="text" /> <br />
-						<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
-						<input name="rscdir" type="text" value="<?PHP echo $jobvalue['rscdir'];?>" class="large-text" /><br />
-						<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-					<?PHP } ?>
+					<b><?PHP _e('Username:','backwpup'); ?></b><br />
+					<input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
+					<b><?PHP _e('API Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://manage.rackspacecloud.com/APIAccess.do" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
+					<input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
+					<b><?PHP _e('Container:','backwpup'); ?></b><br />
+					<input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
+					<?PHP if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey'])) backwpup_get_rsc_container(array('rscUsername'=>$jobvalue['rscUsername'],'rscAPIKey'=>$jobvalue['rscAPIKey'],'rscselected'=>$jobvalue['rscContainer'])); ?>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newrscContainer" type="text" value="" class="text" /> <br />
+					<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
+					<input name="rscdir" type="text" value="<?PHP echo $jobvalue['rscdir'];?>" class="large-text" /><br />
+					<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 				</div>
 			</div>
 			<?PHP } ?>
 			
-			<?PHP if (in_array('DROPBOX',$dests)) { ?>
+			<?PHP if (in_array('DROPBOX',$dests) and function_exists('curl_exec') and function_exists('json_decode')) { ?>
 			<div id="todropbox" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
-					<b><?PHP _e('Email:','backwpup'); ?></b><br />
-					<input name="dropemail" type="text" value="<?PHP echo $jobvalue['dropemail'];?>" class="large-text" /><br />
-					<b><?PHP _e('Password:','backwpup'); ?></b><br />
-					<input name="dropepass" type="password" value="<?PHP echo base64_decode($jobvalue['dropepass']);?>" class="password large-text" /><br />
+					<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
+					<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
+						<span style="color:red;"><?php _e('Not authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Authenticate!', 'backwpup'); ?>" /><br />
+					<?PHP } else  { ?>
+						<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
+					<?PHP } ?><br />
 					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
 					<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
-					<?PHP _e('Max. Backup Files in Dopbox Folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
+					<?PHP _e('Max. Backup Files in Dopbox Folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 				</div>
 			</div>
 			<?PHP } ?>
@@ -443,7 +434,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			<div id="tomail" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to E-Mail','backwpup'); ?></span></h3>
 				<div class="inside">
-					<b><?PHP _e('E-Mail-Adress:','backwpup'); ?></b><br />
+					<b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
 					<input name="mailaddress" id="mailaddress" type="text" value="<?PHP echo $jobvalue['mailaddress'];?>" class="large-text" /><br />
 					<?PHP if (!is_numeric($jobvalue['mailefilesize'])) $jobvalue['mailefilesize']=0; ?>
 					<?PHP echo __('Max. File Size for sending Backups with mail:','backwpup').'<input name="mailefilesize" type="text" value="'.$jobvalue['mailefilesize'].'" class="small-text" />MB<br />';?>

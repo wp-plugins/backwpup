@@ -1,5 +1,5 @@
 === BackWPup ===
-Contributors: danielhuesken, zlli
+Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&currency_code=EUR&lc=DE&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, azure, dropbox
 Requires at least: 2.8
@@ -100,6 +100,17 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 1.6.1 =
+* Now use web OAuth login for Dropbox! Best thaks to Tijs Verkoyen for his dropbox class.
+* Only Dropbox OAuth tokens are saved!
+* Check Dropbox Quota/Upload Filesize on Job run
+* fixed bug in tar with file/folder names longer than 100 chars
+* changed user capability back to '10' because working with WP lower than 3.0
+* bug fixes for old WordPress versions
+* English Text updates! Best thaks to Marcy Capron.
+* improvements
+* bug fixes
+
 = 1.6.0 =
 * new dropbox class to use all functions (download, delete, list)
 * added usefull inks in job edit page

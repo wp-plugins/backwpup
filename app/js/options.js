@@ -37,7 +37,7 @@ jQuery(document).ready( function($) {
 			$('#filebackup').hide();
 		}
 	});
-
+	
 	$('#mailmethod').change(function() {
 		if ( 'SMTP' == $('#mailmethod').val()) {
 			$('#mailsmtp').show();
@@ -127,3 +127,4 @@ jQuery(document).ready( function($) {
 	});
 
 });
+

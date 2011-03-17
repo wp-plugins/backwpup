@@ -60,15 +60,15 @@ $cfg=get_option('backwpup');
 					<input name="dirlogs" type="text" value="<?PHP echo $cfg['dirlogs'];?>" class="large-text" /><br />
 					<b><?PHP _e('Max. Log Files in Folder:','backwpup'); ?></b><br />
 					<input name="maxlogs" id="maxlogs" size="3" type="text" value="<?PHP echo $cfg['maxlogs'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br />
-					<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['gzlogs'],true); ?> name="gzlogs" <?php if (!function_exists('gzopen')) echo "disabled=\"disabled\""; ?> /><b>&nbsp;<?PHP _e('Gzip Log files!','backwpup'); ?></b><br />
-					<input class="checkbox" value="1" type="checkbox" <?php checked($cfg['logfilelist'],true); ?> name="logfilelist" /><b>&nbsp;<?PHP _e('Log deteiled File list.','backwpup'); ?></b><br />
+					<input class="checkbox" value="1" type="checkbox" <?php checked($cfg['gzlogs'],true); ?> name="gzlogs" <?php if (!function_exists('gzopen')) echo "disabled=\"disabled\""; ?> /><b>&nbsp;<?PHP _e('Gzip Log files!','backwpup'); ?></b><br />
+					<input class="checkbox" value="1" type="checkbox" <?php checked($cfg['logfilelist'],true); ?> name="logfilelist" /><b>&nbsp;<?PHP _e('Log a detailed file list.','backwpup'); ?></b><br />
 				</div>
 			</div>
 		
 			<div id="disablewpcron" class="postbox">
 				<h3 class="hndle"><span><?PHP _e('Disable WP-Cron','backwpup'); ?></span></h3>
 				<div class="inside">
-					<input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/> <?PHP _e('Use Cron job of Hoster and disable WP_Cron','backwpup'); ?><br />
+					<input class="checkbox" id="disablewpcron" type="checkbox"<?php checked($cfg['disablewpcron'],true,true);?> name="disablewpcron" value="1"/> <?PHP _e('Use your host\'s Cron Job and disable WP-Cron','backwpup'); ?><br />
 					<?PHP _e('You must set up a cron job that calls:','backwpup'); ?><br />
 					<i> php -q <?PHP echo ABSPATH.'wp-cron.php'; ?></i><br /> 
 					<?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 

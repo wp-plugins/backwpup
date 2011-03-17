@@ -892,7 +892,6 @@ class WP_List_Table {
 	}
 }
 
-
 /**
  *  Get the current screen object
  *
@@ -984,4 +983,5 @@ function get_submit_button( $text = NULL, $type = 'primary', $name = 'submit', $
 
 	return $button;
 }
+
 ?>
