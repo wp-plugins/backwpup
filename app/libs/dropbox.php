@@ -37,7 +37,7 @@
 class Dropbox
 {
 	// internal constant to enable/disable debugging
-	const DEBUG = true;
+	const DEBUG = false;
 
 	// url for the dropbox-api
 	const API_URL = 'https://api.dropbox.com';
