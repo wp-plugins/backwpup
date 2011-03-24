@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.6.1
+Stable tag: 1.6.2
 
 Backup your WordPress Database and Files, and more!
 
