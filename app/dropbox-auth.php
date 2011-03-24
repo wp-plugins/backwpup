@@ -4,14 +4,14 @@ if (file_exists(trim($_GET['wpabs']).'wp-load.php')) {
 } else {
 	header("HTTP/1.0 404 Not Found");
 }
-require_once (dirname(__FILE__).'/libs/dropbox.php');
+require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
 $dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 //for Dropbox oAuth backlink
 if ($_GET['uid']>1 and !empty($_GET['oauth_token'])) {
 	$reqtoken=get_option('backwpup_dropboxrequest');
 	if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 		//Get Access Tokens
-		$oAuthStuff = $dropbox->oAuthAccessToken($_GET['oauth_token']);
+		$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 		//Save Tokens
 		$jobs=get_option('backwpup_jobs');
 		$jobs[$reqtoken['jobid']]['dropetoken']=$oAuthStuff['oauth_token'];

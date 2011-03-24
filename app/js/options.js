@@ -8,6 +8,7 @@ jQuery(document).ready( function($) {
 			$('#tomsazure').show();
 			$('#torsc').show();
 			$('#todropbox').show();
+			$('#tosugarsync').show();
 			$('#todir').show();
 			$('#tomail').show();
 		} else {
@@ -17,6 +18,7 @@ jQuery(document).ready( function($) {
 			$('#tomsazure').hide();
 			$('#torsc').hide();
 			$('#todropbox').hide();
+			$('#tosugarsync').hide();
 			$('#todir').hide();
 			$('#tomail').hide();
 		}

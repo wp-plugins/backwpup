@@ -1,33 +1,33 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, cron, ftp, S3, export, xml, Rackspase, cloud, azure, dropbox
+Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox
 Requires at least: 2.8
 Tested up to: 3.1.0
 Stable tag: 1.6.1
 
-Backup and more of your WordPress Blog Database and Files
+Backup your WordPress Database and Files, and more!
 
 == Description ==
 
-Backup and more your Blog.
+Do backups and more.
 
 * Database Backup
 * WordPress XML Export
 * Optimize Database
 * Check\Repair Database
 * File Backup
-* Backups in zip,tar,tar.gz,tar.bz2 format
+* Backups in zip, tar, tar.gz, tar.bz2 format
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
 * Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
 * Store backup to DropBox
-* Send Log/Backup by eMail
+* Send Log/Backup by Email
 
 
-I can give no WARRANTY to any backups...
+** NO WARRANTY SUPPLIED. **
 
 
 == Installation ==
@@ -39,19 +39,19 @@ I can give no WARRANTY to any backups...
 == Frequently Asked Questions ==
 = Requires =
 * PHP 5.2.0
-* WordPress 2.8 better 3.1
-* curl (for Amazon S3, MS Azur, RackSpace,Dropbox Support)
+* WordPress 2.8, works best with 3.1
+* curl (for Amazon S3, MS Azur, RackSpace, Dropbox Support)
 * gzip (for PCLZIP and gzip archives)
 * bzip2 (for bzip2 archives)
 
-= Where is the Database dump File =
-in the root folder of the Archive. <i>DBName</i>.sql
+= Where is the Database dump File? =
+in the root folder of the archive. <i>DBName</i>.sql
 
-= Where is the WordPress Export File =
-in the root folder of the Archive. <i>blogname</i>.wordpress.<i>jjjj-mm-dd</i>.xml
+= Where is the WordPress Export File? =
+in the root folder of the archive. <i>blogname</i>.wordpress.<i>jjjj-mm-dd</i>.xml
 
 = Zip File Support =
-Plugin use PCLZIP lib if PHP not uses zip extension
+Plugin uses zip extension if PHP, if not, uses PCLZIP lib extension
 
 = Maintenance Mode =
 Supported Plugins
@@ -59,40 +59,40 @@ Supported Plugins
 * wp-maintenance-mode
 * WordPress .maintenance file
 
-if your Blog do not come back from Maintenance Mode switch back from Maintenance Mode by changing the Plugin options or delete the <i>.maintenance</i> file in Blog root folder.
+If your site does not come back from Maintenance Mode, switch back from Maintenance Mode by changing the Plugin options or delete the <i>.maintenance</i> file in the install's root folder.
 
 = Restore a Blog Database =
-Copy the <i>DBName</i>.sql in the root folder of the Blog and go to the tools tab in the Plugin.
-You can use PHPMyAdmin also.
+Copy the <i>DBName</i>.sql in the root folder of the site and go to the tools tab in the Plugin.
+You can also use PHPMyAdmin.
 
-= Abnormal Script aborts =
-Webserver normally abort Scrips that works longer then 300s.
-PHP normally abort Script that works longer then 30s but the Plugin try too switch off the abortion.
+= Abnormal Script Cancellations =
+Webserver normally aborts scripts that works longer then 300s.
+PHP normally aborts scripts that works longer then 30s but the plugin will try to keep this from happening.
 
 = Memory usage =
-* The Plugin is coded to use low memory
-* The Plugin will try to increase Memory automatically if needed
-* PCLZIP lib need 8MB free Memory for zipping
-* Mail a archive need many Memory
+* The plugin is coded to use low memory
+* The plugin will try to increase memory automatically if needed
+* PCLZIP lib needs 8MB free memory for zipping
+* Emailing an archive needs a lot of memory
 
-= Mail archives =
-I have build in many options to Optimize the Mailing but the mailing lib uses high Memory.
-Place mail only little archives
+= Email archives =
+I have built in many options to optimize email archives, but the mailing library uses a lot of memory.
+You should only send small archives via email.
 
 = FTP Warnings =
-Please deactivate Pasive Mode and try it again.
+Please deactivate passive mode and try it again.
 
-= Disabe some destionations for Backups =
-You can set in wp-config.php the following:
-<i>define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX');</i>
-all listed destinations are allowed than.
+= Disable some destinations for backups =
+You can set the following in wp-config.php:
+<i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE');</i>
+all listed destinations are then disabled.
 Destinations are:
-* MAIL = mail (can't excluded)
-* DIR = Directory (can't excluded)
+* MAIL = mail (can't disable)
+* DIR = Directory (can't disable)
 * S3 = Amazon S3
 * RSC = RackSpaceCloud
 * FTP = FTP Server
-* DROPBOX = Dropbox
+* DROPBOX = DropBox
 * MSAZURE = Microsoft Azure (Blob)
 
 == Screenshots ==
@@ -100,68 +100,71 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 1.6.2 =
+* Dropbox improvements and bug fixes
+
 = 1.6.1 =
-* Now use web OAuth login for Dropbox! Best thaks to Tijs Verkoyen for his dropbox class.
-* Only Dropbox OAuth tokens are saved!
-* Check Dropbox Quota/Upload Filesize on Job run
-* fixed bug in tar with file/folder names longer than 100 chars
-* changed user capability back to '10' because working with WP lower than 3.0
-* bug fixes for old WordPress versions
-* English Text updates! Best thaks to Marcy Capron.
-* improvements
+* Now use web OAuth login for DropBox! Best thanks to Tijs Verkoyen for his great DropBox class.
+* Only DropBox OAuth tokens are saved!
+* Check DropBox Quota/Upload Filesize on Job run
+* fixed bug in .tar with file/folder names longer than 100 chars
+* changed user capability back to '10' when working with WP lower than 3.0
+* bug fixes for old WP versions
+* English text updates! Best thanks to Marcy Capron.
+* general improvements
 * bug fixes
 
 = 1.6.0 =
-* new dropbox class to use all functions (download, delete, list)
-* added usefull inks in job edit page
-* renamed functions.php to resolve problems with false includes of other plugins
-* improvements
+* new DropBox class to use all functions (download, delete, list)
+* added useful links in job edit page
+* renamed functions.php to resolve problems arising from other plugins
+* general improvements
 
 = 1.5.5 =
-* Updatet AWS SDK to ver.1.2.6 for Amazon S3
-* Added AWS Regin "Northeast" (Japan)
+* Updated AWS SDK to ver.1.2.6 for Amazon S3
+* Added AWS Region "Northeast" (Japan)
 * Added Microsoft Azure (Blob) as backup destination
 * bug fixes
 
 = 1.5.2 =
 * changes for user checking
-* removed Plugin init action
+* removed plugin init action
 
 = 1.5.1 =
 * changed user capability from '10' to 'export'
-* Updatet AWS SDK to ver.1.2.5 for Amazon S3
+* Updated AWS SDK to ver.1.2.5 for Amazon S3
 
 = 1.5.0 =
 * use AWS SDK ver.1.2.4 now for Amazon S3
-* Update rackspase cloud files to ver.1.7.6
-* Added Job setteing import/export
-* Download link for last backup in Jobs tab
-* Link for last Log in Jobs tab
-* Logs can now compressed
+* Update Rackspase cloud files to ver.1.7.6
+* Added job setting import/export
+* Download link for last backup in jobs tab
+* Link for last log in jobs tab
+* Logs can now be compressed
 * Backup destinations can now be disabled (see help)
 * Bug fixes and improvements
 
 = 1.4.1 =
-* Dropbox changes
-* fixed problem on send log with mail
+* DropBox changes
+* fixed problem on send log with email
 * Security fix (thanks Massa Danilo)
 
 = 1.4.0 =
 * make SSL-FTP as option
-* added Dropbox support (zlli)
+* added DropBox support (zlli)
 
 = 1.3.6 =
-* long file list not longer displayed in logs.
+* long file list no longer displayed in logs.
 * Added option to see detailed file list
 * removed FTP Alloc command
-* set FTP normal mode if pasive mode disabled
-* remove FTP heler function and use FTP PHP functions
+* set FTP normal mode if passive mode disabled
+* remove FTP helper function and use FTP PHP functions
 * spend file list 2MB free memory
 
 = 1.3.5 =
 * fixed problem with folder include
 * added option to deactivate FTP passive mode
-* fixed bug for prasing errors because PHP 5 move PHP 5 functions in a seperate file
+* fixed bug for parsing errors because PHP 5 move PHP 5 functions in a seperate file
 
 = 1.3.4 =
 * fixed warning in send mail
@@ -169,28 +172,28 @@ Destinations are:
 
 = 1.3.3 =
 * fixed bug with clear only displayed
-* fiex bug with Parse Error for some php versions
+* fixed bug with Parse Error for some PHP versions
 
 = 1.3.2 =
-* added changeble backup file prefix
+* added changable backup file prefix
 * bug fixes
 
 = 1.3.1 =
-* added File and DB size information
+* added file and DB size information
 * removed "LOCK TABLE" in sql dumps
 * fixed bug in automatic job abortion
 * fixed bug in ABSPATH if it '/'
-* fiexd bug in save settings
-* fiexd bugs if no jobs exists
+* fixed bug in save settings
+* fixed bugs if no jobs exists
 * added link to clear running jobs
 
 = 1.3.0 =
 * added S3 new region codes for bucket creation
-* added S3 REDUCED REDUNDANCY support on put Backups
-* jobs will aborted after 10 min. and can't run twice
+* added S3 REDUCED REDUNDANCY support on backups
+* jobs will be aborted after 10 min. and can't run twice
 * use curl for xml dump and copy if curl not works
-* increasd min. PHP version to 5.2.0, because than all works
-* use linux cron based scheduing times
+* increased min. PHP version to 5.2.0, because then all works
+* use linux cron based scheduling times
 * added rackspacecloud.com support
 * use WP 3.1 table creation
 * added plugin checks for folder and new scheduling
@@ -208,7 +211,7 @@ Destinations are:
 * Bug fixes
 
 = 1.1.1 =
-* fixed S3 lib not found bug again.
+* fixed "S3 lib not found" bug again.
 * improved reschedule on activation problem.
 
 = 1.1.0 =
@@ -237,8 +240,8 @@ Destinations are:
 * removed some not used code
 
 = 1.0.7 =
-* added flattr button in Help
-* Fixed bug on S3 File deletion
+* added button in Help
+* Fixed bug on S3 file deletion
 * get files form S3 now faster for file deletion
 
 = 1.0.6 =
@@ -264,8 +267,8 @@ Destinations are:
 = 1.0.0 =
 * now WordPress Exports to XML can made
 * new backup files formats tar, tar.gz, tar.bz2
-* all job types can made in one job
-* added PHP zip extension support (use pclzip only if not supported)
+* all job types can be created in one job
+* added PHP zip extension support (use PclZip only if not supported)
 * removed PclZip trace code
 * fixed time display and schedule bugs
 * added some security
@@ -278,15 +281,15 @@ Destinations are:
 
 = 0.8.0 =
 * Fixed not working default settings on settings page
-* crate .htaccsses on Apache and index.html on other Webserver
+* create .htaccess on Apache and index.html on other Webserver
 * fixed global for $wp_version
 * set max execution time to 0 for unlimited
 * use WP function to generate options tables
 * Backup file list and zip creation changes
 * Added support for Amazon S3
 * Only works with PHP 5 now
-* Complete rewrite of job doing as PHP5 class
-* PHP errors now in Backup log
+* Complete rewrite of job as PHP5 class
+* PHP errors now in backup log
 * Log now in files
 
 = 0.7.2 =
@@ -307,7 +310,7 @@ Destinations are:
 
 = 0.6.5 =
 * Prevent direct file loading
-* job working in iframe
+* job working in iFrame
 * colored logs
 * HTML fixes
 * spell check
@@ -323,7 +326,7 @@ Destinations are:
 * use ftp_row for login and other commands
 * Add option to send only email on errors
 * Internal structure changes
-* Add option to disable WP-Cron and use Hosters cron
+* Add option to disable WP-Cron and use host's cron
 * bug fixes
 
 = 0.6.2 =
@@ -333,9 +336,9 @@ Destinations are:
 * bug fixes and little improvements
 
 = 0.6.1 =
-* Added setting for Send Mail type.
-* Optimize Memory usage again
-* Fixed Bug that cron not work
+* Added setting for send email type.
+* Optimize memory usage again
+* Fixed Bug that kept cron from working
 
 = 0.6.0 =
 * Add Dashboard Widget

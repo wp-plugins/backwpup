@@ -173,6 +173,12 @@ class backwpup_dojob {
 				else
 					trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
 			}
+			if (in_array('SUGARSYNC',$dests) and !empty($this->job['sugaruser']) and !empty($this->job['sugarpass'])) {
+				if (function_exists('curl_exec') )
+					$this->destination_sugarsync();
+				else
+					trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
+			}
 			if (in_array('S3',$dests) and !empty($this->job['awsAccessKey']) and !empty($this->job['awsSecretKey']) and !empty($this->job['awsBucket'])) {
 				if (function_exists('curl_exec')) 
 					$this->destination_s3();
@@ -961,6 +967,9 @@ class backwpup_dojob {
 
 
 	private function destination_ftp() {
+		
+		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*1.5);
+		
 		$ftpport=21;
 		$ftphost=$this->job['ftphost'];
 		if (false !== strpos($this->job['ftphost'],':')) //look for port
@@ -1143,6 +1152,8 @@ class backwpup_dojob {
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 		
+		$this->need_free_memory(26214400*1.1); 
+		
 		try {
 			$s3 = new AmazonS3($this->job['awsAccessKey'], $this->job['awsSecretKey']);
 
@@ -1155,7 +1166,7 @@ class backwpup_dojob {
 				else 
 					$storage=AmazonS3::STORAGE_STANDARD;
 					
-				if ($s3->create_object($this->job['awsBucket'], $this->job['awsdir'].$this->backupfile, array('fileUpload' => $this->backupdir.$this->backupfile,'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage)))  {//transfere file to S3
+				if ($s3->create_mpu_object($this->job['awsBucket'], $this->job['awsdir'].$this->backupfile, array('fileUpload' => $this->backupdir.$this->backupfile,'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400)))  {//transfere file to S3
 					trigger_error(__('Backup File transferred to S3://','backwpup').$this->job['awsBucket'].'/'.$this->job['awsdir'].$this->backupfile,E_USER_NOTICE);
 					$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloads3&file='.$this->job['awsdir'].$this->backupfile.'&jobid='.$this->jobid;
 				} else {
@@ -1275,12 +1286,14 @@ class backwpup_dojob {
 	}
 	
 	private function destination_msazure() {
-
+		
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
 			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
 		}
-				
+		
+		$this->need_free_memory(4194304*1.5); 
+		
 		try {
 			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($this->job['msazureHost'],$this->job['msazureAccName'],$this->job['msazureKey']);
 
@@ -1290,12 +1303,8 @@ class backwpup_dojob {
 			} else {
 				trigger_error(__('Connected to Microsoft Azure Container:','backwpup').' '.$this->job['msazureContainer'],E_USER_NOTICE);
 			}
-			
-			if (filesize($this->backupdir.$this->backupfile)<Microsoft_WindowsAzure_Storage_Blob::MAX_BLOB_SIZE) { //for files bigger tha 64MB
-				$result = $storageClient->putBlob($this->job['msazureContainer'], $this->job['msazuredir'].$this->backupfile, $this->backupdir.$this->backupfile);
-			} else {
-				$result = $storageClient->putLargeBlob($this->job['msazureContainer'], $this->job['msazuredir'].$this->backupfile, $this->backupdir.$this->backupfile);
-			}
+				
+			$result = $storageClient->putBlob($this->job['msazureContainer'], $this->job['msazuredir'].$this->backupfile, $this->backupdir.$this->backupfile);
 
 			if ($result->Name==$this->job['msazuredir'].$this->backupfile) {
 				trigger_error(__('Backup File transferred to azure://','backwpup').$this->job['msazuredir'].$this->backupfile,E_USER_NOTICE);
@@ -1359,15 +1368,12 @@ class backwpup_dojob {
 	private function destination_dropbox(){
 		
 		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/libs/dropbox.php');
-		
-		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*1.3); 
+			require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
 		
 		try {
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			// set the tokens 
-			$dropbox->setOAuthToken($this->job['dropetoken']);
-			$dropbox->setOAuthTokenSecret($this->job['dropesecret']);
+			$dropbox->setOAuthTokens($this->job['dropetoken'],$this->job['dropesecret']);
 			$info=$dropbox->accountInfo();
 			if (!empty($info['uid'])) {
 				trigger_error(__('Authed to DropBox from ','backwpup').$info['display_name'],E_USER_NOTICE);
@@ -1380,13 +1386,8 @@ class backwpup_dojob {
 			} else {
 				trigger_error(__('Free Space on DropBox: ','backwpup').backwpup_formatBytes($dropboxfreespase),E_USER_NOTICE);
 			}
-			//Check Backup File Size max 300MB allowed
-			if (filesize($this->backupdir.$this->backupfile)>314572800) {
-				trigger_error(__('DropBox API only allow upload files lower than 300MB!!!','backwpup'),E_USER_ERROR);
-				return;
-			}
 			// put the file 
-			$response = $dropbox->filesPost($this->job['dropedir'], $this->backupdir.$this->backupfile); 
+			$response = $dropbox->upload($this->backupdir.$this->backupfile,$this->job['dropedir']); 
 			if ($response['result']=="winner!") {
 				$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloaddropbox&file='.$this->job['dropedir'].$this->backupfile.'&jobid='.$this->jobid;
 				trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
@@ -1419,6 +1420,31 @@ class backwpup_dojob {
 			trigger_error(__('DropBox API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
 	}
+
+	private function destination_sugarsync(){
+		
+		if (!class_exists('SugarSync'))
+			require_once (dirname(__FILE__).'/libs/sugarsync.php');
+		
+		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*1.5); 
+		
+		try {
+			$sugarsync = new SugarSync($this->job['sugaruser'],base64_decode($this->job['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+			// set the tokens 
+			$user=$sugarsync->user();
+			$workspace=$sugarsync->get($user->syncfolders);
+			$workspacefiles=$sugarsync->get('https://api.sugarsync.com/folder/:sc:970679:1/contents');
+			//var_dump($workspacefiles);
+			
+			$folder=$sugarsync->createfolder($user->webArchive,untrailingslashit($this->job['sugardir']));
+			//$reponse=$sugarsync->createfile($user->webArchive,$this->backupdir.$this->backupfile);
+			
+
+		} catch (Exception $e) {
+			trigger_error(__('SugarSync API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+		} 
+	}
+
 	
 	private function job_end($logfile ='') {
 		if (empty($logfile)) $logfile=$this->logdir.$this->logfile;

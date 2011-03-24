@@ -164,7 +164,7 @@ function backwpup_backups_operations($action) {
 			if (!class_exists('CF_Authentication'))
 				require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
 			if (!class_exists('Dropbox'))
-				require_once(dirname(__FILE__).'/libs/dropbox.php');
+				require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
 			}
 
 		$num=0;
@@ -191,8 +191,7 @@ function backwpup_backups_operations($action) {
 				if (class_exists('Dropbox')) {
 					if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 						$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-						$dropbox->setOAuthToken($jobvalue['dropetoken']);
-						$dropbox->setOAuthTokenSecret($jobvalue['dropesecret']);
+						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 						$dropbox->fileopsDelete($backups['file']);
 					}
 				}
@@ -293,34 +292,27 @@ function backwpup_backups_operations($action) {
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		require_once(dirname(__FILE__).'/libs/dropbox.php');
+		require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox->setOAuthToken($jobs[$jobid]['dropetoken']);
-			$dropbox->setOAuthTokenSecret($jobs[$jobid]['dropesecret']);
-			$dropfile = $dropbox->filesGet($_GET['file']);
-		} catch (Exception $e) {
-			die($e->getMessage());
-		} 
-		if (!empty($dropfile['content_type'])) {
+			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-			header("Content-Type: ".$dropfile['content_type']);
+			//header("Content-Type: ".$dropfile['content_type']);
 			header("Content-Type: application/force-download");
 			header("Content-Type: application/octet-stream");
 			header("Content-Type: application/download");
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".$dropfile['bytes']);
-			echo base64_decode($dropfile['data']);
+			//header("Content-Length: ".$dropfile['bytes']);
+			echo $dropbox->download($_GET['file']);
 			die();
-		} else {
-			header('HTTP/1.0 404 Not Found');
-			die();
-		}
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
 		break;
 	case 'downloadmsazure': //Download Microsoft Azure Backup
 		check_admin_referer('download-backup');
@@ -515,6 +507,10 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['msazureContainer']=$_POST['msazureContainer'];
 	$jobs[$jobid]['msazuredir']=stripslashes($_POST['msazuredir']);
 	$jobs[$jobid]['msazuremaxbackups']=(int)$_POST['msazuremaxbackups'];
+	$jobs[$jobid]['sugaruser']=$_POST['sugaruser'];
+	$jobs[$jobid]['sugarpass']=base64_encode($_POST['sugarpass']);
+	$jobs[$jobid]['sugardir']=stripslashes($_POST['sugardir']);
+	$jobs[$jobid]['sugarmaxbackups']=(int)$_POST['sugarmaxbackups'];
 	$jobs[$jobid]['rscUsername']=$_POST['rscUsername'];
 	$jobs[$jobid]['rscAPIKey']=$_POST['rscAPIKey'];
 	$jobs[$jobid]['rscContainer']=$_POST['rscContainer'];
@@ -573,7 +569,7 @@ function backwpup_save_job() { //Save Job settings
 	
 	if ($_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
 		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/libs/dropbox.php');
+			require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
 		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 		// request request tokens
 		$response = $dropbox->oAuthRequestToken();

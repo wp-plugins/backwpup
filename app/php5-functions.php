@@ -278,6 +278,23 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;	
 		
+	if (!isset($jobsettings['sugaruser']) or !is_string($jobsettings['sugaruser']))
+		$jobsettings['sugaruser']='';
+
+	if (!isset($jobsettings['sugarpass']) or !is_string($jobsettings['sugarpass']))
+		$jobsettings['sugarpass']='';		
+		
+	if (!isset($jobsettings['sugardir']) or !is_string($jobsettings['sugardir']) or $jobsettings['sugardir']=='/')
+		$jobsettings['sugardir']='';
+	$jobsettings['sugardir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['sugardir']))));
+	if (substr($jobsettings['sugardir'],0,1)=='/')
+		$jobsettings['sugardir']=substr($jobsettings['sugardir'],1);
+	
+	if (!isset($jobsettings['sugarmaxbackups']) or !is_int($jobsettings['sugarmaxbackups']))
+		$jobsettings['sugarmaxbackups']=0;			
+		
+		
+		
 	if (!is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
 		$jobsettings['mailaddress']='';
 
@@ -301,7 +318,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 		if (!class_exists('CF_Authentication'))
 			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 		if (!class_exists('Dropbox') and function_exists('json_decode'))
-			require_once(dirname(__FILE__).'/libs/dropbox.php');
+			require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
 	}
 
 	foreach ($jobs as $jobid => $jobvalue) { //go job by job
@@ -338,8 +355,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 			if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 				try {
 					$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-					$dropbox->setOAuthToken($jobvalue['dropetoken']);
-					$dropbox->setOAuthTokenSecret($jobvalue['dropesecret']);
+					$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 					$contents = $dropbox->metadata($jobvalue['dropedir']);
 					if (is_array($contents)) {
 						foreach ($contents['contents'] as $object) {
@@ -472,7 +488,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 						$files[$filecounter]['jobid']=$jobid;
 						$files[$filecounter]['file']=$ftpfiles;
 						$files[$filecounter]['filename']=basename($ftpfiles);
-						$files[$filecounter]['downloadurl']="ftp://".$jobvalue['ftpuser'].":".base64_decode($jobvalue['ftppass'])."@".$jobvalue['ftphost'].$ftpfiles;
+						$files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].rawurlencode($ftpfiles);
 						$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
 						$files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
 						$filecounter++;
@@ -527,13 +543,20 @@ function backwpup_get_aws_buckets($args='') {
 		else
 			return;
 	}
-	if ($buckets->status!=200) {
-		echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found!','backwpup').'</span>';
+	if ($buckets->status>=200 and $buckets->status<300) {
+		echo '<span id="awsBucket" style="color:red;">'.__('S3 Message:','backwpup').' '.$buckets->status.': '.$buckets->body->Message.'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
 	}
+	if (empty($buckets->body->Buckets->Bucket)) {
+		echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}	
 	echo '<select name="awsBucket" id="awsBucket">';
 	foreach ($buckets->body->Buckets->Bucket as $bucket) {
 		echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";

@@ -431,6 +431,21 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			</div>
 			<?PHP } ?>
 			
+			<?PHP if (in_array('SUGARSYNC',$dests) and function_exists('curl_exec')) { ?>
+			<div id="tosugarsync" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+				<h3 class="hndle"><span><?PHP _e('Backup to SugarSync','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://www.sugarsync.com/referral?rf=cajw0b09tbw6k" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
+				<div class="inside">
+					<b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
+					<input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
+					<b><?PHP _e('Password:','backwpup'); ?></b><br />
+					<input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo base64_decode($jobvalue['sugarpass']);?>" class="large-text" /><br />
+					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
+					<input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
+					<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+				</div>
+			</div>
+			<?PHP } ?>
+			
 			<div id="tomail" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Backup to E-Mail','backwpup'); ?></span></h3>
 				<div class="inside">
