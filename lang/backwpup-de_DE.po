@@ -1,0 +1,2269 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: BackWPup\n"
+"Report-Msgid-Bugs-To: http://wordpress.org/tags/backwpup\n"
+"POT-Creation-Date: 2010-06-23 17:08+0000\n"
+"PO-Revision-Date: 2011-03-27 14:14+0100\n"
+"Last-Translator: David Decker <deckerweb.mobil@googlemail.com>\n"
+"Language-Team: DECKERWEB <deckerweb.mobil@googlemail.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Poedit-Language: German\n"
+"X-Poedit-Country: GERMANY\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: __;_e;__ngettext:1,2;_n:1,2;__ngettext_noop:1,2;_n_noop:1,2;_c,_nc:4c,1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2\n"
+"X-Poedit-Basepath: .\n"
+"X-Textdomain-Support: yes\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#@ backwpup
+#: app/backwpup_dojob.php:159
+msgid "[WARNING]"
+msgstr "[WARNUNG]"
+
+#@ backwpup
+#: app/backwpup_dojob.php:78
+#: app/backwpup_dojob.php:165
+#: app/options-save.php:63
+msgid "[ERROR]"
+msgstr "[FEHLER]"
+
+#@ backwpup
+#: app/backwpup_dojob.php:169
+msgid "[DEPRECATED]"
+msgstr "[VERALTET]"
+
+#@ backwpup
+#: app/backwpup_dojob.php:172
+msgid "[STRICT NOTICE]"
+msgstr "[STRENGER HINWEIS]"
+
+#@ backwpup
+#: app/backwpup_dojob.php:175
+msgid "[RECOVERABLE ERROR]"
+msgstr "[L&Ouml;SBARER FEHLER]"
+
+#@ backwpup
+#: app/backwpup_dojob.php:65
+#, php-format
+msgid "BackWPup Log for %1$s from %2$s at %3$s"
+msgstr "BackWPup Log f&uuml;r %1$s vom %2$s um %3$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:131
+#, php-format
+msgid "PHP Safe Mode is on!!! Max exec time is %1$d sec."
+msgstr "PHP Safe Mode ist an!!! Maximale ausf&uuml;hrbare Zeit ist %1$d Sek."
+
+#@ backwpup
+#: app/backwpup_dojob.php:229
+#, php-format
+msgid "Can not create Folder: %1$s"
+msgstr "Ordner kann nicht erstellt werden: %1$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:234
+#, php-format
+msgid "Can not write to Folder: %1$s"
+msgstr "In den Ordner kann nicht geschrieben werden: %1$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:268
+#, php-format
+msgid "PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s"
+msgstr "PHP Safe Mode ist an!!! Speicherlimit kann nicht erh&ouml;ht werden, ist %1$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:295
+#, php-format
+msgid "Memory increased from %1$s to %2$s"
+msgstr "Speicher(limit) erh&ouml;ht von %1$s auf %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:297
+#, php-format
+msgid "Can not increase Memory Limit is %1$s"
+msgstr "Speicherlimit kann nicht erh&ouml;ht werden, ist %1$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:307
+msgid "Set Blog to Maintenance Mode"
+msgstr "Setze Webseite/ Blog in den Wartungsmodus (via Plugin!)"
+
+#@ backwpup
+#: app/backwpup_dojob.php:323
+msgid "Set Blog to normal Mode"
+msgstr "Setze Webseite/ Blog zur&uuml;ck in den Normalmodus"
+
+#@ backwpup
+#: app/backwpup_dojob.php:339
+msgid "Run Database check..."
+msgstr "Datenbank-Check l&auml;uft ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:354
+#: app/backwpup_dojob.php:356
+#: app/backwpup_dojob.php:358
+#, php-format
+msgid "Result of table check for %1$s is: %2$s"
+msgstr "Ergebnis f&uuml;r den Tabellencheck f&uuml;r %1$s, ist %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:361
+#: app/backwpup_dojob.php:373
+#: app/backwpup_dojob.php:397
+#: app/backwpup_dojob.php:407
+#: app/backwpup_dojob.php:452
+#: app/backwpup_dojob.php:463
+#: app/backwpup_dojob.php:590
+#: app/tools/db_restore.php:68
+#: app/tools/db_restore.php:79
+#: app/tools/db_restore.php:82
+#: app/tools/db_restore.php:85
+#: app/tools/db_restore.php:90
+#, php-format
+msgid "BackWPup database error %1$s for query %2$s"
+msgstr "BackWPup-Datenbankfehler %1$s f&uuml;r die Anfrage %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:366
+#: app/backwpup_dojob.php:368
+#: app/backwpup_dojob.php:370
+#, php-format
+msgid "Result of table repair for %1$s is: %2$s"
+msgstr "Ergebnis der Tabellenreparatur f&uuml;r %1$s ist: %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:378
+msgid "Database check done!"
+msgstr "Datenbank-Check fertig!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:380
+msgid "No Tables to check"
+msgstr "Keine Tabellen zum Checken"
+
+#@ backwpup
+#: app/backwpup_dojob.php:445
+msgid "Run Database Dump to file..."
+msgstr "Datenbank-Dump wird gespeichert in Datei ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:496
+msgid "Dump Database table: "
+msgstr "Datenbanktabelle dumpen: "
+
+#@ backwpup
+#: app/backwpup_dojob.php:513
+msgid "Can not create Database Dump file"
+msgstr "Datenbank-Dump-Datei kann nicht erstellt werden"
+
+#@ backwpup
+#: app/backwpup_dojob.php:516
+msgid "No Tables to Dump"
+msgstr "Keine Tabellen zum Dumpen"
+
+#@ backwpup
+#: app/backwpup_dojob.php:511
+msgid "Database Dump done!"
+msgstr "Datenbank-Dump fertig!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:521
+msgid "Add Database Dump to Backup:"
+msgstr "F&uuml;ge Datenbank-Dump zur Datensicherung hinzu:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:532
+#: app/backwpup_dojob.php:549
+msgid "Run Wordpress Export to XML file..."
+msgstr "WordPress Export als XML-Datei l&auml;uft ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:551
+msgid "Export to XML done!"
+msgstr "Export zu XML ist fertig!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:560
+msgid "Add XML Export to Backup:"
+msgstr "F&uuml;ge XML-Export zur Datensicherung hinzu:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:553
+msgid "Can not Export to XML!"
+msgstr "Kein Export zu XML m&ouml;glich!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:569
+msgid "Run Database optimize..."
+msgstr "Datenbankoptimierung l&auml;uft ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:583
+#: app/backwpup_dojob.php:585
+#: app/backwpup_dojob.php:587
+#, php-format
+msgid "Result of table optimize for %1$s is: %2$s"
+msgstr "Ergebnis der Tabellenoptimierung f&uuml;r %1$s ist: %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:593
+msgid "Database optimize done!"
+msgstr "Datenbankoptimierung fertig!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:596
+msgid "No Tables to optimize"
+msgstr "Keine Tabellen zum Optimieren"
+
+#@ backwpup
+#: app/backwpup_dojob.php:624
+msgid "Is not a file or directory:"
+msgstr "Dies ist kein(e) Datei oder ein Verzeichnis:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:634
+msgid "Make a list of files to Backup ...."
+msgstr "Erstelle Liste von Dateien zur Datensicherung ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:683
+msgid "No files to Backup"
+msgstr "Keine Dateien f&uuml;r die Datensicherung"
+
+#@ backwpup
+#: app/backwpup_dojob.php:693
+msgid "Create Backup Zip file..."
+msgstr "Erstelle Datensicherungs-ZIP-Datei ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:701
+#: app/backwpup_dojob.php:722
+msgid "Add File to ZIP file:"
+msgstr "F&uuml;ge Datei dem ZIP-Paket hinzu:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:703
+msgid "Can not add File to ZIP file:"
+msgstr "Datei kann dem ZIP-Paket nicht hinzugef&uuml;gt werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:707
+#: app/backwpup_dojob.php:729
+msgid "Backup Zip file create done!"
+msgstr "Erstellung der Datensicherungs-ZIP-Datei fertig!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:709
+msgid "Can not create Backup ZIP file:"
+msgstr "Datensicherungs-ZIP-Datei kann nicht erstellt werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:719
+msgid "Create Backup Zip (PclZip) file..."
+msgstr "Erstelle Datensicherungs-ZIP-Paket (PclZip) ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:727
+msgid "Zip file create:"
+msgstr "ZIP-Paketerstellung:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:748
+msgid "Can not create TAR Backup file"
+msgstr "TAR-Datensicherungs-Datei kann nicht erstellt werden"
+
+#@ backwpup
+#: app/backwpup_dojob.php:751
+msgid "Create Backup Archive file..."
+msgstr "Erstelle Datensicherungs-Archivdatei ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:758
+msgid "Add File to Backup Archive:"
+msgstr "Datei zum Datensicherungs-Archiv hinzuf&uuml;gen:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:855
+msgid "Backup Archive file create done!"
+msgstr "Datensicherungs-Archivdatei wurde erstellt!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:895
+#: app/backwpup_dojob.php:902
+#: app/backwpup_dojob.php:914
+#: app/backwpup_dojob.php:927
+msgid "FTP Client command:"
+msgstr "FTP-Client Kommando:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:897
+#: app/backwpup_dojob.php:900
+#: app/backwpup_dojob.php:904
+#: app/backwpup_dojob.php:917
+#: app/backwpup_dojob.php:919
+#: app/backwpup_dojob.php:922
+#: app/backwpup_dojob.php:924
+#: app/backwpup_dojob.php:930
+#: app/backwpup_dojob.php:932
+msgid "FTP Server reply:"
+msgstr "FTP-Server Antwort:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:919
+msgid "Can not Entering Passive Mode"
+msgstr "Einstieg in den passiven Modus nicht m&ouml;glich"
+
+#@ backwpup
+#: app/backwpup_dojob.php:951
+msgid "Backup File transferred to FTP Server:"
+msgstr "Datensicherungs-Datei auf den FTP-Server transferiert:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:954
+msgid "Can not transfer backup to FTP server."
+msgstr "Datensicherung kann nicht auf den FTP-Server transferiert werden."
+
+#@ backwpup
+#: app/backwpup_dojob.php:970
+msgid "Can not delete file on FTP Server:"
+msgstr "Datei auf dem FTP-Server kann nicht gel&ouml;scht werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:973
+msgid "files deleted on FTP Server:"
+msgstr "Dateien gel&ouml;scht auf dem FTP-Server:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1001
+msgid "Send mail with SMTP"
+msgstr "E-Mail senden mit SMTP"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1005
+msgid "Send mail with Sendmail"
+msgstr "E-Mail senden mit Sendmail"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1008
+msgid "Send mail with PHP mail"
+msgstr "E-Mail senden mit PHP mail"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1012
+msgid "Creating mail"
+msgstr "E-Mail erstellen"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1016
+msgid "BackWPup File from"
+msgstr "BackWPup-Datei von"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1024
+msgid "Backup Archive too big for sending by mail"
+msgstr "Datensicherungs-Archiv ist zu gro&szlig;, um es via E-Mail zu senden"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1029
+msgid "Adding Attachment to mail"
+msgstr "Anhang wird zur E-Mail hinzugef&uuml;gt"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1033
+msgid "Send mail...."
+msgstr "E-Mail wird gesendet ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1037
+msgid "Mail send!!!"
+msgstr "E-Mail wurde gesendet!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1035
+msgid "Can not send mail:"
+msgstr "E-Mail kann nicht gesendet werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1053
+msgid "Connected to S3 Bucket:"
+msgstr "Verbunden mit S3 Bucket:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1062
+msgid "Backup File transferred to S3://"
+msgstr "Datensicherungs-Datei zu S3 transferiert://"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1065
+msgid "Can not transfer backup to S3."
+msgstr "Datensicherung kann nicht zu S3 transferiert werden."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1087
+msgid "files deleted on S3 Bucket!"
+msgstr "Dateien wurden auf S3 Bucket gel&ouml;scht!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1094
+msgid "S3 Bucket not exists:"
+msgstr "S3 Bucket existiert nicht:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1255
+msgid "old backup files deleted!!!"
+msgstr "alte Datensicherungs-Dateien gel&ouml;scht!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:734
+#: app/backwpup_dojob.php:857
+#, php-format
+msgid "Backup Archive File size is %1s"
+msgstr "Datensicherungs-Dateigr&ouml;&szlig;e ist %1s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1398
+msgid "old Log files deleted!!!"
+msgstr "alte Logdateien gel&ouml;scht!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1401
+#, php-format
+msgid "Job done in %1s sec."
+msgstr "Auftrag ausgef&uuml;hrt in %1s Sekunden."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1506
+msgid "Jobname:"
+msgstr "Auftragsname:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1507
+msgid "Jobtype:"
+msgstr "Auftragstyp:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1509
+msgid "Errors:"
+msgstr "Fehler:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1511
+msgid "Warnings:"
+msgstr "Warnungen:"
+
+#@ backwpup
+#. translators: plugin header field 'Name'
+#: app/php-functions.php:15
+#: app/php-functions.php:89
+#: app/php-functions.php:275
+#: backwpup.php:0
+msgid "BackWPup"
+msgstr "BackWPup"
+
+#@ backwpup
+#: app/list-tables.php:262
+msgid "Job"
+msgstr "Auftrag"
+
+#@ backwpup
+#: app/list-tables.php:57
+#: app/list-tables.php:263
+msgid "Type"
+msgstr "Typ"
+
+#@ backwpup
+#: app/list-tables.php:264
+msgid "Backup/Log Date/Time"
+msgstr "Backup/Log Datum/Zeit"
+
+#@ backwpup
+#: app/list-tables.php:265
+msgid "Status"
+msgstr "Status"
+
+#@ backwpup
+#: app/list-tables.php:266
+#: app/list-tables.php:426
+msgid "Size"
+msgstr "Gr&ouml;&szlig;e"
+
+#@ backwpup
+#: app/list-tables.php:267
+msgid "Runtime"
+msgstr "Laufzeit"
+
+#@ backwpup
+#: app/list-tables.php:55
+msgid "ID"
+msgstr "ID"
+
+#@ backwpup
+#: app/list-tables.php:56
+msgid "Job Name"
+msgstr "Auftragsname"
+
+#@ backwpup
+#: app/list-tables.php:59
+msgid "Next Run"
+msgstr "N&auml;chster Durchlauf"
+
+#@ backwpup
+#: app/list-tables.php:60
+msgid "Last Run"
+msgstr "Letzter Durchlauf"
+
+#@ default
+#: app/php-functions.php:116
+#: app/php-functions.php:267
+msgid "Support"
+msgstr "Support"
+
+#@ default
+#: app/php-functions.php:117
+#: app/php-functions.php:266
+msgid "FAQ"
+msgstr "FAQ"
+
+#@ backwpup
+#: app/php-functions.php:118
+msgid "Plugin Homepage"
+msgstr "Plugin Homepage"
+
+#@ backwpup
+#: app/php-functions.php:119
+msgid "Plugin Home on WordPress.org"
+msgstr "Plugin-Seite bei WordPress.org"
+
+#@ default
+#: app/php-functions.php:120
+#: app/php-functions.php:268
+msgid "Donate"
+msgstr "Spenden"
+
+#@ backwpup
+#: app/php-functions.php:127
+msgid "Version:"
+msgstr "Version:"
+
+#@ backwpup
+#: app/php-functions.php:128
+msgid "Author:"
+msgstr "Autor:"
+
+#@ backwpup
+#: app/php-functions.php:256
+msgid "Go to Settings Page"
+msgstr "Gehe zur Einstellungsseite"
+
+#@ backwpup
+#@ default
+#: app/php-functions.php:205
+#: app/php-functions.php:256
+msgid "Settings"
+msgstr "Einstellungen"
+
+#@ backwpup
+#: app/php-functions.php:401
+msgid "WP XML Export"
+msgstr "WP XML Export"
+
+#@ backwpup
+#: app/php-functions.php:404
+msgid "Database Backup"
+msgstr "Datenbank-Sicherung"
+
+#@ backwpup
+#: app/options-edit-job.php:241
+#: app/php-functions.php:407
+msgid "File Backup"
+msgstr "Dateien-Sicherung"
+
+#@ backwpup
+#: app/php-functions.php:410
+msgid "Optimize Database Tables"
+msgstr "Datenbanktabellen optimieren"
+
+#@ backwpup
+#: app/php-functions.php:413
+msgid "Check Database Tables"
+msgstr "Datenbanktabellen checken"
+
+#@ backwpup
+#: app/php-functions.php:465
+msgid "Logs:"
+msgstr "Logdateien:"
+
+#@ backwpup
+#: app/php-functions.php:82
+#: app/php-functions.php:481
+msgid "View Log"
+msgstr "Log ansehen"
+
+#@ backwpup
+#: app/list-tables.php:334
+#: app/php-functions.php:489
+msgid "ERROR(S)"
+msgstr "FEHLER"
+
+#@ backwpup
+#: app/list-tables.php:336
+#: app/php-functions.php:491
+msgid "WARNING(S)"
+msgstr "WARNUNG(EN)"
+
+#@ backwpup
+#: app/list-tables.php:338
+#: app/php-functions.php:493
+msgid "OK"
+msgstr "OK"
+
+#@ backwpup
+#: app/options-settings.php:46
+#: app/php-functions.php:501
+#: app/php-functions.php:518
+msgid "none"
+msgstr "nichts"
+
+#@ backwpup
+#: app/php-functions.php:504
+msgid "Scheduled Jobs:"
+msgstr "Geplante Auftr&auml;ge:"
+
+#@ backwpup
+#: app/php-functions.php:507
+msgid "Edit Job"
+msgstr "Auftrag bearbeiten"
+
+#@ backwpup
+#: app/list-tables.php:152
+#: app/php-functions.php:510
+msgid "Running since:"
+msgstr "L&auml;uft seit:"
+
+#@ backwpup
+#: app/list-tables.php:152
+#: app/list-tables.php:168
+#: app/list-tables.php:353
+#: app/php-functions.php:510
+msgid "sec."
+msgstr "Sek."
+
+#@ backwpup
+#: app/options-edit-job.php:12
+msgid "BackWPup Job Settings"
+msgstr "BackWPup Auftragseinstellungen"
+
+#@ backwpup
+#: app/options-edit-job.php:43
+msgid "Job Type"
+msgstr "Auftrags-Typ"
+
+#@ backwpup
+#: app/list-tables.php:108
+#: app/options-edit-job.php:55
+msgid ""
+"You are about to delete this Job. \n"
+"  'Cancel' to stop, 'OK' to delete."
+msgstr ""
+"Sie sind dabei den Auftrag zu l&ouml;schen. \n"
+" 'Abbrechen', um zu stoppen, 'OK', um zu l&ouml;schen."
+
+#@ default
+#@ backwpup
+#: app/list-tables.php:47
+#: app/list-tables.php:108
+#: app/list-tables.php:254
+#: app/list-tables.php:317
+#: app/list-tables.php:417
+#: app/list-tables.php:485
+#: app/options-edit-job.php:55
+msgid "Delete"
+msgstr "L&ouml;schen"
+
+#@ default
+#@ backwpup
+#: app/compatibility/class-wp-list-table.php:959
+#: app/options-edit-job.php:58
+#: app/options-settings.php:22
+#: app/options-settings.php:84
+msgid "Save Changes"
+msgstr "&Auml;nderungen speichern"
+
+#@ backwpup
+#: app/options-edit-job.php:65
+msgid "Job Schedule"
+msgstr "Auftragsplanung"
+
+#@ backwpup
+#: app/options-edit-job.php:67
+msgid "Activate scheduling"
+msgstr "Planung aktivieren"
+
+#@ default
+#: app/options-edit-job.php:131
+msgid "January"
+msgstr "Januar"
+
+#@ default
+#: app/options-edit-job.php:132
+msgid "February"
+msgstr "Februar"
+
+#@ default
+#: app/options-edit-job.php:133
+msgid "March"
+msgstr "M&auml;rz"
+
+#@ default
+#: app/options-edit-job.php:134
+msgid "April"
+msgstr "April"
+
+#@ default
+#: app/options-edit-job.php:135
+msgid "May"
+msgstr "Mai"
+
+#@ default
+#: app/options-edit-job.php:136
+msgid "June"
+msgstr "Juni"
+
+#@ default
+#: app/options-edit-job.php:137
+msgid "July"
+msgstr "Juli"
+
+#@ default
+#: app/options-edit-job.php:139
+msgid "September"
+msgstr "September"
+
+#@ default
+#: app/options-edit-job.php:140
+msgid "October"
+msgstr "Oktober"
+
+#@ default
+#: app/options-edit-job.php:141
+msgid "November"
+msgstr "November"
+
+#@ default
+#: app/options-edit-job.php:142
+msgid "December"
+msgstr "Dezember"
+
+#@ backwpup
+#: app/options-edit-job.php:199
+msgid "Send log"
+msgstr "Sende Log"
+
+#@ backwpup
+#: app/options-edit-job.php:201
+msgid "E-Mail-Adress:"
+msgstr "E-Mail-Adresse:"
+
+#@ backwpup
+#: app/options-edit-job.php:215
+msgid "Enter Job name here"
+msgstr "Auftragsname hier eintragen"
+
+#@ backwpup
+#: app/options-edit-job.php:221
+msgid "Database Jobs"
+msgstr "Datenbank-Auftr&auml;ge"
+
+#@ backwpup
+#: app/options-edit-job.php:236
+msgid "Set Blog Maintenance Mode on Database Operations"
+msgstr "Webseite/ Blog in den Wartungsmodus versetzen, w&auml;hrend Datenbank-Operationen ausgef&uuml;hrt werden"
+
+#@ backwpup
+#: app/options-edit-job.php:243
+msgid "Blog Folders to Backup:"
+msgstr "Webseiten-/ Blog-Ordner, die gesichert werden sollen:"
+
+#@ backwpup
+#: app/options-edit-job.php:327
+msgid "Include Folders to Backup:"
+msgstr "Diese Ordner in die Sicherung einschlie&szlig;en:"
+
+#@ backwpup
+#: app/options-edit-job.php:192
+#: app/options-edit-job.php:328
+#: app/options-edit-job.php:332
+msgid "Example:"
+msgstr "Beispiel:"
+
+#@ backwpup
+#: app/options-edit-job.php:331
+msgid "Exclude Files/Folders from Backup:"
+msgstr "Dateien/ Ordner von der Sicherung ausschlie&szlig;en:"
+
+#@ backwpup
+#: app/options-edit-job.php:338
+msgid "Backup to Directory"
+msgstr "Datensicherung ins Verzeichnis"
+
+#@ backwpup
+#: app/options-edit-job.php:340
+msgid "Full Path to Folder for Backup Files:"
+msgstr "Kompletter Ordnerpfad zu den Datensicherungsdateien:"
+
+#@ backwpup
+#: app/options-edit-job.php:343
+#: app/options-edit-job.php:457
+msgid "Max. Backup Files in Folder:"
+msgstr "Maximale Anzahl von Datensicherungsdateien im Ordner:"
+
+#@ backwpup
+#: app/options-edit-job.php:343
+#: app/options-settings.php:62
+msgid "(Oldest files will deleted first.)"
+msgstr "(&Auml;lteste Dateien werden zuerst gel&ouml;scht.)"
+
+#@ backwpup
+#: app/options-edit-job.php:349
+msgid "Backup to FTP Server"
+msgstr "Datensicherung zum FTP-Server"
+
+#@ backwpup
+#: app/options-edit-job.php:351
+msgid "Hostname:"
+msgstr "Hostname:"
+
+#@ backwpup
+#: app/options-edit-job.php:353
+#: app/options-edit-job.php:412
+msgid "Username:"
+msgstr "Benutzername:"
+
+#@ backwpup
+#: app/options-edit-job.php:355
+#: app/options-edit-job.php:450
+msgid "Password:"
+msgstr "Passwort:"
+
+#@ backwpup
+#: app/options-edit-job.php:357
+msgid "Directory on Server:"
+msgstr "Verzeichnis auf dem Server:"
+
+#@ backwpup
+#: app/options-edit-job.php:360
+msgid "Max. Backup Files in FTP Folder:"
+msgstr "Maximale Anzahl von Datensicherungsdateien im FTP-Ordner:"
+
+#@ backwpup
+#: app/options-edit-job.php:369
+msgid "Backup to Amazon S3"
+msgstr "Datensicherung zu Amazon S3"
+
+#@ backwpup
+#: app/options-edit-job.php:371
+msgid "Access Key ID:"
+msgstr "Access Key ID (Zugangsschl&uuml;ssel-ID):"
+
+#@ backwpup
+#: app/options-edit-job.php:373
+msgid "Secret Access Key:"
+msgstr "Secret Access Key (Geheimer Schl&uuml;ssel):"
+
+#@ backwpup
+#: app/options-edit-job.php:375
+msgid "Bucket:"
+msgstr "Bucket:"
+
+#@ backwpup
+#: app/options-edit-job.php:379
+msgid "Directory in Bucket:"
+msgstr "Verzeichnis in Bucket:"
+
+#@ backwpup
+#: app/options-edit-job.php:463
+msgid "Backup to E-Mail"
+msgstr "Datensicherung via E-Mail"
+
+#@ backwpup
+#: app/options-edit-job.php:468
+msgid "Max. File Size for sending Backups with mail:"
+msgstr "Maximale Dateigr&ouml;&szlig;e zum Senden von Datensicherungen via E-Mail:"
+
+#@ backwpup
+#: app/php-functions.php:33
+msgid "BackWPup Logs"
+msgstr "BackWPup-Logdateien"
+
+#@ backwpup
+#: app/php-functions.php:201
+msgid "Jobs"
+msgstr "Auftr&auml;ge"
+
+#@ backwpup
+#: app/options-settings.php:57
+#: app/php-functions.php:202
+msgid "Logs"
+msgstr "Logdateien"
+
+#@ backwpup
+#: app/php-functions.php:204
+msgid "Tools"
+msgstr "Werkzeuge"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:284
+msgid "Bulk Actions"
+msgstr "Aktion ausf&uuml;hren"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:289
+msgid "Apply"
+msgstr "Anwenden"
+
+#@ backwpup
+#: app/list-tables.php:314
+msgid "View log"
+msgstr "Log ansehen"
+
+#@ backwpup
+#: app/list-tables.php:316
+msgid "View"
+msgstr "Ansehen"
+
+#@ backwpup
+#: app/list-tables.php:347
+msgid "only Log"
+msgstr "nur Log"
+
+#@ backwpup
+#: app/options-runnow-iframe.php:13
+msgid "Do Job"
+msgstr "Auftrag ausf&uuml;hren"
+
+#@ backwpup
+#: app/php-functions.php:68
+msgid "BackWPup Job Running"
+msgstr "BackWPup-Auftrag l&auml;uft"
+
+#@ backwpup
+#: app/php-functions.php:71
+msgid "Running Job"
+msgstr "Laufender Auftrag"
+
+#@ backwpup
+#: app/options-save.php:443
+msgid "Settings saved"
+msgstr "Einstellungen gespeichert"
+
+#@ backwpup
+#: app/options-save.php:28
+msgid "Copy of"
+msgstr "Kopie von"
+
+#@ backwpup
+#: app/options-save.php:137
+#: app/options-save.php:273
+msgid "File does not exist."
+msgstr "Datei existiert nicht."
+
+#@ backwpup
+#: app/options-settings.php:10
+msgid "BackWPup Settings"
+msgstr "BackWPup-Einstellungen"
+
+#@ backwpup
+#: app/options-settings.php:29
+msgid "Send Mail"
+msgstr "Send Mail"
+
+#@ backwpup
+#: app/options-settings.php:31
+msgid "Sender Email:"
+msgstr "Absender E-Mail:"
+
+#@ backwpup
+#: app/options-settings.php:32
+msgid "Sender Name:"
+msgstr "Absendername:"
+
+#@ backwpup
+#: app/options-settings.php:33
+msgid "Send mail method:"
+msgstr "Mailsendungsmethode:"
+
+#@ backwpup
+#: app/options-settings.php:36
+msgid "PHP: mail()"
+msgstr "PHP: mail()"
+
+#@ backwpup
+#: app/options-settings.php:37
+msgid "Sendmail"
+msgstr "Sendmail"
+
+#@ backwpup
+#: app/options-settings.php:38
+msgid "SMTP"
+msgstr "SMTP"
+
+#@ backwpup
+#: app/options-settings.php:41
+msgid "Sendmail Path:"
+msgstr "Sendmail-Pfad:"
+
+#@ backwpup
+#: app/options-settings.php:43
+msgid "SMTP Hostname:"
+msgstr "SMTP Hostname:"
+
+#@ backwpup
+#: app/options-settings.php:44
+msgid "SMTP Secure Connection:"
+msgstr "SMTP Sichere Verbindung:"
+
+#@ backwpup
+#: app/options-settings.php:50
+msgid "SMTP Username:"
+msgstr "SMTP-Benutername:"
+
+#@ backwpup
+#: app/options-settings.php:51
+msgid "SMTP Password:"
+msgstr "SMTP-Passwort:"
+
+#@ backwpup
+#: app/options-settings.php:59
+msgid "Log file Folder:"
+msgstr "Logdatei-Ordner:"
+
+#@ backwpup
+#: app/options-settings.php:61
+msgid "Max. Log Files in Folder:"
+msgstr "Max. Logdateien im Ordner:"
+
+#@ backwpup
+#: app/options-settings.php:69
+msgid "Disable WP-Cron"
+msgstr "WP-Cron deaktivieren"
+
+#@ backwpup
+#: app/options-settings.php:72
+msgid "You must set up a cron job that calls:"
+msgstr "Sie m&uuml;ssen einen Cron-Job einstellen, der aufruft:"
+
+#@ backwpup
+#: app/options-settings.php:74
+msgid "or URL:"
+msgstr "oder URL:"
+
+#@ backwpup
+#: app/options-settings.php:79
+msgid "Temp Folder"
+msgstr "Temp-Ordner (f&uuml;r tempor&auml;re Dateien)"
+
+#@ backwpup
+#: app/options-tools.php:8
+msgid "BackWPup Tools"
+msgstr "BackWPup-Werkzeuge"
+
+#@ backwpup
+#: app/options-tools.php:29
+msgid "Database restore"
+msgstr "Datenbank wiederherstellen"
+
+#@ backwpup
+#: app/options-tools.php:32
+#: app/options-tools.php:50
+msgid "Restore"
+msgstr "Wiederherstellen"
+
+#@ backwpup
+#: app/options-tools.php:47
+msgid "SQL File to restore:"
+msgstr "SQL-Datei zur Wiederherstellung:"
+
+#@ default
+#: app/php-functions.php:89
+msgid "Add New"
+msgstr "Neuer Auftrag"
+
+#@ backwpup
+#: app/list-tables.php:102
+msgid "Edit:"
+msgstr "Bearbeiten:"
+
+#@ default
+#: app/list-tables.php:105
+msgid "Edit"
+msgstr "Bearbeiten"
+
+#@ backwpup
+#: app/list-tables.php:106
+msgid "Copy"
+msgstr "Kopieren"
+
+#@ backwpup
+#: app/list-tables.php:109
+msgid "Run Now"
+msgstr "Jetzt starten"
+
+#@ backwpup
+#: app/list-tables.php:156
+msgid "Inactive"
+msgstr "Inaktiv"
+
+#@ backwpup
+#: app/list-tables.php:168
+msgid "Runtime:"
+msgstr "Laufzeit:"
+
+#@ backwpup
+#: app/list-tables.php:170
+msgid "None"
+msgstr "Nichts"
+
+#@ backwpup
+#: app/tools/db_restore.php:34
+#: app/tools/db_restore.php:53
+#: app/tools/db_restore.php:68
+#: app/tools/db_restore.php:79
+#: app/tools/db_restore.php:82
+#: app/tools/db_restore.php:85
+#: app/tools/db_restore.php:90
+msgid "ERROR:"
+msgstr "FEHLER:"
+
+#@ backwpup
+#: app/tools/db_restore.php:34
+#, php-format
+msgid "Pleace set <i>$table_prefix  = '%1$s';</i> in wp-config.php"
+msgstr "Bitte setzen Sie <i>$table_prefix  = '%1$s';</i> innerhalb der Datei wp-config.php"
+
+#@ backwpup
+#: app/tools/db_restore.php:53
+#, php-format
+msgid "Pleace set <i>define('DB_CHARSET', '%1$s');</i> in wp-config.php"
+msgstr "Bitte setzen Sie <i>define('DB_CHARSET', '%1$s');</i> in der Datei wp-config.php"
+
+#@ backwpup
+#: app/tools/db_restore.php:74
+#, php-format
+msgid "%1$s Database Querys done."
+msgstr "%1$s Datenbankabfragen fertig."
+
+#@ backwpup
+#: app/tools/db_restore.php:75
+msgid "Make changes for Blogurl and ABSPATH if needed."
+msgstr "Machen Sie &Auml;nderungen an der Blogurl und bei ABSPATH, falls notwendig."
+
+#@ backwpup
+#: app/tools/db_restore.php:92
+msgid "Restore Done. Please delete the SQL file after Restore."
+msgstr "Wiederherstellung abgeschlossen. Bitte l&ouml;schen Sie die SQL-Datei nach der Wiederherstellung."
+
+#@ backwpup
+#: app/backwpup_dojob.php:75
+msgid "Working Job will closed!!! And a new started!!!"
+msgstr "Der derzeit ausgef&uuml;hrte Auftrag wird geschlossen!!! Ein neuer Auftrag wird gestartet!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:78
+msgid "Backup Aborted working to long!!!"
+msgstr "Die Datensicherung wurde abgebrochen, da sie zu lange brauchte!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:95
+#, php-format
+msgid "Job %1$s already running!!!"
+msgstr "Auftrag %1$s l&uuml;uft bereits!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:135
+#, php-format
+msgid "Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamically increase the Memory!"
+msgstr "Das Speicherlimit ist auf %1$s, weil die PHP-Funktion memory_get_usage() nicht genutzt werden kann, die ansonsten dynamisch den Speicher erh&ouml;ht!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:541
+msgid "cURL:"
+msgstr "cURL:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:556
+msgid "Can not Export to XML! no cURL or allow_url_fopen Support!"
+msgstr "Als XML kann nicht exportiert werden! Es steht keine cURL- oder allow_url_fopen-Unterst&uuml;tzung zur Verf&uuml;gung!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:940
+msgid "FTP Folder on Server not exists!"
+msgstr "Der FTP-Ordner auf dem Server existiert nicht!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:942
+msgid "FTP Folder created!"
+msgstr "FTP-Ordner erstellt!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:945
+msgid "FTP Folder on Server can not created!"
+msgstr "Der FTP-Ordner auf dem Server kann nicht angelegt werden!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:982
+msgid "Prepare Sending backup file with mail..."
+msgstr "Datensicherungs-Datei wird vorbereitet zum Versenden via E-Mail ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1084
+msgid "Can not delete file on S3://"
+msgstr "Datei auf S3 kann nicht gel&ouml;scht werden://"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1111
+msgid "Connected to Rackspase ..."
+msgstr "Verbunden mit Rackspase ..."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1127
+#: app/backwpup_dojob.php:1176
+msgid "Rackspase Cloud API:"
+msgstr "Rackspase Cloud API:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1132
+msgid "Rackspase Cloud Container not exists:"
+msgstr "Rackspase Cloud Container existiert nicht:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1144
+msgid "Backup File transferred to RSC://"
+msgstr "Datensicherungs-Datei transferiert zu RSC://"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1147
+msgid "Can not transfer backup to RSC."
+msgstr "Datensicherung kann nicht zu RSC transferiert werden."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1169
+msgid "Can not delete file on RSC://"
+msgstr "Datei kann nicht gel&ouml;scht werden auf RSC://"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1172
+msgid "files deleted on Racspase Cloud Container!"
+msgstr "Dateien gel&ouml;scht auf dem Rackspase Cloud Container!"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:181
+msgid "No items found."
+msgstr "Keine Eintr&auml;ge gefunden."
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:363
+msgid "Show all dates"
+msgstr "Zeige alle Daten"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:391
+msgid "List View"
+msgstr "Listenansicht"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:392
+msgid "Excerpt View"
+msgstr "Auszugsansicht"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:418
+#, php-format
+msgid "%s pending"
+msgstr "%s anstehend"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:474
+#: app/compatibility/class-wp-list-table.php:870
+#, php-format
+msgid "1 item"
+msgid_plural "%s items"
+msgstr[0] "1 St&uuml;ck"
+msgstr[1] "%s St&uuml;cke"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:492
+msgid "Go to the first page"
+msgstr "Gehen Sie zur ersten Seite"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:499
+msgid "Go to the previous page"
+msgstr "Gehen Sie zur vorherigen Seite"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:508
+msgid "Current page"
+msgstr "Aktuelle Seite"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:519
+msgid "Go to the next page"
+msgstr "Gehen Sie zur n&auml;chsten Seite"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:526
+msgid "Go to the last page"
+msgstr "Gehen Sie zur letzten Seite"
+
+#@ backwpup
+#: app/php-functions.php:52
+msgid "BackWPup Manage Backups"
+msgstr "BackWPup-Datensicherungen verwalten"
+
+#@ backwpup
+#: app/php-functions.php:79
+msgid "BackWPup View Logs"
+msgstr "BackWPup-Anzeige-Logdateien"
+
+#@ backwpup
+#: app/php-functions.php:203
+msgid "Backups"
+msgstr "Datensicherungen"
+
+#@ default
+#: app/php5-functions.php:22
+msgid "New"
+msgstr "Neu"
+
+#@ backwpup
+#: app/php5-functions.php:554
+msgid "Missing Access Key ID!"
+msgstr "Access Key ID wird vermisst!"
+
+#@ backwpup
+#: app/php5-functions.php:561
+msgid "Missing Secret Access Key!"
+msgstr "Secret Access Key wird vermisst!"
+
+#@ backwpup
+#: app/php5-functions.php:617
+#: app/php5-functions.php:743
+msgid "Missing Username!"
+msgstr "Falscher Benutzername!"
+
+#@ backwpup
+#: app/php5-functions.php:624
+msgid "Missing API Key!"
+msgstr "API-Schl&uuml;ssel wird vermisst!"
+
+#@ backwpup
+#: app/php5-functions.php:645
+msgid "No Containerss found!"
+msgstr "Keine Container gefunden!"
+
+#@ backwpup
+#: app/php-functions.php:797
+msgid "- WordPress 2.8 or heiger needed!"
+msgstr "- WordPress 2.8 oder h&ouml;her wird ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:801
+msgid "- PHP 5.2.0 or higher needed!"
+msgstr "- PHP 5.2.0 oder h&ouml;her wird ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:811
+msgid "- Logs Folder not writeable:"
+msgstr "- Logdateien-Ordner ist nicht beschreibbar:"
+
+#@ backwpup
+#: app/php-functions.php:820
+msgid "- Temp Folder not writeable:"
+msgstr "- Temp-Ordner ist nicht beschreibbar:"
+
+#@ backwpup
+#: app/php-functions.php:825
+msgid "- Please Check Scheduling time for Job:"
+msgstr "- Bitte &uuml;berpr&uuml;fen Sie die Zeitplanung f&uuml;r den Auftrag (Scheduling):"
+
+#@ backwpup
+#: app/php-functions.php:828
+msgid "- WP-Cron don't working please check it!"
+msgstr "- WP-Cron arbeitet nicht, bitte &uuml;berpr&uuml;fen Sie die Funktion!"
+
+#@ default
+#: app/list-tables.php:22
+#: app/list-tables.php:198
+#: app/list-tables.php:375
+msgid "No rights"
+msgstr "Keine Rechte"
+
+#@ backwpup
+#: app/list-tables.php:41
+msgid "No Jobs."
+msgstr "Keine Auftr&auml;ge."
+
+#@ backwpup
+#: app/list-tables.php:58
+msgid "Information"
+msgstr "Information"
+
+#@ backwpup
+#: app/list-tables.php:111
+msgid "Clear"
+msgstr "Leeren"
+
+#@ backwpup
+#: app/list-tables.php:133
+msgid "Files Size:"
+msgstr "Gr&ouml;&szlig;e der Dateien:"
+
+#@ backwpup
+#: app/list-tables.php:135
+msgid "Files count:"
+msgstr "Dateiz&auml;hler:"
+
+#@ backwpup
+#: app/list-tables.php:142
+msgid "DB Tables:"
+msgstr "Datenbank-Tabellen:"
+
+#@ backwpup
+#: app/list-tables.php:143
+msgid "DB Rows:"
+msgstr "Datenbank-Zeilen:"
+
+#@ backwpup
+#: app/list-tables.php:159
+msgid "<a href=\"http://wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a>:"
+msgstr "<a href=\"http://de.wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a>:"
+
+#@ backwpup
+#: app/list-tables.php:249
+msgid "No Logs."
+msgstr "Keine Logdateien."
+
+#@ backwpup
+#: app/list-tables.php:173
+#: app/list-tables.php:318
+#: app/list-tables.php:486
+msgid "Download"
+msgstr "Herunterladen"
+
+#@ backwpup
+#: app/list-tables.php:411
+msgid "No Backups."
+msgstr "Keine Datensicherungen."
+
+#@ backwpup
+#: app/list-tables.php:425
+msgid "Backupfile"
+msgstr "Datensicherungs-Datei"
+
+#@ backwpup
+#: app/list-tables.php:485
+msgid ""
+"You are about to delete this Backup Archive. \n"
+"  'Cancel' to stop, 'OK' to delete."
+msgstr ""
+"Sie sind dabei dieses Datensicherungs-Archiv zu l&ouml;schen. \n"
+" 'Abbrechen' um zu stoppen, 'OK' um zu l&ouml;schen."
+
+#@ backwpup
+#: app/list-tables.php:503
+msgid "?"
+msgstr "?"
+
+#@ backwpup
+#: app/options-edit-job.php:70
+msgid "Minutes: "
+msgstr "Minuten: "
+
+#@ backwpup
+#: app/options-edit-job.php:78
+#: app/options-edit-job.php:95
+#: app/options-edit-job.php:112
+#: app/options-edit-job.php:130
+#: app/options-edit-job.php:154
+msgid "Any (*)"
+msgstr "Egal (*)"
+
+#@ backwpup
+#: app/options-edit-job.php:87
+msgid "Hours:"
+msgstr "Stunden:"
+
+#@ backwpup
+#: app/options-edit-job.php:104
+msgid "Days:"
+msgstr "Tage:"
+
+#@ default
+#: app/options-edit-job.php:138
+msgid "Augest"
+msgstr "August"
+
+#@ default
+#: app/options-edit-job.php:155
+msgid "Sunday"
+msgstr "Sonntag"
+
+#@ default
+#: app/options-edit-job.php:156
+msgid "Monday"
+msgstr "Montag"
+
+#@ default
+#: app/options-edit-job.php:157
+msgid "Tuesday"
+msgstr "Dienstag"
+
+#@ default
+#: app/options-edit-job.php:158
+msgid "Wednesday"
+msgstr "Mittwoch"
+
+#@ default
+#: app/options-edit-job.php:159
+msgid "Thursday"
+msgstr "Donnerstag"
+
+#@ default
+#: app/options-edit-job.php:160
+msgid "Friday"
+msgstr "Freitag"
+
+#@ default
+#: app/options-edit-job.php:161
+msgid "Saturday"
+msgstr "Samstag"
+
+#@ backwpup
+#: app/options-edit-job.php:166
+msgid "Working as <a href=\"http://wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a> job schedule:"
+msgstr "Arbeiten nach der <a href=\"http://de.wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a>-Auftragsplanung:"
+
+#@ default
+#: app/options-edit-job.php:167
+msgid "Next runtime:"
+msgstr "N&auml;chster Durchlauf:"
+
+#@ backwpup
+#: app/options-edit-job.php:173
+msgid "Backup File"
+msgstr "Datensicherungs-Datei"
+
+#@ backwpup
+#: app/options-edit-job.php:175
+msgid "File Prefix:"
+msgstr "Datei-Vorsilbe:"
+
+#@ backwpup
+#: app/options-edit-job.php:177
+msgid "File Formart:"
+msgstr "Dateiformat:"
+
+#@ backwpup
+#: app/options-edit-job.php:180
+#: app/options-edit-job.php:182
+msgid "Zip"
+msgstr "Zip"
+
+#@ backwpup
+#: app/options-edit-job.php:183
+msgid "Tar"
+msgstr "Tar"
+
+#@ backwpup
+#: app/options-edit-job.php:185
+#: app/options-edit-job.php:187
+msgid "Tar GZip"
+msgstr "Tar GZip"
+
+#@ backwpup
+#: app/options-edit-job.php:189
+#: app/options-edit-job.php:191
+msgid "Tar BZip2"
+msgstr "Tar BZip2"
+
+#@ backwpup
+#: app/options-edit-job.php:246
+msgid "root"
+msgstr "root"
+
+#@ backwpup
+#: app/options-edit-job.php:249
+#: app/options-edit-job.php:265
+#: app/options-edit-job.php:281
+#: app/options-edit-job.php:297
+#: app/options-edit-job.php:313
+msgid "Exclude:"
+msgstr "Ausschlie&szlig;en:"
+
+#@ backwpup
+#: app/options-edit-job.php:262
+msgid "Content"
+msgstr "Inhalt"
+
+#@ backwpup
+#: app/options-edit-job.php:278
+msgid "Plugins"
+msgstr "Plugins"
+
+#@ backwpup
+#: app/options-edit-job.php:294
+msgid "Themes"
+msgstr "Themes (Templates)"
+
+#@ backwpup
+#: app/options-edit-job.php:310
+msgid "Blog Uploads"
+msgstr "Blog-Uploads"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "Create Bucket:"
+msgstr "Erstelle Bucket:"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "Bucket Region"
+msgstr "Bucket Region"
+
+#@ backwpup
+#: app/options-edit-job.php:381
+msgid "Max. Backup Files in Bucket Folder:"
+msgstr "Maximale Anzahl Datensicherungs-Dateien im Bucket-Ordner:"
+
+#@ backwpup
+#: app/options-edit-job.php:382
+msgid "Save Backups with reduced redundancy!"
+msgstr "Sichere Datensicherungen mit reduzierter Redundanz!"
+
+#@ backwpup
+#: app/options-edit-job.php:410
+msgid "Backup to Rackspace Cloud"
+msgstr "Datensicherung in die Rackspase Cloud"
+
+#@ backwpup
+#: app/options-edit-job.php:414
+msgid "API Key:"
+msgstr "API-Schl&uuml;ssel"
+
+#@ backwpup
+#: app/options-edit-job.php:397
+#: app/options-edit-job.php:416
+msgid "Container:"
+msgstr "Container:"
+
+#@ backwpup
+#: app/options-edit-job.php:400
+#: app/options-edit-job.php:419
+msgid "Create Container:"
+msgstr "Erstelle Container:"
+
+#@ backwpup
+#: app/options-edit-job.php:401
+#: app/options-edit-job.php:420
+msgid "Directory in Container:"
+msgstr "Verzeichnis im Container:"
+
+#@ backwpup
+#: app/options-edit-job.php:403
+#: app/options-edit-job.php:422
+msgid "Max. Backup Files in Container Folder:"
+msgstr "Maximale Anzahl von Datensicherungs-Dateien im Container-Ordner:"
+
+#@ backwpup
+#: app/options-save.php:63
+msgid "Backup Cleand by User!!!"
+msgstr "Datensicherung ges&auml;ubert vom Benutzer!!!"
+
+#@ backwpup
+#: app/options-save.php:616
+#, php-format
+msgid "Job '%1' changes saved."
+msgstr "Auftrag '%1' Ver&auml;nderungen gepeichert."
+
+#@ backwpup
+#: app/options-save.php:616
+msgid "Jobs overview."
+msgstr "Auftrags&uuml;berblick"
+
+#@ backwpup
+#: app/backwpup_dojob.php:614
+msgid "File or Folder is not readable:"
+msgstr "Datei oder Ordner ist nicht lesbar:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:616
+msgid "Link not followed:"
+msgstr "Link nicht gefolgt:"
+
+#@ backwpup
+#: app/options-edit-job.php:362
+msgid "Use FTP Passiv mode."
+msgstr "FTP-Passiv-Modus benutzen."
+
+#@ backwpup
+#: app/backwpup_dojob.php:685
+msgid "Files to Backup:"
+msgstr "Dateien zur Datensicherung:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:686
+msgid "Size of all Files:"
+msgstr "Gr&ouml;&szlig;e aller Dateien:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:874
+msgid "Connected by SSL-FTP to Server:"
+msgstr "Verbunden via SSL-FTP zum Server:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:876
+msgid "Can not connect by SSL-FTP to Server:"
+msgstr "Verbindung via SSL-FTP zum Server kann nicht hergestellt werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:880
+msgid "PHP Function to connect with SSL-FTP to Server not exists!"
+msgstr "Die PHP-Funktion, um via SSL-FTP zum Server zu verbinden, existiert nicht!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:886
+msgid "Connected to FTP Server:"
+msgstr "Verbunden mit dem FTP-Server:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:888
+msgid "Can not connect to FTP Server:"
+msgstr "Verbindung zu FTP-Server kann nicht hergestellt werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:917
+msgid "Entering Passive Mode"
+msgstr "Passivmodus wird betreten"
+
+#@ backwpup
+#: app/backwpup_dojob.php:922
+msgid "Entering Normal Mode"
+msgstr "Normalmodus wird betreten"
+
+#@ backwpup
+#: app/backwpup_dojob.php:924
+msgid "Can not Entering Normal Mode"
+msgstr "Normalmodus kann nicht betreten werden"
+
+#@ backwpup
+#: app/backwpup_dojob.php:932
+msgid "Error getting SYSTYPE"
+msgstr "Fehler, SYSTYPE wird angezeigt"
+
+#@ backwpup
+#: app/options-edit-job.php:361
+msgid "Use SSL-FTP Connection."
+msgstr "Benutze SSL-FTP-Verbindung."
+
+#@ backwpup
+#: app/options-edit-job.php:429
+msgid "Backup to Dropbox"
+msgstr "Datensicherung in die Dropbox"
+
+#@ backwpup
+#: app/options-edit-job.php:437
+#: app/options-edit-job.php:455
+msgid "Directory:"
+msgstr "Ordner:"
+
+#@ backwpup
+#. translators: plugin header field 'PluginURI'
+#: backwpup.php:0
+msgid "http://danielhuesken.de/portfolio/backwpup/"
+msgstr "http://danielhuesken.de/portfolio/backwpup/"
+
+#@ backwpup
+#. translators: plugin header field 'Description'
+#: backwpup.php:0
+msgid "Backup and more of your WordPress Blog Database and Files."
+msgstr "Datensicherung und mehr von Ihrer WordPress-Datenbank sowie den Dateien."
+
+#@ backwpup
+#. translators: plugin header field 'Author'
+#: backwpup.php:0
+msgid "Daniel H&uuml;sken"
+msgstr "Daniel H&uuml;sken"
+
+#@ backwpup
+#. translators: plugin header field 'AuthorURI'
+#: backwpup.php:0
+msgid "http://danielhuesken.de"
+msgstr "http://danielhuesken.de"
+
+#@ default
+#: app/compatibility/class-wp-list-table.php:515
+#, php-format
+msgctxt "paging"
+msgid "%1$s of %2$s"
+msgstr "%1$s von %2$s"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1097
+msgid "Amazon S3 API:"
+msgstr "Amazon S3 API:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1285
+msgid "Backup File transferred to DropBox."
+msgstr "Datensicherungs-Datei wird zur Dropbox &uuml;bertragen."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1516
+msgid "BackWPup Log from"
+msgstr "BackWPup Log-Daten von"
+
+#@ default
+#@ backwpup
+#: app/list-tables.php:46
+#: app/list-tables.php:107
+msgid "Export"
+msgstr "Export"
+
+#@ backwpup
+#: app/list-tables.php:173
+msgid "Download last Backup"
+msgstr "Letzte Datensicherung herunterladen"
+
+#@ backwpup
+#: app/list-tables.php:175
+msgid "View last Log"
+msgstr "Letzte Log-Daten ansehen"
+
+#@ backwpup
+#: app/list-tables.php:175
+msgid "Log"
+msgstr "Log-Daten"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "US-East (Northern Virginia)"
+msgstr "US-Ost (Nord-Virginia)"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "US-West (Northern California)"
+msgstr "US-West (Nordkalifornien)"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "EU (Ireland)"
+msgstr "EU (Irland)"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "Asia Pacific (Singapore)"
+msgstr "Asien/ Pazifik (Singapur)"
+
+#@ backwpup
+#: app/options-settings.php:63
+msgid "Gzip Log files!"
+msgstr "Gzip Log-Dateien!"
+
+#@ backwpup
+#: app/options-tools.php:61
+msgid "Import Jobs settings"
+msgstr "Auftrags-Import-Einstellungen"
+
+#@ backwpup
+#: app/options-tools.php:63
+msgid "Select File to import:"
+msgstr "Datei zum Importieren ausw&auml;hlen:"
+
+#@ backwpup
+#: app/options-tools.php:64
+#: app/options-tools.php:66
+msgid "Upload"
+msgstr "Hochladen"
+
+#@ backwpup
+#: app/options-tools.php:67
+msgid "Select Jobs to Import:"
+msgstr "Auftr&auml;ge zum Importieren ausw&auml;hlen:"
+
+#@ backwpup
+#: app/options-tools.php:71
+msgid "Import Type"
+msgstr "Import-Typ"
+
+#@ backwpup
+#: app/options-tools.php:71
+msgid "No Import"
+msgstr "Kein Import"
+
+#@ backwpup
+#: app/options-tools.php:73
+msgid "Overwrite"
+msgstr "&Uuml;berschreiben"
+
+#@ backwpup
+#: app/options-tools.php:73
+msgid "Append"
+msgstr "Anh&auml;ngen"
+
+#@ backwpup
+#: app/options-tools.php:75
+#: app/options-tools.php:79
+#: app/options-tools.php:81
+msgid "Import"
+msgstr "Import"
+
+#@ backwpup
+#: app/options-tools.php:117
+msgid "Jobs imported!"
+msgstr "Auftr&auml;ge importiert!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1193
+msgid "Microsoft Azure Container not exists:"
+msgstr "Microsoft Azure Container existiert nicht:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1196
+msgid "Connected to Microsoft Azure Container:"
+msgstr "Mit Microsoft Azure Container verbinden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1202
+msgid "Backup File transferred to azure://"
+msgstr "Datensicherungs-Datei transferiert zu azure://"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1205
+msgid "Can not transfer backup to Microsoft Azure."
+msgstr "Die Datensicherungs-Datei kann nicht zu Microsoft Azure transferiert werden."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1226
+msgid "files deleted on Microsoft Azure Container!"
+msgstr "Dateien gel&ouml;scht im Microsoft Azure Container!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1231
+msgid "Microsoft Azure API:"
+msgstr "Microsoft Azure API (Schnittstelle):"
+
+#@ backwpup
+#: app/php5-functions.php:585
+msgid "No Buckets found!"
+msgstr "Keine Buckets gefunden!"
+
+#@ backwpup
+#: app/php5-functions.php:679
+msgid "Missing Hostname!"
+msgstr "Hostname (Server) nicht angegeben!"
+
+#@ backwpup
+#: app/php5-functions.php:686
+msgid "Missing Account Name!"
+msgstr "Kontoname (Benutzername) nicht angegeben!"
+
+#@ backwpup
+#: app/php5-functions.php:693
+msgid "Missing Access Key!"
+msgstr "Zugangsschl&uuml;ssel (Access Key) nicht angegeben!"
+
+#@ backwpup
+#: app/php5-functions.php:710
+msgid "No Container found!"
+msgstr "Kein Container gefunden!"
+
+#@ backwpup
+#: app/options-edit-job.php:378
+msgid "Asia Pacific (Japan)"
+msgstr "Asien Pazifik (Japan)"
+
+#@ backwpup
+#: app/options-edit-job.php:389
+msgid "Backup to Micosoft Azure (Blob)"
+msgstr "Datensicherung zu Microsoft Azure (Blob)"
+
+#@ backwpup
+#: app/options-edit-job.php:391
+msgid "Host:"
+msgstr "Host (Server):"
+
+#@ backwpup
+#: app/options-edit-job.php:392
+msgid "Normely: blob.core.windows.net"
+msgstr "Normalerweise: blob.core.windows.net"
+
+#@ backwpup
+#: app/options-edit-job.php:393
+msgid "Account Name:"
+msgstr "Kontoname/ Benutzername:"
+
+#@ backwpup
+#: app/options-edit-job.php:395
+msgid "Access Key:"
+msgstr "Zugangsschl&uuml;ssel (Access Key):"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1287
+msgid "Can not transfere Backup file to DropBox:"
+msgstr "Datensicherungs-Datei kann nicht zu Dropbox transferiert werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1308
+msgid "files deleted on DropBox Folder!"
+msgstr "Dateien gel&ouml;scht im Dropbox-Ordner!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1312
+msgid "DropBox API:"
+msgstr "Dropbox-API-Schnittstelle:"
+
+#@ backwpup
+#: app/options-edit-job.php:369
+#: app/options-edit-job.php:389
+#: app/options-edit-job.php:410
+#: app/options-edit-job.php:429
+#: app/options-edit-job.php:446
+msgid "Create Account"
+msgstr "Konto erstellen"
+
+#@ backwpup
+#: app/options-edit-job.php:371
+#: app/options-edit-job.php:395
+#: app/options-edit-job.php:414
+msgid "Find it"
+msgstr "Finden"
+
+#@ backwpup
+#: app/options-edit-job.php:439
+msgid "Max. Backup Files in Dopbox Folder:"
+msgstr "Maximale Anzahl von Datensicherungs-Dateien im Dropbox-Ordner:"
+
+#@ backwpup
+#: app/php-functions.php:330
+msgid "FTP extension needed for FTP!"
+msgstr "Die FTP-Erweiterung wird f&uuml;r FTP ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:336
+#: app/php-functions.php:342
+msgid "Curl and Json extensions needed for DropBox!"
+msgstr "Die Curl- und Json-Erweiterungen werden f&uuml;r Dropbox ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:348
+msgid "Curl extension needed for Amazon S3!"
+msgstr "Die Curl-Erweiterung wird f&uuml;r Amazon S3 ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:354
+msgid "Curl extension needed for RackSpaceCloud!"
+msgstr "Die Curl-Erweiterung wird f&uuml;r RackSpaceCloud ben&ouml;tigt!"
+
+#@ backwpup
+#: app/php-functions.php:360
+msgid "Curl extension needed for Microsoft Azure!"
+msgstr "Die Curl-Erweiterung wird f&uuml;r Microsoft Azure ben&ouml;tigt!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:776
+msgid "File Name to Long to save corectly in TAR Backup Archive:"
+msgstr "Der Dateiname ist zu lang zum Speichern im TAR-Datensicherungs-Archiv:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:778
+msgid "File Path to Long to save corectly in TAR Backup Archive:"
+msgstr "Der Dateipfad ist zu lang zum korrekten Speichern im TAR-Datensicherungs-Archiv:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1271
+msgid "Authed to DropBox from "
+msgstr "Authentifiziert mit Dropbox von "
+
+#@ backwpup
+#: app/backwpup_dojob.php:1276
+msgid "No free space left on DropBox!!!"
+msgstr "Kein freier Speicherplatz mehr &uuml;brig auf Dropbox!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1279
+msgid "Free Space on DropBox: "
+msgstr "Freier Speicherplatz auf Dropbox: "
+
+#@ backwpup
+#: app/options-edit-job.php:122
+msgid "Day of Month:"
+msgstr "Tag des Monats:"
+
+#@ backwpup
+#: app/options-edit-job.php:146
+msgid "Day of Week:"
+msgstr "Wochentag:"
+
+#@ backwpup
+#: app/options-edit-job.php:203
+msgid "Only send an e-mail if there are errors."
+msgstr "Eine E-Mail nur senden, wenn Fehler auftraten."
+
+#@ backwpup
+#: app/options-edit-job.php:224
+msgid "Database tables to <span style=\"color:red;\">ex</span>clude:"
+msgstr "Datenbank-Tabellen zum <span style=\"color:red;\">aus</span>schlie&szlig;en:"
+
+#@ backwpup
+#: app/options-edit-job.php:235
+msgid "Use short INSERTs instead of full (with keys)"
+msgstr "Kurze INSERTs benutzen, statt kompletter (mit Schl&uuml;ssel)"
+
+#@ backwpup
+#: app/options-edit-job.php:342
+msgid "(Leave it empty to store Backups not local!)"
+msgstr "(Leer lassen, um Datensicherungen nicht lokal zu speichern!)"
+
+#@ backwpup
+#: app/options-edit-job.php:360
+#: app/options-edit-job.php:381
+#: app/options-edit-job.php:403
+#: app/options-edit-job.php:422
+#: app/options-edit-job.php:439
+#: app/options-edit-job.php:457
+msgid "(Oldest files will be deleted first.)"
+msgstr "(&Auml;lteste Dateien werden zuerst gel&ouml;scht.)"
+
+#@ backwpup
+#: app/options-edit-job.php:431
+msgid "Login:"
+msgstr "Login:"
+
+#@ backwpup
+#: app/options-edit-job.php:433
+msgid "Not authenticated!"
+msgstr "Nicht authentifiziert!"
+
+#@ backwpup
+#: app/options-edit-job.php:433
+#: app/options-save.php:596
+msgid "Authenticate!"
+msgstr "Authentifizieren!"
+
+#@ backwpup
+#: app/options-edit-job.php:435
+msgid "Authenticated!"
+msgstr "Authentifiziert!"
+
+#@ backwpup
+#: app/options-edit-job.php:435
+#: app/options-save.php:607
+msgid "Delete!"
+msgstr "L&ouml;schen!"
+
+#@ backwpup
+#: app/options-edit-job.php:448
+#: app/options-edit-job.php:465
+msgid "E-mail address:"
+msgstr "E-Mail-Adresse:"
+
+#@ backwpup
+#: app/options-save.php:610
+msgid "Dropbox authentication deleted!"
+msgstr "Dropbox-Authentifizierung gel&ouml;scht!"
+
+#@ backwpup
+#: app/options-settings.php:64
+msgid "Log a detailed file list."
+msgstr "Eine detaillierte Dateiliste mitloggen."
+
+#@ backwpup
+#: app/options-settings.php:71
+msgid "Use your host's Cron Job and disable WP-Cron"
+msgstr "Den Cron-Job Ihres Webhosters/ -Servers benutzen und WP-Cron deaktivieren"
+
+#@ backwpup
+#: app/options-tools.php:53
+msgid "Copy SQL file to blog root folder to use for a restoration."
+msgstr "Die SQL-Datei in den root-Ordner Ihrer Webseite (bzw. WordPress-Installation) kopieren, damit die Datei f&uuml;r eine Wiederherstellung genutzt werden kann."
+
+#@ backwpup
+#: app/php-functions.php:808
+msgid "- Logs Folder not exists:"
+msgstr "- Der Log-Daten-Ordner existiert nicht:"
+
+#@ backwpup
+#: app/php-functions.php:817
+msgid "- Temp Folder not exists:"
+msgstr "- Der Temp-Ordner existiert nicht:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1371
+msgid "SugarSync API:"
+msgstr "SugarSync-API:"
+
+#@ backwpup
+#: app/options-edit-job.php:446
+msgid "Backup to SugarSync"
+msgstr "Datensicherung zu SugarSync"
+
+#@ backwpup
+#: app/php5-functions.php:578
+msgid "S3 Message:"
+msgstr "S3-Nachricht:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1328
+msgid "Authed to SugarSync with Nick "
+msgstr "Authentifiziert mit SugarSync mit Nick "
+
+#@ backwpup
+#: app/backwpup_dojob.php:1332
+msgid "No free space left on SugarSync!!!"
+msgstr "Sie haben keinen freien Speicherplatz mehr &uuml;brig bei SugarSync!!!"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1335
+msgid "Free Space on SugarSync: "
+msgstr "Freier Speicherplatz bei SugarSync: "
+
+#@ backwpup
+#: app/backwpup_dojob.php:1344
+msgid "Backup File transferred to SugarSync."
+msgstr "Datensicherungsdatei zu SugarSync &uuml;bertragen."
+
+#@ backwpup
+#: app/backwpup_dojob.php:1346
+msgid "Can not transfere Backup file to SugarSync:"
+msgstr "Datensicherungsdatei kann nicht zu SugarSync &uuml;bertragen werden:"
+
+#@ backwpup
+#: app/backwpup_dojob.php:1367
+msgid "files deleted on Sugarsync Folder!"
+msgstr "Dateien gel&ouml;scht im SugarSync-Ordner!"
+
+#@ backwpup
+#: app/options-edit-job.php:452
+msgid "Root:"
+msgstr "Root:"
+
+#@ backwpup
+#: app/php5-functions.php:750
+msgid "Missing Password!"
+msgstr "Passwort fehlt!"
+
+#@ backwpup
+#: app/php5-functions.php:770
+msgid "No Syncfolders found!"
+msgstr "Keine Sync-Ordner gefunden!"
+
+#@ backwpup
+#. translators: plugin header field 'Version'
+#: backwpup.php:0
+msgid "1.7.0"
+msgstr "1.7.0"
+
