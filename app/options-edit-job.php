@@ -6,19 +6,6 @@ if ( !defined('ABSPATH') )
 check_admin_referer('edit-job');
 global $wpdb;	
 $jobid = (int) $_REQUEST['jobid'];
-?>
-<div class="wrap">
-	<div id="icon-tools" class="icon32"><br /></div>
-<h2><?php _e('BackWPup Job Settings', 'backwpup'); ?></h2>
-
-<?PHP backwpup_option_submenues(); ?>
-<div class="clear"></div>
-
-<form method="post" action="">
-<input type="hidden" name="subpage" value="edit" />
-<input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
-<?php
-wp_nonce_field('edit-job');
 $jobs=get_option('backwpup_jobs');
 if (empty($jobid)) { //generate a new id for new job
 	if (is_array($jobs)) {
@@ -34,7 +21,18 @@ $jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
 $todo=explode('+',$jobvalue['type']);
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
+<div class="wrap">
+	<div id="icon-tools" class="icon32"><br /></div>
+<h2><?php _e('BackWPup Job Settings', 'backwpup'); ?></h2>
 
+<?PHP backwpup_option_submenues(); ?>
+<div class="clear"></div>
+
+
+<form method="post" action="">
+<input type="hidden" name="subpage" value="edit" />
+<input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
+<?php wp_nonce_field('edit-job'); ?>
 <div id="poststuff" class="metabox-holder has-right-sidebar">
 	<div class="inner-sidebar">
 		<div id="side-sortables" class="meta-box-sortables">
