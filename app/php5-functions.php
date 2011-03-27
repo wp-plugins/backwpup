@@ -283,6 +283,9 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 
 	if (!isset($jobsettings['sugarpass']) or !is_string($jobsettings['sugarpass']))
 		$jobsettings['sugarpass']='';		
+
+	if (!isset($jobsettings['sugarroot']) or !is_string($jobsettings['sugarroot']))
+		$jobsettings['sugarroot']='';
 		
 	if (!isset($jobsettings['sugardir']) or !is_string($jobsettings['sugardir']) or $jobsettings['sugardir']=='/')
 		$jobsettings['sugardir']='';
@@ -319,6 +322,8 @@ function backwpup_get_backup_files($onlyjobid='') {
 			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 		if (!class_exists('Dropbox') and function_exists('json_decode'))
 			require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
+		if (!class_exists('SugarSync'))
+			require_once (dirname(__FILE__).'/libs/sugarsync.php');
 	}
 
 	foreach ($jobs as $jobid => $jobvalue) { //go job by job
@@ -359,7 +364,7 @@ function backwpup_get_backup_files($onlyjobid='') {
 					$contents = $dropbox->metadata($jobvalue['dropedir']);
 					if (is_array($contents)) {
 						foreach ($contents['contents'] as $object) {
-							if ($object['is_dir']!=true and (strtolower(substr($object['path'],-4))=='.zip' or strtolower(substr($object['path'],-4))=='.tar'  or strtolower(substr($object['path'],-7))=='.tar.gz'  or strtolower(substr($$object['path'],-8))=='.tar.bz2')) {
+							if ($object['is_dir']!=true and (strtolower(substr($object['path'],-4))=='.zip' or strtolower(substr($object['path'],-4))=='.tar'  or strtolower(substr($object['path'],-7))=='.tar.gz'  or strtolower(substr($object['path'],-8))=='.tar.bz2')) {
 								$files[$filecounter]['type']='DROPBOX';
 								$files[$filecounter]['jobid']=$jobid;
 								$files[$filecounter]['file']=$object['path'];
@@ -372,6 +377,32 @@ function backwpup_get_backup_files($onlyjobid='') {
 						}
 					}
 					$donefolders[]=$jobvalue['dropetoken'].'|'.$jobvalue['dropesecret'].'|'.$jobvalue['dropedir'];
+				} catch (Exception $e) {
+				}
+			}
+		}
+		//Get files/filinfo from Sugarsync
+		if (class_exists('SugarSync') and in_array('SUGARSYNC',$dests) and !in_array($jobvalue['sugaruser'].'|'.base64_decode($jobvalue['sugarpass']).'|'.$jobvalue['sugardir'],$donefolders)) {
+			if (!empty($jobvalue['sugarpass']) and !empty($jobvalue['sugarpass'])) {
+				try {
+					$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+					$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
+					$getfiles=$sugarsync->getcontents('file');
+					if (is_object($getfiles)) {
+						foreach ($getfiles->file as $getfile) {
+							if (strtolower(substr($getfile->displayName,-4))=='.zip' or strtolower(substr($getfile->displayName,-4))=='.tar'  or strtolower(substr($getfile->displayName,-7))=='.tar.gz'  or strtolower(substr($getfile->displayName,-8))=='.tar.bz2') {
+								$files[$filecounter]['type']='SUGARSYNC';
+								$files[$filecounter]['jobid']=$jobid;
+								$files[$filecounter]['file']= (string) $getfile->ref;
+								$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
+								$files[$filecounter]['downloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
+								$files[$filecounter]['filesize']=(int) $getfile->size;
+								$files[$filecounter]['time']=strtotime((string) $getfile->lastModified);
+								$filecounter++;
+							}
+						}
+					}
+					$donefolders[]=$jobvalue['sugaruser'].'|'.base64_decode($jobvalue['sugarpass']).'|'.$jobvalue['sugardir'];
 				} catch (Exception $e) {
 				}
 			}
@@ -543,7 +574,7 @@ function backwpup_get_aws_buckets($args='') {
 		else
 			return;
 	}
-	if ($buckets->status>=200 and $buckets->status<300) {
+	if ($buckets->status<200 and $buckets->status>=300) {
 		echo '<span id="awsBucket" style="color:red;">'.__('S3 Message:','backwpup').' '.$buckets->status.': '.$buckets->body->Message.'</span>';
 		if ($ajax)
 			die();
@@ -691,5 +722,65 @@ function backwpup_get_msazure_container($args='') {
 		die();
 	else
 		return;
-}	
+}
+
+//ajax/normal get SugarSync roots select box
+function backwpup_get_sugarsync_root($args='') {
+	if (is_array($args)) {
+		extract($args);
+		$ajax=false;
+	} else {
+		$sugaruser=$_POST['sugaruser'];
+		$sugarpass=$_POST['sugarpass'];
+		$sugarrootselected=$_POST['sugarrootselected'];
+		$ajax=true;
+	}
+	
+	if (!class_exists('SugarSync'))
+		require_once(dirname(__FILE__).'/libs/sugarsync.php');
+
+	if (empty($sugaruser)) {
+		echo '<span id="sugarroot" style="color:red;">'.__('Missing Username!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (empty($sugarpass)) {
+		echo '<span id="sugarroot" style="color:red;">'.__('Missing Password!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+
+	try {
+		$sugarsync = new SugarSync($sugaruser,$sugarpass,BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+		$user=$sugarsync->user();
+		$syncfolders=$sugarsync->get($user->syncfolders);
+	} catch (Exception $e) {
+		echo '<span id="sugarroot" style="color:red;">'.__($e->getMessage(),'backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+
+	if (!is_object($syncfolders)) {
+		echo '<span id="sugarroot" style="color:red;">'.__('No Syncfolders found!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	echo '<select name="sugarroot" id="sugarroot">';
+	foreach ($syncfolders->collection as $roots) {
+		echo "<option ".selected(strtolower($sugarrootselected),strtolower($roots->ref),false)." value=\"".$roots->ref."\">".$roots->displayName."</option>";
+	}
+	echo '</select>';
+		if ($ajax)
+			die();
+		else
+			return;
+}
 ?>

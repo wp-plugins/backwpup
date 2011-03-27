@@ -21,5 +21,6 @@ if (file_exists(trim($_GET['wpabs']).'wp-load.php') and is_numeric(trim($_GET['j
 <?PHP
 } else {	
 	header("HTTP/1.0 404 Not Found");
+	die();
 }
 ?>

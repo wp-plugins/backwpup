@@ -1,10 +1,10 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox
+Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.6.2
+Stable tag: 1.7.0
 
 Backup your WordPress Database and Files, and more!
 
@@ -24,6 +24,7 @@ Do backups and more.
 * Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
 * Store backup to DropBox
+* Store backup to SugarSync
 * Send Log/Backup by Email
 
 
@@ -84,7 +85,7 @@ Please deactivate passive mode and try it again.
 
 = Disable some destinations for backups =
 You can set the following in wp-config.php:
-<i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE');</i>
+<i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');</i>
 all listed destinations are then disabled.
 Destinations are:
 * MAIL = mail (can't disable)
@@ -94,12 +95,20 @@ Destinations are:
 * FTP = FTP Server
 * DROPBOX = DropBox
 * MSAZURE = Microsoft Azure (Blob)
+* SUGARSYNC = SugarSync
 
 == Screenshots ==
 
 1. Job Page
 
 == Changelog ==
+= 1.7.0 =
+* Improved Dropbox referer handling
+* Sycurity fix (thanks to Phil Taylor - Sense of Security)
+* Added SugarSync support
+* general improvements
+* bug fixes
+
 = 1.6.2 =
 * Dropbox improvements and bug fixes
 

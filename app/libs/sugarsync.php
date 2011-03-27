@@ -33,7 +33,7 @@
 class SugarSync {
 
 	// debug
-	const DEBUG = true;
+	const DEBUG = false;
 
 	// url for the sugarsync-api
 	const API_URL = 'https://api.sugarsync.com';
@@ -47,8 +47,9 @@ class SugarSync {
 	 *
 	 * @var	string
 	 */
-	private $AuthToken = '';
-
+	protected $AuthToken = '';
+	
+	protected $folder = '';
 	
 // class methods
 	/**
@@ -83,7 +84,7 @@ class SugarSync {
 		$curl = curl_init();
 		//set otions
 		curl_setopt($curl,CURLOPT_URL,self::API_URL .'/authorization');
-		//curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
+		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
@@ -102,7 +103,7 @@ class SugarSync {
 		curl_close($curl);
 		
 		if ($curlgetinfo['http_code']>=200 and $curlgetinfo['http_code']<=204) {
-			if (preg_match('/Location:(.*?)\n/', $response, $matches)) 
+			if (preg_match('/Location:(.*?)\r/i', $response, $matches)) 
 				$this->AuthToken=$matches[1];
 		} else {
 			if ($curlgetinfo['http_code']==401)
@@ -130,7 +131,7 @@ class SugarSync {
 
 		// redefine
 		$url = (string) $url;
-		$data = (string) $data;
+		//$data = (string) $data;
 		$method = (string) $method;
 
 		// validate method
@@ -146,18 +147,16 @@ class SugarSync {
 		// init
 		$curl = curl_init();
 		//set otions
+		curl_setopt($curl,CURLOPT_URL, $url);
 		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
 		
-	
 		if ($method == 'POST') {		
 			$headers[] = 'Content-Type: application/xml; charset=UTF-8';
-			//$url=str_replace(':','/',$url);
 			curl_setopt($curl,CURLOPT_POSTFIELDS,$data);
-			echo $data;
 			curl_setopt($curl,CURLOPT_POST,true);
 		} elseif ($method == 'PUT') {
 			if (is_file($data) and is_readable($data)) {
@@ -165,12 +164,8 @@ class SugarSync {
 				curl_setopt($curl,CURLOPT_PUT,true);
 				curl_setopt($curl,CURLOPT_INFILE,$datafilefd);
 				curl_setopt($curl,CURLOPT_INFILESIZE,filesize($data));
-			} elseif (is_sting($data) and !is_file($data)) {
-				curl_setopt($curl,CURLOPT_PUT,true);
-				curl_setopt($curl,CURLOPT_INFILE,$data);
-				curl_setopt($curl,CURLOPT_INFILESIZE,strnlen($data));
-			} else {
-				throw new SugarSyncException('Is not a readable file or string:'. $data);
+			}  else {
+				throw new SugarSyncException('Is not a readable file:'. $data);
 			}
 		} elseif ($method == 'DELETE') {
 			curl_setopt($curl,CURLOPT_CUSTOMREQUEST,'DELETE');
@@ -179,7 +174,6 @@ class SugarSync {
 		}
 
 		// set headers
-		curl_setopt($curl,CURLOPT_URL, $url);
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$headers);
 		curl_setopt($curl,CURLINFO_HEADER_OUT,self::DEBUG);
 
@@ -199,8 +193,12 @@ class SugarSync {
 			throw new SugarSyncException('cUrl Error: '. curl_error($curl));
 		
 		curl_close($curl);
+		if (is_resource($datafilefd))
+			fclose($datafilefd);
 		
 		if ($curlgetinfo['http_code']>=200 and $curlgetinfo['http_code']<300) {
+			if (!empty($response) and $data == 'PLAIN')
+				return $response;
 			if (!empty($response))
 				return simplexml_load_string($response);
 		} else {
@@ -215,23 +213,100 @@ class SugarSync {
 		}
 	}
 
+	
+	public function chdir($folder,$root='') {
+		$folder=rtrim($folder,'/');
+		if (substr($folder,0,1)=='/' or empty($this->folder)) {
+			if (!empty($root))
+				$this->folder=$root;
+			else
+				throw new SugarSyncException('chdir: root folder must set!');
+		}
+		$folders=explode('/',$folder);
+		foreach ($folders as $dir) {
+			if ($dir=='..') {
+				$contents=$this->doCall($this->folder);
+				if (!empty($contents->parent))
+					$this->folder=$contents->parent;
+			} elseif (!empty($dir) and $dir!='.') {
+				$isdir=false;
+				$contents=$this->getcontents('folder');
+				foreach ($contents->collection as $collection) {
+					if (strtolower($collection->displayName)==strtolower($dir)) {
+						$isdir=true;
+						$this->folder=$collection->ref;
+						break;
+					}
+				}
+				if (!$isdir)
+					throw new SugarSyncException('chdir: Folder '. $folder.' not exitst');
+			}
+		}
+		return $this->folder;
+	}
+	
+	public function mkdir($folder,$root='') {
+		$savefolder=$this->folder;
+		$folder=rtrim($folder,'/');
+		if (substr($folder,0,1)=='/' or empty($this->folder)) {
+			if (!empty($root))
+				$this->folder=$root;
+			else
+				throw new SugarSyncException('mkdir: root folder must set!');
+		} 
+		$folders=explode('/',$folder);
+		foreach ($folders as $dir) {
+			if ($dir=='..') {
+				$contents=$this->doCall($this->folder);
+				if (!empty($contents->parent))
+					$this->folder=$contents->parent;
+			} elseif (!empty($dir) and $dir!='.') {
+				$isdir=false;
+				$contents=$this->getcontents('folder');
+				foreach ($contents->collection as $collection) {
+					if (strtolower($collection->displayName)==strtolower($dir)) {
+						$isdir=true;
+						$this->folder=$collection->ref;
+						break;
+					}
+				}
+				if (!$isdir) {
+					$request=$this->doCall($this->folder,'<?xml version="1.0" encoding="UTF-8"?><folder><displayName>'.utf8_encode($dir).'</displayName></folder>','POST');
+					$contents=$this->getcontents('folder');
+					foreach ($contents->collection as $collection) {
+						if (strtolower($collection->displayName)==strtolower($dir)) {
+							$isdir=true;
+							$this->folder=$collection->ref;
+							break;
+						}
+					}
+				}
+			}
+		}
+		$this->folder=$savefolder;
+		return true;
+	}	
+	
+	
 	public function user() {
-		$request=$this->doCall(self::API_URL .'/user');
-		return $request;
+		return $this->doCall(self::API_URL .'/user');
 	}
 
  
 	public function get($url) {
-		$request=$this->doCall($url,'','GET');
-		return $request;
+		return $this->doCall($url,'','GET');
+	}
+	
+	public function download($url) {
+		return $this->doCall($url.'/data','PLAIN','GET');
 	}
 	
 	public function delete($url) {
-		$request=$this->doCall($url,'DELTE');
+		return $this->doCall($url,'','DELETE');
 	}
 
 	
-	public function getcontents($url,$start=0,$max=500) {
+	public function getcontents($type='',$start=0,$max=500) {
 		if (strtolower($type)=='folder' or strtolower($type)=='file')
 			$parameters.='type='.strtolower($type);
 		if (!empty($start) and is_integer($start)) {
@@ -246,31 +321,30 @@ class SugarSync {
 			$parameters.='max='.$max;
 		}	
 			
-		$request=$this->doCall($url.'?'.$parameters);
+		$request=$this->doCall($this->folder.'/contents?'.$parameters);
 		return $request;
 	}
 
-	public function createfile($url,$file,$name='') {
+	public function upload($file,$name='') {
 		if (empty($name))
 			$name=basename($file);
-		$name=utf8_encode($name);
 		$xmlrequest ='<?xml version="1.0" encoding="UTF-8"?>';
 		$xmlrequest.='<file>';
-		$xmlrequest.='<displayName>'.$name.'</displayName>';
-		if (!is_file($file)) 
-			$xmlrequest.='<mediaType>'.mime_content_type($file).'</mediaType>';
+		$xmlrequest.='<displayName>'.utf8_encode($name).'</displayName>';
+		if (!is_file($file)) {
+			$finfo = fopen($file,'r');
+			$xmlrequest.='<mediaType>'.mime_content_type($finfo).'</mediaType>';
+			fclose($finfo);
+		}
 		$xmlrequest.='</file>';
-		$request=$this->doCall($url,$xmlrequest,'POST');
-				
-		//$request=$this->doCall($url,$file,'PUT');
-	}
-	
-	public function createfolder($url,$folder) {
-		$xmlrequest ='<?xml version="1.0" encoding="UTF-8"?>';
-		$xmlrequest.='<folder>';
-		$xmlrequest.='<displayName>'.utf8_encode($folder).'</displayName>';
-		$xmlrequest.='</folder>';
-		$request=$this->doCall($url,$xmlrequest,'POST');
+		$request=$this->doCall($this->folder,$xmlrequest,'POST');
+		$getfiles=$this->getcontents('file');
+		foreach ($getfiles->file as $getfile) {
+			if ($getfile->displayName==$name) {
+				$this->doCall($getfile->ref.'/data',$file,'PUT');
+				return $getfile->ref;
+			}
+		}	
 	}
 	
 }

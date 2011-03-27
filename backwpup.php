@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://danielhuesken.de/portfolio/backwpup/
 Description: Backup and more of your WordPress Blog Database and Files.
 Author: Daniel H&uuml;sken
-Version: 1.6.2
+Version: 1.7.0
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -34,12 +34,12 @@ if ( !defined('ABSPATH') )
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '1.6.2');
+define('BACKWPUP_VERSION', '1.7.0');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', '10');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
-	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX,MSAZURE');
+	define('BACKWPUP_DESTS', 'S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');
 //Set Dropbox Aplication Keys
 define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
 define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
@@ -74,6 +74,7 @@ if (backwpup_env_checks()) {
 	add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
 	add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
 	add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
+	add_action('wp_ajax_backwpup_get_sugarsync_root', 'backwpup_get_sugarsync_root');
 	//Disabele WP_Corn
 	$cfg=get_option('backwpup');
 	if ($cfg['disablewpcron'])

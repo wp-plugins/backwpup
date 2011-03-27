@@ -112,6 +112,26 @@ jQuery(document).ready( function($) {
 	
 	$('#rscUsername').change(function() {rscgetcontainer();});
 	$('#rscAPIKey').change(function() {rscgetcontainer();});
+
+	function sugarsyncgetroot() {
+		var sugaruser = $('#sugaruser').val();
+		var sugarpass = $('#sugarpass').val();
+		var sugarrootselected = $('#sugarrootselected').val();
+		var data = {
+			action: 'backwpup_get_sugarsync_root',
+			sugaruser: sugaruser,
+			sugarpass: sugarpass,
+			sugarrootselected: sugarrootselected
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#sugarroot').remove();
+			$('#sugarrootselected').after(response);
+		});		
+	}
+	
+	$('#sugaruser').change(function() {sugarsyncgetroot();});
+	$('#sugarpass').change(function() {sugarsyncgetroot();});
+
 	
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');

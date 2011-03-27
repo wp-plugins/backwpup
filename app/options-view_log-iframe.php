@@ -9,5 +9,6 @@ if (file_exists(trim($_GET['wpabs']).'wp-load.php') and file_exists(trim($_GET['
 	}
 } else {
 	header("HTTP/1.0 404 Not Found");
+	die();
 }
 ?>

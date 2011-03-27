@@ -57,7 +57,7 @@ function backwpup_job_operations($action) {
 		$jobs=get_option('backwpup_jobs');
 		$cfg=get_option('backwpup'); //Load Settings
 
-		if (is_file($jobs[$jobid]['logfile'])) {
+		if (is_file($jobs[$jobid]['logfile']) and substr($jobs[$jobid]['logfile'],-3)!='.gz') {
 			$logheader=backwpup_read_logheader($jobs[$jobid]['logfile']); //read waring count from log header
 			$fd=fopen($jobs[$jobid]['logfile'],"a+");
 			fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Cleand by User!!!','backwpup')."</span><br />\n");
@@ -77,7 +77,7 @@ function backwpup_job_operations($action) {
 			}
 			fclose($fd);
 		}
-		if ($cfg['gzlogs'] and function_exists('gzopen') and file_exists($jobs[$jobid]['logfile'])) {
+		if ($cfg['gzlogs'] and function_exists('gzopen') and file_exists($jobs[$jobid]['logfile']) and substr($jobs[$jobid]['logfile'],-3)!='.gz') {
 			$fd=fopen($jobs[$jobid]['logfile'],'r');
 			$zd=gzopen($jobs[$jobid]['logfile'].'.gz','w9');
 			while (!feof($fd)) {
@@ -90,11 +90,15 @@ function backwpup_job_operations($action) {
 		}	
 		$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
 		$jobs[$jobid]['stoptime']=current_time('timestamp');
-		$jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
-		$jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
-		$jobs[$jobid]['starttime']='';
-		$jobs[$jobid]['logfile']='';
-		$jobs[$jobid]['lastlogfile']=$jobs[$jobid]['logfile'];
+		if (!empty($jobs[$jobid]['starttime'])) {
+			$jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
+			$jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
+			$jobs[$jobid]['starttime']='';
+		}
+		if (!empty($jobs[$jobid]['logfile'])) {
+			$jobs[$jobid]['lastlogfile']=$jobs[$jobid]['logfile'];
+			$jobs[$jobid]['logfile']='';
+		}
 		update_option('backwpup_jobs',$jobs);
 		break;
 	}
@@ -144,7 +148,7 @@ function backwpup_backups_operations($action) {
 			check_admin_referer('bulk-backups');
 			$i=0;
 			foreach ($_REQUEST['backupfiles'] as $backupfile) {
-				list($deletebackups[$i]['file'],$deletebackups[$i]['jobid'],$deletebackups[$i]['type'])=explode(':',$backupfile,3);
+				list($deletebackups[$i]['file'],$deletebackups[$i]['jobid'],$deletebackups[$i]['type'])=explode('|',$backupfile,3);
 				$i++;
 			}
 		}
@@ -155,39 +159,41 @@ function backwpup_backups_operations($action) {
 		}
 
 		$jobs=get_option('backwpup_jobs'); //Load jobs
+		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 		if (extension_loaded('curl') or @dl(PHP_SHLIB_SUFFIX == 'so' ? 'curl.so' : 'php_curl.dll')) {
 			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
-			if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+			if (!class_exists('Microsoft_WindowsAzure_Storage_Blob') and in_array('MSAZURE',$dests))
 				require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
-			if (!class_exists('CFRuntime'))
+			if (!class_exists('CFRuntime') and in_array('S3',$dests))
 				require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
-			if (!class_exists('CF_Authentication'))
+			if (!class_exists('CF_Authentication') and in_array('RSC',$dests))
 				require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
-			if (!class_exists('Dropbox'))
+			if (!class_exists('Dropbox') and in_array('DROPBOX',$dests))
 				require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
+			if (!class_exists('SugarSync') and in_array('SUGARSYNC',$dests))
+				require_once (dirname(__FILE__).'/libs/sugarsync.php');
 			}
 
-		$num=0;
 		foreach ($deletebackups as $backups) {
 			$jobvalue=backwpup_check_job_vars($jobs[$backups['jobid']],$backups['jobid']); //Check job values
 			if ($backups['type']=='FOLDER') {
 				if (is_file($backups['file']))
 					unlink($backups['file']);
-			} elseif ($backups['type']=='S3') {
+			} elseif ($backups['type']=='S3' and in_array('S3',$dests)) {
 				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
 						$s3->delete_object($jobvalue['awsBucket'],$backups['file']);
 					}
 				}
-			} elseif ($backups['type']=='MSAZURE') {
+			} elseif ($backups['type']=='MSAZURE' and in_array('MSAZURE',$dests)) {
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 					if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
 						$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
 						$storageClient->deleteBlob($jobvalue['msazureContainer'],$backups['file']);
 					}
 				}
-			} elseif ($backups['type']=='DROPBOX') {
+			} elseif ($backups['type']=='DROPBOX' and in_array('DROPBOX',$dests)) {
 				if (class_exists('Dropbox')) {
 					if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 						$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
@@ -195,7 +201,14 @@ function backwpup_backups_operations($action) {
 						$dropbox->fileopsDelete($backups['file']);
 					}
 				}
-			}elseif ($backups['type']=='RSC') {
+			} elseif ($backups['type']=='SUGARSYNC' and in_array('SUGARSYNC',$dests)) {
+				if (class_exists('SugarSync')) {
+					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
+						$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+						$sugarsync->delete(urldecode($backups['file'])); 
+					}
+				}
+			} elseif ($backups['type']=='RSC' and in_array('RSC',$dests)) {
 				if (class_exists('CF_Authentication')) {
 					if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
 						$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
@@ -238,7 +251,6 @@ function backwpup_backups_operations($action) {
 					}
 				}
 			}
-			$num++;
 		}
 		update_option('backwpup_backups_chache',backwpup_get_backup_files());
 		break;
@@ -309,6 +321,30 @@ function backwpup_backups_operations($action) {
 			header("Content-Transfer-Encoding: binary");
 			//header("Content-Length: ".$dropfile['bytes']);
 			echo $dropbox->download($_GET['file']);
+			die();
+		} catch (Exception $e) {
+			die($e->getMessage());
+		} 
+		break;
+	case 'downloadsugarsync': //Download Dropbox Backup
+		check_admin_referer('download-backup');
+		require_once(dirname(__FILE__).'/libs/sugarsync.php');
+		$jobs=get_option('backwpup_jobs');
+		$jobid=$_GET['jobid'];
+		try {
+			$sugarsync = new SugarSync($jobs[$jobid]['sugaruser'],base64_decode($jobs[$jobid]['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+			$response=$sugarsync->get(urldecode($_GET['file']));
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			header("Content-Type: ".(string)$response->mediaType);
+			header("Content-Type: application/force-download");
+			header("Content-Type: application/octet-stream");
+			header("Content-Type: application/download");
+			header("Content-Disposition: attachment; filename=".(string)$response->displayName.";");
+			header("Content-Transfer-Encoding: binary");
+			header("Content-Length: ".(int)$response->size);
+			echo $sugarsync->download(urldecode($_GET['file']));
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -413,17 +449,6 @@ function backwpup_save_job() { //Save Job settings
 	check_admin_referer('edit-job');
 	$jobs=get_option('backwpup_jobs'); //Load Settings
 
-	if (empty($jobid)) { //generate a new id for new job
-		if (is_array($jobs)) {
-			foreach ($jobs as $jobkey => $jobvalue) {
-				if ($jobkey>$heighestid) $heighestid=$jobkey;
-			}
-			$jobid=$heighestid+1;
-		} else {
-			$jobid=1;
-		}
-	}
-
 	if ($jobs[$jobid]['type']!=$_POST['type']) // set type to save
 		$savetype=explode('+',$jobs[$jobid]['type']);
 	else
@@ -510,6 +535,7 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['sugaruser']=$_POST['sugaruser'];
 	$jobs[$jobid]['sugarpass']=base64_encode($_POST['sugarpass']);
 	$jobs[$jobid]['sugardir']=stripslashes($_POST['sugardir']);
+	$jobs[$jobid]['sugarroot']=$_POST['sugarroot'];
 	$jobs[$jobid]['sugarmaxbackups']=(int)$_POST['sugarmaxbackups'];
 	$jobs[$jobid]['rscUsername']=$_POST['rscUsername'];
 	$jobs[$jobid]['rscAPIKey']=$_POST['rscAPIKey'];
@@ -574,7 +600,7 @@ function backwpup_save_job() { //Save Job settings
 		// request request tokens
 		$response = $dropbox->oAuthRequestToken();
 		// save job id and referer
-		update_option('backwpup_dropboxrequest',array('jobid'=>$_GET['jobid'],'oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret'],'referer'=>$_ENV["HTTP_REFERER"]));
+		update_option('backwpup_dropboxrequest',array('jobid'=>$jobid,'oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize($response['oauth_token'], plugins_url('dropbox-auth.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH));
 	}

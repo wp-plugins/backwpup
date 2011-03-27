@@ -1,5 +1,6 @@
 <?PHP
-require_once(dirname(__FILE__).'/oauth.php');
+if (!class_exists('OAuthException'))
+	require_once(dirname(__FILE__).'/oauth.php');
 
 class Dropbox {
 	const API_URL = 'https://api.dropbox.com/';
@@ -37,7 +38,7 @@ class Dropbox {
 	
 	public function upload($file, $path = ''){
 		$file = preg_replace("/\\\\/", "/",$file);
-		if (!is_readable($file)){
+		if (!is_readable($file) or !is_file($file)){
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		}
 		if (!filesize($file)>314572800){
@@ -98,27 +99,34 @@ class Dropbox {
 		$req_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, NULL);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $req_req);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if ($status>=200 and $status<300) {
+		if ($status>=200 and $status<300 and 0==curl_errno($ch) ) {
 			$content = (array) explode('&', $content);
 			foreach($content as $chunk) {
 				$chunks = explode('=', $chunk, 2);
 				if(count($chunks) == 2) $return[$chunks[0]] = $chunks[1];
 			}
+			curl_close($ch);
 			return $return;
 		} else {
 			$output = json_decode($content, true);
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
+			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
 			throw new DropboxException($message);		
 		}
 	}
 	
 	public function oAuthAuthorize($oAuthToken,$callback_url) {
-		$auth_url = self::API_URL.self::API_VERSION_URL."oauth/authorize?oauth_token=".$oAuthToken."&oauth_callback=".urlencode($callback_url);
+		$auth_url = "https://www.dropbox.com/".self::API_VERSION_URL."oauth/authorize?oauth_token=".$oAuthToken."&oauth_callback=".urlencode($callback_url);
 		header('Location: '. $auth_url);
 		exit;
 	}
@@ -129,10 +137,15 @@ class Dropbox {
 		$acc_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $oAuthToken);
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $acc_req);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		if ($status>=200 and $status<300) {
+		if ($status>=200 and $status<300  and 0==curl_errno($ch)) {
 			$content = (array) explode('&', $content);
 			$return = array();
 			foreach($content as $chunk) {
@@ -145,6 +158,7 @@ class Dropbox {
 			$output = json_decode($content, true);
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
+			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
 			throw new DropboxException($message);		
 		}
@@ -161,10 +175,11 @@ class Dropbox {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $Request->to_url());
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		if ($this->noSSLCheck){
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		}
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		
 		/* file upload */
 		if ($file !== null){
@@ -175,17 +190,16 @@ class Dropbox {
 		
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-		
-		curl_close($ch);
 		$output = json_decode($content, true);
 
-		
-		if (isset($output['error']) or $status>=300 or $status<200) {
+		if (isset($output['error']) or $status>=300 or $status<200 or curl_errno($ch)>0) {
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
+			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
 			throw new DropboxException($message);
 		} else {
+			curl_close($ch);
 			if (!is_array($output))
 				return $content;
 			else

@@ -20,6 +20,16 @@ $jobid = (int) $_REQUEST['jobid'];
 <?php
 wp_nonce_field('edit-job');
 $jobs=get_option('backwpup_jobs');
+if (empty($jobid)) { //generate a new id for new job
+	if (is_array($jobs)) {
+		foreach ($jobs as $jobkey => $jobvalue) {
+			if ($jobkey>$heighestid) $heighestid=$jobkey;
+		}
+		$jobid=$heighestid+1;
+	} else {
+		$jobid=1;
+	}
+}
 $jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
 $todo=explode('+',$jobvalue['type']);
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
@@ -416,7 +426,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			
 			<?PHP if (in_array('DROPBOX',$dests) and function_exists('curl_exec') and function_exists('json_decode')) { ?>
 			<div id="todropbox" class="postbox" <?PHP if (!in_array("FILE",$todo) and !in_array("DB",$todo) and !in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
-				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
+				<h3 class="hndle"><span><?PHP _e('Backup to Dropbox','backwpup'); ?></span>&nbsp;&nbsp;&nbsp;&nbsp;<a name="dropbox" href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a></h3>
 				<div class="inside">
 					<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
 					<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
@@ -439,6 +449,9 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 					<input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
 					<b><?PHP _e('Password:','backwpup'); ?></b><br />
 					<input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo base64_decode($jobvalue['sugarpass']);?>" class="large-text" /><br />
+					<b><?PHP _e('Root:','backwpup'); ?></b><br />
+					<input id="sugarrootselected" name="sugarrootselected" type="hidden" value="<?PHP echo $jobvalue['sugarroot'];?>" />
+					<?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>base64_decode($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
 					<b><?PHP _e('Directory:','backwpup'); ?></b><br />
 					<input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
 					<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />

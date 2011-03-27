@@ -10,25 +10,26 @@ if ( !defined('ABSPATH') )
 class backwpup_dojob {
 
 	private $jobid=0;
-	private $filelist=array();
+	public $filelist=array();
 	private $tempfilelist=array();
-	private $todo=array();
+	public 	$todo=array();
 	private $allfilesize=0;
-	private $backupfile='';
-	private $backupfileformat='.zip';
-	private $backupdir='';
+	public $backupfile='';
+	public $backupfileformat='.zip';
+	public $backupdir='';
 	private $lastbackupdownloadurl='';
 	public  $logdir='';
 	public  $logfile='';
 	private $tempdir='';
-	private $cfg=array();
-	private $job=array();
+	public $cfg=array();
+	public $job=array();
 
 	public function __construct($jobid) {
 		global $wpdb;
 		@ini_get('safe_mode','Off'); //disable safe mode
 		@ini_set('ignore_user_abort','Off'); //Set PHP ini setting
 		ignore_user_abort(true);			//user can't abort script (close windows or so.)
+		@set_time_limit(0);					//set script run time limit to wen its done
 		$this->jobid=$jobid;			   //set job id
 		$this->cfg=get_option('backwpup'); //load config
 		$jobs=get_option('backwpup_jobs'); //load jobdata
@@ -92,7 +93,6 @@ class backwpup_dojob {
 				$this->job_end($jobs[$this->jobid]['logfile']);
 			} else {
 				trigger_error(sprintf(__('Job %1$s already running!!!','backwpup'),$jobs[$this->jobid]['name']),E_USER_ERROR);
-				$this->job_end();
 			}
 		}
 		//Set job start settings
@@ -134,112 +134,6 @@ class backwpup_dojob {
 			ini_set('memory_limit', apply_filters( 'admin_memory_limit', '256M' )); //Wordpress default
 			trigger_error(sprintf(__('Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamically increase the Memory!','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
 		}
-		//run job parts
-		foreach($this->todo as $key => $value) {
-			switch ($value) {
-			case 'DB':
-				$this->dump_db();
-				break;
-			case 'WPEXP':
-				$this->export_wp();
-				break;
-			case 'FILE':
-				$this->file_list();
-				break;
-			}
-		}
-
-		if (isset($this->filelist[0][79001])) { // Make backup file
-			if ($this->backupfileformat==".zip")
-				$this->zip_files();
-			elseif ($this->backupfileformat==".tar.gz" or $this->backupfileformat==".tar.bz2" or $this->backupfileformat==".tar")
-				$this->tar_pack_files();
-		}
-
-		if (is_file($this->backupdir.$this->backupfile)) {  // Put backup file to destination
-			$dests=explode(',',strtoupper(BACKWPUP_DESTS));
-			if (!empty($this->job['mailaddress'])) {
-				$this->destination_mail();
-			}
-			if (in_array('FTP',$dests) and !empty($this->job['ftphost']) and !empty($this->job['ftpuser']) and !empty($this->job['ftppass']))	 {
-				if (function_exists('ftp_connect')) 
-					$this->destination_ftp();
-				else 
-					trigger_error(__('FTP extension needed for FTP!','backwpup'),E_USER_ERROR);
-			}
-			if (in_array('DROPBOX',$dests) and !empty($this->job['dropetoken']) and !empty($this->job['dropesecret'])) {
-				if (function_exists('curl_exec') and function_exists('json_decode')) 
-					$this->destination_dropbox();
-				else
-					trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
-			}
-			if (in_array('SUGARSYNC',$dests) and !empty($this->job['sugaruser']) and !empty($this->job['sugarpass'])) {
-				if (function_exists('curl_exec') )
-					$this->destination_sugarsync();
-				else
-					trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
-			}
-			if (in_array('S3',$dests) and !empty($this->job['awsAccessKey']) and !empty($this->job['awsSecretKey']) and !empty($this->job['awsBucket'])) {
-				if (function_exists('curl_exec')) 
-					$this->destination_s3();
-				else 
-					trigger_error(__('Curl extension needed for Amazon S3!','backwpup'),E_USER_ERROR);
-			}
-			if (in_array('RSC',$dests) and !empty($this->job['rscUsername']) and !empty($this->job['rscAPIKey']) and !empty($this->job['rscContainer'])) {
-				if (function_exists('curl_exec')) 
-					$this->destination_rsc();
-				else 
-					trigger_error(__('Curl extension needed for RackSpaceCloud!','backwpup'),E_USER_ERROR);
-			}
-			if (in_array('MSAZURE',$dests) and !empty($this->job['msazureHost']) and !empty($this->job['msazureAccName']) and !empty($this->job['msazureKey']) and !empty($this->job['msazureContainer'])) {
-				if (function_exists('curl_exec')) 
-					$this->destination_msazure();
-				else 
-					trigger_error(__('Curl extension needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
-			}
-			if (!empty($this->job['backupdir'])) {
-				$this->destination_dir();
-			}
-		}
-
-		foreach($this->todo as $key => $value) {
-			switch ($value) {
-			case 'CHECK':
-				$this->check_db();
-				break;
-			case 'OPTIMIZE':
-				$this->optimize_db();
-				break;
-			}
-		}
-		
-		//delete old logs
-		if (!empty($this->cfg['maxlogs'])) {
-			if ( $dir = opendir($this->logdir) ) { //make file list
-				while (($file = readdir($dir)) !== false ) {
-					if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and (".html" == substr($file,-5) or ".html.gz" == substr($file,-8)))
-						$logfilelist[]=$file;
-				}
-				closedir( $dir );
-			}
-			if (sizeof($logfilelist)>0) {
-				rsort($logfilelist);
-				$numdeltefiles=0;
-				for ($i=$this->cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
-					unlink($this->logdir.$logfilelist[$i]);
-					$numdeltefiles++;
-				}
-				if ($numdeltefiles>0)
-					trigger_error($numdeltefiles.' '.__('old Log files deleted!!!','backwpup'),E_USER_NOTICE);
-			}
-		}
-		
-		if ($filesize=filesize($this->backupdir.$this->backupfile))
-			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes($filesize)),E_USER_NOTICE);
-
-		trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),current_time('timestamp')-$this->job['starttime']),E_USER_NOTICE);
-		
-		$this->job_end();		
 	}
 
 	//function for PHP error handling
@@ -321,9 +215,7 @@ class backwpup_dojob {
 			if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
 				$this->send_log_mail();
 				die();
-			}
-			//300 is most webserver time limit. 0= max time! Give script 5 min. more to work.
-			@set_time_limit(300); 
+			} 
 			//true for no more php error hadling.
 			return true;
 		} else {
@@ -441,7 +333,7 @@ class backwpup_dojob {
 		}
 	}
 
-	private function check_db() {
+	public function check_db() {
 		global $wpdb;
 
 		trigger_error(__('Run Database check...','backwpup'),E_USER_NOTICE);
@@ -548,7 +440,7 @@ class backwpup_dojob {
 			fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
 	}
 
-	private function dump_db() {
+	public function dump_db() {
 		global $wpdb;
 		trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
 		//Set maintenance
@@ -634,12 +526,12 @@ class backwpup_dojob {
 		$this->maintenance_mode(false);
 	}
 
-	private function export_wp() {
+	public function export_wp() {
 		$this->need_free_memory(1048576); //1MB free memory
 		if (function_exists('curl_exec')) {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10));
+			curl_setopt($ch, CURLOPT_URL, plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.wp_create_nonce('backwpup-xmlexport'));
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
@@ -655,7 +547,7 @@ class backwpup_dojob {
 			curl_close($ch);
 		} elseif (ini_get('allow_url_fopen')==true or ini_get('allow_url_fopen')==1 or strtolower(ini_get('allow_url_fopen'))=="on") {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.substr(md5(md5(SECURE_AUTH_KEY)),10,10),$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.wp_create_nonce('backwpup-xmlexport'),$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 				trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			} else {
 				trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
@@ -671,7 +563,7 @@ class backwpup_dojob {
 		}
 	}
 	
-	private function optimize_db() {
+	public function optimize_db() {
 		global $wpdb;
 
 		trigger_error(__('Run Database optimize...','backwpup'),E_USER_NOTICE);
@@ -736,7 +628,7 @@ class backwpup_dojob {
 		}
 	}
 
-	private function file_list() {
+	public function file_list() {
 
 		//Make filelist
 		trigger_error(__('Make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
@@ -796,7 +688,7 @@ class backwpup_dojob {
 
 	}
 
-	private function zip_files() {
+	public function zip_files() {
 		if (class_exists('ZipArchive')) {  //use php zip lib
 			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive;
@@ -807,8 +699,6 @@ class backwpup_dojob {
 					if ($zip->addFile($files[79001], $files[79003])) {
 						if ($this->cfg['logfilelist'])
 							trigger_error(__('Add File to ZIP file:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
-						else 
-							@set_time_limit(300); //Set time limit higer every file
 					} else {
 						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$files[79001],E_USER_ERROR);
 					}
@@ -840,9 +730,11 @@ class backwpup_dojob {
 				}
 			}
 		}
+		if ($filesize=filesize($this->backupdir.$this->backupfile))
+			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes($filesize)),E_USER_NOTICE);
 	}
 
-	private function tar_pack_files() {
+	public function tar_pack_files() {
 
 		if ($this->backupfileformat=='.tar.gz') {
 			$tarbackup=gzopen($this->backupdir.$this->backupfile,'w9');
@@ -864,8 +756,6 @@ class backwpup_dojob {
 		foreach($this->filelist as $key => $files) {
 				if ($this->cfg['logfilelist'])
 					trigger_error(__('Add File to Backup Archive:','backwpup').' '.$files[79001].' '.backwpup_formatBytes(filesize($files[79001])),E_USER_NOTICE);
-				else 
-					@set_time_limit(300); //Set time limit higer every file
 					
 				//check file exists
 				if (!is_readable($files[79001]))
@@ -963,10 +853,12 @@ class backwpup_dojob {
 		}
 
 		trigger_error(__('Backup Archive file create done!','backwpup'),E_USER_NOTICE);
+		if ($filesize=filesize($this->backupdir.$this->backupfile))
+			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),backwpup_formatBytes($filesize)),E_USER_NOTICE);
 	}
 
 
-	private function destination_ftp() {
+	public function destination_ftp() {
 		
 		$this->need_free_memory(filesize($this->backupdir.$this->backupfile)*1.5);
 		
@@ -1086,7 +978,7 @@ class backwpup_dojob {
 
 	}
 
-	private function destination_mail() {
+	public function destination_mail() {
 		trigger_error(__('Prepare Sending backup file with mail...','backwpup'),E_USER_NOTICE);
 		//Create PHP Mailer
 		require_once(ABSPATH.WPINC.'/class-phpmailer.php');
@@ -1147,7 +1039,7 @@ class backwpup_dojob {
 
 	}
 
-	private function destination_s3() {
+	public function destination_s3() {
 
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
@@ -1207,7 +1099,7 @@ class backwpup_dojob {
 		}
 	}
 
-	private function destination_rsc() {
+	public function destination_rsc() {
 
 		if (!class_exists('CF_Authentication')) 
 			require_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
@@ -1285,7 +1177,7 @@ class backwpup_dojob {
 		} 
 	}
 	
-	private function destination_msazure() {
+	public function destination_msazure() {
 		
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
@@ -1340,7 +1232,7 @@ class backwpup_dojob {
 		} 
 	}
 	
-	private function destination_dir() {
+	public function destination_dir() {
 		$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=download&file='.$this->backupdir.$this->backupfile;
 		//Delete old Backupfiles
 		$backupfilelist=array();
@@ -1365,7 +1257,7 @@ class backwpup_dojob {
 		}
 	}
 	
-	private function destination_dropbox(){
+	public function destination_dropbox(){
 		
 		if (!class_exists('Dropbox'))
 			require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
@@ -1409,7 +1301,7 @@ class backwpup_dojob {
 					rsort($backupfilelist);
 					$numdeltefiles=0;
 					for ($i=$this->job['dropemaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						$dropbox->fileopsDelete($this->job['dropedir'].$backupfilelist[$i]); //delte files on Cloud
+						$dropbox->fileopsDelete($this->job['dropedir'].$backupfilelist[$i]); //delete files on Cloud
 						$numdeltefiles++;
 					}
 					if ($numdeltefiles>0)
@@ -1421,7 +1313,7 @@ class backwpup_dojob {
 		} 
 	}
 
-	private function destination_sugarsync(){
+	public function destination_sugarsync(){
 		
 		if (!class_exists('SugarSync'))
 			require_once (dirname(__FILE__).'/libs/sugarsync.php');
@@ -1430,26 +1322,86 @@ class backwpup_dojob {
 		
 		try {
 			$sugarsync = new SugarSync($this->job['sugaruser'],base64_decode($this->job['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
-			// set the tokens 
+			//Check Quota
 			$user=$sugarsync->user();
-			$workspace=$sugarsync->get($user->syncfolders);
-			$workspacefiles=$sugarsync->get('https://api.sugarsync.com/folder/:sc:970679:1/contents');
-			//var_dump($workspacefiles);
-			
-			$folder=$sugarsync->createfolder($user->webArchive,untrailingslashit($this->job['sugardir']));
-			//$reponse=$sugarsync->createfile($user->webArchive,$this->backupdir.$this->backupfile);
-			
+			if (!empty($user->nickname)) {
+				trigger_error(__('Authed to SugarSync with Nick ','backwpup').$user->nickname,E_USER_NOTICE);
+			}
+			$sugarsyncfreespase=$user->quota->limit-$user->quota->usage;
+			if (filesize($this->backupdir.$this->backupfile)>$sugarsyncfreespase) {
+				trigger_error(__('No free space left on SugarSync!!!','backwpup'),E_USER_ERROR);
+				return;
+			} else {
+				trigger_error(__('Free Space on SugarSync: ','backwpup').backwpup_formatBytes($sugarsyncfreespase),E_USER_NOTICE);
+			}
+			//Create and change folder
+			$sugarsync->mkdir($this->job['sugardir'],$this->job['sugarroot']);
+			$sugarsync->chdir($this->job['sugardir'],$this->job['sugarroot']);
+			//Upload to Sugarsync
+			$reponse=$sugarsync->upload($this->backupdir.$this->backupfile);
+			if (is_object($reponse)) {
+				$this->lastbackupdownloadurl='admin.php?page=BackWPup&subpage=backups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$this->jobid;
+				trigger_error(__('Backup File transferred to SugarSync.','backwpup'),E_USER_NOTICE);
+			} else {
+				trigger_error(__('Can not transfere Backup file to SugarSync:','backwpup'),E_USER_ERROR);
+			}	
 
+			if ($this->job['sugarmaxbackups']>0) { //Delete old backups
+				$backupfilelist=array();
+				$getfiles=$sugarsync->getcontents('file');
+				if (is_object($getfiles)) {
+					foreach ($getfiles->file as $getfile) {
+						if ($this->job['fileprefix'] == substr($getfile->displayName,0,strlen($this->job['fileprefix'])) and $this->backupfileformat == substr($getfile->displayName,-strlen($this->backupfileformat)))
+							$backupfilelist[]=$getfile->displayName;
+							$backupfileref[utf8_encode($getfile->displayName)]=$getfile->ref;
+					}
+				}
+				if (sizeof($backupfilelist)>0) {
+					rsort($backupfilelist);
+					$numdeltefiles=0;
+					for ($i=$this->job['sugarmaxbackups'];$i<sizeof($backupfilelist);$i++) {
+						$sugarsync->delete($backupfileref[utf8_encode($backupfilelist[$i])]); //delete files on Cloud
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error($numdeltefiles.' '.__('files deleted on Sugarsync Folder!','backwpup'),E_USER_NOTICE);
+				}
+			}	
 		} catch (Exception $e) {
 			trigger_error(__('SugarSync API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 		} 
 	}
 
 	
-	private function job_end($logfile ='') {
-		if (empty($logfile)) $logfile=$this->logdir.$this->logfile;
+	public function job_end($logfile ='') {
+		if (empty($logfile)) 
+			$logfile=$this->logdir.$this->logfile;
+		
+		if ($logfile==$this->logdir.$this->logfile) {
+			//delete old logs
+			if (!empty($this->cfg['maxlogs'])) {
+				if ( $dir = opendir($this->logdir) ) { //make file list
+					while (($file = readdir($dir)) !== false ) {
+						if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and (".html" == substr($file,-5) or ".html.gz" == substr($file,-8)))
+							$logfilelist[]=$file;
+					}
+					closedir( $dir );
+				}
+				if (sizeof($logfilelist)>0) {
+					rsort($logfilelist);
+					$numdeltefiles=0;
+					for ($i=$this->cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
+						unlink($this->logdir.$logfilelist[$i]);
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error($numdeltefiles.' '.__('old Log files deleted!!!','backwpup'),E_USER_NOTICE);
+				}
+			}
+			trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),current_time('timestamp')-$this->job['starttime']),E_USER_NOTICE);	
+		}
 		restore_error_handler();
-
+		
 		if (!($filesize=@filesize($this->backupdir.$this->backupfile))) //Set the filezie corectly
 			$filesize=0;
 
@@ -1457,20 +1409,24 @@ class backwpup_dojob {
 		@unlink($this->tempdir.DB_NAME.'.sql');
 		@unlink($this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
 
-		if (empty($this->job['backupdir']) and is_file($this->backupdir.$this->backupfile)) { //delete backup file in temp dir
+		if (empty($this->job['backupdir']) and is_file($this->backupdir.$this->backupfile))  //delete backup file in temp dir
 			unlink($this->backupdir.$this->backupfile);
-		}
-
-		$jobs=get_option('backwpup_jobs');	
+		
+		$jobs=get_option('backwpup_jobs');
 		$jobs[$this->jobid]['lastrun']=$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['lastruntime']=current_time('timestamp')-$jobs[$this->jobid]['starttime'];
 		$jobs[$this->jobid]['logfile']='';
+		$jobs[$this->jobid]['lastlogfile']=$logfile;
 		$jobs[$this->jobid]['starttime']='';
-		$jobs[$this->jobid]['lastbackupdownloadurl']=$this->lastbackupdownloadurl;
+		if (!empty($this->lastbackupdownloadurl))
+			$jobs[$this->jobid]['lastbackupdownloadurl']=$this->lastbackupdownloadurl;
+		else
+			$jobs[$this->jobid]['lastbackupdownloadurl']='';
 		update_option('backwpup_jobs',$jobs); //Save Settings
+		
 		$this->job['lastrun']=$jobs[$this->jobid]['lastrun'];
 		$this->job['lastruntime']=$jobs[$this->jobid]['lastruntime'];
-	
+		
 		//write heder info
 		$fd=fopen($logfile,'r+');
 		$found=0;
@@ -1491,10 +1447,12 @@ class backwpup_dojob {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
+		
 		//logfile end
 		$fd=fopen($logfile,'a');
 		fwrite($fd,"</body>\n</html>\n");
 		fclose($fd);
+		
 		//gzip logfile
 		if ($this->cfg['gzlogs']) {
 			$fd=fopen($logfile,'r');
@@ -1509,8 +1467,10 @@ class backwpup_dojob {
 			$jobs=get_option('backwpup_jobs');
 			$jobs[$this->jobid]['lastlogfile']=$logfile;
 			update_option('backwpup_jobs',$jobs); //Save Settings
-		}	
+		}
+		
 		$logdata=backwpup_read_logheader($logfile);
+		
 		//Send mail with log
 		$sendmail=false;
 		if ($logdata['errors']>0 and $this->job['mailerroronly'] and !empty($this->job['mailaddresslog']))
@@ -1558,7 +1518,7 @@ class backwpup_dojob {
 			$phpmailer->Body  =  $mailbody;
 			$phpmailer->AddAttachment($logfile);
 			$phpmailer->Send();
-		}	
+		}
 	}
 }
 ?>

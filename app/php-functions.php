@@ -291,13 +291,93 @@ function backwpup_cron() {
 
 //DoJob
 function backwpup_dojob($jobid) {
-	global $backwpup_logfile;
 	if (empty($jobid))
 		return false;
 	require_once(dirname(__FILE__).'/backwpup_dojob.php');
 	$backwpup_dojob= new backwpup_dojob($jobid);
-	unset($backwpup_dojob);
-	return $backwpup_logfile;
+
+	//run job parts
+	foreach($backwpup_dojob->todo as $key => $value) {
+		switch ($value) {
+		case 'DB':
+			$this->dump_db();
+			break;
+		case 'WPEXP':
+			$backwpup_dojob->export_wp();
+			break;
+		case 'FILE':
+			$backwpup_dojob->file_list();
+			break;
+		}
+	}
+
+	if (isset($backwpup_dojob->filelist[0][79001])) { // Make backup file
+		if ($backwpup_dojob->backupfileformat==".zip")
+			$backwpup_dojob->zip_files();
+		elseif ($backwpup_dojob->backupfileformat==".tar.gz" or $backwpup_dojob->backupfileformat==".tar.bz2" or $backwpup_dojob->backupfileformat==".tar")
+			$backwpup_dojob->tar_pack_files();
+	}
+
+	if (is_file($backwpup_dojob->backupdir.$backwpup_dojob->backupfile)) {  // Put backup file to destination
+		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
+		if (!empty($backwpup_dojob->job['mailaddress'])) {
+			$backwpup_dojob->destination_mail();
+		}
+		if (in_array('FTP',$dests) and !empty($backwpup_dojob->job['ftphost']) and !empty($backwpup_dojob->job['ftpuser']) and !empty($backwpup_dojob->job['ftppass']))	 {
+			if (function_exists('ftp_connect')) 
+				$backwpup_dojob->destination_ftp();
+			else 
+				trigger_error(__('FTP extension needed for FTP!','backwpup'),E_USER_ERROR);
+		}
+		if (in_array('DROPBOX',$dests) and !empty($backwpup_dojob->job['dropetoken']) and !empty($backwpup_dojob->job['dropesecret'])) {
+			if (function_exists('curl_exec') and function_exists('json_decode')) 
+				$backwpup_dojob->destination_dropbox();
+			else
+				trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
+		}
+		if (in_array('SUGARSYNC',$dests) and !empty($backwpup_dojob->job['sugaruser']) and !empty($backwpup_dojob->job['sugarpass'])) {
+			if (function_exists('curl_exec') )
+				$backwpup_dojob->destination_sugarsync();
+			else
+				trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
+		}
+		if (in_array('S3',$dests) and !empty($backwpup_dojob->job['awsAccessKey']) and !empty($backwpup_dojob->job['awsSecretKey']) and !empty($backwpup_dojob->job['awsBucket'])) {
+			if (function_exists('curl_exec')) 
+				$backwpup_dojob->destination_s3();
+			else 
+				trigger_error(__('Curl extension needed for Amazon S3!','backwpup'),E_USER_ERROR);
+		}
+		if (in_array('RSC',$dests) and !empty($backwpup_dojob->job['rscUsername']) and !empty($backwpup_dojob->job['rscAPIKey']) and !empty($backwpup_dojob->job['rscContainer'])) {
+			if (function_exists('curl_exec')) 
+				$backwpup_dojob->destination_rsc();
+			else 
+				trigger_error(__('Curl extension needed for RackSpaceCloud!','backwpup'),E_USER_ERROR);
+		}
+		if (in_array('MSAZURE',$dests) and !empty($backwpup_dojob->job['msazureHost']) and !empty($backwpup_dojob->job['msazureAccName']) and !empty($backwpup_dojob->job['msazureKey']) and !empty($backwpup_dojob->job['msazureContainer'])) {
+			if (function_exists('curl_exec')) 
+				$backwpup_dojob->destination_msazure();
+			else 
+				trigger_error(__('Curl extension needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
+		}
+		if (!empty($backwpup_dojob->job['backupdir'])) {
+			$backwpup_dojob->destination_dir();
+		}
+	}
+
+	foreach($backwpup_dojob->todo as $key => $value) {
+		switch ($value) {
+		case 'CHECK':
+			$backwpup_dojob->check_db();
+			break;
+		case 'OPTIMIZE':
+			$backwpup_dojob->optimize_db();
+			break;
+		}
+	}
+		
+	$backwpup_dojob->job_end();	
+	
+	return $backwpup_dojob->logdir.$backwpup_dojob->logfile;
 }
 
 //file size
