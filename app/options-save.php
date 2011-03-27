@@ -184,6 +184,7 @@ function backwpup_backups_operations($action) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
 						$s3->delete_object($jobvalue['awsBucket'],$backups['file']);
+						unset($s3);
 					}
 				}
 			} elseif ($backups['type']=='MSAZURE' and in_array('MSAZURE',$dests)) {
@@ -191,6 +192,7 @@ function backwpup_backups_operations($action) {
 					if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
 						$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
 						$storageClient->deleteBlob($jobvalue['msazureContainer'],$backups['file']);
+						unset($storageClient);
 					}
 				}
 			} elseif ($backups['type']=='DROPBOX' and in_array('DROPBOX',$dests)) {
@@ -199,13 +201,15 @@ function backwpup_backups_operations($action) {
 						$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 						$dropbox->fileopsDelete($backups['file']);
+						unset($dropbox);
 					}
 				}
 			} elseif ($backups['type']=='SUGARSYNC' and in_array('SUGARSYNC',$dests)) {
 				if (class_exists('SugarSync')) {
 					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
 						$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
-						$sugarsync->delete(urldecode($backups['file'])); 
+						$sugarsync->delete(urldecode($backups['file']));
+						unset($sugarsync);
 					}
 				}
 			} elseif ($backups['type']=='RSC' and in_array('RSC',$dests)) {
@@ -219,6 +223,9 @@ function backwpup_backups_operations($action) {
 							$backwpupcontainer = $conn->get_container($jobvalue['rscContainer']);
 							$backwpupcontainer->delete_object($backups['file']);
 						}
+						unset($auth);
+						unset($conn);
+						unset($backwpupcontainer);
 					}
 				}
 			} elseif ($backups['type']=='FTP') {

@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.7.0
+Stable tag: 1.7.1
 
 Backup your WordPress Database and Files, and more!
 
@@ -102,6 +102,11 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 1.7.1 =
+* Bugfix on make new jobs
+* Bugfix on job run with dbdump
+* Bugfix on Backup Bulk actions
+
 = 1.7.0 =
 * Improved Dropbox referer handling
 * Sycurity fix (thanks to Phil Taylor - Sense of Security)

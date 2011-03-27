@@ -458,7 +458,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			
 			switch($column_name) {
 				case 'cb':
-					$r .= '<th scope="row" class="check-column"><input type="checkbox" name="backupfiles[]" value="'. esc_attr(urlencode($backup['file']).'|'.$backup['jobid'].'|'.$backup['type']) .'" /></th>';
+					$r .= '<th scope="row" class="check-column"><input type="checkbox" name="backupfiles[]" value="'. esc_attr($backup['file'].'|'.$backup['jobid'].'|'.$backup['type']) .'" /></th>';
 					break;
 				case 'backup':
 					$dir=dirname($backup['file']);
@@ -482,7 +482,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 						$r .= "<td $attributes><strong>".$backup['filename']."</strong><br />sugarsync://magicBriefcase/".$jobvalue['sugardir'];
 					} 
 					$actions = array();
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=delete&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr(urlencode($backup['file']).'|'.$backup['jobid'].'|'.$backup['type']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=backups&action=delete&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file'].'|'.$backup['jobid'].'|'.$backup['type']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 					$actions['download'] = "<a href=\"" . wp_nonce_url($backup['downloadurl'], 'download-backup') . "\">" . __('Download','backwpup') . "</a>";
 					$action_count = count($actions);
 					$i = 0;
