@@ -300,7 +300,7 @@ function backwpup_dojob($jobid) {
 	foreach($backwpup_dojob->todo as $key => $value) {
 		switch ($value) {
 		case 'DB':
-			$this->dump_db();
+			$backwpup_dojob->dump_db();
 			break;
 		case 'WPEXP':
 			$backwpup_dojob->export_wp();
