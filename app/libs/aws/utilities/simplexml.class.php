@@ -22,7 +22,7 @@
  * Wraps the underlying `SimpleXMLIterator` class with enhancements for rapidly traversing the DOM tree,
  * converting types, and comparisons.
  *
- * @version 2010.11.08
+ * @version 2011.03.25
  * @license See the included NOTICE.md file for more information.
  * @copyright See the included NOTICE.md file for more information.
  * @link http://aws.amazon.com/php/ PHP Developer Center
@@ -77,6 +77,10 @@ class CFSimpleXML extends SimpleXMLIterator
 		return $results;
 	}
 
+
+	/*%******************************************************************************************%*/
+	// TRAVERSAL
+
 	/**
 	 * Wraps the results of an XPath query in a <CFArray> object.
 	 *
@@ -108,6 +112,10 @@ class CFSimpleXML extends SimpleXMLIterator
 		return $parents[0];
 	}
 
+
+	/*%******************************************************************************************%*/
+	// ALTERNATE FORMATS
+
 	/**
 	 * Gets the current XML node as a true string.
 	 *
@@ -127,6 +135,40 @@ class CFSimpleXML extends SimpleXMLIterator
 	{
 		return new CFArray(json_decode(json_encode($this), true));
 	}
+
+	/**
+	 * Gets the current XML node as a stdClass object.
+	 *
+	 * @return array The current XML node as a stdClass object.
+	 */
+	public function to_stdClass()
+	{
+		return json_decode(json_encode($this));
+	}
+
+	/**
+	 * Gets the current XML node as a JSON string.
+	 *
+	 * @return string The current XML node as a JSON string.
+	 */
+	public function to_json()
+	{
+		return json_encode($this);
+	}
+
+	/**
+	 * Gets the current XML node as a YAML string.
+	 *
+	 * @return string The current XML node as a YAML string.
+	 */
+	public function to_yaml()
+	{
+		return sfYaml::dump(json_decode(json_encode($this), true), 5);
+	}
+
+
+	/*%******************************************************************************************%*/
+	// COMPARISONS
 
 	/**
 	 * Whether or not the current node exactly matches the compared value.

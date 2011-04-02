@@ -381,14 +381,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		if ( empty( $per_page ) || $per_page < 1 )
 			$per_page = 20;	
 		
-		//load logs
-		if (isset($_GET['paged'])) {
-			$backups=get_option('backwpup_backups_chache');
-		} else {
-			//Get Backup files
-			$backups=backwpup_get_backup_files();
-			update_option('backwpup_backups_chache',$backups);
-		}
+		$backups=get_option('backwpup_backups_chache');		
 		
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );

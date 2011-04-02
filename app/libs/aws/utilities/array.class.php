@@ -32,7 +32,7 @@
 class CFArray extends ArrayObject
 {
 	/**
-	 * Constructs a new instance of the class.
+	 * Constructs a new instance of <CFArray>.
 	 *
 	 * @param mixed $input (Optional) The input parameter accepts an array or an Object. The default value is an empty array.
 	 * @param integer $flags (Optional) Flags to control the behavior of the ArrayObject object. Defaults to <STD_PROP_LIST>.
@@ -53,6 +53,10 @@ class CFArray extends ArrayObject
 	{
 		return 'Array';
 	}
+
+
+	/*%******************************************************************************************%*/
+	// REFORMATTING
 
 	/**
 	 * Maps each element in the <CFArray> object as an integer.
@@ -88,6 +92,10 @@ class CFArray extends ArrayObject
 		return $list;
 	}
 
+
+	/*%******************************************************************************************%*/
+	// CONFIRMATION
+
 	/**
 	 * Verifies that _all_ responses were successful. A single failed request will cause <areOK()> to return false. Equivalent to <CFResponse::isOK()>, except it applies to all responses.
 	 *
@@ -108,6 +116,10 @@ class CFArray extends ArrayObject
 
 		return (array_search(false, $dlist, true) !== false) ? false : true;
 	}
+
+
+	/*%******************************************************************************************%*/
+	// ITERATING AND EXECUTING
 
 	/**
 	 * Iterates over a <CFArray> object, and executes a function for each matched element.
@@ -151,13 +163,13 @@ class CFArray extends ArrayObject
 	}
 
 	/**
-	 * Reduces the list of nodes by passing each value in the current <CFArray> object through a function. The node will be removed if the function returns `false`.
+	 * Filters the list of nodes by passing each value in the current <CFArray> object through a function. The node will be removed if the function returns `false`.
 	 *
 	 * @param string|function $callback (Required) The callback function to execute. PHP 5.3 or newer can use an anonymous function.
 	 * @param mixed $bind (Optional) A variable from the calling scope to pass-by-reference into the local scope of the callback function.
 	 * @return CFArray A new <CFArray> object containing the return values.
 	 */
-	public function reduce($callback, &$bind = null)
+	public function filter($callback, &$bind = null)
 	{
 		$items = $this->getArrayCopy();
 		$max = count($items);
@@ -173,6 +185,22 @@ class CFArray extends ArrayObject
 
 		return new CFArray($collect);
 	}
+
+	/**
+	 * Alias for <filter()>. This functionality was incorrectly named _reduce_ in earlier versions of the SDK.
+	 *
+	 * @param string|function $callback (Required) The callback function to execute. PHP 5.3 or newer can use an anonymous function.
+	 * @param mixed $bind (Optional) A variable from the calling scope to pass-by-reference into the local scope of the callback function.
+	 * @return CFArray A new <CFArray> object containing the return values.
+	 */
+	public function reduce($callback, &$bind = null)
+	{
+		return $this->filter($callback, $bind);
+	}
+
+
+	/*%******************************************************************************************%*/
+	// TRAVERSAL
 
 	/**
 	 * Gets the first result in the array.
@@ -214,5 +242,29 @@ class CFArray extends ArrayObject
 	public function reindex()
 	{
 		return new CFArray(array_values($this->getArrayCopy()));
+	}
+
+
+	/*%******************************************************************************************%*/
+	// ALTERNATE FORMATS
+
+	/**
+	 * Gets the current XML node as a JSON string.
+	 *
+	 * @return string The current XML node as a JSON string.
+	 */
+	public function to_json()
+	{
+		return json_encode($this->getArrayCopy());
+	}
+
+	/**
+	 * Gets the current XML node as a YAML string.
+	 *
+	 * @return string The current XML node as a YAML string.
+	 */
+	public function to_yaml()
+	{
+		return sfYaml::dump($this->getArrayCopy(), 5);
 	}
 }

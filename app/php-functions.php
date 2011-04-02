@@ -129,7 +129,7 @@ function backwpup_options_load() {
 		'</div>'
 	);
 		
-	if ($_REQUEST['action2']!='-1' and !empty($_REQUEST['doaction2']))
+	if ($_REQUEST['action2']!='-1' and $_REQUEST['action']=='-1')
 		$_REQUEST['action']=$_REQUEST['action2'];
 
 	switch($_REQUEST['subpage']) {
@@ -144,9 +144,12 @@ function backwpup_options_load() {
 		$table->prepare_items();
 		break;
 	case 'edit':
-		if (!empty($_POST['submit']) or !empty($_POST['dropboxauth'])) {
+		if (!empty($_POST['submit']) or !empty($_REQUEST['dropboxauth'])) {
 			require_once(dirname(__FILE__).'/options-save.php');
-			$backwpup_message=backwpup_save_job();
+			if ($_GET['dropboxauth']=='AccessToken') 
+				$backwpup_message=backwpup_save_dropboxauth();
+			else
+				$backwpup_message=backwpup_save_job();
 		}
 		break;
 	case 'settings':
@@ -278,13 +281,25 @@ function backwpup_intervals($schedules) {
 }
 
 //cron work
-function backwpup_cron() {
+function backwpup_cron() {	
 	$jobs=(array)get_option('backwpup_jobs');
 	foreach ($jobs as $jobid => $jobvalue) {
 		if (!$jobvalue['activated'])
 			continue;
 		if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
+
+			define('DONOTCACHEPAGE', true);
+			define('DONOTCACHEDB', true);
+			define('DONOTMINIFY', true);
+			define('DONOTCDN', true);
+			define('DONOTCACHCEOBJECT', true);
+			//Quick Cache
+			define("QUICK_CACHE_ALLOWED", false);
+			echo "<!--dynamic-cached-content-->";
+			echo "<!--mfunc backwpup_dojob(".$jobid.") -->";
 			backwpup_dojob($jobid);
+			echo "<!--/mfunc-->";
+			echo "<!--/dynamic-cached-content-->";
 		}
 	}
 }
@@ -375,8 +390,9 @@ function backwpup_dojob($jobid) {
 		}
 	}
 		
-	$backwpup_dojob->job_end();	
-	
+	$backwpup_dojob->job_end();
+	//geneate new chache
+	update_option('backwpup_backups_chache',backwpup_get_backup_files());
 	return $backwpup_dojob->logdir.$backwpup_dojob->logfile;
 }
 
@@ -521,6 +537,8 @@ function backwpup_dashboard_output() {
 
 //add dashboard widget
 function backwpup_add_dashboard() {
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );
 }
 

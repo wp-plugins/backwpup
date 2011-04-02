@@ -112,7 +112,10 @@ class CFUtilities
 
 		foreach ($array as $key => $value)
 		{
-			$temp[] = rawurlencode($key) . '=' . rawurlencode($value);
+			if (is_string($key) && !is_array($value))
+			{
+				$temp[] = rawurlencode($key) . '=' . rawurlencode($value);
+			}
 		}
 
 		return implode('&', $temp);
@@ -331,6 +334,17 @@ class CFUtilities
 	public function is_base64($s)
 	{
 		return (bool) preg_match('/^[a-zA-Z0-9\/\r\n+]*={0,2}$/', $s);
+	}
+
+	/**
+	 * Determines whether the data is a JSON string or not.
+	 *
+	 * @param string $s (Required) The string to test.
+	 * @return boolean Whether the string is a JSON string or not.
+	 */
+	public function is_json($s)
+	{
+		return json_decode($s) ? true : false;
 	}
 
 	/**

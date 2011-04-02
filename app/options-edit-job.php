@@ -29,7 +29,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 <div class="clear"></div>
 
 
-<form method="post" action="">
+<form method="post" action="<?PHP echo get_admin_url().'admin.php?page=BackWPup&subpage=edit';?>">
 <input type="hidden" name="subpage" value="edit" />
 <input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
 <?php wp_nonce_field('edit-job'); ?>

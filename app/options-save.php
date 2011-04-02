@@ -451,6 +451,36 @@ function backwpup_save_settings() {
 	return $backwpup_message;
 }
 
+
+function backwpup_save_dropboxauth() { //Save Job settings
+	$jobid = (int) $_GET['jobid'];
+	check_admin_referer('edit-job');
+	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
+		$reqtoken=get_option('backwpup_dropboxrequest');
+		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
+			//Get Access Tokens
+			if (!class_exists('Dropbox'))
+				require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
+			//Save Tokens
+			$jobs=get_option('backwpup_jobs');
+			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
+			$jobs[$jobid]['dropesecret']=$oAuthStuff['oauth_token_secret'];
+			update_option('backwpup_jobs',$jobs);
+			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
+		} else {
+			$backwpup_message.=__('Wrong Token for Dropbox authentication reseved!','backwpup').'<br />';
+		}
+	} else {
+		$backwpup_message.=__('No Dropbox authentication reseved!','backwpup').'<br />';	
+	}
+	delete_option('backwpup_dropboxrequest');
+	$_POST['jobid']=$jobid;
+	return $backwpup_message;
+}
+
+
 function backwpup_save_job() { //Save Job settings
 	$jobid = (int) $_POST['jobid'];
 	check_admin_referer('edit-job');
@@ -607,16 +637,17 @@ function backwpup_save_job() { //Save Job settings
 		// request request tokens
 		$response = $dropbox->oAuthRequestToken();
 		// save job id and referer
-		update_option('backwpup_dropboxrequest',array('jobid'=>$jobid,'oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
+		update_option('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
 		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize($response['oauth_token'], plugins_url('dropbox-auth.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH));
+		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=BackWPup&subpage=edit&jobid='.$jobid.'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 	}
+	
 	if ($_POST['dropboxauth']==__('Delete!', 'backwpup')) {
 		$jobs[$jobid]['dropetoken']='';
 		$jobs[$jobid]['dropesecret']='';
 		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
 	}
-	
+
 	//save chages
 	update_option('backwpup_jobs',$jobs);
 	$_POST['jobid']=$jobid;

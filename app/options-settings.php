@@ -12,7 +12,7 @@ $cfg=get_option('backwpup');
 
 <div class="clear"></div>
 
-<form method="post" action="">
+<form method="post" action="<?PHP echo get_admin_url().'admin.php?page=BackWPup&subpage=settings';?>">
 <input type="hidden" name="subpage" value="settings" />
 <?php  wp_nonce_field('backwpup-cfg'); ?>
 

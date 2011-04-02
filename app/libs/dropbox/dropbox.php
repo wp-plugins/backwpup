@@ -5,6 +5,7 @@ if (!class_exists('OAuthException'))
 class Dropbox {
 	const API_URL = 'https://api.dropbox.com/';
 	const API_CONTENT_URL = 'https://api-content.dropbox.com/';
+	const API_WWW_URL = 'https://www.dropbox.com/';
 	const API_VERSION_URL = '0/';
 	
 	protected $root = 'dropbox';
@@ -14,13 +15,11 @@ class Dropbox {
 	
 	public function __construct($applicationKey, $applicationSecret) {	
 		$this->OAuthConsumer = new OAuthConsumer($applicationKey, $applicationSecret);
-		$this->OAuthSignatureMethod = new OAuthSignatureMethod_HMAC_SHA1;
+		$this->OAuthSignatureMethod = new OAuthSignatureMethod_PLAINTEXT;
 	}
 
 	public function setOAuthTokens($token,$secret) {
-		$this->oAuthToken = $token;
-		$this->oAuthTokenSecret = $secret;
-		$this->OAuthToken = new OAuthToken($this->oAuthToken, $this->oAuthTokenSecret);
+		$this->OAuthToken = new OAuthToken($token, $secret);
 	}
 	
 	public function setDropbox() {
@@ -37,7 +36,7 @@ class Dropbox {
 	}
 	
 	public function upload($file, $path = ''){
-		$file = preg_replace("/\\\\/", "/",$file);
+		$file = str_replace("\\", "/",$file);
 		if (!is_readable($file) or !is_file($file)){
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		}
@@ -97,14 +96,21 @@ class Dropbox {
 	public function oAuthRequestToken() {
 		$req_req = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, NULL, "GET", self::API_URL.self::API_VERSION_URL.'oauth/request_token');
 		$req_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, NULL);
+	    if (!empty($_SERVER["HTTP_ACCEPT"]))
+				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
+		if (!empty($_SERVER["REMOTE_ADDR"]))
+				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
+		$headers[]='Expect:';	
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $req_req);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
+			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300 and 0==curl_errno($ch) ) {
@@ -126,7 +132,7 @@ class Dropbox {
 	}
 	
 	public function oAuthAuthorize($oAuthToken,$callback_url) {
-		$auth_url = "https://www.dropbox.com/".self::API_VERSION_URL."oauth/authorize?oauth_token=".$oAuthToken."&oauth_callback=".urlencode($callback_url);
+		$auth_url = self::API_WWW_URL.self::API_VERSION_URL."oauth/authorize?oauth_token=".OAuthUtil::urlencode_rfc3986($oAuthToken)."&oauth_callback=".OAuthUtil::urlencode_rfc3986($callback_url);
 		header('Location: '. $auth_url);
 		exit;
 	}
@@ -135,14 +141,21 @@ class Dropbox {
 		$oAuthToken = new OAuthConsumer($oauth_token, $oauth_token_secret);
 		$acc_req = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, $oAuthToken, "GET", self::API_URL.self::API_VERSION_URL.'oauth/access_token');
 		$acc_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $oAuthToken);
+	    if (!empty($_SERVER["HTTP_ACCEPT"]))
+				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
+		if (!empty($_SERVER["REMOTE_ADDR"]))
+				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
+		$headers[]='Expect:';		
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $acc_req);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
+			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300  and 0==curl_errno($ch)) {
@@ -168,24 +181,33 @@ class Dropbox {
 		$args = (is_array($args)) ? $args : array();
 		
 		/* Sign Request*/
-		$Request = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, $this->OAuthToken, $method, $url, $args);
-		$Request->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $this->OAuthToken);
+		$dropoauthreq = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, $this->OAuthToken, $method, $url, $args);
+		$dropoauthreq->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $this->OAuthToken);
+		
+		/* Header*/
+	    if (!empty($_SERVER["HTTP_ACCEPT"]))
+				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
+		if (!empty($_SERVER["REMOTE_ADDR"]))
+				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
+		$headers[]='Expect:';
 		
 		/* Build cURL Request */
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $Request->to_url());
+		curl_setopt($ch, CURLOPT_URL, $dropoauthreq->to_url());
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Expect:'));
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
+		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
+			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		
 		/* file upload */
-		if ($file !== null){
-			$data = array('file' => "@$file");
+		if (is_file($file)){
+			curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
 		}
 		
 		$content = curl_exec($ch);

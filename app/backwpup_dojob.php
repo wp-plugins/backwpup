@@ -528,10 +528,12 @@ class backwpup_dojob {
 
 	public function export_wp() {
 		$this->need_free_memory(1048576); //1MB free memory
+		$nonce=wp_create_nonce('backwpup-xmlexport');
+		update_option('backwpup_nonce',array('nonce'=>$nonce,'timestamp'=>time()));
 		if (function_exists('curl_exec')) {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
 			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.wp_create_nonce('backwpup-xmlexport'));
+			curl_setopt($ch, CURLOPT_URL, plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.$nonce);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
@@ -547,7 +549,7 @@ class backwpup_dojob {
 			curl_close($ch);
 		} elseif (ini_get('allow_url_fopen')==true or ini_get('allow_url_fopen')==1 or strtolower(ini_get('allow_url_fopen'))=="on") {
 			trigger_error(__('Run Wordpress Export to XML file...','backwpup'),E_USER_NOTICE);
-			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.wp_create_nonce('backwpup-xmlexport'),$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
+			if (copy(plugins_url('wp_xml_export.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&_nonce='.$nonce,$this->tempdir.preg_replace( '/[^a-z0-9_\-]/', '', strtolower(get_bloginfo('name')) ).'.wordpress.' . date( 'Y-m-d' ) . '.xml')) {
 				trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
 			} else {
 				trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
