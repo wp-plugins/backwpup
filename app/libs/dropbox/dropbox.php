@@ -15,7 +15,7 @@ class Dropbox {
 	
 	public function __construct($applicationKey, $applicationSecret) {	
 		$this->OAuthConsumer = new OAuthConsumer($applicationKey, $applicationSecret);
-		$this->OAuthSignatureMethod = new OAuthSignatureMethod_PLAINTEXT;
+		$this->OAuthSignatureMethod = new OAuthSignatureMethod_HMAC_SHA1;
 	}
 
 	public function setOAuthTokens($token,$secret) {
@@ -109,8 +109,6 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
-			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300 and 0==curl_errno($ch) ) {
@@ -154,8 +152,6 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
-			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300  and 0==curl_errno($ch)) {
@@ -200,8 +196,6 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
-		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) 
-			curl_setopt($ch,CURLOPT_FOLLOWLOCATION,true);
 		
 		/* file upload */
 		if (is_file($file)){

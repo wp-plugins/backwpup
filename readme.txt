@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync
 Requires at least: 2.8
 Tested up to: 3.1.0
-Stable tag: 1.7.2
+Stable tag: 1.7.3
 
 Backup your WordPress Database and Files, and more!
 
@@ -102,6 +102,11 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 1.7.3 =
+* Fixed Dropbox PLAINTEXT signatre
+* Updated pod
+* Added/updated German translation (thx David Decker)
+
 = 1.7.2 =
 * try to disable Cache plugins for working job
 * more dropbox improvements

@@ -7,6 +7,7 @@ if ( !defined('ABSPATH') )
 function backwpup_admin_menu() {
 	//add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_jobs_page', plugins_url('css/backup-icon.gif',__FILE__) );
 	//add_submenu_page( 'BackWPup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_jobs_page' );
+	//add_submenu_page( 'BackWPup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_edit-jobs_page' );
 	//add_submenu_page( 'BackWPup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupLogs', 'backwpup_logs_page' );
 	//add_submenu_page( 'BackWPup', __('Backups','backwpup'), __('Backups','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupBackups', 'backwpup_backups_page' );
 	//add_submenu_page( 'BackWPup', __('Tools','backwpup'), __('Tools','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupTools', 'backwpup_tools_page' );
