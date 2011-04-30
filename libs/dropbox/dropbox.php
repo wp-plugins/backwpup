@@ -40,7 +40,7 @@ class Dropbox {
 		if (!is_readable($file) or !is_file($file)){
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		}
-		if (!filesize($file)>314572800){
+		if (filesize($file)>314572800){
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . trim($path, '/');
@@ -181,6 +181,8 @@ class Dropbox {
 		$dropoauthreq->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $this->OAuthToken);
 		
 		/* Header*/
+		if ($method == 'POST')
+			$headers[]=$dropoauthreq->to_header($url);
 	    if (!empty($_SERVER["HTTP_ACCEPT"]))
 				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
 		if (!empty($_SERVER["REMOTE_ADDR"]))
@@ -189,7 +191,10 @@ class Dropbox {
 		
 		/* Build cURL Request */
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $dropoauthreq->to_url());
+		if ($method == 'POST')
+			curl_setopt($ch, CURLOPT_URL, $url);
+		else
+			curl_setopt($ch, CURLOPT_URL, $dropoauthreq->to_url());
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -199,7 +204,6 @@ class Dropbox {
 		
 		/* file upload */
 		if (is_file($file)){
-			curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 			curl_setopt($ch, CURLOPT_POST, true);
 			curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
 		}

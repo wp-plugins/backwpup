@@ -141,11 +141,7 @@ class backwpup_dojob {
 		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
 		
 		//genrate timestamp
-		if (!function_exists('memory_get_usage')) { // test if memory functions compiled in
-			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."\">".date_i18n('Y-m-d H:i.s').":</span> ";
-		} else  {
-			$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
-		}
+		$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date_i18n('Y-m-d H:i.s').":</span> ";
 
 		switch ($args[0]) {
 		case E_NOTICE:
@@ -465,7 +461,7 @@ class backwpup_dojob {
 				$status[$statusdata['Name']]=$statusdata;
 			}
 
-			if ($file = fopen($this->tempdir.DB_NAME.'.sql', 'w')) {
+			if ($file = fopen($this->tempdir.DB_NAME.'.sql', 'wb')) {
 				fwrite($file, "-- ---------------------------------------------------------\n");
 				fwrite($file, "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n");
 				fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");

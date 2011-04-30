@@ -2,8 +2,8 @@
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync
-Requires at least: 2.8
-Tested up to: 3.1.0
+Requires at least: 3.0
+Tested up to: 3.2.0
 Stable tag: 1.7.3
 
 Backup your WordPress Database and Files, and more!
@@ -29,7 +29,7 @@ Do backups and more.
 
 
 ** NO WARRANTY SUPPLIED. **
-
+** Test your Backups! **
 
 == Installation ==
 
@@ -39,9 +39,10 @@ Do backups and more.
 
 == Frequently Asked Questions ==
 = Requires =
-* PHP 5.2.0
-* WordPress 2.8, works best with 3.1
-* curl (for Amazon S3, MS Azur, RackSpace, Dropbox Support)
+* PHP 5.2.1
+* WordPress 3.1
+* curl 
+* Sessions
 * gzip (for PCLZIP and gzip archives)
 * bzip2 (for bzip2 archives)
 
@@ -102,6 +103,12 @@ Destinations are:
 1. Job Page
 
 == Changelog ==
+= 2.0.0 =
+* PHP Sessions, curl and version 5.2.1 required!
+* Wordpress 3.1 required!
+* Using the system temp dir now
+* 
+
 = 1.7.3 =
 * Fixed Dropbox PLAINTEXT signatre
 * Updated pod

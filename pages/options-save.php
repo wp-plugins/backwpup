@@ -51,55 +51,9 @@ function backwpup_job_operations($action) {
 		echo $export;
 		die();		
 		break;
-	case 'clear': //Abort Job
-		$jobid = (int) $_GET['jobid'];
-		check_admin_referer('clear-job_'.$jobid);
-		$jobs=get_option('backwpup_jobs');
-		$cfg=get_option('backwpup'); //Load Settings
-
-		if (is_file($jobs[$jobid]['logfile']) and substr($jobs[$jobid]['logfile'],-3)!='.gz') {
-			$logheader=backwpup_read_logheader($jobs[$jobid]['logfile']); //read waring count from log header
-			$fd=fopen($jobs[$jobid]['logfile'],"a+");
-			fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date_i18n('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".__('Backup Cleand by User!!!','backwpup')."</span><br />\n");
-			fwrite($fd,"</body>\n</html>\n");
-			fclose($fd);
-			$logheader['errors']=$logheader['errors']+1;
-			//write new log header
-			$fd=fopen($jobs[$jobid]['logfile'],"r+");
-			while (!feof($fd)) {
-				$line=fgets($fd);
-				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-					fseek($fd,$filepos);
-					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$logheader['errors']."\" />",100)."\n");
-					break;
-				}
-				$filepos=ftell($fd);
-			}
-			fclose($fd);
-		}
-		if ($cfg['gzlogs'] and function_exists('gzopen') and file_exists($jobs[$jobid]['logfile']) and substr($jobs[$jobid]['logfile'],-3)!='.gz') {
-			$fd=fopen($jobs[$jobid]['logfile'],'r');
-			$zd=gzopen($jobs[$jobid]['logfile'].'.gz','w9');
-			while (!feof($fd)) {
-				gzwrite($zd,fread($fd,4096));
-			}
-			gzclose($zd);
-			fclose($fd);
-			unlink($jobs[$jobid]['logfile']);
-			$jobs[$jobid]['logfile']=$jobs[$jobid]['logfile'].'.gz';
-		}	
-		$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
-		$jobs[$jobid]['stoptime']=current_time('timestamp');
-		if (!empty($jobs[$jobid]['starttime'])) {
-			$jobs[$jobid]['lastrun']=$jobs[$jobid]['starttime'];
-			$jobs[$jobid]['lastruntime']=$jobs[$jobid]['stoptime']-$jobs[$jobid]['starttime'];
-			$jobs[$jobid]['starttime']='';
-		}
-		if (!empty($jobs[$jobid]['logfile'])) {
-			$jobs[$jobid]['lastlogfile']=$jobs[$jobid]['logfile'];
-			$jobs[$jobid]['logfile']='';
-		}
-		update_option('backwpup_jobs',$jobs);
+	case 'abort': //Abort Job
+		check_admin_referer('abort-job');
+		@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 		break;
 	}
 }
@@ -437,15 +391,11 @@ function backwpup_save_settings() {
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['gzlogs']=$_POST['gzlogs']==1 ? true : false;
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
-	$cfg['dirtemp']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirtemp'])))));
 	//set def. folders
-	if (empty($cfg['dirtemp']) or $cfg['dirtemp']=='/')
-		$cfg['dirtemp']=str_replace('\\','/',trailingslashit(backwpup_get_upload_dir()));
-	if (empty($cfg['dirlogs']) or $cfg['dirlogs']=='/') {
-			$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-			$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
+	if (!isset($cfg['dirlogs']) or !is_dir($cfg['dirlogs']) or $cfg['dirlogs']=='/') {
+		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
+		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
-
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	return $backwpup_message;
@@ -455,14 +405,16 @@ function backwpup_save_settings() {
 function backwpup_save_dropboxauth() { //Save Job settings
 	$jobid = (int) $_GET['jobid'];
 	check_admin_referer('edit-job');
+	$backwpup_message='';
 	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
-		$reqtoken=get_option('backwpup_dropboxrequest');
+		$reqtoken=get_transient('backwpup_dropboxrequest');
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
 			if (!class_exists('Dropbox'))
 				require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
+			var_dump($oAuthStuff);
 			//Save Tokens
 			$jobs=get_option('backwpup_jobs');
 			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -475,22 +427,20 @@ function backwpup_save_dropboxauth() { //Save Job settings
 	} else {
 		$backwpup_message.=__('No Dropbox authentication reseved!','backwpup').'<br />';	
 	}
-	delete_option('backwpup_dropboxrequest');
+	delete_transient('backwpup_dropboxrequest');
 	$_POST['jobid']=$jobid;
 	return $backwpup_message;
 }
 
 
 function backwpup_save_job() { //Save Job settings
+	if (!isset($_POST['jobid']))
+		return;
 	$jobid = (int) $_POST['jobid'];
 	check_admin_referer('edit-job');
+	$backwpup_message='';
 	$jobs=get_option('backwpup_jobs'); //Load Settings
-
-	if ($jobs[$jobid]['type']!=$_POST['type']) // set type to save
-		$savetype=explode('+',$jobs[$jobid]['type']);
-	else
-		$savetype=$_POST['type'];
-
+	
 	$jobs[$jobid]['type']= implode('+',(array)$_POST['type']);
 	$jobs[$jobid]['name']= esc_html($_POST['name']);
 	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
@@ -528,7 +478,7 @@ function backwpup_save_job() { //Save Job settings
 	$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
 	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
 	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
-	$jobs[$jobid]['dbexclude']=(array)$_POST['dbexclude'];
+	$jobs[$jobid]['dbtables']=(array)$_POST['dbtables'];
 	$jobs[$jobid]['dbshortinsert']=$_POST['dbshortinsert']==1 ? true : false;
 	$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;
 	$jobs[$jobid]['fileexclude']=stripslashes($_POST['fileexclude']);
@@ -637,7 +587,7 @@ function backwpup_save_job() { //Save Job settings
 		// request request tokens
 		$response = $dropbox->oAuthRequestToken();
 		// save job id and referer
-		update_option('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
+		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),3600);
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=BackWPup&subpage=edit&jobid='.$jobid.'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 	}

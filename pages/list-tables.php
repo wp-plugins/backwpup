@@ -1,11 +1,6 @@
 <?PHP
-//backwarts copatibility lower than wp 3.1
-if (!class_exists('WP_List_Table')) {
-	if (is_file(trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php'))
-		include_once( trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php' );
-	else
-		include_once('compatibility/class-wp-list-table.php');
-}
+include_once( trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php' );
+
 
 class BackWPup_Jobs_Table extends WP_List_Table {
 	function BackWPup_Jobs_Table() {
@@ -18,7 +13,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 	
 	function check_permissions() {
-		if ( !current_user_can( 10 ) )
+		if ( !current_user_can( BACKWPUP_USER_CAPABILITY ) )
 			wp_die( __( 'No rights' ) );
 	}	
 	
@@ -101,14 +96,14 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'jobname':
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job')."\" title=\"".__('Edit:','backwpup').$jobvalue['name']."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
-					if (empty($jobvalue['logfile']) and empty($jobvalue['starttime'])) {
+					if (!is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
 						$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=edit&jobid='.$jobid, 'edit-job') . "\">" . __('Edit') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=copy&jobid='.$jobid, 'copy-job_'.$jobid) . "\">" . __('Copy','backwpup') . "</a>";
 						$actions['export'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=export&jobs[]='.$jobid, 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 						$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=runnow&jobid='.$jobid, 'runnow-job_'.$jobid) . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
-						$actions['clear'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=clear&jobid='.$jobid, 'clear-job_'.$jobid) . "\">" . __('Clear','backwpup') . "</a>";
+						$actions['abort'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&action=abort', 'abort-job') . "\">" . __('Abort!!!','backwpup') . "</a>";
 					}
 					$action_count = count($actions);
 					$i = 0;
@@ -171,8 +166,8 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					}
 					if (!empty($jobvalue['lastbackupdownloadurl']))
 						$r .="<a href=\"" . wp_nonce_url($jobvalue['lastbackupdownloadurl'], 'download-backup') . "\" title=\"".__('Download last Backup','backwpup')."\">" . __('Download','backwpup') . "</a> | ";
-					if (!empty($jobvalue['lastlogfile']))
-						$r .="<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$jobvalue['lastlogfile'], 'view-log_'.basename($jobvalue['lastlogfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
+					if (!empty($jobvalue['logfile']))
+						$r .="<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$jobvalue['logfile'], 'view-log_'.basename($jobvalue['logfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
 
 					$r .=  "</td>";
 					break;
@@ -194,7 +189,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 	}
 	
 	function check_permissions() {
-		if ( !current_user_can( 10 ) )
+		if ( !current_user_can( BACKWPUP_USER_CAPABILITY ) )
 			wp_die( __( 'No rights' ) );
 	}	
 	
@@ -214,7 +209,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 			}
 			closedir( $dir );
 			if ( !isset( $_REQUEST['orderby'] ) or $_REQUEST['orderby']=='log') {
-				if ( $_REQUEST['order']=='asc')
+				if (isset($_REQUEST['order']) and $_REQUEST['order']=='asc')
 					sort($logfiles);
 				else
 					rsort($logfiles);
@@ -306,11 +301,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					$r .= backwpup_backup_types($logdata['type'],false);
 					$r .= "</td>"; 
 					break;
-				case 'log':
-					$name='';
-					if (is_file($logvalue['backupfile']))
-						$name=basename($logvalue['backupfile']);
-				
+				case 'log':				
 					$r .= "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$logfile, 'view-log_'.basename($logfile))."\" title=\"".__('View log','backwpup')."\">".date_i18n(get_option('date_format'),$logdata['logtime'])." ".date_i18n(get_option('time_format'),$logdata['logtime']).": <i>".$logdata['name']."</i></a></strong>";
 					$actions = array();
 					$actions['view'] = "<a href=\"" . wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$logfile, 'view-log_'.basename($logfile)) . "\">" . __('View','backwpup') . "</a>";
@@ -371,7 +362,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	}
 	
 	function check_permissions() {
-		if ( !current_user_can( 10 ) )
+		if ( !current_user_can( BACKWPUP_USER_CAPABILITY ) )
 			wp_die( __( 'No rights' ) );
 	}	
 	
@@ -439,7 +430,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	
 	function single_row( $backup, $jobvalue, $style = '' ) {
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
-		$r = "<tr id='$logfile'$style>";
+		$r = "<tr $style>";
 		foreach ( $columns as $column_name => $column_display_name ) {
 			$class = "class=\"$column_name column-$column_name\"";
 

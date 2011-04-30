@@ -4,20 +4,28 @@ if ( !defined('ABSPATH') )
 	die('-1');
 
 check_admin_referer('edit-job');
-global $wpdb;	
-$jobid = (int) $_REQUEST['jobid'];
-$jobs=get_option('backwpup_jobs');
-if (empty($jobid)) { //generate a new id for new job
+global $wpdb;
+//Load job settings
+$jobs=get_option('backwpup_jobs');	
+//get and check job id
+if (isset($_REQUEST['jobid']) and !empty($_REQUEST['jobid'])) {
+	$jobid = (int) $_REQUEST['jobid'];
+	//Check job vars
+	$jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
+	unset($jobs);
+} else {  //generate a new id for new job
+	$heighestid=0;
 	if (is_array($jobs)) {
 		foreach ($jobs as $jobkey => $jobvalue) {
-			if ($jobkey>$heighestid) $heighestid=$jobkey;
+			if ($jobkey>$heighestid) 
+				$heighestid=$jobkey;
 		}
-		$jobid=$heighestid+1;
-	} else {
-		$jobid=1;
 	}
+	$jobid=$heighestid+1;
+	$jobvalue=backwpup_check_job_vars(array(),$jobid);
 }
-$jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
+echo $jobid;
+//set extra vars
 $todo=explode('+',$jobvalue['type']);
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
@@ -45,8 +53,6 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 						echo "<input class=\"jobtype-select checkbox\" id=\"jobtype-select-".$type."\" type=\"checkbox\"".checked(true,in_array($type,$todo),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
 					}
 					?>
-
-
 				</div>
 				<div id="major-publishing-actions">
 					<div id="delete-action">
@@ -218,15 +224,12 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 			<div id="databasejobs" class="postbox" <?PHP if (!in_array("CHECK",$todo) and !in_array("DB",$todo) and !in_array("OPTIMIZE",$todo)) echo 'style="display:none;"';?>>
 				<h3 class="hndle"><span><?PHP _e('Database Jobs','backwpup'); ?></span></h3>
 				<div class="inside">
-
-					<b><?PHP _e('Database tables to <span style="color:red;">ex</span>clude:','backwpup'); ?></b>
-					<div id="dbexclude-pop" style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;">
+					<b><?PHP _e('Database tables to use:','backwpup'); ?></b>
+					<div id="dbtables" style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:50%; margin:5px 0px 5px 40px; overflow:auto; padding:0.5em 0.5em;">
 					<?php
 					$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 					foreach ($tables as $table) {
-						if ($wpdb->backwpup_logs<>$table) {
-							echo '	<input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobvalue['dbexclude']),true,false).' name="dbexclude[]" value="'.$table.'"/> '.$table.'<br />';
-						}
+						echo '	<input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobvalue['dbtables']),true,false).' name="dbtables[]" value="'.$table.'"/> '.$table.'<br />';
 					}
 					?>
 					</div><br />

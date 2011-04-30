@@ -74,13 +74,7 @@ $cfg=get_option('backwpup');
 					<?PHP _e('or URL:','backwpup'); ?> <i><?PHP echo trailingslashit(get_option('siteurl')).'wp-cron.php'; ?></i><br /> 
 				</div>
 			</div>
-		
-			<div id="dirtemp" class="postbox">
-				<h3 class="hndle"><span><?PHP _e('Temp Folder','backwpup'); ?></span></h3>
-				<div class="inside">
-					<input name="dirtemp" type="text" value="<?PHP echo $cfg['dirtemp'];?>" class="large-text" /><br />
-				</div>
-			</div>
+
 			<input type="submit" name="submit" class="button-primary" value="<?php _e('Save Changes', 'backwpup'); ?>" /> 
 		</div>
 	</div>

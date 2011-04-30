@@ -4,7 +4,7 @@ if ( !defined('ABSPATH') )
 	die('-1');
 
 //Checking,upgrade and default job setting
-function backwpup_check_job_vars($jobsettings,$jobid='') {
+function backwpup_check_job_vars($jobsettings,$jobid) {
 	global $wpdb;
 	//check job type
 	if (!isset($jobsettings['type']) or !is_string($jobsettings['type']))
@@ -41,29 +41,38 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 		$jobsettings['cron']='0 3 * * *';
 		
 	if (!isset($jobsettings['cronnextrun']) or !is_numeric($jobsettings['cronnextrun']))
-		$jobsettings['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);;
+		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);;
 		
-	if (!is_string($jobsettings['mailaddresslog']) or false === $pos=strpos($jobsettings['mailaddresslog'],'@') or false === strpos($jobsettings['mailaddresslog'],'.',$pos))
+	if (!isset($jobsettings['mailaddresslog']) or!is_string($jobsettings['mailaddresslog']) or false === $pos=strpos($jobsettings['mailaddresslog'],'@') or false === strpos($jobsettings['mailaddresslog'],'.',$pos))
 		$jobsettings['mailaddresslog']=get_option('admin_email');
 
 	if (!isset($jobsettings['mailerroronly']) or !is_bool($jobsettings['mailerroronly']))
 		$jobsettings['mailerroronly']=true;
-
-	if (!isset($jobsettings['dbexclude']) or !is_array($jobsettings['dbexclude'])) {
-		$jobsettings['dbexclude']=array();
+	
+	//old tables for backup (exclude)
+	if (isset($jobsettings['dbexclude'])) {
+		if (is_array($jobsettings['dbexclude'])) {
+			$jobsettings['dbtables']=array();
+			$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+			foreach ($tables as $table) {
+				if (!in_array($table,$jobsettings['dbexclude']))
+					$jobsettings['dbtables'][]=$table;
+			}
+		}
+		unset($jobsettings['dbexclude']);
+	}
+	
+	//Tables to backup
+	if (!isset($jobsettings['dbtables']) or !is_array($jobsettings['dbtables'])) {
+		$jobsettings['dbtables']=array();
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 		foreach ($tables as $table) {
-			if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
-				$jobsettings['dbexclude'][]=$table;
+			if (substr($table,0,strlen($wpdb->prefix))==$wpdb->prefix)
+				$jobsettings['dbtables'][]=$table;
 		}
 	}
-	$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-	foreach($jobsettings['dbexclude'] as $key => $value) {
-		if (empty($jobsettings['dbexclude'][$key]) or !in_array($value,$tables))
-			unset($jobsettings['dbexclude'][$key]);
-	}
-	sort($jobsettings['dbexclude']);
-
+	sort($jobsettings['dbtables']);
+	
 	if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 		$jobsettings['dbshortinsert']=false;
 
@@ -162,10 +171,8 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 	if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
 		$jobsettings['mailefilesize']=0;
 
-	if (!isset($jobsettings['backupdir']) or (!is_dir($jobsettings['backupdir']) and !empty($jobsettings['backupdir']))) {
-		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-		$jobsettings['backupdir']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'/';
-	}
+	if (!isset($jobsettings['backupdir']) or !is_dir($jobsettings['backupdir']))
+		$jobsettings['backupdir']='';
 	$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
 	if ($jobsettings['backupdir']=='/')
 		$jobsettings['backupdir']='';
@@ -295,10 +302,8 @@ function backwpup_check_job_vars($jobsettings,$jobid='') {
 	
 	if (!isset($jobsettings['sugarmaxbackups']) or !is_int($jobsettings['sugarmaxbackups']))
 		$jobsettings['sugarmaxbackups']=0;			
-		
-		
-		
-	if (!is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
+			
+	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
 		$jobsettings['mailaddress']='';
 
 	return $jobsettings;

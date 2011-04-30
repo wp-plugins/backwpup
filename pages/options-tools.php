@@ -29,9 +29,9 @@ if ( !defined('ABSPATH') )
 				<h3 class="hndle"><span><?PHP _e('Database restore','backwpup'); ?></span></h3>
 				<div class="inside">
 					<?PHP
-					if ($_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile'])) {
+					if (isset($_POST['dbrestore']) and $_POST['dbrestore']==__('Restore', 'backwpup') and is_file($_POST['sqlfile'])) {
 						$sqlfile=$_POST['sqlfile'];
-						require('tools/db_restore.php');
+						require('../tools/db_restore.php');
 					} else {
 						if ( $dir = @opendir(ABSPATH)) {
 							$sqlfile="";
@@ -63,7 +63,7 @@ if ( !defined('ABSPATH') )
 					<?php _e('Select File to import:', 'backwpup'); ?> <input name="importfile" type="file" />
 					<input type="submit" name="upload" value="<?php _e('Upload', 'backwpup'); ?>" /><br />
 					<?PHP
-					if (is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
+					if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
 						_e('Select Jobs to Import:', 'backwpup'); echo "<br />";
 						$import=file_get_contents($_FILES['importfile']['tmp_name']);
 						$oldjobs=get_option('backwpup_jobs');
@@ -78,7 +78,7 @@ if ( !defined('ABSPATH') )
 						echo "<input type=\"hidden\" name=\"importfile\" value=\"".urlencode($import)."\" />";
 						echo "<input type=\"submit\" name=\"import\" class=\"button-primary\" value=\"".__('Import', 'backwpup')."\" />";
 					}
-					if ($_POST['import']==__('Import', 'backwpup') and !empty($_POST['importfile'])) {
+					if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !empty($_POST['importfile'])) {
 						$oldjobs=get_option('backwpup_jobs');
 						$import=unserialize(urldecode($_POST['importfile']));
 						foreach ( $_POST['importtype'] as $id => $type ) {
@@ -115,6 +115,24 @@ if ( !defined('ABSPATH') )
 						}
 						update_option('backwpup_jobs',$oldjobs);
 						_e('Jobs imported!', 'backwpup');
+					}
+					?>
+				</div>
+			</div>
+
+			<div id="abort" class="postbox">
+				<h3 class="hndle"><span><?PHP _e('Abort Working Job','backwpup'); ?></span></h3>
+				<div class="inside">
+					<?PHP
+					if (!isset($_POST['abort'])) {
+						if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'))
+							echo "<input type=\"submit\" name=\"abort\" class=\"button-primary\" value=\"".__('Abort', 'backwpup')."\" />";
+						else
+							_e('No job runnig.', 'backwpup');
+					}
+					if (isset($_POST['abort']) and $_POST['abort']==__('Abort', 'backwpup')) {
+						unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+						_e('Job Aborded!', 'backwpup');
 					}
 					?>
 				</div>

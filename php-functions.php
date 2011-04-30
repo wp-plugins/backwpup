@@ -8,6 +8,7 @@ function backwpup_admin_menu() {
 	//add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_jobs_page', plugins_url('css/backup-icon.gif',__FILE__) );
 	//add_submenu_page( 'BackWPup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_jobs_page' );
 	//add_submenu_page( 'BackWPup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_edit-jobs_page' );
+	//add_submenu_page( 'BackWPup', __('Working','backwpup'), __('Working','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPup', 'backwpup_view_log' );
 	//add_submenu_page( 'BackWPup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupLogs', 'backwpup_logs_page' );
 	//add_submenu_page( 'BackWPup', __('Backups','backwpup'), __('Backups','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupBackups', 'backwpup_backups_page' );
 	//add_submenu_page( 'BackWPup', __('Tools','backwpup'), __('Tools','backwpup'), BACKWPUP_USER_CAPABILITY, 'BackWPupTools', 'backwpup_tools_page' );
@@ -42,10 +43,10 @@ function backwpup_options_page() {
 		echo "</div>";
 		break;
 	case 'settings':
-		require_once(dirname(__FILE__).'/options-settings.php');
+		require_once(dirname(__FILE__).'/pages/options-settings.php');
 		break;
 	case 'tools':
-		require_once(dirname(__FILE__).'/options-tools.php');
+		require_once(dirname(__FILE__).'/pages/options-tools.php');
 		break;
 	case 'backups':
 		echo "<div class=\"wrap\">";
@@ -60,28 +61,15 @@ function backwpup_options_page() {
 		echo "</form>"; 
 		echo "</div>";
 		break;
-	case 'runnow':
-		$jobid = (int) $_GET['jobid'];
-		check_admin_referer('runnow-job_' . $jobid);
-		$jobs=get_option('backwpup_jobs');
-		echo "<div class=\"wrap\">";
-		echo "<div id=\"icon-tools\" class=\"icon32\"><br /></div>";
-		echo "<h2>".__('BackWPup Job Running', 'backwpup')."</h2>";
-		backwpup_option_submenues();
-		echo "<br class=\"clear\" />";
-		echo "<big>".__('Running Job','backwpup')." <strong>".$jobs[$jobid]['name']."</strong></big>";
-		echo "<iframe src=\"".wp_nonce_url(plugins_url('options-runnow-iframe.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&jobid=' . $jobid, 'dojob-now_' . $jobid)."\" name=\"runframe\" id=\"runframe\" width=\"100%\" height=\"450\" align=\"left\" scrolling=\"auto\" style=\"border: 1px solid gray\" frameborder=\"0\"></iframe>";
-		echo "</div>";
-		break;
 	case 'view_log':
-		check_admin_referer('view-log_'.basename($_GET['logfile']));
+		//check_admin_referer('view-log_'.basename($_GET['logfile']));
 		echo "<div class=\"wrap\">";
 		echo "<div id=\"icon-tools\" class=\"icon32\"><br /></div>";
 		echo "<h2>".__('BackWPup View Logs', 'backwpup')."</h2>";
 		backwpup_option_submenues();
 		echo "<br class=\"clear\" />";
 		echo "<big>".__('View Log','backwpup')." <strong>".basename($_GET['logfile'])."</strong></big>";
-		echo "<iframe src=\"".wp_nonce_url(plugins_url('options-view_log-iframe.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&logfile=' . $_GET['logfile'], 'viewlognow_'.basename($_GET['logfile']))."\" name=\"logframe\" id=\"logframe\" width=\"100%\" height=\"450\" align=\"left\" scrolling=\"auto\" style=\"border: 1px solid gray\" frameborder=\"0\"></iframe>";
+		echo "<iframe src=\"".wp_nonce_url(plugins_url('pages/options-view_log-iframe.php',__FILE__).'?wpabs='.trailingslashit(ABSPATH).'&logfile=' . $_GET['logfile'], 'viewlognow_'.basename($_GET['logfile']))."\" name=\"logframe\" id=\"logframe\" width=\"100%\" height=\"450\" align=\"left\" scrolling=\"auto\" style=\"border: 1px solid gray\" frameborder=\"0\"></iframe>";
 		echo "</div>";
 		break;
 	default:
@@ -130,24 +118,27 @@ function backwpup_options_load() {
 		'</div>'
 	);
 		
-	if ($_REQUEST['action2']!='-1' and $_REQUEST['action']=='-1')
+	if (isset($_REQUEST['action2']) and $_REQUEST['action2']!='-1' and $_REQUEST['action']=='-1')
 		$_REQUEST['action']=$_REQUEST['action2'];
-
+	
+	if (!isset($_REQUEST['subpage']) or !is_string($_REQUEST['subpage']))
+		$_REQUEST['subpage']='';
+		
 	switch($_REQUEST['subpage']) {
 	case 'logs':
 		if (!empty($_REQUEST['action'])) {
-			require_once(dirname(__FILE__).'/options-save.php');
+			require_once(dirname(__FILE__).'/pages/options-save.php');
 			backwpup_log_operations($_REQUEST['action']);
 		}
-		require_once(dirname(__FILE__).'/list-tables.php');
+		require_once(dirname(__FILE__).'/pages/list-tables.php');
 		$table = new BackWPup_Logs_Table;
 		$table->check_permissions();
 		$table->prepare_items();
 		break;
 	case 'edit':
 		if (!empty($_POST['submit']) or !empty($_REQUEST['dropboxauth'])) {
-			require_once(dirname(__FILE__).'/options-save.php');
-			if ($_GET['dropboxauth']=='AccessToken') 
+			require_once(dirname(__FILE__).'/pages/options-save.php');
+			if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken') 
 				$backwpup_message=backwpup_save_dropboxauth();
 			else
 				$backwpup_message=backwpup_save_job();
@@ -155,7 +146,7 @@ function backwpup_options_load() {
 		break;
 	case 'settings':
 		if (!empty($_POST['submit'])) {
-			require_once(dirname(__FILE__).'/options-save.php');
+			require_once(dirname(__FILE__).'/pages/options-save.php');
 			$backwpup_message=backwpup_save_settings();
 		}
 		break;
@@ -163,7 +154,7 @@ function backwpup_options_load() {
 		break;
 	case 'backups':
 		if (!empty($_REQUEST['action'])) {
-			require_once(dirname(__FILE__).'/options-save.php');
+			require_once(dirname(__FILE__).'/pages/options-save.php');
 			backwpup_backups_operations($_REQUEST['action']);
 		}
 		require_once(dirname(__FILE__).'/list-tables.php');
@@ -172,15 +163,20 @@ function backwpup_options_load() {
 		$table->prepare_items();
 		break;
 	case 'runnow':
+		$jobid = (int) $_GET['jobid'];
+		check_admin_referer('runnow-job_' . $jobid);
+		$logfile=backwpup_jobstart($jobid);
+		$_GET['logfile']=$logfile;
+		$_REQUEST['subpage']='view_log';
 		break;
 	case 'view_log':
 		break;
 	default:
 		if (!empty($_REQUEST['action'])) {
-			require_once(dirname(__FILE__).'/options-save.php');
+			require_once(dirname(__FILE__).'/pages/options-save.php');
 			backwpup_job_operations($_REQUEST['action']);
 		}
-		require_once(dirname(__FILE__).'/list-tables.php');
+		require_once(dirname(__FILE__).'/pages/list-tables.php');
 		$table = new BackWPup_Jobs_Table;
 		$table->check_permissions();
 		$table->prepare_items();
@@ -228,16 +224,14 @@ function backwpup_plugin_activate() {
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-	if (empty($cfg['maxlogs'])) $cfg['maxlogs']=0;
+	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
-	if (empty($cfg['dirtemp'])) {
-		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
-		$cfg['dirtemp']=backwpup_get_upload_dir();
-	}
-	if (empty($cfg['dirlogs'])) {
+	if (!isset($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
+	//remove old option
+	unset($cfg['dirtemp']);
 	update_option('backwpup',$cfg);
 }
 
@@ -276,7 +270,7 @@ function backwpup_plugin_links($links, $file) {
 
 //Add cron interval
 function backwpup_intervals($schedules) {
-	$intervals['backwpup_int']=array('interval' => '300', 'display' => __('BackWPup', 'backwpup'));
+	$intervals['backwpup_int']=array('interval' => '120', 'display' => __('BackWPup', 'backwpup'));
 	$schedules=array_merge($intervals,$schedules);
 	return $schedules;
 }
@@ -284,117 +278,30 @@ function backwpup_intervals($schedules) {
 //cron work
 function backwpup_cron() {	
 	$jobs=(array)get_option('backwpup_jobs');
-	foreach ($jobs as $jobid => $jobvalue) {
-		if (!$jobvalue['activated'])
-			continue;
-		if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
-
-			define('DONOTCACHEPAGE', true);
-			define('DONOTCACHEDB', true);
-			define('DONOTMINIFY', true);
-			define('DONOTCDN', true);
-			define('DONOTCACHCEOBJECT', true);
-			//Quick Cache
-			define("QUICK_CACHE_ALLOWED", false);
-			echo "<!--dynamic-cached-content-->";
-			echo "<!--mfunc backwpup_dojob(".$jobid.") -->";
-			backwpup_dojob($jobid);
-			echo "<!--/mfunc-->";
-			echo "<!--/dynamic-cached-content-->";
+	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
+		$runningfile=file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+		$infile=unserialize(trim($runningfile));
+		if ($infile['timestamp']>time()-310) {
+			$ch=curl_init();
+			curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
+			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+			curl_setopt($ch,CURLOPT_POST,true);
+			curl_setopt($ch,CURLOPT_POSTFIELDS,array('BackWPupSession'=>$infile['SID']));
+			curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+			curl_exec($ch);
+			curl_close($ch);
+		}
+	} else {
+		foreach ($jobs as $jobid => $jobvalue) {
+			if (!$jobvalue['activated'])
+				continue;
+			if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
+				backwpup_jobstart($jobid);
+			}
 		}
 	}
-}
-
-//DoJob
-function backwpup_dojob($jobid) {
-	if (empty($jobid))
-		return false;
-	require_once(dirname(__FILE__).'/backwpup_dojob.php');
-	$backwpup_dojob= new backwpup_dojob($jobid);
-
-	//run job parts
-	foreach($backwpup_dojob->todo as $key => $value) {
-		switch ($value) {
-		case 'DB':
-			$backwpup_dojob->dump_db();
-			break;
-		case 'WPEXP':
-			$backwpup_dojob->export_wp();
-			break;
-		case 'FILE':
-			$backwpup_dojob->file_list();
-			break;
-		}
-	}
-
-	if (isset($backwpup_dojob->filelist[0][79001])) { // Make backup file
-		if ($backwpup_dojob->backupfileformat==".zip")
-			$backwpup_dojob->zip_files();
-		elseif ($backwpup_dojob->backupfileformat==".tar.gz" or $backwpup_dojob->backupfileformat==".tar.bz2" or $backwpup_dojob->backupfileformat==".tar")
-			$backwpup_dojob->tar_pack_files();
-	}
-
-	if (is_file($backwpup_dojob->backupdir.$backwpup_dojob->backupfile)) {  // Put backup file to destination
-		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
-		if (!empty($backwpup_dojob->job['mailaddress'])) {
-			$backwpup_dojob->destination_mail();
-		}
-		if (in_array('FTP',$dests) and !empty($backwpup_dojob->job['ftphost']) and !empty($backwpup_dojob->job['ftpuser']) and !empty($backwpup_dojob->job['ftppass']))	 {
-			if (function_exists('ftp_connect')) 
-				$backwpup_dojob->destination_ftp();
-			else 
-				trigger_error(__('FTP extension needed for FTP!','backwpup'),E_USER_ERROR);
-		}
-		if (in_array('DROPBOX',$dests) and !empty($backwpup_dojob->job['dropetoken']) and !empty($backwpup_dojob->job['dropesecret'])) {
-			if (function_exists('curl_exec') and function_exists('json_decode')) 
-				$backwpup_dojob->destination_dropbox();
-			else
-				trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
-		}
-		if (in_array('SUGARSYNC',$dests) and !empty($backwpup_dojob->job['sugaruser']) and !empty($backwpup_dojob->job['sugarpass'])) {
-			if (function_exists('curl_exec') )
-				$backwpup_dojob->destination_sugarsync();
-			else
-				trigger_error(__('Curl and Json extensions needed for DropBox!','backwpup'),E_USER_ERROR);
-		}
-		if (in_array('S3',$dests) and !empty($backwpup_dojob->job['awsAccessKey']) and !empty($backwpup_dojob->job['awsSecretKey']) and !empty($backwpup_dojob->job['awsBucket'])) {
-			if (function_exists('curl_exec')) 
-				$backwpup_dojob->destination_s3();
-			else 
-				trigger_error(__('Curl extension needed for Amazon S3!','backwpup'),E_USER_ERROR);
-		}
-		if (in_array('RSC',$dests) and !empty($backwpup_dojob->job['rscUsername']) and !empty($backwpup_dojob->job['rscAPIKey']) and !empty($backwpup_dojob->job['rscContainer'])) {
-			if (function_exists('curl_exec')) 
-				$backwpup_dojob->destination_rsc();
-			else 
-				trigger_error(__('Curl extension needed for RackSpaceCloud!','backwpup'),E_USER_ERROR);
-		}
-		if (in_array('MSAZURE',$dests) and !empty($backwpup_dojob->job['msazureHost']) and !empty($backwpup_dojob->job['msazureAccName']) and !empty($backwpup_dojob->job['msazureKey']) and !empty($backwpup_dojob->job['msazureContainer'])) {
-			if (function_exists('curl_exec')) 
-				$backwpup_dojob->destination_msazure();
-			else 
-				trigger_error(__('Curl extension needed for Microsoft Azure!','backwpup'),E_USER_ERROR);
-		}
-		if (!empty($backwpup_dojob->job['backupdir'])) {
-			$backwpup_dojob->destination_dir();
-		}
-	}
-
-	foreach($backwpup_dojob->todo as $key => $value) {
-		switch ($value) {
-		case 'CHECK':
-			$backwpup_dojob->check_db();
-			break;
-		case 'OPTIMIZE':
-			$backwpup_dojob->optimize_db();
-			break;
-		}
-	}
-		
-	$backwpup_dojob->job_end();
-	//geneate new chache
-	update_option('backwpup_backups_chache',backwpup_get_backup_files());
-	return $backwpup_dojob->logdir.$backwpup_dojob->logfile;
 }
 
 //file size
@@ -456,7 +363,6 @@ function backwpup_read_logheader($logfile) {
 		$file_data = fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
 		fclose( $fp );
 	}
-
 	//get data form file
 	foreach ($headers as $keyword => $field) {
 		preg_match('/(<meta name="'.$keyword.'" content="(.*)" \/>)/i',$file_data,$content);
@@ -465,13 +371,10 @@ function backwpup_read_logheader($logfile) {
 		else
 			$joddata[$field]='';
 	}
-
 	if (empty($joddata['logtime']))
 		$joddata['logtime']=filectime($logfile);
-
 	return $joddata;
 }
-
 
 //Dashboard widget
 function backwpup_dashboard_output() {
@@ -582,7 +485,6 @@ function backwpup_get_upload_dir() {
 				$dir = untrailingslashit(BLOGUPLOADDIR);
 		}
 	}
-
 	return str_replace('\\','/',trailingslashit($dir));
 }
 
@@ -614,7 +516,7 @@ function backwpup_calc_db_size($jobvalues) {
 	$dbsize=array('size'=>0,'num'=>0,'rows'=>0);
 	$status=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A);
 	foreach($status as $tablekey => $tablevalue) {
-		if (!in_array($tablevalue['Name'],$jobvalues['dbexclude'])) {
+		if (in_array($tablevalue['Name'],$jobvalues['dbtables'])) {
 			$dbsize['size']=$dbsize['size']+$tablevalue["Data_length"]+$tablevalue["Index_length"];
 			$dbsize['num']++;
 			$dbsize['rows']=$dbsize['rows']+$tablevalue["Rows"];
@@ -644,7 +546,6 @@ function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100,
 		}
 		@closedir( $dir );
 	}
-	return $files;
 }
 
 function backwpup_calc_file_size($jobvalues) {
@@ -812,12 +713,20 @@ function backwpup_env_checks() {
 	$message='';
 	$checks=true;
 	$cfg=get_option('backwpup');
-	if (version_compare($wp_version, '2.8', '<')) { // check WP Version
-		$message.=__('- WordPress 2.8 or heiger needed!','backwpup') . '<br />';
+	if (version_compare($wp_version, '3.1', '<')) { // check WP Version
+		$message.=__('- WordPress 3.1 or heiger needed!','backwpup') . '<br />';
 		$checks=false;
 	}
-	if (version_compare(phpversion(), '5.2.0', '<')) { // check PHP Version
-		$message.=__('- PHP 5.2.0 or higher needed!','backwpup') . '<br />';
+	if (version_compare(phpversion(), '5.2.1', '<')) { // check PHP Version sys_get_temp_dir
+		$message.=__('- PHP 5.2.2 or higher needed!','backwpup') . '<br />';
+		$checks=false;
+	}
+	if (!function_exists('curl_init')) { // check curl
+		$message.=__('- curl is needed!','backwpup') . '<br />';
+		$checks=false;
+	}
+	if (!function_exists('session_start')) { // check sessions
+		$message.=__('- PHP sessions needed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (!is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
@@ -828,15 +737,6 @@ function backwpup_env_checks() {
 	}
 	if (!is_writable($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Logs Folder not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
-	}
-	if (!is_dir($cfg['dirtemp'])) { // create Temp folder if it not exists
-		@mkdir($cfg['dirtemp'],0755,true);
-	}
-	if (!is_dir($cfg['dirtemp'])) { // check Temp folder
-		$message.=__('- Temp Folder not exists:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
-	}
-	if (!is_writable($cfg['dirtemp'])) { // check Temp folder
-		$message.=__('- Temp Folder not writeable:','backwpup') . ' '.$cfg['dirtemp'].'<br />';
 	}
 	$jobs=(array)get_option('backwpup_jobs'); 
 	foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling
