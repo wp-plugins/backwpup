@@ -28,8 +28,11 @@ Domain Path: /lang/
 */
 
 // don't load directly
-if ( !defined('ABSPATH') )
-	die('-1');
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
 
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
@@ -57,8 +60,6 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Admin message
 add_action('admin_notices', 'backwpup_admin_notice'); 
 if (backwpup_env_checks()) {
-	//include php5 functions
-	require_once(dirname(__FILE__).'/php5-functions.php');
 	//include jobstart function
 	require_once(dirname(__FILE__).'/job/jobstart.php');
 	//add Menu
@@ -72,11 +73,8 @@ if (backwpup_env_checks()) {
 	//Additional links on the plugin page
 	add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
-	// add ajax function
-	add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
-	add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
-	add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
-	add_action('wp_ajax_backwpup_get_sugarsync_root', 'backwpup_get_sugarsync_root');
+	//load ajax functions
+	backwpup_load_ajax();
 	//Disabele WP_Corn
 	$cfg=get_option('backwpup');
 	if ($cfg['disablewpcron'])

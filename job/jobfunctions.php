@@ -154,6 +154,11 @@ function maintenance_mode($enable = false) {
 	}
 }
 
+function update_working_file() {
+	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
+	fclose($fd);
+}
 
 //function for PHP error handling
 function joberrorhandler() {
@@ -220,9 +225,7 @@ function joberrorhandler() {
 
 	//write working file
 	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running')) {
-		$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-		fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time())));
-		fclose($fd);
+		update_working_file();
 	} else {
 		$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
 	}	
@@ -328,7 +331,7 @@ function job_end() {
 		$_SESSION['STATIC']['LOGFILE']=$_SESSION['STATIC']['LOGFILE'].'.gz';
 		
 		$jobs=get_option('backwpup_jobs');
-		$jobs[$_SESSION['JOB']['ID']]['lastlogfile']=$_SESSION['STATIC']['LOGFILE'];
+		$jobs[$_SESSION['JOB']['ID']]['logfile']=$_SESSION['STATIC']['LOGFILE'];
 		update_option('backwpup_jobs',$jobs); //Save Settings
 	}
 	

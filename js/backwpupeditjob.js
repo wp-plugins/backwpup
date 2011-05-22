@@ -1,26 +1,28 @@
 jQuery(document).ready( function($) {
 
+	$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
+	
 	$('.jobtype-select').change(function() {
 		if ( true == $('#jobtype-select-FILE').attr('checked') || true ==  $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-WPEXP').attr('checked')) {
-			$('#fileformart').show();
-			$('#toftp').show();
-			$('#toamazon').show();
-			$('#tomsazure').show();
-			$('#torsc').show();
-			$('#todropbox').show();
-			$('#tosugarsync').show();
-			$('#todir').show();
-			$('#tomail').show();
+			$('#backwpup_jobedit_backupfile').show();
+			$('#backwpup_jobedit_destftp').show();
+			$('#backwpup_jobedit_dests3').show();
+			$('#backwpup_jobedit_destazure').show();
+			$('#backwpup_jobedit_destrsc').show();
+			$('#backwpup_jobedit_destdropbox').show();
+			$('#backwpup_jobedit_destsugarsync').show();
+			$('#backwpup_jobedit_destfile').show();
+			$('#backwpup_jobedit_destmail').show();
 		} else {
-			$('#fileformart').hide();
-			$('#toftp').hide();
-			$('#toamazon').hide();
-			$('#tomsazure').hide();
-			$('#torsc').hide();
-			$('#todropbox').hide();
-			$('#tosugarsync').hide();
-			$('#todir').hide();
-			$('#tomail').hide();
+			$('#backwpup_jobedit_backupfile').hide();
+			$('#backwpup_jobedit_destftp').hide();
+			$('#backwpup_jobedit_dests3').hide();
+			$('#backwpup_jobedit_destazure').hide();
+			$('#backwpup_jobedit_destrsc').hide();
+			$('#backwpup_jobedit_destdropbox').hide();
+			$('#backwpup_jobedit_destsugarsync').hide();
+			$('#backwpup_jobedit_destfile').hide();
+			$('#backwpup_jobedit_destmail').hide();
 		}
 		if ( true == $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-CHECK').attr('checked') || true == $('#jobtype-select-OPTIMIZE').attr('checked')) {
 			$('#databasejobs').show();
@@ -32,24 +34,10 @@ jQuery(document).ready( function($) {
 		} else {
 			$('#dbshortinsert').hide();
 		}
-
 		if ( true == $('#jobtype-select-FILE').attr('checked')) {
 			$('#filebackup').show();
 		} else {
 			$('#filebackup').hide();
-		}
-	});
-	
-	$('#mailmethod').change(function() {
-		if ( 'SMTP' == $('#mailmethod').val()) {
-			$('#mailsmtp').show();
-			$('#mailsendmail').hide();
-		} else if ( 'Sendmail' == $('#mailmethod').val()) {
-			$('#mailsmtp').hide();
-			$('#mailsendmail').show();
-		} else {
-			$('#mailsmtp').hide();
-			$('#mailsendmail').hide();		
 		}
 	});
 	
@@ -59,6 +47,7 @@ jQuery(document).ready( function($) {
 		var awsBucket = $('#awsBucketselected').val();
 		var data = {
 			action: 'backwpup_get_aws_buckets',
+			backwpupajaxpage: 'BackWPupEditJob',
 			awsAccessKey: awsAccessKey,
 			awsSecretKey: awsSecretKey,
 			awsselected: awsBucket
@@ -79,6 +68,7 @@ jQuery(document).ready( function($) {
 		var msazureContainer = $('#msazureContainerselected').val();
 		var data = {
 			action: 'backwpup_get_msazure_container',
+			backwpupajaxpage: 'BackWPupEditJob',
 			msazureHost: msazureHost,
 			msazureAccName: msazureAccName,
 			msazureKey: msazureKey,
@@ -100,6 +90,7 @@ jQuery(document).ready( function($) {
 		var rscContainer = $('#rscContainerselected').val();
 		var data = {
 			action: 'backwpup_get_rsc_container',
+			backwpupajaxpage: 'BackWPupEditJob',
 			rscUsername: rscUsername,
 			rscAPIKey: rscAPIKey,
 			rscselected: rscContainer
@@ -119,6 +110,7 @@ jQuery(document).ready( function($) {
 		var sugarrootselected = $('#sugarrootselected').val();
 		var data = {
 			action: 'backwpup_get_sugarsync_root',
+			backwpupajaxpage: 'BackWPupEditJob',
 			sugaruser: sugaruser,
 			sugarpass: sugarpass,
 			sugarrootselected: sugarrootselected
@@ -131,7 +123,6 @@ jQuery(document).ready( function($) {
 	
 	$('#sugaruser').change(function() {sugarsyncgetroot();});
 	$('#sugarpass').change(function() {sugarsyncgetroot();});
-
 	
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');

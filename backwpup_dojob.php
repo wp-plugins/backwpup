@@ -1,7 +1,9 @@
-<?php
-// don't load directly
-if ( !defined('ABSPATH') )
-	die('-1');
+<?PHP
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
 
 /**
 * BackWPup PHP class for WordPress

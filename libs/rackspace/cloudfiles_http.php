@@ -29,14 +29,16 @@
  */
 require_once("cloudfiles_exceptions.php");
 
-define("PHP_CF_VERSION", "1.7.6");
+define("PHP_CF_VERSION", "1.7.9");
 define("USER_AGENT", sprintf("PHP-CloudFiles/%s", PHP_CF_VERSION));
 define("ACCOUNT_CONTAINER_COUNT", "X-Account-Container-Count");
 define("ACCOUNT_BYTES_USED", "X-Account-Bytes-Used");
 define("CONTAINER_OBJ_COUNT", "X-Container-Object-Count");
 define("CONTAINER_BYTES_USED", "X-Container-Bytes-Used");
 define("METADATA_HEADER", "X-Object-Meta-");
+define("MANIFEST_HEADER", "X-Object-Manifest");
 define("CDN_URI", "X-CDN-URI");
+define("CDN_SSL_URI", "X-CDN-SSL-URI");
 define("CDN_ENABLED", "X-CDN-Enabled");
 define("CDN_LOG_RETENTION", "X-Log-Retention");
 define("CDN_ACL_USER_AGENT", "X-User-Agent-ACL");
@@ -50,7 +52,7 @@ define("AUTH_KEY_HEADER", "X-Auth-Key");
 define("AUTH_USER_HEADER_LEGACY", "X-Storage-User");
 define("AUTH_KEY_HEADER_LEGACY", "X-Storage-Pass");
 define("AUTH_TOKEN_LEGACY", "X-Storage-Token");
-
+define("CDN_EMAIL", "X-Purge-Email");
 /**
  * HTTP/cURL wrapper for Cloud Files
  *
@@ -93,9 +95,11 @@ class CF_Http
     private $_obj_content_type;
     private $_obj_content_length;
     private $_obj_metadata;
+    private $_obj_manifest;
     private $_obj_write_resource;
     private $_obj_write_string;
     private $_cdn_enabled;
+    private $_cdn_ssl_uri;
     private $_cdn_uri;
     private $_cdn_ttl;
     private $_cdn_log_retention;
@@ -145,7 +149,9 @@ class CF_Http
         $this->_obj_content_type = NULL;
         $this->_obj_content_length = NULL;
         $this->_obj_metadata = array();
+        $this->_obj_manifest = NULL;
         $this->_cdn_enabled = NULL;
+        $this->_cdn_ssl_uri = NULL;
         $this->_cdn_uri = NULL;
         $this->_cdn_ttl = NULL;
         $this->_cdn_log_retention = NULL;
@@ -262,8 +268,24 @@ class CF_Http
         return array($return_code,$this->error_str,array());
     }
 
-    # (CDN) POST /v1/Account/Container
+    # (CDN) DELETE /v1/Account/Container or /v1/Account/Container/Object
     #
+    function purge_from_cdn($path, $email=null)
+    {
+        if(!$path)
+            throw new SyntaxException("Path not set");
+        $url_path = $this->_make_path("CDN", NULL, $path);
+        if($email)
+        {
+            $hdrs = array(CDN_EMAIL => $email);
+            $return_code = $this->_send_request("DEL_POST",$url_path,$hdrs,"DELETE");
+        }
+        else
+            $return_code = $this->_send_request("DEL_POST",$url_path,null,"DELETE");
+        return $return_code;
+    }
+
+    # (CDN) POST /v1/Account/Container
     function update_cdn_container($container_name, $ttl=86400, $cdn_log_retention=False,
                                   $cdn_acl_user_agent="", $cdn_acl_referrer)
     {
@@ -294,7 +316,7 @@ class CF_Http
             $this->error_str="Unexpected HTTP response: ".$this->response_reason;
             return array($return_code, $this->error_str, NULL);
         }
-        return array($return_code, "Accepted", $this->_cdn_uri);
+        return array($return_code, "Accepted", $this->_cdn_uri, $this->_cdn_ssl_uri);
 
     }
 
@@ -322,7 +344,8 @@ class CF_Http
             $this->error_str="Unexpected HTTP response: ".$this->response_reason;
             return array($return_code,$this->response_reason,False);
         }
-        return array($return_code,$this->response_reason,$this->_cdn_uri);
+        return array($return_code,$this->response_reason,$this->_cdn_uri,
+                     $this->_cdn_ssl_uri);
     }
 
     # (CDN) POST /v1/Account/Container
@@ -365,7 +388,7 @@ class CF_Http
         
         $conn_type = "HEAD";
         $url_path = $this->_make_path("CDN", $container_name);
-        $return_code = $this->_send_request($conn_type, $url_path);
+        $return_code = $this->_send_request($conn_type, $url_path, NULL, "GET", True);
 
         if (!$return_code) {
             $this->error_str .= ": Failed to obtain valid HTTP response.";
@@ -379,7 +402,8 @@ class CF_Http
         }
         if ($return_code == 204) {
             return array($return_code,$this->response_reason,
-                $this->_cdn_enabled, $this->_cdn_uri, $this->_cdn_ttl,
+                $this->_cdn_enabled, $this->_cdn_ssl_uri,
+                $this->_cdn_uri, $this->_cdn_ttl,
                 $this->_cdn_log_retention,
                 $this->_cdn_acl_user_agent,
                 $this->_cdn_acl_referrer
@@ -827,7 +851,8 @@ class CF_Http
                 "Method argument is not a valid CF_Object.");
         }
 
-        if (!is_array($obj->metadata) || empty($obj->metadata)) {
+        if (!is_array($obj->metadata) && !$obj->manifest) {
+
             $this->error_str = "Metadata array is empty.";
             return 0;
         }
@@ -879,7 +904,8 @@ class CF_Http
                 $this->_obj_last_modified,
                 $this->_obj_content_type,
                 $this->_obj_content_length,
-                $this->_obj_metadata);
+                $this->_obj_metadata,
+                $this->_obj_manifest);
         }
         $this->error_str = "Unexpected HTTP return code: $return_code";
         return array($return_code, $this->error_str." ".$this->response_reason,
@@ -995,8 +1021,16 @@ class CF_Http
             $this->_cdn_uri = trim(substr($header, strlen(CDN_URI)+1));
             return strlen($header);
         }
+        if (stripos($header, CDN_SSL_URI) === 0) {
+            $this->_cdn_ssl_uri = trim(substr($header, strlen(CDN_SSL_URI)+1));
+            return strlen($header);
+        }
         if (stripos($header, CDN_TTL) === 0) {
             $this->_cdn_ttl = trim(substr($header, strlen(CDN_TTL)+1))+0;
+            return strlen($header);
+        }
+        if (stripos($header, MANIFEST_HEADER) === 0) {
+            $this->_obj_manifest = trim(substr($header, strlen(MANIFEST_HEADER)+1));
             return strlen($header);
         }
         if (stripos($header, CDN_LOG_RETENTION) === 0) {
@@ -1227,8 +1261,10 @@ class CF_Http
         $this->_obj_content_type = NULL;
         $this->_obj_content_length = NULL;
         $this->_obj_metadata = array();
+        $this->_obj_manifest = NULL;
         $this->_obj_write_string = "";
         $this->_cdn_enabled = NULL;
+        $this->_cdn_ssl_uri = NULL;
         $this->_cdn_uri = NULL;
         $this->_cdn_ttl = NULL;
         $this->response_status = 0;
@@ -1261,6 +1297,8 @@ class CF_Http
     private function _metadata_headers(&$obj)
     {
         $hdrs = array();
+        if ($obj->manifest)
+            $hdrs[MANIFEST_HEADER] = $obj->manifest;
         foreach ($obj->metadata as $k => $v) {
             if (strpos($k,":") !== False) {
                 throw new SyntaxException(
@@ -1280,9 +1318,9 @@ class CF_Http
         return $hdrs;
     }
 
-    private function _send_request($conn_type, $url_path, $hdrs=NULL, $method="GET")
+    private function _send_request($conn_type, $url_path, $hdrs=NULL, $method="GET", $force_new=False)
     {
-        $this->_init($conn_type);
+        $this->_init($conn_type, $force_new);
         $this->_reset_callback_vars();
         $headers = $this->_make_headers($hdrs);
 

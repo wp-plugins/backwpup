@@ -1,0 +1,24 @@
+#icon-backwpup {
+	background:  url('backup-icon32.gif') no-repeat;
+}
+#cron-min, #cron-hour, #cron-day, #cron-month, #cron-weekday {
+	border-color:#CEE1EF;
+	border-style:solid;
+	border-width:2px;
+	height:8em;
+	margin:5px 0px 5px 5px;
+	padding:0.5em 0.5em;
+	overflow:auto;
+	float: left;
+	white-space:nowrap;
+}
+#dbtables {
+	border-color:#CEE1EF; 
+	border-style:solid; 
+	border-width:2px;
+	height:10em; 
+	margin:3px 15px 3px 15px; 
+	overflow:auto; 
+	padding:0.5em 0.5em;
+	white-space:nowrap;
+}

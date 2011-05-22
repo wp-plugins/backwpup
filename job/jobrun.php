@@ -68,9 +68,7 @@ if (!$mysqldblink) {
 }
 //update running file
 if (is_file($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running')) {
-	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time())));
-	fclose($fd);
+	update_working_file();
 } else {
 	$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
 }

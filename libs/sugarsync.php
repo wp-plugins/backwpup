@@ -87,8 +87,8 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,true);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
 		curl_setopt($curl,CURLOPT_HEADER,true);
 		curl_setopt($curl,CURLOPT_HTTPHEADER,array('Expect:','Content-Type: application/xml; charset=UTF-8'));
 		curl_setopt($curl,CURLOPT_POSTFIELDS,$auth);
@@ -151,8 +151,8 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,true);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
 		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Expect:'));
 		
 		if ($method == 'POST') {		
@@ -195,7 +195,7 @@ class SugarSync {
 			throw new SugarSyncException('cUrl Error: '. curl_error($curl));
 		
 		curl_close($curl);
-		if (is_resource($datafilefd))
+		if (isset($datafilefd) and is_resource($datafilefd))
 			fclose($datafilefd);
 		
 		if ($curlgetinfo['http_code']>=200 and $curlgetinfo['http_code']<300) {

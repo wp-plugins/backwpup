@@ -11,7 +11,7 @@ function backwpup_jobstart($jobid='') {
 	}
 	//check if a job running
 	if (file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$runningfile=file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+		$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 		$infile=unserialize(trim($runningfile));
 		if ($infile['timestamp']<time()-1800) {
 			_e("A job already running!","backwpup");
@@ -82,8 +82,9 @@ function backwpup_jobstart($jobid='') {
 	}
 	//write working file
 	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time())));
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'])));
 	fclose($fd);
+	//
 	$_SESSION['CFG']['dirlogs']=rtrim(str_replace('\\','/',$_SESSION['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($_SESSION['CFG']['dirlogs'])) {
 		if (!mkdir($_SESSION['CFG']['dirlogs'],0755,true)) {
@@ -116,7 +117,7 @@ function backwpup_jobstart($jobid='') {
 	if(!function_exists('gzopen'))
 		$_SESSION['CFG']['gzlogs']=false;
 	//set Logfile
-	$_SESSION['STATIC']['LOGFILE']=$_SESSION['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';			
+	$_SESSION['STATIC']['LOGFILE']=$_SESSION['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 	//create log file
 	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'w');
 	//Create log file header
