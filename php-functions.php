@@ -396,6 +396,7 @@ function backwpup_get_upload_dir() {
 function backwpup_get_exclude_wp_dirs($folder) {
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
+	$excludedir[]=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/'); //exclude temp
 	if (false !== stripos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
 	if (false !== stripos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
@@ -413,78 +414,6 @@ function backwpup_get_exclude_wp_dirs($folder) {
 			$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
 	}
 	return $excludedir;
-}
-
-
-function backwpup_calc_db_size($jobvalues) {
-	global $wpdb;
-	$dbsize=array('size'=>0,'num'=>0,'rows'=>0);
-	$status=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A);
-	foreach($status as $tablekey => $tablevalue) {
-		if (in_array($tablevalue['Name'],$jobvalues['dbtables'])) {
-			$dbsize['size']=$dbsize['size']+$tablevalue["Data_length"]+$tablevalue["Index_length"];
-			$dbsize['num']++;
-			$dbsize['rows']=$dbsize['rows']+$tablevalue["Rows"];
-		}
-	}
-	return $dbsize;
-}
-
-
-function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array()) {
-	global $backwpup_temp_files;
-	if ( !empty($folder) and $levels and $dir = @opendir( $folder )) {
-		while (($file = readdir( $dir ) ) !== false ) {
-			if ( in_array($file, array('.', '..','.svn') ) )
-				continue;
-			foreach ($excludes as $exclusion) { //exclude dirs and files
-				if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
-					continue 2;
-			}
-			if ( @is_dir( $folder.$file )) {
-				if (!in_array(trailingslashit($folder.$file),$excludedirs))
-					_backwpup_calc_file_size_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes);
-			} elseif ((@is_file( $folder.$file ) or @is_executable($folder.$file)) and @is_readable($folder.$file)) {
-				$backwpup_temp_files['num']++;
-				$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize($folder.$file);
-			} 
-		}
-		@closedir( $dir );
-	}
-}
-
-function backwpup_calc_file_size($jobvalues) {
-	global $backwpup_temp_files;
-	$backwpup_temp_files=array('size'=>0,'num'=>0);
-	//Exclude Temp Files
-	$backwpup_exclude=explode(',',trim($jobvalues['fileexclude']));
-	$backwpup_exclude=array_unique($backwpup_exclude);
-
-	//File list for blog folders
-	if ($jobvalues['backuproot'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(ABSPATH),100,$backwpup_exclude,array_merge($jobvalues['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)));
-	if ($jobvalues['backupcontent'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(WP_CONTENT_DIR),100,$backwpup_exclude,array_merge($jobvalues['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
-	if ($jobvalues['backupplugins'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(WP_PLUGIN_DIR),100,$backwpup_exclude,array_merge($jobvalues['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
-	if ($jobvalues['backupthemes'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(trailingslashit(WP_CONTENT_DIR).'themes'),100,$backwpup_exclude,array_merge($jobvalues['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
-	if ($jobvalues['backupuploads'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($jobvalues['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
-
-	//include dirs
-	if (!empty($jobvalues['dirinclude'])) {
-		$dirinclude=explode(',',$jobvalues['dirinclude']);
-		$dirinclude=array_unique($dirinclude);
-		//Crate file list for includes
-		foreach($dirinclude as $dirincludevalue) {
-			if (is_dir($dirincludevalue))
-				_backwpup_calc_file_size_file_list_folder(trailingslashit($dirincludevalue),100,$backwpup_exclude);
-		}
-	}
-	
-	return $backwpup_temp_files;
-	
 }
 
 //Calcs next run for a cron string as timestamp

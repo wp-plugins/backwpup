@@ -610,19 +610,21 @@ class backwpup_dojob {
 					if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 						continue 2;
 				}
+				if (!in_array(trailingslashit($folder.$file),$excludedirs))
+					continue;
 				if ( !is_readable($folder.$file) ) {
 					trigger_error(__('File or Folder is not readable:','backwpup').' '.$folder.$file,E_USER_WARNING);
 				} elseif ( is_link($folder.$file) ) {
-					trigger_error(__('Link not followed:','backwpup').' '.$folder.$file,E_USER_WARNING);
+					trigger_error(__('Links not followed:','backwpup').' '.$folder.$file,E_USER_WARNING);
 				} elseif ( is_dir( $folder.$file )) {
-					if (!in_array(trailingslashit($folder.$file),$excludedirs))
-						$this->_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes);
+					$this->_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes);
 				} elseif ( is_file( $folder.$file ) or is_executable($folder.$file) ) { //add file to filelist
 					$this->tempfilelist[]=$folder.$file;
 					$this->allfilesize=$this->allfilesize+filesize($folder.$file);
 				} else {
 					trigger_error(__('Is not a file or directory:','backwpup').' '.$folder.$file,E_USER_WARNING);
 				}
+				
 			}
 			@closedir( $dir );
 		}
@@ -639,9 +641,8 @@ class backwpup_dojob {
 		$this->tempfilelist=array();
 
 		$backwpup_exclude=explode(',',trim($this->job['fileexclude']));
-		//Exclude Temp Files
-		$backwpup_exclude[]=$this->tempdir.DB_NAME.'.sql';
-		$backwpup_exclude[]=$this->tempdir.'wordpress.' . date( 'Y-m-d' ) . '.xml';
+		//Exclude Temp Folder
+		$backwpup_exclude[]=$this->tempdir;
 		$backwpup_exclude=array_unique($backwpup_exclude);
 
 		//File list for blog folders
@@ -654,7 +655,7 @@ class backwpup_dojob {
 		if ($this->job['backupthemes'])
 			$this->_file_list_folder(trailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes')),100,$backwpup_exclude,array_merge($this->job['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
 		if ($this->job['backupuploads'])
-			$this->_file_list_folder(trailingslashit(backwpup_get_upload_dir()),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
+			$this->_file_list_folder(trailingslashit(str_replace('\\','/',backwpup_get_upload_dir())),100,$backwpup_exclude,array_merge($this->job['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
 
 	    //include dirs
 		if (!empty($this->job['dirinclude'])) {

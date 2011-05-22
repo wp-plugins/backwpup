@@ -47,7 +47,7 @@ jQuery(document).ready( function($) {
 		var awsBucket = $('#awsBucketselected').val();
 		var data = {
 			action: 'backwpup_get_aws_buckets',
-			backwpupajaxpage: 'BackWPupEditJob',
+			backwpupajaxpage: 'backwpupeditjob',
 			awsAccessKey: awsAccessKey,
 			awsSecretKey: awsSecretKey,
 			awsselected: awsBucket
@@ -68,7 +68,7 @@ jQuery(document).ready( function($) {
 		var msazureContainer = $('#msazureContainerselected').val();
 		var data = {
 			action: 'backwpup_get_msazure_container',
-			backwpupajaxpage: 'BackWPupEditJob',
+			backwpupajaxpage: 'backwpupeditjob',
 			msazureHost: msazureHost,
 			msazureAccName: msazureAccName,
 			msazureKey: msazureKey,
@@ -90,7 +90,7 @@ jQuery(document).ready( function($) {
 		var rscContainer = $('#rscContainerselected').val();
 		var data = {
 			action: 'backwpup_get_rsc_container',
-			backwpupajaxpage: 'BackWPupEditJob',
+			backwpupajaxpage: 'backwpupeditjob',
 			rscUsername: rscUsername,
 			rscAPIKey: rscAPIKey,
 			rscselected: rscContainer
@@ -110,7 +110,7 @@ jQuery(document).ready( function($) {
 		var sugarrootselected = $('#sugarrootselected').val();
 		var data = {
 			action: 'backwpup_get_sugarsync_root',
-			backwpupajaxpage: 'BackWPupEditJob',
+			backwpupajaxpage: 'backwpupeditjob',
 			sugaruser: sugaruser,
 			sugarpass: sugarpass,
 			sugarrootselected: sugarrootselected

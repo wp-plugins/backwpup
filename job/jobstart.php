@@ -40,11 +40,16 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['WP']['DB_COLLATE']=DB_COLLATE;
 	$_SESSION['WP']['OPTIONS_TABLE']=$wpdb->options;
 	$_SESSION['WP']['WP_DEBUG']=WP_DEBUG;
-	$_SESSION['WP']['ABSPATH']=ABSPATH;
-	$_SESSION['WP']['WPINC']=WPINC;
 	$_SESSION['WP']['BLOGNAME']=get_bloginfo('name');
 	$_SESSION['WP']['TIMEDIFF']=current_time('timestamp')-time();
 	$_SESSION['WP']['WPLANG']=WPLANG;
+	//WP folder
+	$_SESSION['WP']['ABSPATH']=ABSPATH;
+	$_SESSION['WP']['WP_CONTENT_DIR']=WP_CONTENT_DIR;
+	$_SESSION['WP']['WP_PLUGIN_DIR']=WP_PLUGIN_DIR;
+	$_SESSION['WP']['WP_THEMES_DIR']=trailingslashit(WP_CONTENT_DIR).'themes/';
+	$_SESSION['WP']['WP_UPLOAD_DIR']=backwpup_get_upload_dir();
+	$_SESSION['WP']['WPINC']=WPINC;
 	//Load Translation
 	if (!empty($_SESSION['WP']['WPLANG']) and is_file(dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po')) {
 		$file = fopen (dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po', "r");
