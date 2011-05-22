@@ -13,16 +13,16 @@ if (!defined('ABSPATH')) {
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif; ?>
-
-	<div id="workinglog">
+	<input type="hidden" name="logfile" value="<?php echo $_GET['logfile']; ?>" />
 	<?PHP
+	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+		echo '<div id="showworking">';
+	else 
+		echo '<div id="showlogfile">';
+		
 	if (!empty($_GET['logfile'])) {
-		if (strtolower(substr($_GET['logfile'],-3))==".gz") {
-			readgzfile(trim($_GET['logfile']));
-		} else {
-			readfile(trim($_GET['logfile']));
-		}
+		backwpup_read_logfile($_GET['logfile']);
 	}
+	echo "</div>";
 	?>
-	</div>
 </div>

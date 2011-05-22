@@ -138,6 +138,11 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$_SESSION['JOB']['type']."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
+	fwrite($fd,"<style type=\"text/css\">\n");
+	fwrite($fd,".timestamp {background-color:grey;}\n");
+	fwrite($fd,".warning {background-color:yellow;}\n");
+	fwrite($fd,".error {background-color:red;}\n");
+	fwrite($fd,"</style>\n");
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 	fclose($fd);
 	//Set job start settings

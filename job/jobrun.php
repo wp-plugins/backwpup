@@ -79,7 +79,7 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 		if (is_file('./'.$stepfile)) {
 			require_once('./'.$stepfile);
 		} elseif ($_SESSION['WP']['WP_DEBUG']) {
-			trigger_error(__('Can not find job step file:','backwpup').' '.$stepfile,E_USER_WARNING);
+			trigger_error(__('Can not find job step file:','backwpup').' '.$stepfile,E_USER_ERROR);
 		} 
 	}
 }

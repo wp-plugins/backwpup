@@ -164,7 +164,7 @@ function update_working_file() {
 function joberrorhandler() {
 	$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
 	//genrate timestamp
-	$timestamp="<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
+	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
 
 	switch ($args[0]) {
 	case E_NOTICE:
@@ -175,13 +175,13 @@ function joberrorhandler() {
 	case E_USER_WARNING:
 		$logheader=read_logheader(); //read warnig count from log header
 		$warnings=$logheader['warnings']+1;
-		$massage=$timestamp."<span style=\"background-color:yellow;\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
+		$massage=$timestamp."<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_ERROR: 
 	case E_USER_ERROR:
 		$logheader=read_logheader(); //read error count from log header
 		$errors=$logheader['errors']+1;
-		$massage=$timestamp."<span style=\"background-color:red;\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
+		$massage=$timestamp."<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_DEPRECATED:
 	case E_USER_DEPRECATED:
