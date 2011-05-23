@@ -595,7 +595,7 @@ function backwpup_admin_notice() {
 function backwpup_read_logfile($logfile) {
 	if (is_file(trim($logfile)) and strtolower(substr($logfile,-3))=='.gz')
 		$logfiledata=gzfile(trim($logfile));
-	elseif (is_file(trim($logfile)))
+	elseif (is_file(trim($logfile.'.gz')))
 		$logfiledata=gzfile(trim($logfile.'.gz'));
 	elseif (is_file(trim($logfile)))
 		$logfiledata=file(trim($logfile));	
@@ -604,7 +604,7 @@ function backwpup_read_logfile($logfile) {
 		
 	foreach ($logfiledata as $line) {
 		$line=trim($line);
-		if (false === stripos($line,'<html>') and false === stripos($line,'</html>') and false === stripos($line,'<head>') and false === stripos($line,'</head>') and false === stripos($line,'<meta') and false === stripos($line,'<style') and false === stripos($line,'.timestamp') and false === stripos($line,'.warning') and false === stripos($line,'.error') and false === stripos($line,'</style>') and false === stripos($line,'<body') and false === stripos($line,'</body>') and false === stripos($line,'<title'))
+		//if (false === stripos($line,'<html>') and false === stripos($line,'</html>') and false === stripos($line,'<head>') and false === stripos($line,'</head>') and false === stripos($line,'<meta') and false === stripos($line,'<style') and false === stripos($line,'.timestamp') and false === stripos($line,'.warning') and false === stripos($line,'.error') and false === stripos($line,'</style>') and false === stripos($line,'<body') and false === stripos($line,'</body>') and false === stripos($line,'<title'))
 			echo $line;
 	}
 }

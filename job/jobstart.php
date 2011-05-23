@@ -1,7 +1,10 @@
 <?PHP
 // don't load directly
-if ( !defined('ABSPATH') )
-	die('-1');
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
 	
 function backwpup_jobstart($jobid='') {
 	global $wpdb;
@@ -85,11 +88,6 @@ function backwpup_jobstart($jobid='') {
 		session_destroy();
 		return false;
 	}
-	//write working file
-	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'])));
-	fclose($fd);
-	//
 	$_SESSION['CFG']['dirlogs']=rtrim(str_replace('\\','/',$_SESSION['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($_SESSION['CFG']['dirlogs'])) {
 		if (!mkdir($_SESSION['CFG']['dirlogs'],0755,true)) {
@@ -144,6 +142,10 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,".error {background-color:red;}\n");
 	fwrite($fd,"</style>\n");
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
+	fclose($fd);
+	//write working file
+	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
 	fclose($fd);
 	//Set job start settings
 	$jobs[$_SESSION['JOB']['ID']]['starttime']=time(); //set start time for job

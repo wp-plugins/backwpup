@@ -16,8 +16,10 @@ ob_end_flush();
 flush();
 //check session id
 $BackWPupSession=session_id($_GET['BackWPupSession']);
-if (empty($BackWPupSession) or !$BackWPupSession) {
-	die('Wrong Session!');
+if (empty($BackWPupSession)) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
 }
 //Set a constance for not direkt loding in other files
 define('BACKWPUP_JOBRUN_FILE', __FILE__);
@@ -115,7 +117,7 @@ while ($_SESSION['WORKING']['FINISHED']==false) {
 				else
 					break;
 			} elseif ($_SESSION['WP']['WP_DEBUG']) {
-				trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_WARNING);
+				trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_ERROR);
 				$_SESSION['WORKING'][$step]['DONE']=true;
 				break;
 			} else {

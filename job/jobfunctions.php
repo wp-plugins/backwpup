@@ -1,8 +1,10 @@
 <?PHP
 // don't load directly
-if ( !defined('BACKWPUP_JOBRUN_FILE') )
-	die('-1');
-	
+if (!defined('BACKWPUP_JOBRUN_FILE')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
 //For Later Translation ;)
 function __($message,$domain='backwpup') {
 	$msgid=md5($message);

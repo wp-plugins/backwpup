@@ -1,7 +1,9 @@
 <?PHP
-// don't load directly
-if ( !defined('BACKWPUP_JOBRUN_FILE') )
-	die('-1');
+if (!defined('BACKWPUP_JOBRUN_FILE')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
 	
 if (isset($backwpup_dojob->filelist[0][79001])) { // Make backup file
 	if ($backwpup_dojob->backupfileformat==".zip")
