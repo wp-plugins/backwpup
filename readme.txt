@@ -107,7 +107,7 @@ Destinations are:
 * PHP Sessions, curl and PHP version 5.2.4 required!
 * Wordpress 3.2 required!
 * Using the system temp dir now
-* Updatet AWS lib to 1.3.2
+* Updatet AWS lib to 1.3.3
 * Updated RSC lib to 1.7.9
 * Reworked GUI (Wordpress Dropboxes, working screen options, ....)
 
