@@ -220,6 +220,9 @@ function backwpup_calc_file_size($jobvalues) {
 
 //ajax show info div for jobs
 function backwpup_show_info_td() {
+	check_ajax_referer('backwpup_ajax_nonce');
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		die('-1');
 	global $wpdb;
 	$jobid=$_POST['jobid'];
 	$mode=$_POST['mode'];

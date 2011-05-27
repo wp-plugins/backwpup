@@ -287,6 +287,9 @@ function backwpup_get_aws_buckets($args='') {
 		extract($args);
 		$ajax=false;
 	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
 		$awsAccessKey=$_POST['awsAccessKey'];
 		$awsSecretKey=$_POST['awsSecretKey'];
 		$awsselected=$_POST['awsselected'];
@@ -324,9 +327,8 @@ function backwpup_get_aws_buckets($args='') {
 			die();
 		else
 			return;
-	}
-	if (empty($buckets->body->Buckets->Bucket)) {
-		echo '<span id="awsBucket" style="color:red;">'.__('No Buckets found!','backwpup').'</span>';
+	} else {
+		echo '<span id="awsBucket" style="color:red;">'.$buckets->status.': '.$buckets->body->Message.'</span>';
 		if ($ajax)
 			die();
 		else
@@ -349,6 +351,9 @@ function backwpup_get_rsc_container($args='') {
 		extract($args);
 		$ajax=false;
 	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
 		$rscUsername=$_POST['rscUsername'];
 		$rscAPIKey=$_POST['rscAPIKey'];
 		$rscselected=$_POST['rscselected'];
@@ -409,6 +414,9 @@ function backwpup_get_msazure_container($args='') {
 		extract($args);
 		$ajax=false;
 	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
 		$msazureHost=$_POST['msazureHost'];
 		$msazureAccName=$_POST['msazureAccName'];
 		$msazureKey=$_POST['msazureKey'];
@@ -474,6 +482,9 @@ function backwpup_get_sugarsync_root($args='') {
 		extract($args);
 		$ajax=false;
 	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
 		$sugaruser=$_POST['sugaruser'];
 		$sugarpass=$_POST['sugarpass'];
 		$sugarrootselected=$_POST['sugarrootselected'];

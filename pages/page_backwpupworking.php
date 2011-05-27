@@ -15,11 +15,11 @@ if (!defined('ABSPATH')) {
 <?php endif; ?>
 	<input type="hidden" name="logfile" value="<?php echo $_GET['logfile']; ?>" />
 	<?PHP
+	wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
 		echo '<div id="showworking">';
 	else 
 		echo '<div id="showlogfile">';
-		
 	if (!empty($_GET['logfile'])) {
 		backwpup_read_logfile($_GET['logfile']);
 	}

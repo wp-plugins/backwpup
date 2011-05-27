@@ -50,6 +50,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 <?php wp_nonce_field('edit-job'); ?>
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
 <?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
+<?php wp_nonce_field('backwpupeditjob_ajax_nonce', 'backwpupeditjobajaxnonce', false ); ?>
 <div id="poststuff" class="metabox-holder<?php echo 2 == $screen_layout_columns ? ' has-right-sidebar' : ''; ?>">
 	<div id="side-info-column" class="inner-sidebar">
 	<?php

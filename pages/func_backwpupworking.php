@@ -7,6 +7,9 @@ if (!defined('ABSPATH')) {
 
 //ajax show info div for jobs
 function backwpup_working_update() {
+	check_ajax_referer('backwpupworking_ajax_nonce');
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		die('-1');
 	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
 		$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 		$runningfile=unserialize(trim($runfile));

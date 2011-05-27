@@ -54,14 +54,14 @@ function backwpup_menu_page_header() {
 		if (is_file(dirname(__FILE__).'/pages/page_'.$page.'.php')) {
 			//Css for Admin Section
 			if (is_file(dirname(__FILE__).'/css/'.$page.'.css')) {
-				if (WP_DEBUG)
+				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
 					wp_enqueue_style($page,plugins_url('css/'.$page.'.css',__FILE__),'',time(),'screen');
 				else
 					wp_enqueue_style($page,plugins_url('css/'.$page.'.css',__FILE__),'',BACKWPUP_VERSION,'screen');
 			}
 			//add java
 			if (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
-				if (WP_DEBUG)
+				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
 					wp_enqueue_script($page,plugins_url('js/'.$page.'.js',__FILE__),'',time(),true);
 				else
 					wp_enqueue_script($page,plugins_url('js/'.$page.'.js',__FILE__),'',BACKWPUP_VERSION,true);

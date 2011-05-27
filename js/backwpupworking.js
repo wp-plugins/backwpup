@@ -1,10 +1,10 @@
 jQuery(document).ready( function($) {
 	$.ajaxSetup({ cache: false });
-	var logfile = $('input[name="logfile"]').val();
 	var data = {
 		action: 'backwpup_working_update',
 		backwpupajaxpage: 'backwpupworking',
-		logfile: logfile
+		logfile: jQuery('input[name="logfile"]').val(),
+		_ajax_nonce: jQuery('#backwpupworkingajaxnonce').val()
 	};
 	var refreshId = setInterval(function() {
 		$("#showworking").load(ajaxurl,data);

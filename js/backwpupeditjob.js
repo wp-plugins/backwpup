@@ -42,85 +42,72 @@ jQuery(document).ready( function($) {
 	});
 	
 	function awsgetbucket() {
-		var awsAccessKey = $('#awsAccessKey').val();
-		var awsSecretKey = $('#awsSecretKey').val();
-		var awsBucket = $('#awsBucketselected').val();
 		var data = {
 			action: 'backwpup_get_aws_buckets',
 			backwpupajaxpage: 'backwpupeditjob',
-			awsAccessKey: awsAccessKey,
-			awsSecretKey: awsSecretKey,
-			awsselected: awsBucket
+			awsAccessKey: jQuery('#awsAccessKey').val(),
+			awsSecretKey: jQuery('#awsSecretKey').val(),
+			awsselected: jQuery('#awsBucketselected').val(),
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#awsBucket').remove();
 			$('#awsBucketselected').after(response);
 		});		
 	}
-	
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
 
 	function msazuregetcontainer() {
-		var msazureHost = $('#msazureHost').val();
-		var msazureAccName = $('#msazureAccName').val();
-		var msazureKey = $('#msazureKey').val();
-		var msazureContainer = $('#msazureContainerselected').val();
 		var data = {
 			action: 'backwpup_get_msazure_container',
 			backwpupajaxpage: 'backwpupeditjob',
-			msazureHost: msazureHost,
-			msazureAccName: msazureAccName,
-			msazureKey: msazureKey,
-			msazureselected: msazureContainer
+			msazureHost: jQuery('#msazureHost').val(),
+			msazureAccName: jQuery('#msazureAccName').val(),
+			msazureKey: jQuery('#msazureKey').val(),
+			msazureselected: jQuery('#msazureContainerselected').val(),
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#msazureContainer').remove();
 			$('#msazureContainerselected').after(response);
 		});		
 	}
-	
 	$('#msazureHost').change(function() {msazuregetcontainer();});
 	$('#msazureAccName').change(function() {msazuregetcontainer();});
 	$('#msazureKey').change(function() {msazuregetcontainer();});
 	
 	function rscgetcontainer() {
-		var rscUsername = $('#rscUsername').val();
-		var rscAPIKey = $('#rscAPIKey').val();
-		var rscContainer = $('#rscContainerselected').val();
 		var data = {
 			action: 'backwpup_get_rsc_container',
 			backwpupajaxpage: 'backwpupeditjob',
-			rscUsername: rscUsername,
-			rscAPIKey: rscAPIKey,
-			rscselected: rscContainer
+			rscUsername: jQuery('#rscUsername').val(),
+			rscAPIKey: jQuery('#rscAPIKey').val(),
+			rscselected: jQuery('#rscContainerselected').val(),
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#rscContainer').remove();
 			$('#rscContainerselected').after(response);
 		});		
 	}
-	
 	$('#rscUsername').change(function() {rscgetcontainer();});
 	$('#rscAPIKey').change(function() {rscgetcontainer();});
 
 	function sugarsyncgetroot() {
-		var sugaruser = $('#sugaruser').val();
-		var sugarpass = $('#sugarpass').val();
-		var sugarrootselected = $('#sugarrootselected').val();
 		var data = {
 			action: 'backwpup_get_sugarsync_root',
 			backwpupajaxpage: 'backwpupeditjob',
-			sugaruser: sugaruser,
-			sugarpass: sugarpass,
-			sugarrootselected: sugarrootselected
+			sugaruser: jQuery('#sugaruser').val(),
+			sugarpass: jQuery('#sugarpass').val(),
+			sugarrootselected: jQuery('#sugarrootselected').val(),
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#sugarroot').remove();
 			$('#sugarrootselected').after(response);
 		});		
 	}
-	
 	$('#sugaruser').change(function() {sugarsyncgetroot();});
 	$('#sugarpass').change(function() {sugarsyncgetroot();});
 	
