@@ -77,7 +77,7 @@ if (backwpup_env_checks()) {
 	backwpup_load_ajax();
 	//Disabele WP_Corn
 	$cfg=get_option('backwpup');
-	if ($cfg['disablewpcron'])
+	if (isset($cfg['disablewpcron']) && $cfg['disablewpcron'])
 		define('DISABLE_WP_CRON',true);
 	//test if cron active
 	if (!(wp_next_scheduled('backwpup_cron')))

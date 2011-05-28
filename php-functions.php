@@ -111,28 +111,35 @@ function backwpup_contextual_help($help='') {
 
 //On Plugin activate
 function backwpup_plugin_activate() {
-	//remove old cron jobs
 	$jobs=(array)get_option('backwpup_jobs');
 	foreach ($jobs as $jobid => $jobvalue) {
+		//remove old cron jobs
 		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
 			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
 		}
+		//check jobvaules
+		$jobs[$jobid]=backwpup_get_job_vars($jobid);
 	}
+	//save job values
+	update_option('backwpup_jobs',$jobs);
+	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
-	//make schedule
+	//make new schedule
 	wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
-	//Set defaults
+	//Set settings defaults
 	$cfg=get_option('backwpup'); //Load Settings
 	if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
+	if (!isset($cfg['logfilelist']) or !is_bool($cfg['logfilelist'])) $cfg['logfilelist']=false;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!isset($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
+	if (!isset($cfg['disablewpcron']) or !is_bool($cfg['disablewpcron'])) $cfg['disablewpcron']=false;
 	//remove old option
 	unset($cfg['dirtemp']);
 	update_option('backwpup',$cfg);
@@ -611,8 +618,32 @@ function backwpup_read_logfile($logfile) {
 
 
 //Checking,upgrade and default job setting
-function backwpup_check_job_vars($jobsettings,$jobid) {
+function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	global $wpdb;
+	//get job data
+	$jobs=get_option('backwpup_jobs'); //load jobs
+	if (!empty($jobid)) {
+		if (isset($jobs[$jobid]))
+			$jobsettings=$jobs[$jobid];
+		$jobsettings['jobid']=$jobid;
+	} else {
+		if (empty($jobsettings['jobid'])) {  //generate jobid if not exists
+			$heighestid=0;
+			if (is_array($jobs)) {
+				foreach ($jobs as $jobkey => $jobvalue) {
+					if ($jobkey>$heighestid) 
+						$heighestid=$jobkey;
+				}
+			}
+			$jobsettings['jobid']=$heighestid+1;
+		}
+	}
+	unset($jobs);
+	unset($jobid);
+	if (!empty($jobnewsettings) && is_array($jobnewsettings)) { //overwrite with new settings
+		$jobsettings=array_merge($jobsettings,$jobnewsettings);
+	}
+	
 	//check job type
 	if (!isset($jobsettings['type']) or !is_string($jobsettings['type']))
 		$jobsettings['type']='DB+FILE';
@@ -666,7 +697,6 @@ function backwpup_check_job_vars($jobsettings,$jobid) {
 					$jobsettings['dbtables'][]=$table;
 			}
 		}
-		unset($jobsettings['dbexclude']);
 	}
 	
 	//Tables to backup
@@ -773,7 +803,7 @@ function backwpup_check_job_vars($jobsettings,$jobid) {
 		$jobsettings['fileformart']='.zip';
 	
 	if (!isset($jobsettings['fileprefix']) or !is_string($jobsettings['fileprefix']))
-		$jobsettings['fileprefix']='backwpup_'.$jobid.'_';
+		$jobsettings['fileprefix']='backwpup_'.$jobsettings['jobid'].'_';
 	
 	if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
 		$jobsettings['mailefilesize']=0;
@@ -871,12 +901,6 @@ function backwpup_check_job_vars($jobsettings,$jobid) {
 	if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 		$jobsettings['rscmaxbackups']=0;
 		
-	if (isset($jobsettings['dropemail']))
-		unset($jobsettings['dropemail']);
-		
-	if (isset($jobsettings['dropepass']))
-		unset($jobsettings['dropepass']);
-		
 	if (!isset($jobsettings['dropetoken']) or !is_string($jobsettings['dropetoken']))
 		$jobsettings['dropetoken']='';
 	
@@ -913,6 +937,15 @@ function backwpup_check_job_vars($jobsettings,$jobid) {
 	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
 		$jobsettings['mailaddress']='';
 
+	//unset old not nedded vars
+	unset($jobsettings['scheduletime']);
+	unset($jobsettings['scheduleintervaltype']);
+	unset($jobsettings['scheduleintervalteimes']);
+	unset($jobsettings['scheduleinterval']);
+	unset($jobsettings['dropemail']);
+	unset($jobsettings['dropepass']);	
+	unset($jobsettings['dbexclude']);
+		
 	return $jobsettings;
 }	
 ?>

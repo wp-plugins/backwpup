@@ -3,7 +3,7 @@ jQuery(document).ready( function($) {
 	$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
 	
 	$('.jobtype-select').change(function() {
-		if ( true == $('#jobtype-select-FILE').attr('checked') || true ==  $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-WPEXP').attr('checked')) {
+		if ( true == $('#jobtype-select-FILE').prop('checked') || true ==  $('#jobtype-select-DB').prop('checked') || true == $('#jobtype-select-WPEXP').prop('checked')) {
 			$('#backwpup_jobedit_backupfile').show();
 			$('#backwpup_jobedit_destftp').show();
 			$('#backwpup_jobedit_dests3').show();
@@ -24,17 +24,17 @@ jQuery(document).ready( function($) {
 			$('#backwpup_jobedit_destfile').hide();
 			$('#backwpup_jobedit_destmail').hide();
 		}
-		if ( true == $('#jobtype-select-DB').attr('checked') || true == $('#jobtype-select-CHECK').attr('checked') || true == $('#jobtype-select-OPTIMIZE').attr('checked')) {
+		if ( true == $('#jobtype-select-DB').prop('checked') || true == $('#jobtype-select-CHECK').prop('checked') || true == $('#jobtype-select-OPTIMIZE').prop('checked')) {
 			$('#databasejobs').show();
 		} else {
 			$('#databasejobs').hide();
 		}
-		if ( true == $('#jobtype-select-DB').attr('checked')) {
+		if ( true == $('#jobtype-select-DB').prop('checked')) {
 			$('#dbshortinsert').show();
 		} else {
 			$('#dbshortinsert').hide();
 		}
-		if ( true == $('#jobtype-select-FILE').attr('checked')) {
+		if ( true == $('#jobtype-select-FILE').prop('checked')) {
 			$('#filebackup').show();
 		} else {
 			$('#filebackup').hide();

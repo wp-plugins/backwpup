@@ -37,14 +37,11 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 
 //Save Job settings
 if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
-	$jobid = (int) $_POST['jobid'];
 	check_admin_referer('edit-job');
-	$backwpup_message='';
-	$jobs=get_option('backwpup_jobs'); //Load Settings
-	
-	$jobs[$jobid]['type']= implode('+',(array)$_POST['type']);
-	$jobs[$jobid]['name']= esc_html($_POST['name']);
-	$jobs[$jobid]['activated']= $_POST['activated']==1 ? true : false;
+	$jobvalues['jobid']=(int) $_POST['jobid'];
+	$jobvalues['type']= implode('+',(array)$_POST['type']);
+	$jobvalues['name']= esc_html($_POST['name']);
+	$jobvalues['activated']= (isset($_POST['activated']) && $_POST['activated']==1) ? true : false;
 	if ($_POST['cronminutes'][0]=='*' or empty($_POST['cronminutes'])) {
 		if (!empty($_POST['cronminutes'][1]))
 			$_POST['cronminutes']=array('*/'.$_POST['cronminutes'][1]);
@@ -75,69 +72,63 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		else
 			$_POST['cronwday']=array('*');
 	}
-	$jobs[$jobid]['cron']=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
-	$jobs[$jobid]['cronnextrun']=backwpup_cron_next($jobs[$jobid]['cron']);
-	$jobs[$jobid]['mailaddresslog']=sanitize_email($_POST['mailaddresslog']);
-	$jobs[$jobid]['mailerroronly']= $_POST['mailerroronly']==1 ? true : false;
-	$jobs[$jobid]['dbtables']=(array)$_POST['dbtables'];
-	$jobs[$jobid]['dbshortinsert']=$_POST['dbshortinsert']==1 ? true : false;
-	$jobs[$jobid]['maintenance']= $_POST['maintenance']==1 ? true : false;
-	$jobs[$jobid]['fileexclude']=stripslashes($_POST['fileexclude']);
-	$jobs[$jobid]['dirinclude']=stripslashes($_POST['dirinclude']);
-	$jobs[$jobid]['backuproot']= $_POST['backuproot']==1 ? true : false;
-	$jobs[$jobid]['backuprootexcludedirs']=(array)$_POST['backuprootexcludedirs'];
-	$jobs[$jobid]['backupcontent']= $_POST['backupcontent']==1 ? true : false;
-	$jobs[$jobid]['backupcontentexcludedirs']=(array)$_POST['backupcontentexcludedirs'];
-	$jobs[$jobid]['backupplugins']= $_POST['backupplugins']==1 ? true : false;
-	$jobs[$jobid]['backuppluginsexcludedirs']=(array)$_POST['backuppluginsexcludedirs'];
-	$jobs[$jobid]['backupthemes']= $_POST['backupthemes']==1 ? true : false;
-	$jobs[$jobid]['backupthemesexcludedirs']=(array)$_POST['backupthemesexcludedirs'];
-	$jobs[$jobid]['backupuploads']= $_POST['backupuploads']==1 ? true : false;
-	$jobs[$jobid]['backupuploadsexcludedirs']=(array)$_POST['backupuploadsexcludedirs'];
-	$jobs[$jobid]['fileprefix']=$_POST['fileprefix'];
-	$jobs[$jobid]['fileformart']=$_POST['fileformart'];
-	$jobs[$jobid]['mailefilesize']=(float)$_POST['mailefilesize'];
-	$jobs[$jobid]['backupdir']=stripslashes($_POST['backupdir']);
-	$jobs[$jobid]['maxbackups']=(int)$_POST['maxbackups'];
-	$jobs[$jobid]['ftphost']=$_POST['ftphost'];
-	$jobs[$jobid]['ftpuser']=$_POST['ftpuser'];
-	$jobs[$jobid]['ftppass']=base64_encode($_POST['ftppass']);
-	$jobs[$jobid]['ftpdir']=stripslashes($_POST['ftpdir']);
-	$jobs[$jobid]['ftpmaxbackups']=(int)$_POST['ftpmaxbackups'];
-	$jobs[$jobid]['ftpssl']= $_POST['ftpssl']==1 ? true : false;
-	$jobs[$jobid]['ftppasv']= $_POST['ftppasv']==1 ? true : false;
-	$jobs[$jobid]['dropemaxbackups']=(int)$_POST['dropemaxbackups'];
-	$jobs[$jobid]['dropedir']=$_POST['dropedir'];
-	$jobs[$jobid]['awsAccessKey']=$_POST['awsAccessKey'];
-	$jobs[$jobid]['awsSecretKey']=$_POST['awsSecretKey'];
-	$jobs[$jobid]['awsrrs']= $_POST['awsrrs']==1 ? true : false;
-	$jobs[$jobid]['awsBucket']=$_POST['awsBucket'];
-	$jobs[$jobid]['awsdir']=stripslashes($_POST['awsdir']);
-	$jobs[$jobid]['awsmaxbackups']=(int)$_POST['awsmaxbackups'];
-	$jobs[$jobid]['msazureHost']=$_POST['msazureHost'];
-	$jobs[$jobid]['msazureAccName']=$_POST['msazureAccName'];
-	$jobs[$jobid]['msazureKey']=$_POST['msazureKey'];
-	$jobs[$jobid]['msazureContainer']=$_POST['msazureContainer'];
-	$jobs[$jobid]['msazuredir']=stripslashes($_POST['msazuredir']);
-	$jobs[$jobid]['msazuremaxbackups']=(int)$_POST['msazuremaxbackups'];
-	$jobs[$jobid]['sugaruser']=$_POST['sugaruser'];
-	$jobs[$jobid]['sugarpass']=base64_encode($_POST['sugarpass']);
-	$jobs[$jobid]['sugardir']=stripslashes($_POST['sugardir']);
-	$jobs[$jobid]['sugarroot']=$_POST['sugarroot'];
-	$jobs[$jobid]['sugarmaxbackups']=(int)$_POST['sugarmaxbackups'];
-	$jobs[$jobid]['rscUsername']=$_POST['rscUsername'];
-	$jobs[$jobid]['rscAPIKey']=$_POST['rscAPIKey'];
-	$jobs[$jobid]['rscContainer']=$_POST['rscContainer'];
-	$jobs[$jobid]['rscdir']=stripslashes($_POST['rscdir']);
-	$jobs[$jobid]['rscmaxbackups']=(int)$_POST['rscmaxbackups'];
-	$jobs[$jobid]['mailaddress']=sanitize_email($_POST['mailaddress']);
-	//unset old vars
-	unset($jobs[$jobid]['scheduletime']);
-	unset($jobs[$jobid]['scheduleintervaltype']);
-	unset($jobs[$jobid]['scheduleintervalteimes']);
-	unset($jobs[$jobid]['scheduleinterval']);
+	$jobvalues['cron']=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
+	$jobvalues['cronnextrun']=backwpup_cron_next($jobvalues['cron']);
+	$jobvalues['mailaddresslog']= isset($_POST['mailaddresslog']) ? sanitize_email($_POST['mailaddresslog']) : '';
+	$jobvalues['mailerroronly']= (isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false;
+	$jobvalues['dbtables']=!empty($_POST['dbtables']) ? (array)$_POST['dbtables'] : array();
+	$jobvalues['dbshortinsert']= (isset($_POST['dbshortinsert']) && $_POST['dbshortinsert']==1) ? true : false;
+	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
+	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';
+	$jobvalues['dirinclude']=isset($_POST['dirinclude']) ? stripslashes($_POST['dirinclude']) : '';
+	$jobvalues['backuproot']= $_POST['backuproot']==1 ? true : false;
+	$jobvalues['backuprootexcludedirs']=!empty($_POST['backuprootexcludedirs']) ? (array)$_POST['backuprootexcludedirs'] : array();
+	$jobvalues['backupcontent']= (isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false;
+	$jobvalues['backupcontentexcludedirs']=!empty($_POST['backupcontentexcludedirs']) ? (array)$_POST['backupcontentexcludedirs'] : array();
+	$jobvalues['backupplugins']= (isset($_POST['backupplugins']) && $_POST['backupplugins']==1) ? true : false;
+	$jobvalues['backuppluginsexcludedirs']=!empty($_POST['backuppluginsexcludedirs']) ? (array)$_POST['backuppluginsexcludedirs'] : array();
+	$jobvalues['backupthemes']= (isset($_POST['backupthemes']) && $_POST['backupthemes']==1) ? true : false;
+	$jobvalues['backupthemesexcludedirs']=!empty($_POST['backupthemesexcludedirs']) ? (array)$_POST['backupthemesexcludedirs'] : array();
+	$jobvalues['backupuploads']= (isset($_POST['backupuploads']) && $_POST['backupuploads']==1) ? true : false;
+	$jobvalues['backupuploadsexcludedirs']=!empty($_POST['backupuploadsexcludedirs']) ? (array)$_POST['backupuploadsexcludedirs'] : array();
+	$jobvalues['fileprefix']= isset($_POST['fileprefix']) ? $_POST['fileprefix'] : '';
+	$jobvalues['fileformart']=$_POST['fileformart'];
+	$jobvalues['mailefilesize']=isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0;
+	$jobvalues['backupdir']=isset($_POST['backupdir']) ? stripslashes($_POST['backupdir']) : '';
+	$jobvalues['maxbackups']=isset($_POST['maxbackups']) ? (int)$_POST['maxbackups'] : 0;
+	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
+	$jobvalues['ftpuser']=isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '';
+	$jobvalues['ftppass']=isset($_POST['ftppass']) ? base64_encode($_POST['ftppass']) : '';
+	$jobvalues['ftpdir']=isset($_POST['ftpdir']) ? stripslashes($_POST['ftpdir']) : '';
+	$jobvalues['ftpmaxbackups']=isset($_POST['ftpmaxbackups']) ? (int)$_POST['ftpmaxbackups'] : 0;
+	$jobvalues['ftpssl']= (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false;
+	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
+	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
+	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
+	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
+	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
+	$jobvalues['awsrrs']= (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false;
+	$jobvalues['awsBucket']=isset($_POST['awsBucket']) ? $_POST['awsBucket'] : '';
+	$jobvalues['awsdir']=isset($_POST['awsdir']) ? stripslashes($_POST['awsdir']) : '';
+	$jobvalues['awsmaxbackups']=isset($_POST['awsmaxbackups']) ? (int)$_POST['awsmaxbackups'] : 0;
+	$jobvalues['msazureHost']=isset($_POST['msazureHost']) ? $_POST['msazureHost'] : 'blob.core.windows.net';
+	$jobvalues['msazureAccName']=isset($_POST['msazureAccName']) ? $_POST['msazureAccName'] : '';
+	$jobvalues['msazureKey']=isset($_POST['msazureKey']) ? $_POST['msazureKey'] : '';
+	$jobvalues['msazureContainer']=isset($_POST['msazureContainer']) ? $_POST['msazureContainer'] : '';
+	$jobvalues['msazuredir']=isset($_POST['msazuredir']) ? stripslashes($_POST['msazuredir']) : '';
+	$jobvalues['msazuremaxbackups']=isset($_POST['msazuremaxbackups']) ? (int)$_POST['msazuremaxbackups'] : 0;
+	$jobvalues['sugaruser']=isset($_POST['sugaruser']) ? $_POST['sugaruser'] : '';
+	$jobvalues['sugarpass']=isset($_POST['sugarpass']) ? base64_encode($_POST['sugarpass']) : '';
+	$jobvalues['sugardir']=isset($_POST['sugardir']) ? stripslashes($_POST['sugardir']) : '';
+	$jobvalues['sugarroot']=isset($_POST['sugarroot']) ? $_POST['sugarroot'] : '';
+	$jobvalues['sugarmaxbackups']=isset($_POST['sugarmaxbackups']) ? (int)$_POST['sugarmaxbackups'] : 0;
+	$jobvalues['rscUsername']=isset($_POST['rscUsername']) ? $_POST['rscUsername'] : '';
+	$jobvalues['rscAPIKey']=isset($_POST['rscAPIKey']) ? $_POST['rscAPIKey'] : '';
+	$jobvalues['rscContainer']=isset($_POST['rscContainer']) ? $_POST['rscContainer'] : '';
+	$jobvalues['rscdir']=isset($_POST['rscdir']) ? stripslashes($_POST['rscdir']) : '';
+	$jobvalues['rscmaxbackups']=isset($_POST['rscmaxbackups']) ? (int)$_POST['rscmaxbackups'] : 0;
+	$jobvalues['mailaddress']=isset($_POST['mailaddress']) ? sanitize_email($_POST['mailaddress']) : '';
 
-	$jobs[$jobid]=backwpup_check_job_vars($jobs[$jobid],$jobid); //check vars and set def.
 
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
 		if (!class_exists('CFRuntime'))
@@ -145,7 +136,7 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		try {
 			$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
 			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
-			$jobs[$jobid]['awsBucket']=$_POST['newawsBucket'];
+			$jobvalues['awsBucket']=$_POST['newawsBucket'];
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
@@ -159,7 +150,7 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		try {
 			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($_POST['msazureHost'],$_POST['msazureAccName'],$_POST['msazureKey']);
 			$result = $storageClient->createContainer($_POST['newmsazureContainer']);
-			$jobs[$jobid]['msazureContainer']=$result->Name;
+			$jobvalues['msazureContainer']=$result->Name;
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
@@ -180,7 +171,7 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		}
 	}
 	
-	if ($_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
+	if (isset($_POST['dropboxauth']) && $_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
 		if (!class_exists('Dropbox'))
 			require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
 		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
@@ -189,19 +180,21 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		// save job id and referer
 		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),3600);
 		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=backwpupeditjob&jobid='.$jobid.'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
+		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 	}
 	
-	if ($_POST['dropboxauth']==__('Delete!', 'backwpup')) {
-		$jobs[$jobid]['dropetoken']='';
-		$jobs[$jobid]['dropesecret']='';
+	if (isset($_POST['dropboxauth']) && $_POST['dropboxauth']==__('Delete!', 'backwpup')) {
+		$jobvalues['dropetoken']='';
+		$jobvalues['dropesecret']='';
 		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
 	}
 
 	//save chages
+	$jobs=get_option('backwpup_jobs'); //Load Settings
+	$jobs[$jobvalues['jobid']]=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	update_option('backwpup_jobs',$jobs);
-	$_POST['jobid']=$jobid;
-	$backwpup_message.=str_replace('%1',$jobs[$jobid]['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="admin.php?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
+	$_POST['jobid']=$jobvalues['jobid'];
+	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="admin.php?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
 }
 
 

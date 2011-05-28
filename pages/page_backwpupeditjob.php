@@ -13,25 +13,12 @@ add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), 'backwp
 add_meta_box('backwpup_jobedit_destfile', __('Backup to Directory','backwpup'), 'backwpup_jobedit_metabox_destfile', $current_screen->id, 'advanced', 'core');
 add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), 'backwpup_jobedit_metabox_destmail', $current_screen->id, 'advanced', 'core');
 
-//Load job settings
-$jobs=get_option('backwpup_jobs');	
 //get and check job id
 if (isset($_REQUEST['jobid']) and !empty($_REQUEST['jobid'])) {
 	check_admin_referer('edit-job');
-	$jobid = (int) $_REQUEST['jobid'];
-	//Check job vars
-	$jobvalue=backwpup_check_job_vars($jobs[$jobid],$jobid);
-	unset($jobs);
-} else {  //generate a new id for new job
-	$heighestid=0;
-	if (is_array($jobs)) {
-		foreach ($jobs as $jobkey => $jobvalue) {
-			if ($jobkey>$heighestid) 
-				$heighestid=$jobkey;
-		}
-	}
-	$jobid=$heighestid+1;
-	$jobvalue=backwpup_check_job_vars(array(),$jobid);
+	$jobvalue=backwpup_get_job_vars((int) $_REQUEST['jobid']);
+} else {
+	$jobvalue=backwpup_get_job_vars();
 }
 //set extra vars
 $todo=explode('+',$jobvalue['type']);
@@ -46,7 +33,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 <?php endif; ?>
 
 <form name="editjob" id="editjob" method="post" action="<?PHP echo get_admin_url().'admin.php?page=backwpupeditjob';?>">
-<input type="hidden" name="jobid" value="<?PHP echo $jobid;?>" />
+<input type="hidden" name="jobid" value="<?PHP echo $jobvalue['jobid'];?>" />
 <?php wp_nonce_field('edit-job'); ?>
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
 <?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
