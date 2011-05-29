@@ -5,6 +5,16 @@ session_cache_limiter('nocache');
 session_cache_expire(30);
 // give the session a name
 session_name('BackWPupSession');
+//check and set session id must bevor session_start
+//read runningfile with SID
+if (file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
+	$runningfile=unserialize(trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')));
+	session_id($runningfile['SID']);//Set session id
+} else {
+	die();
+}
+//delete session cookie
+session_set_cookie_params(0);
 // start session
 session_start();
 // Conection termination
@@ -14,17 +24,15 @@ ob_start();
 header("Content-Length: 0");
 ob_end_flush();
 flush();
-//check session id
-$BackWPupSession=session_id($_GET['BackWPupSession']);
-if (empty($BackWPupSession)) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+//check existing session and Logfile
+if (!empty($_SESSION) and !file_exists($_SESSION['STATIC']['LOGFILE'])) {
+	@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 	die();
 }
 //Set a constance for not direkt loding in other files
-define('BACKWPUP_JOBRUN_FILE', __FILE__);
+define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 // get needed functions for the jobrun
-require_once('./jobfunctions.php');
+require_once(BACKWPUP_JOBRUN_FOLDER.'jobfunctions.php');
 //disable safe mode
 ini_set('safe_mode','Off');
 // Now user abrot allowed
@@ -69,68 +77,56 @@ if (!$mysqldblink) {
 	die();
 }
 //update running file
-if (is_file($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running')) {
-	update_working_file();
-} else {
-	$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
-}
+update_working_file();
+
 //Load needed files
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
 	if ($step!='JOB_END') {
-		if (is_file('./'.$stepfile)) {
-			require_once('./'.$stepfile);
-		} elseif ($_SESSION['WP']['WP_DEBUG']) {
+		if (is_file(BACKWPUP_JOBRUN_FOLDER.$stepfile)) {
+			require_once(BACKWPUP_JOBRUN_FOLDER.$stepfile);
+		} else {
 			trigger_error(__('Can not find job step file:','backwpup').' '.$stepfile,E_USER_ERROR);
 		} 
 	}
 }
 
-//Work 
-while ($_SESSION['WORKING']['FINISHED']==false) {
+// Working step by step
+foreach($_SESSION['WORKING']['STEPS'] as $step) {
+	//update running file
+	update_working_file();
 	//check if job aborded
-	if (!is_file($_SESSION['STATIC']['TEMPDIR'].'/.backwpup_running')) {
+	if (!is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
 		job_end();
 		break;
 	}
-	// Working step by step
-	foreach($_SESSION['WORKING']['STEPS'] as $step) {
-		//check if job aborded
-		if (!is_file($_SESSION['STATIC']['TEMPDIR'].'/.backwpup_running')) {
-			job_end();
-			break 2;
-		}
-		//Set next step
-		if (!$_SESSION['WORKING'][$step]['DONE'] and !isset($_SESSION['WORKING'][$step]['STEP_TRY'])) {
-			$_SESSION['WORKING']['ACTIVE_STEP']=$step;
-			$_SESSION['WORKING'][$step]['STEP_TRY']=0;
-		} else {
-			continue;
-		}
-		//Run next step
-		if ($_SESSION['WORKING']['ACTIVE_STEP']==$step) {
-			$_SESSION['WORKING'][$step]['STEP_TRY']=$_SESSION['WORKING'][$step]['STEP_TRY']+1;
-			if (function_exists(strtolower($step))) {
-				$func=call_user_func(strtolower($step));
-				if ($func)
-					$_SESSION['WORKING'][$step]['DONE']=true;
-				else
-					break;
-			} elseif ($_SESSION['WP']['WP_DEBUG']) {
-				trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_ERROR);
-				$_SESSION['WORKING'][$step]['DONE']=true;
-				break;
-			} else {
-				$_SESSION['WORKING'][$step]['DONE']=true;
-				break;
-			}
-			if ($_SESSION['WORKING'][$step]['STEP_TRY']>=3) {
-				$_SESSION['WORKING'][$step]['DONE']=true;
-				break;
-			}
-		} 
+	//jump over done steps
+	if ($_SESSION['WORKING'][$step]['DONE'])
+		continue;
+	//Set next step
+	if (!$_SESSION['WORKING'][$step]['DONE'] and empty($_SESSION['WORKING'][$step]['STEP_TRY'])) {
+		$_SESSION['WORKING']['ACTIVE_STEP']=$step;
+		$_SESSION['WORKING'][$step]['DONE']=false;
+		$_SESSION['WORKING'][$step]['STEP_TRY']=0;
 	}
+	//Run next step
+	if ($_SESSION['WORKING']['ACTIVE_STEP']==$step) {
+		if (function_exists(strtolower($step))) {
+			while ($_SESSION['WORKING'][$step]['STEP_TRY']<=3) {
+				$_SESSION['WORKING'][$step]['STEP_TRY']=$_SESSION['WORKING'][$step]['STEP_TRY']+1;
+				$func=call_user_func(strtolower($step));
+				if ($_SESSION['WORKING'][$step]['DONE']) 
+					break;
+			}
+			$_SESSION['WORKING'][$step]['DONE']=true;
+		} else {
+			trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_ERROR);
+			$_SESSION['WORKING'][$step]['DONE']=true;
+		}
+		
+	} 
 }
+
 //close mysql
 mysql_close($mysqlconlink);
 ?>

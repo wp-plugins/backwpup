@@ -52,7 +52,7 @@ define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5Y
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
-require_once(dirname(__FILE__).'/php-functions.php');
+require_once(dirname(__FILE__).'/backwpup-functions.php');
 //Plugin activate
 register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate

@@ -12,9 +12,9 @@ if (!defined('ABSPATH')) {
 
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
-<?php endif; ?>
-	<input type="hidden" name="logfile" value="<?php echo $_GET['logfile']; ?>" />
-	<?PHP
+<?php endif; 
+	if (isset($_GET['logfile']))
+		echo "<input type=\"hidden\" name=\"logfile\" value=\"".trim($_GET['logfile'])."\" />";
 	wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
 		echo '<div id="showworking">';

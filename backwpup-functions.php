@@ -132,6 +132,10 @@ function backwpup_plugin_activate() {
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
+	if (!isset($cfg['mailhost'])) $cfg['mailhost']='';
+	if (!isset($cfg['mailsecure'])) $cfg['mailsecure']='';
+	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
+	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
 	if (!isset($cfg['logfilelist']) or !is_bool($cfg['logfilelist'])) $cfg['logfilelist']=false;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
@@ -195,12 +199,10 @@ function backwpup_cron() {
 		$infile=unserialize(trim($runningfile));
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
-			curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
+			curl_setopt($ch,CURLOPT_URL,plugins_url('job/jobrun.php',__FILE__));
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-			curl_setopt($ch,CURLOPT_POST,true);
-			curl_setopt($ch,CURLOPT_POSTFIELDS,array('BackWPupSession'=>$infile['SID']));
 			curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
 			curl_exec($ch);
 			curl_close($ch);

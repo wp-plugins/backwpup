@@ -34,6 +34,8 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			$jobdest=$_REQUEST['jobdest'];
 		} else {
 			$jobdests=$this->get_dest_list();
+			if (empty($jobdests))
+				$jobdests=array(',');
 			$jobdest=$jobdests[0];
 			$_REQUEST['jobdest']=$jobdests[0];
 		}
@@ -251,6 +253,8 @@ class BackWPup_Backups_Table extends WP_List_Table {
 //get backup files and infos
 function backwpup_get_backup_files($jobid,$dest) {
 	global $backwpup_message;
+	if (empty($jobid) or !in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))))
+		return false;
 	$jobs=get_option('backwpup_jobs'); //Load jobs
 	$jobvalue=$jobs[$jobid];
 	$filecounter=0;

@@ -1,6 +1,6 @@
 <?PHP
 // don't load directly
-if (!defined('BACKWPUP_JOBRUN_FILE')) {
+if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
 	die();
@@ -138,8 +138,8 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_backtime_mins']='5';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			$fdmain=fopen(trailingslashit(ABSPATH).'.maintenance','w');
-			fwrite($fdmain,'<?php $upgrading = ' . time() . '; ?>');
+			$fdmain=fopen(trailingslashit($_SESSION['WP']['ABSPATH']).'.maintenance','w');
+			fwrite($fdmain,'<?php $upgrading = '.time().'; ?>');
 			fclose($fdmain);
 		}
 	} else {
@@ -151,15 +151,23 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_activate']='off';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			@unlink(trailingslashit(ABSPATH).'.maintenance');
+			unlink(trailingslashit($_SESSION['WP']['ABSPATH']).'.maintenance');
 		}
 	}
 }
 
 function update_working_file() {
-	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
+	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
+		$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
+		return false;
+	}
+	$pid=0;
+	if (function_exists('posix_getpid'))
+		$pid=posix_getpid();
+	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid)));
 	fclose($fd);
+	return true;
 }
 
 //function for PHP error handling
@@ -226,11 +234,7 @@ function joberrorhandler() {
 	}
 
 	//write working file
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running')) {
-		update_working_file();
-	} else {
-		$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
-	}	
+	update_working_file();
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
 		$_SESSION['WORKING']['GOTO']='NEXT';
@@ -270,8 +274,8 @@ function job_end() {
 		$filesize=0;
 
 	//clean up
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running')) 
-		unlink($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running');
+	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+		unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 	else
 		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
 	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))
@@ -282,17 +286,16 @@ function job_end() {
 		unlink($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	
 	$jobs=get_option('backwpup_jobs');
-	$jobs[$_SESSION['JOB']['ID']]['lastrun']=$jobs[$_SESSION['JOB']['ID']]['starttime']+$_SESSION['WP']['TIMEDIFF'];
-	$_SESSION['JOB']['lastrun']=$jobs[$_SESSION['JOB']['ID']]['lastrun'];
-	$jobs[$_SESSION['JOB']['ID']]['lastruntime']=time()-$_SESSION['JOB']['starttime'];
-	$_SESSION['JOB']['lastruntime']=$jobs[$_SESSION['JOB']['ID']]['lastruntime'];
-	$jobs[$_SESSION['JOB']['ID']]['starttime']='';
+	$jobs[$_SESSION['JOB']['jobid']]['lastrun']=$jobs[$_SESSION['JOB']['jobid']]['starttime']+$_SESSION['WP']['TIMEDIFF'];
+	$_SESSION['JOB']['lastrun']=$jobs[$_SESSION['JOB']['jobid']]['lastrun'];
+	$jobs[$_SESSION['JOB']['jobid']]['lastruntime']=time()-$_SESSION['JOB']['starttime'];
+	$_SESSION['JOB']['lastruntime']=$jobs[$_SESSION['JOB']['jobid']]['lastruntime'];
+	$jobs[$_SESSION['JOB']['jobid']]['starttime']='';
 	if (!empty($_SESSION['JOB']['lastbackupdownloadurl']))
-		$jobs[$_SESSION['JOB']['ID']]['lastbackupdownloadurl']=$_SESSION['JOB']['lastbackupdownloadurl'];
+		$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']=$_SESSION['JOB']['lastbackupdownloadurl'];
 	else
-		$jobs[$_SESSION['JOB']['ID']]['lastbackupdownloadurl']='';
+		$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']='';
 	update_option('backwpup_jobs',$jobs); //Save Settings
-	$_SESSION['WORKING']['FINISHED']=true;
 	
 	//write heder info
 	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
@@ -333,7 +336,7 @@ function job_end() {
 		$_SESSION['STATIC']['LOGFILE']=$_SESSION['STATIC']['LOGFILE'].'.gz';
 		
 		$jobs=get_option('backwpup_jobs');
-		$jobs[$_SESSION['JOB']['ID']]['logfile']=$_SESSION['STATIC']['LOGFILE'];
+		$jobs[$_SESSION['JOB']['jobid']]['logfile']=$_SESSION['STATIC']['LOGFILE'];
 		update_option('backwpup_jobs',$jobs); //Save Settings
 	}
 	
@@ -389,23 +392,19 @@ function job_end() {
 	
 	//Destroy session
 	$_SESSION = array();
-	if (ini_get("session.use_cookies")) {
-		$params = session_get_cookie_params();
-		setcookie(session_name(), '', time() - 42000, $params["path"],
-			$params["domain"], $params["secure"], $params["httponly"]
-		);
-	}
 	session_destroy();
 }
 
 // execute on script job shutdown
 function job_shutdown() {
+	if (empty($_SESSION)) //nothing on empy session
+		return;
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if ($lasterror['type']==E_ERROR) {
 		$_SESSION['WORKING']['GOTO']='NEXT';
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-		fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span style=\"background-color:red;\">[ERROR]".$lasterror['message']."</span><br />\n");
+		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
 		fclose($fd);
 		//write new log header
 		$logheader=read_logheader();
@@ -422,22 +421,19 @@ function job_shutdown() {
 		}
 		fclose($fd);
 	}
+	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
+	fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
+	fclose($fd);
 	//Close session
-	$BackWPupSession=session_id();
 	session_write_close();
 	//Excute jobrun again
-	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running'))
+	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'))
 		return;
-	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-	fwrite($fd,"<span style=\"background-color:c3c3c3;\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
-	fclose($fd);
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	curl_setopt($ch,CURLOPT_POST,true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS,array('BackWPupSession'=>$BackWPupSession));
 	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
 	curl_exec($ch);
 	curl_close($ch);

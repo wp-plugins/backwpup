@@ -30,6 +30,8 @@ function backwpup_jobstart($jobid='') {
 	session_cache_expire(30);
 	// give the session a name
 	session_name('BackWPupSession');
+	//delete session cookie
+	session_set_cookie_params(0);
 	// start session
 	session_start();
 	//clean session
@@ -77,9 +79,7 @@ function backwpup_jobstart($jobid='') {
 	//Set config data
 	$_SESSION['CFG']=get_option('backwpup');
 	//Set job data
-	$jobs=get_option('backwpup_jobs');
-	$_SESSION['JOB']=backwpup_check_job_vars($jobs[$jobid],$jobid);
-	$_SESSION['JOB']['ID']=$jobid; // must on secend (overwrite)
+	$_SESSION['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data
 	$_SESSION['STATIC']['JOBRUNURL']=plugins_url('jobrun.php',__FILE__);
 	$_SESSION['STATIC']['TEMPDIR']=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/'; //PHP 5.2.1 sys_get_temp_dir
@@ -131,7 +131,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
-	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$_SESSION['JOB']['ID']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$_SESSION['JOB']['jobid']."\" />\n");
 	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$_SESSION['JOB']['name']."\" />\n");
 	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$_SESSION['JOB']['type']."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
@@ -144,15 +144,16 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 	fclose($fd);
 	//write working file
-	$fd=fopen($_SESSION['STATIC']['TEMPDIR'].'.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['ID'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
+	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
 	fclose($fd);
 	//Set job start settings
-	$jobs[$_SESSION['JOB']['ID']]['starttime']=time(); //set start time for job
-	$_SESSION['JOB']['starttime']=$jobs[$_SESSION['JOB']['ID']]['starttime'];
-	$jobs[$_SESSION['JOB']['ID']]['logfile']=$_SESSION['STATIC']['LOGFILE'];	   //Set current logfile
-	$jobs[$_SESSION['JOB']['ID']]['cronnextrun']=backwpup_cron_next($jobs[$_SESSION['JOB']['ID']]['cron']);  //set next run
-	$jobs[$_SESSION['JOB']['ID']]['lastbackupdownloadurl']='';
+	$jobs=get_option('backwpup_jobs');
+	$jobs[$_SESSION['JOB']['jobid']]['starttime']=time(); //set start time for job
+	$_SESSION['JOB']['starttime']=$jobs[$_SESSION['JOB']['jobid']]['starttime'];
+	$jobs[$_SESSION['JOB']['jobid']]['logfile']=$_SESSION['STATIC']['LOGFILE'];	   //Set current logfile
+	$jobs[$_SESSION['JOB']['jobid']]['cronnextrun']=backwpup_cron_next($jobs[$_SESSION['JOB']['jobid']]['cron']);  //set next run
+	$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']='';
 	$_SESSION['JOB']['lastbackupdownloadurl']='';
 	update_option('backwpup_jobs',$jobs); //Save job Settings	
 	//Set todo
@@ -196,8 +197,6 @@ function backwpup_jobstart($jobid='') {
 		//set Backup file Name
 		$_SESSION['STATIC']['backupfile']=$_SESSION['JOB']['fileprefix'].date_i18n('Y-m-d_H-i-s').$_SESSION['JOB']['fileformart'];
 	}
-	//Set job as not finished
-	$_SESSION['WORKING']['FINISHED']=false;
 	//build working steps
 	$_SESSION['WORKING']['STEPS']=array();
 	//setup job steps
@@ -226,21 +225,16 @@ function backwpup_jobstart($jobid='') {
 	foreach($_SESSION['WORKING']['STEPS'] as $step) 
 		$_SESSION['WORKING'][$step]['DONE']=false;
 	//Close session
-	$BackWPupSession=session_id();
 	session_write_close();
 	//Run job
-	if (!empty($_SESSION['STATIC']['JOBRUNURL']) and !empty($BackWPupSession)) {
-		$ch=curl_init();
-		curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
-		curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-		curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-		curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-		curl_setopt($ch,CURLOPT_POST,true);
-		curl_setopt($ch,CURLOPT_POSTFIELDS,array('BackWPupSession'=>$BackWPupSession));
-		curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-		curl_exec($ch);
-		curl_close($ch);
-	}
+	$ch=curl_init();
+	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+	curl_exec($ch);
+	curl_close($ch);
 	return $_SESSION['STATIC']['LOGFILE'];
 }
 ?>
