@@ -55,6 +55,7 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['WP']['WP_THEMES_DIR']=trailingslashit(WP_CONTENT_DIR).'themes/';
 	$_SESSION['WP']['WP_UPLOAD_DIR']=backwpup_get_upload_dir();
 	$_SESSION['WP']['WPINC']=WPINC;
+	$_SESSION['WP']['MULTISITE']=is_multisite();
 	//Load Translation
 	if (!empty($_SESSION['WP']['WPLANG']) and is_file(dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po')) {
 		$file = fopen (dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po', "r");
@@ -96,18 +97,24 @@ function backwpup_jobstart($jobid='') {
 		}
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if($file = fopen($_SESSION['CFG']['dirlogs'].'.htaccess', 'w')) {
-				fwrite($file, "Order allow,deny\ndeny from all");
-				fclose($file);
+			if (!is_file($_SESSION['CFG']['dirlogs'].'.htaccess')) {
+				if($file = fopen($_SESSION['CFG']['dirlogs'].'.htaccess', 'w')) {
+					fwrite($file, "Order allow,deny\ndeny from all");
+					fclose($file);
+				}
 			}
 		} else {
-			if($file = fopen($_SESSION['CFG']['dirlogs'].'index.html', 'w')) {
-				fwrite($file,"\n");
-				fclose($file);
+			if (!is_file($_SESSION['CFG']['dirlogs'].'index.html')) {
+				if($file = fopen($_SESSION['CFG']['dirlogs'].'index.html', 'w')) {
+					fwrite($file,"\n");
+					fclose($file);
+				}
 			}
-			if($file = fopen($_SESSION['CFG']['dirlogs'].'index.php', 'w')) {
-				fwrite($file,"\n");
-				fclose($file);
+			if (!is_file($_SESSION['CFG']['dirlogs'].'index.php')) {
+				if($file = fopen($_SESSION['CFG']['dirlogs'].'index.php', 'w')) {
+					fwrite($file,"\n");
+					fclose($file);
+				}
 			}
 		}			
 	}
@@ -145,7 +152,7 @@ function backwpup_jobstart($jobid='') {
 	fclose($fd);
 	//write working file
 	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'])));
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
 	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
@@ -161,32 +168,40 @@ function backwpup_jobstart($jobid='') {
 	//only for jos that makes backups
 	if (in_array('FILE',$_SESSION['STATIC']['TODO']) or in_array('DB',$_SESSION['STATIC']['TODO']) or in_array('WPEXP',$_SESSION['STATIC']['TODO'])) {
 		//set Backup Dir if not set
-		if (empty($_SESSION['JOB']['backupdir']))
+		if (empty($_SESSION['JOB']['backupdir'])) {
 			$_SESSION['JOB']['backupdir']=$_SESSION['STATIC']['TEMPDIR'];
-		//clear path
-		$_SESSION['JOB']['backupdir']=rtrim(str_replace('\\','/',$_SESSION['JOB']['backupdir']),'/').'/'; 
-		//create backup dir if it not exists
-		if (!is_dir($_SESSION['JOB']['backupdir'])) {
-			if (!mkdir($_SESSION['JOB']['backupdir'],0755,true)) {
-				sprintf(__('Can not create folder for backup files: %1$s','backwpup'),$_SESSION['JOB']['backupdir']);
-				return false;
+		} else {
+			//clear path
+			$_SESSION['JOB']['backupdir']=rtrim(str_replace('\\','/',$_SESSION['JOB']['backupdir']),'/').'/'; 
+			//create backup dir if it not exists
+			if (!is_dir($_SESSION['JOB']['backupdir'])) {
+				if (!mkdir($_SESSION['JOB']['backupdir'],0755,true)) {
+					sprintf(__('Can not create folder for backup files: %1$s','backwpup'),$_SESSION['JOB']['backupdir']);
+					return false;
+				}
+				//create .htaccess for apache and index.html for other
+				if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+					if (!is_file($_SESSION['JOB']['backupdir'].'.htaccess')) {
+						if($file = fopen($_SESSION['JOB']['backupdir'].'.htaccess', 'w')) {
+							fwrite($file, "Order allow,deny\ndeny from all");
+							fclose($file);
+						}
+					}
+				} else {
+					if (!is_file($_SESSION['JOB']['backupdir'].'index.html')) {
+						if($file = fopen($_SESSION['JOB']['backupdir'].'index.html', 'w')) {
+							fwrite($file,"\n");
+							fclose($file);
+						}
+					}
+					if (!is_file($_SESSION['JOB']['backupdir'].'index.php')) {
+						if($file = fopen($_SESSION['JOB']['backupdir'].'index.php', 'w')) {
+							fwrite($file,"\n");
+							fclose($file);
+						}
+					}
+				}			
 			}
-			//create .htaccess for apache and index.html for other
-			if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-				if($file = fopen($_SESSION['JOB']['backupdir'].'.htaccess', 'w')) {
-					fwrite($file, "Order allow,deny\ndeny from all");
-					fclose($file);
-				}
-			} else {
-				if($file = fopen($_SESSION['JOB']['backupdir'].'index.html', 'w')) {
-					fwrite($file,"\n");
-					fclose($file);
-				}
-				if($file = fopen($_SESSION['JOB']['backupdir'].'index.php', 'w')) {
-					fwrite($file,"\n");
-					fclose($file);
-				}
-			}			
 		}
 		//check backup dir				
 		if (!is_writable($_SESSION['JOB']['backupdir'])) {
@@ -197,6 +212,9 @@ function backwpup_jobstart($jobid='') {
 		//set Backup file Name
 		$_SESSION['STATIC']['backupfile']=$_SESSION['JOB']['fileprefix'].date_i18n('Y-m-d_H-i-s').$_SESSION['JOB']['fileformart'];
 	}
+	//set ERROR and WARNINGS counter
+	$_SESSION['WORKING']['WARNING']=0;
+	$_SESSION['WORKING']['ERROR']=0;
 	//build working steps
 	$_SESSION['WORKING']['STEPS']=array();
 	//setup job steps

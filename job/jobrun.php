@@ -115,7 +115,7 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 			while ($_SESSION['WORKING'][$step]['STEP_TRY']<=3) {
 				$_SESSION['WORKING'][$step]['STEP_TRY']=$_SESSION['WORKING'][$step]['STEP_TRY']+1;
 				$func=call_user_func(strtolower($step));
-				if ($_SESSION['WORKING'][$step]['DONE']) 
+				if (isset($_SESSION['WORKING'][$step]['DONE']) && $_SESSION['WORKING'][$step]['DONE']) 
 					break;
 			}
 			$_SESSION['WORKING'][$step]['DONE']=true;

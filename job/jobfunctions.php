@@ -21,32 +21,6 @@ function _e($message,$domain='backwpup') {
 	echo $message;
 }
 
-function read_logheader() {
-	$headers=array("backwpup_version" => "version","backwpup_logtime" => "logtime","backwpup_errors" => "errors","backwpup_warnings" => "warnings","backwpup_jobid" => "jobid","backwpup_jobname" => "name","backwpup_jobtype" => "type","backwpup_jobruntime" => "runtime","backwpup_backupfilesize" => "backupfilesize");
-	//Read file
-	if (strtolower(substr($_SESSION['STATIC']['LOGFILE'],-3))==".gz") {
-		$fp = gzopen( $_SESSION['STATIC']['LOGFILE'], 'r' );
-		$file_data = gzread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
-		gzclose( $fp );
-	} else {
-		$fp = fopen( $_SESSION['STATIC']['LOGFILE'], 'r' );
-		$file_data = fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
-		fclose( $fp );
-	}
-	//get data form file
-	foreach ($headers as $keyword => $field) {
-		preg_match('/(<meta name="'.$keyword.'" content="(.*)" \/>)/i',$file_data,$content);
-		if (!empty($content))
-			$joddata[$field]=$content[2];
-		else
-			$joddata[$field]='';
-	}
-	if (empty($joddata['logtime']))
-		$joddata['logtime']=filectime($_SESSION['STATIC']['LOGFILE']);
-
-	return $joddata;
-}
-
 function exists_option($option='backwpup_jobs') {
 	$query="SELECT option_value as value FROM ".$_SESSION['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
@@ -165,7 +139,7 @@ function update_working_file() {
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
 	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid)));
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'])));
 	fclose($fd);
 	return true;
 }
@@ -173,59 +147,61 @@ function update_working_file() {
 //function for PHP error handling
 function joberrorhandler() {
 	$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
-	//genrate timestamp
-	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
+	$adderrorwarning=false;
 
 	switch ($args[0]) {
 	case E_NOTICE:
 	case E_USER_NOTICE:
-		$massage=$timestamp."<span>".$args[1]."</span>";
+		$massage="<span>".$args[1]."</span>";
 		break;
 	case E_WARNING:
 	case E_USER_WARNING:
-		$logheader=read_logheader(); //read warnig count from log header
-		$warnings=$logheader['warnings']+1;
-		$massage=$timestamp."<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
+		$_SESSION['WORKING']['WARNING']=$_SESSION['WORKING']['WARNING']+1;
+		$adderrorwarning=true;
+		$massage="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_ERROR: 
 	case E_USER_ERROR:
-		$logheader=read_logheader(); //read error count from log header
-		$errors=$logheader['errors']+1;
-		$massage=$timestamp."<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
+		$_SESSION['WORKING']['ERROR']=$_SESSION['WORKING']['ERROR']+1;
+		$adderrorwarning=true;
+		$massage="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_DEPRECATED:
 	case E_USER_DEPRECATED:
-		$massage=$timestamp."<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
+		$massage="<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_STRICT:
-		$massage=$timestamp."<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
+		$massage="<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_RECOVERABLE_ERROR:
-		$massage=$timestamp."<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
+		$massage="<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
 	default:
-		$massage=$timestamp."<span>[".$args[0]."] ".$args[1]."</span>";
+		$massage="<span>[".$args[0]."] ".$args[1]."</span>";
 		break;
 	}
 
+	//genrate timestamp
+	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
+	
 	//wirte log file
 	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-	fwrite($fd,$massage."<br />\n");
+	fwrite($fd,$timestamp.$massage."<br />\n");
 	fclose($fd);
 
 	//write new log header
-	if (isset($errors) or isset($warnings)) {
+	if ($adderrorwarning) {
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
 				break;
 			}
-			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false and isset($warnings)) {
+			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$warnings."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$_SESSION['WORKING']['WARNING']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -237,7 +213,6 @@ function joberrorhandler() {
 	update_working_file();
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
-		$_SESSION['WORKING']['GOTO']='NEXT';
 		die();
 	}
 	
@@ -247,6 +222,7 @@ function joberrorhandler() {
 
 //job end function
 function job_end() {
+	global $mysqlconlink;
 	//delete old logs
 	if (!empty($_SESSION['CFG']['maxlogs'])) {
 		if ( $dir = opendir($_SESSION['CFG']['dirlogs']) ) { //make file list
@@ -340,10 +316,9 @@ function job_end() {
 		update_option('backwpup_jobs',$jobs); //Save Settings
 	}
 	
-	$logdata=read_logheader();
 	//Send mail with log
 	$sendmail=false;
-	if ($logdata['errors']>0 and $_SESSION['JOB']['mailerroronly'] and !empty($_SESSION['JOB']['mailaddresslog']))
+	if ($_SESSION['WORKING']['ERROR']>0 and $_SESSION['JOB']['mailerroronly'] and !empty($_SESSION['JOB']['mailaddresslog']))
 		$sendmail=true;
 	if (!$_SESSION['JOB']['mailerroronly'] and !empty($_SESSION['JOB']['mailaddresslog']))
 		$sendmail=true;
@@ -373,12 +348,12 @@ function job_end() {
 			$phpmailer->IsMail();
 		}
 		
-		$mailbody=__("Jobname:","backwpup")." ".$logdata['name']."\n";
-		$mailbody.=__("Jobtype:","backwpup")." ".$logdata['type']."\n";
-		if (!empty($logdata['errors']))
-			$mailbody.=__("Errors:","backwpup")." ".$logdata['errors']."\n";
-		if (!empty($logdata['warnings']))
-			$mailbody.=__("Warnings:","backwpup")." ".$logdata['warnings']."\n";
+		$mailbody=__("Jobname:","backwpup")." ".$_SESSION['JOB']['name']."\n";
+		$mailbody.=__("Jobtype:","backwpup")." ".$_SESSION['JOB']['type']."\n";
+		if (!empty($_SESSION['WORKING']['ERROR']))
+			$mailbody.=__("Errors:","backwpup")." ".$_SESSION['WORKING']['ERROR']."\n";
+		if (!empty($_SESSION['WORKING']['WARNINGS']))
+			$mailbody.=__("Warnings:","backwpup")." ".$_SESSION['WORKING']['WARNINGS']."\n";
 		
 		$phpmailer->From     = $_SESSION['CFG']['mailsndemail'];
 		$phpmailer->FromName = $_SESSION['CFG']['mailsndname'];
@@ -393,28 +368,28 @@ function job_end() {
 	//Destroy session
 	$_SESSION = array();
 	session_destroy();
+	mysql_close($mysqlconlink);
+	die();
 }
 
 // execute on script job shutdown
 function job_shutdown() {
-	if (empty($_SESSION)) //nothing on empy session
+	if (empty($_SESSION['STATIC']['LOGFILE'])) //nothing on empy session
 		return;
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if ($lasterror['type']==E_ERROR) {
-		$_SESSION['WORKING']['GOTO']='NEXT';
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
 		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
 		fclose($fd);
 		//write new log header
-		$logheader=read_logheader();
-		$errors=$logheader['errors']+1;
+		$_SESSION['WORKING']['ERROR']=$_SESSION['WORKING']['ERROR']+1;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false and isset($errors)) {
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$errors."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
