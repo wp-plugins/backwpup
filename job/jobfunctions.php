@@ -256,9 +256,9 @@ function job_end() {
 		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
 	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))
 		unlink($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql');
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))	
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.' . date( 'Y-m-d' ) . '.xml'))	
 		unlink($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
-	if ($_SESSION['JOB']['backupdir']!=$_SESSION['STATIC']['TEMPDIR'] and is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) 
+	if ($_SESSION['JOB']['backupdir']==$_SESSION['STATIC']['TEMPDIR'] and is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) 
 		unlink($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	
 	$jobs=get_option('backwpup_jobs');

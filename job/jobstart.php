@@ -44,8 +44,13 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['WP']['DB_CHARSET']=DB_CHARSET;
 	$_SESSION['WP']['DB_COLLATE']=DB_COLLATE;
 	$_SESSION['WP']['OPTIONS_TABLE']=$wpdb->options;
+	$_SESSION['WP']['TABLE_PREFIX']=$wpdb->prefix;
 	$_SESSION['WP']['WP_DEBUG']=WP_DEBUG;
 	$_SESSION['WP']['BLOGNAME']=get_bloginfo('name');
+	if (defined('WP_SITEURL'))
+		$_SESSION['WP']['SITEURL']=trailingslashit(WP_SITEURL);
+	else
+		$_SESSION['WP']['SITEURL']=trailingslashit(get_option('siteurl'));
 	$_SESSION['WP']['TIMEDIFF']=current_time('timestamp')-time();
 	$_SESSION['WP']['WPLANG']=WPLANG;
 	//WP folder
@@ -167,6 +172,9 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['STATIC']['TODO']=explode('+',$_SESSION['JOB']['type']);
 	//only for jos that makes backups
 	if (in_array('FILE',$_SESSION['STATIC']['TODO']) or in_array('DB',$_SESSION['STATIC']['TODO']) or in_array('WPEXP',$_SESSION['STATIC']['TODO'])) {
+		//make emty file list
+		$_SESSION['WORKING']['FILELIST']=array();
+		$_SESSION['WORKING']['ALLFILESIZE']=0;
 		//set Backup Dir if not set
 		if (empty($_SESSION['JOB']['backupdir'])) {
 			$_SESSION['JOB']['backupdir']=$_SESSION['STATIC']['TEMPDIR'];
