@@ -103,25 +103,13 @@ function backwpup_jobstart($jobid='') {
 		}
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($_SESSION['CFG']['dirlogs'].'.htaccess')) {
-				if($file = fopen($_SESSION['CFG']['dirlogs'].'.htaccess', 'w')) {
-					fwrite($file, "Order allow,deny\ndeny from all");
-					fclose($file);
-				}
-			}
+			if (!is_file($_SESSION['CFG']['dirlogs'].'.htaccess')) 
+				file_put_contents($_SESSION['CFG']['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($_SESSION['CFG']['dirlogs'].'index.html')) {
-				if($file = fopen($_SESSION['CFG']['dirlogs'].'index.html', 'w')) {
-					fwrite($file,"\n");
-					fclose($file);
-				}
-			}
-			if (!is_file($_SESSION['CFG']['dirlogs'].'index.php')) {
-				if($file = fopen($_SESSION['CFG']['dirlogs'].'index.php', 'w')) {
-					fwrite($file,"\n");
-					fclose($file);
-				}
-			}
+			if (!is_file($_SESSION['CFG']['dirlogs'].'index.html')) 
+				file_put_contents($_SESSION['CFG']['dirlogs'].'index.html',"\n");
+			if (!is_file($_SESSION['CFG']['dirlogs'].'index.php'))
+				file_put_contents($_SESSION['CFG']['dirlogs'].'index.php',"\n");
 		}			
 	}
 	if (!is_writable($_SESSION['CFG']['dirlogs'])) {
@@ -157,9 +145,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
 	fclose($fd);
 	//write working file
-	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
-	fclose($fd);
+	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$_SESSION['JOB']['jobid']]['starttime']=time(); //set start time for job
@@ -190,25 +176,13 @@ function backwpup_jobstart($jobid='') {
 				}
 				//create .htaccess for apache and index.html for other
 				if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-					if (!is_file($_SESSION['JOB']['backupdir'].'.htaccess')) {
-						if($file = fopen($_SESSION['JOB']['backupdir'].'.htaccess', 'w')) {
-							fwrite($file, "Order allow,deny\ndeny from all");
-							fclose($file);
-						}
-					}
+					if (!is_file($_SESSION['JOB']['backupdir'].'.htaccess')) 
+						file_put_contents($_SESSION['JOB']['backupdir'].'.htaccess',"Order allow,deny\ndeny from all");
 				} else {
-					if (!is_file($_SESSION['JOB']['backupdir'].'index.html')) {
-						if($file = fopen($_SESSION['JOB']['backupdir'].'index.html', 'w')) {
-							fwrite($file,"\n");
-							fclose($file);
-						}
-					}
-					if (!is_file($_SESSION['JOB']['backupdir'].'index.php')) {
-						if($file = fopen($_SESSION['JOB']['backupdir'].'index.php', 'w')) {
-							fwrite($file,"\n");
-							fclose($file);
-						}
-					}
+					if (!is_file($_SESSION['JOB']['backupdir'].'index.html')) 
+						file_put_contents($_SESSION['JOB']['backupdir'].'index.html',"\n");
+					if (!is_file($_SESSION['JOB']['backupdir'].'index.php'))
+						file_put_contents($_SESSION['JOB']['backupdir'].'index.php',"\n");
 				}			
 			}
 		}

@@ -14,14 +14,32 @@ function backwpup_working_update() {
 		$runfile=trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
 		if (!empty($runfile)) {
 			$infile=unserialize($runfile);
-			$infile['LOG']=@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
-			@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
+			$infile['LOG']='';
+			if (is_file($infile['LOGFILE'])) {
+				$logfilarray=file($infile['LOGFILE']);
+				for ($i=$_POST['logpos'];$i<count($logfilarray);$i++) {
+					if (trim($logfilarray[$i])!="</body>" and trim($logfilarray[$i])!="</html>")
+						$infile['LOG'].=trim($logfilarray[$i]);
+				}
+				$infile['logpos']=count($logfilarray);
+			}
 			echo json_encode($infile);
 		}
 	} else {
-		$log=@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
-		@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
-		echo json_encode(array('LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>'','ERROR'=>'','STEPSPERSENT'=>100,'STEPPERSENT'=>100));
+		$log='';
+		$logpos='';
+		$logheader['warnings']=0;
+		$logheader['errors']=0;
+		if (is_file(trim($_POST['logfile']))) {
+			$logfilarray=file(trim($_POST['logfile']));
+			for ($i=$_POST['logpos'];$i<count($logfilarray);$i++) {
+				if (trim($logfilarray[$i])!="</body>" and trim($logfilarray[$i])!="</html>")
+					$log.=trim($logfilarray[$i]);
+			}
+			$logpos=count($logfilarray);
+			$logheader=backwpup_read_logheader(trim($_POST['logfile']));
+		}
+		echo json_encode(array('logpos'=>$logpos,'LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>$logheader['warnings'],'ERROR'=>$logheader['errors'],'STEPSPERSENT'=>100,'STEPPERSENT'=>100));
 	}
 	die();
 }

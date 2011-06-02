@@ -112,9 +112,7 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_backtime_mins']='5';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			$fdmain=fopen(trailingslashit($_SESSION['WP']['ABSPATH']).'.maintenance','w');
-			fwrite($fdmain,'<?php $upgrading = '.time().'; ?>');
-			fclose($fdmain);
+			file_put_contents(trailingslashit($_SESSION['WP']['ABSPATH']).'.maintenance','<?php $upgrading = '.time().'; ?>');
 		}
 	} else {
 		trigger_error(__('Set Blog to normal Mode','backwpup'),E_USER_NOTICE);
@@ -146,9 +144,7 @@ function update_working_file() {
 		$pid=posix_getpid();
 	$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 	$infile=unserialize(trim($runningfile));		
-	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent)));
-	fclose($fd);
+	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent)));
 	return true;
 }
 
@@ -160,44 +156,39 @@ function joberrorhandler() {
 	switch ($args[0]) {
 	case E_NOTICE:
 	case E_USER_NOTICE:
-		$massage="<span>".$args[1]."</span>";
+		$message="<span>".$args[1]."</span>";
 		break;
 	case E_WARNING:
 	case E_USER_WARNING:
 		$_SESSION['WORKING']['WARNING']++;
 		$adderrorwarning=true;
-		$massage="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
+		$message="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_ERROR: 
 	case E_USER_ERROR:
 		$_SESSION['WORKING']['ERROR']++;
 		$adderrorwarning=true;
-		$massage="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
+		$message="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_DEPRECATED:
 	case E_USER_DEPRECATED:
-		$massage="<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
+		$message="<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_STRICT:
-		$massage="<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
+		$message="<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_RECOVERABLE_ERROR:
-		$massage="<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
+		$message="<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
 	default:
-		$massage="<span>[".$args[0]."] ".$args[1]."</span>";
+		$message="<span>[".$args[0]."] ".$args[1]."</span>";
 		break;
 	}
 
 	//genrate timestamp
 	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
-	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
-	fwrite($fd,$timestamp.$massage."<br />\n");
-	fclose($fd);
 	//wirte log file
-	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-	fwrite($fd,$timestamp.$massage."<br />\n");
-	fclose($fd);
+	file_put_contents($_SESSION['STATIC']['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
 
 	//write new log header
 	if ($adderrorwarning) {
@@ -309,9 +300,7 @@ function job_end() {
 	//Restore error handler
 	restore_error_handler();
 	//logfile end
-	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-	fwrite($fd,"</body>\n</html>\n");
-	fclose($fd);
+	file_put_contents($_SESSION['STATIC']['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
 	//gzip logfile
 	if ($_SESSION['CFG']['gzlogs']) {
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r');
@@ -396,9 +385,7 @@ function job_shutdown() {
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if ($lasterror['type']==E_ERROR) {
-		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
-		fclose($fd);
+		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$_SESSION['WORKING']['ERROR']++;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
@@ -412,16 +399,8 @@ function job_shutdown() {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
-		$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
-		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
-		fclose($fd);
 	}
-	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
-	fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
-	fclose($fd);
-	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
-	fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
-	fclose($fd);
+	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	//Close session
 	session_write_close();
 	//Excute jobrun again

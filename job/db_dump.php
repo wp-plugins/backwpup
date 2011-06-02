@@ -7,7 +7,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 
 function db_dump() {
-	trigger_error($_SESSION['WORKING']['DB_DUMP']['STEP_TRY'].'. '.__('Try for database to file...','backwpup'),E_USER_NOTICE);
+	trigger_error($_SESSION['WORKING']['DB_DUMP']['STEP_TRY'].'. '.__('Try for dump database to file...','backwpup'),E_USER_NOTICE);
 	if (!isset($_SESSION['WORKING']['DB_DUMP']['DONETABLE']) or !is_array($_SESSION['WORKING']['DB_DUMP']['DONETABLE']))
 		$_SESSION['WORKING']['DB_DUMP']['DONETABLE']=array();
 	$_SESSION['WORKING']['STEPTODO']=count($_SESSION['JOB']['dbtables']);
