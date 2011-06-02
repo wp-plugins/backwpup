@@ -38,7 +38,7 @@ ini_set('safe_mode','Off');
 // Now user abrot allowed
 ini_set('ignore_user_abort','Off');
 ignore_user_abort(true);
-// set max execution time for script 300=5 min mot webservers
+// set max execution time for script 300=5 min most webservers
 set_time_limit(300);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
@@ -76,6 +76,10 @@ if (!$mysqldblink) {
 	mysql_close($mysqlconlink);
 	die();
 }
+//set som def. vars
+$_SESSION['WORKING']['STEPTODO']=0;
+$_SESSION['WORKING']['STEPDONE']=0;
+$_SESSION['WORKING']['STEPSDONE']=array();
 //update running file
 update_working_file();
 
@@ -95,35 +99,28 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
 	//update running file
 	update_working_file();
-	//check if job aborded
-	if (!is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		job_end();
-		break;
-	}
-	//jump over done steps
-	if ($_SESSION['WORKING'][$step]['DONE'])
-		continue;
 	//Set next step
-	if (!$_SESSION['WORKING'][$step]['DONE'] and empty($_SESSION['WORKING'][$step]['STEP_TRY'])) {
-		$_SESSION['WORKING']['ACTIVE_STEP']=$step;
-		$_SESSION['WORKING'][$step]['DONE']=false;
+	if (!isset($_SESSION['WORKING'][$step]['STEP_TRY']) or empty($_SESSION['WORKING'][$step]['STEP_TRY'])) {
 		$_SESSION['WORKING'][$step]['STEP_TRY']=0;
 	}
+	//ste back step working
+	$_SESSION['WORKING']['STEPDONE']=0;
+	$_SESSION['WORKING']['STEPTODO']=0;
 	//Run next step
-	if ($_SESSION['WORKING']['ACTIVE_STEP']==$step) {
+	if (!in_array($step,$_SESSION['WORKING']['STEPSDONE'])) {
 		if (function_exists(strtolower($step))) {
-			while ($_SESSION['WORKING'][$step]['STEP_TRY']<=3) {
-				$_SESSION['WORKING'][$step]['STEP_TRY']=$_SESSION['WORKING'][$step]['STEP_TRY']+1;
-				$func=call_user_func(strtolower($step));
-				if (isset($_SESSION['WORKING'][$step]['DONE']) && $_SESSION['WORKING'][$step]['DONE']) 
+			while ($_SESSION['WORKING'][$step]['STEP_TRY']<3) {
+				if (in_array($step,$_SESSION['WORKING']['STEPSDONE']))
 					break;
+				$_SESSION['WORKING'][$step]['STEP_TRY']++;
+				$func=call_user_func(strtolower($step));
 			}
-			$_SESSION['WORKING'][$step]['DONE']=true;
+			if ($_SESSION['WORKING'][$step]['STEP_TRY']>=3)
+				trigger_error(__('Step arborted has too many trys!!!','backwpup'),E_USER_ERROR);
 		} else {
 			trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_ERROR);
-			$_SESSION['WORKING'][$step]['DONE']=true;
+			$_SESSION['WORKING']['STEPSDONE'][]=$step;
 		}
-		
 	} 
 }
 

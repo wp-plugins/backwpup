@@ -8,22 +8,28 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 function backup_create() {
 	if ($_SESSION['WORKING']['ALLFILESIZE']==0)
 		return;
+	$_SESSION['WORKING']['STEPTODO']=count($_SESSION['WORKING']['FILELIST']);
+	if (!isset($_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE']))
+		$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE']=0;
+	$_SESSION['WORKING']['STEPDONE']=$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE'];
 		
 	if (strtolower($_SESSION['JOB']['fileformart'])==".zip") { //Zip files
 		if (!class_exists('ZipArchive')) {  //use php zip lib
-			trigger_error(__('Create Backup Zip file...','backwpup'),E_USER_NOTICE);
+			trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive;
 			if ($res=$zip->open($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
-				foreach($_SESSION['WORKING']['FILELIST'] as $files) {
+				for ($i=$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
 					update_working_file();
-					if (!$zip->addFile($files['FILE'], $files['OUTFILE'])) 
-						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$files['OUTFILE'],E_USER_ERROR);
+					if (!$zip->addFile($_SESSION['WORKING']['FILELIST'][$i]['FILE'], $_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'])) 
+						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],E_USER_ERROR);
+					$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE']=$i;
+					$_SESSION['WORKING']['STEPDONE']=$i;
 				}
 				$zip->close();
-				trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
-				$_SESSION['WORKING']['BACKUP_CREATE']['DONE']=true; //set done
+				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
+				$_SESSION['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
 			} else {
-				trigger_error(__('Can not create Backup ZIP file:','backwpup').' '.$res,E_USER_ERROR);
+				trigger_error(__('Can not create backup zip file:','backwpup').' '.$res,E_USER_ERROR);
 			}
 		} else { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $_SESSION['STATIC']['TEMPDIR']);
@@ -31,25 +37,20 @@ function backup_create() {
 				require_once(dirname(__FILE__).'/../libs/pclzip.lib.php');
 			//Create Zip File
 			if (is_array($_SESSION['WORKING']['FILELIST'][0])) {
-				$i=0;
-				foreach($_SESSION['WORKING']['FILELIST'] as $file) { //geneate file list for PCL zip
-					$files[$i][79001]=$file['FILE'];
-					$files[$i][79003]=$file['OUTFILE'];
-					$i++;
-				}
-				need_free_memory(10485760); //10MB free memory for zip
-				trigger_error(__('Create Backup Zip (PclZip) file...','backwpup'),E_USER_NOTICE);
+				trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-				if (0==$zipbackupfile -> create($files,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
-				} else {
-					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
+				for ($i=$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
+					update_working_file();
+					need_free_memory(10485760); //10MB free memory for zip
+					if (0==$zipbackupfile -> add($_SESSION['WORKING']['FILELIST'][$i]['FILE'],PCLZIP_OPT_REMOVE_PATH,str_replace($_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],'',$_SESSION['WORKING']['FILELIST'][$i]['FILE']),PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
+						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'].':'.$zipbackupfile->errorInfo(true),E_USER_ERROR);
+					}
+					$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE']=$i;
+					$_SESSION['WORKING']['STEPDONE']=$i;
 				}
+				trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 			}
 		}
-		$_SESSION['WORKING']['BACKUP_CREATE']['DONE']=true; //set done
-		if ($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))
-			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
 	} elseif (strtolower($_SESSION['JOB']['fileformart'])==".tar.gz" or strtolower($_SESSION['JOB']['fileformart'])==".tar.bz2" or strtolower($_SESSION['JOB']['fileformart'])==".tar") { //tar files
 		
 		if (strtolower($_SESSION['JOB']['fileformart'])=='.tar.gz') {
@@ -61,17 +62,17 @@ function backup_create() {
 		}
 
 		if (!$tarbackup) {
-			trigger_error(__('Can not create TAR Backup file','backwpup'),E_USER_ERROR);
+			trigger_error(__('Can not create tar backup file','backwpup'),E_USER_ERROR);
 			return;
 		} else {
-			trigger_error(__('Create Backup Archive file...','backwpup'),E_USER_NOTICE);
+			trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup archive file...','backwpup'),E_USER_NOTICE);
 		}
 
-		need_free_memory(1048576); //1MB free memory for tar
-
-		foreach($_SESSION['WORKING']['FILELIST'] as $files) {
+		
+		for ($i=$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
 			update_working_file();
-				
+			need_free_memory(2097152); //2MB free memory for tar
+			$files=$_SESSION['WORKING']['FILELIST'][$i];
 			//check file exists
 			if (!is_readable($files['FILE'])) {
 				trigger_error(__('File not readable:','backwpup').' '.$files['FILE'],E_USER_WARNING);
@@ -88,9 +89,9 @@ function backup_create() {
 				$filename=substr($files['OUTFILE'],$dividor+1);
 				$filenameprefix=substr($files['OUTFILE'],0,$dividor);
 				if (strlen($filename)>100)
-					trigger_error(__('File Name to Long to save corectly in TAR Backup Archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
+					trigger_error(__('File name to long to save corectly in tar backup archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
 				if (strlen($filenameprefix)>155)
-					trigger_error(__('File Path to Long to save corectly in TAR Backup Archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
+					trigger_error(__('File path to long to save corectly in tar backup archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
 			}
 			//Set file user/group name if linux
 			$fileowner="Unknown";
@@ -153,6 +154,8 @@ function backup_create() {
 				}
 			}
 			fclose($fd);
+			$_SESSION['WORKING']['BACKUP_CREATE']['DONEFILE']=$i;
+			$_SESSION['WORKING']['STEPDONE']=$i;
 		}
 
 		if (strtolower($_SESSION['JOB']['fileformart'])=='.tar.gz') {
@@ -165,11 +168,10 @@ function backup_create() {
 			fwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
 			fclose($tarbackup);
 		}
-
 		trigger_error(__('Backup Archive file create done!','backwpup'),E_USER_NOTICE);
-		$_SESSION['WORKING']['BACKUP_CREATE']['DONE']=true; //set done
-		if ($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))
-			trigger_error(sprintf(__('Backup Archive File size is %1s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
 	}
+	$_SESSION['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
+	if ($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))
+		trigger_error(sprintf(__('Backup archive file size is %1s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
 }
 ?>

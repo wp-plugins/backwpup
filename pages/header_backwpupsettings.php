@@ -17,7 +17,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['mailuser']=$_POST['mailuser'];
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['disablewpcron']=isset($_POST['disablewpcron']) ? true : false;
-	$cfg['logfilelist']=isset($_POST['logfilelist']) ? true : false;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['gzlogs']=isset($_POST['gzlogs']) ? true : false;
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));

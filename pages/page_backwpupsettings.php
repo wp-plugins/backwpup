@@ -98,13 +98,6 @@ echo '</select>';
 <?PHP _e('Gzip Log files!','backwpup'); ?></label> 
 </fieldset></td>
 </tr>
-<tr valign="top"> 
-<th scope="row"><?PHP _e('File list','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('File list','backwpup'); ?></span></legend><label for="logfilelist"> 
-<input name="logfilelist" type="checkbox" id="logfilelist" value="1" <?php checked($cfg['logfilelist'],true); ?> /> 
-<?PHP _e('Log a detailed file list.','backwpup'); ?></label> 
-</fieldset></td>
-</tr>
 </table>
 <h3><?PHP _e('WP-Cron','backwpup'); ?></h3> 
 <table class="form-table"> 

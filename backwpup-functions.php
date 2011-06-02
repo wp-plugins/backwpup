@@ -136,7 +136,6 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['mailsecure'])) $cfg['mailsecure']='';
 	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
 	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
-	if (!isset($cfg['logfilelist']) or !is_bool($cfg['logfilelist'])) $cfg['logfilelist']=false;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!isset($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
@@ -146,6 +145,7 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['disablewpcron']) or !is_bool($cfg['disablewpcron'])) $cfg['disablewpcron']=false;
 	//remove old option
 	unset($cfg['dirtemp']);
+	unset($cfg['logfilelist']);
 	update_option('backwpup',$cfg);
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
@@ -683,7 +683,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['cronnextrun']) or !is_numeric($jobsettings['cronnextrun']))
 		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);;
 		
-	if (!isset($jobsettings['mailaddresslog']) or!is_string($jobsettings['mailaddresslog']) or false === $pos=strpos($jobsettings['mailaddresslog'],'@') or false === strpos($jobsettings['mailaddresslog'],'.',$pos))
+	if (!isset($jobsettings['mailaddresslog']) or !is_string($jobsettings['mailaddresslog']))
 		$jobsettings['mailaddresslog']=get_option('admin_email');
 
 	if (!isset($jobsettings['mailerroronly']) or !is_bool($jobsettings['mailerroronly']))
@@ -936,7 +936,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['sugarmaxbackups']) or !is_int($jobsettings['sugarmaxbackups']))
 		$jobsettings['sugarmaxbackups']=0;			
 			
-	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']) or false === $pos=strpos($jobsettings['mailaddress'],'@') or false === strpos($jobsettings['mailaddress'],'.',$pos))
+	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']))
 		$jobsettings['mailaddress']='';
 
 	//unset old not nedded vars

@@ -6,12 +6,17 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function db_check() {
-	trigger_error(__('Run Database check...','backwpup'),E_USER_NOTICE);
-
+	trigger_error($_SESSION['WORKING']['DB_CHECK']['STEP_TRY'].'. '.__('Try to run Database check...','backwpup'),E_USER_NOTICE);
+	if (!isset($_SESSION['WORKING']['DB_CHECK']['DONETABLE']) or !is_array($_SESSION['WORKING']['DB_CHECK']['DONETABLE']))
+		$_SESSION['WORKING']['DB_CHECK']['DONETABLE']=array();
+	//Set num of todos
+	$_SESSION['WORKING']['STEPTODO']=sizeof($_SESSION['JOB']['dbtables']);
 	//check tables
 	if (sizeof($_SESSION['JOB']['dbtables'])>0) {
 		maintenance_mode(true);
 		foreach ($_SESSION['JOB']['dbtables'] as $table) {
+			if (in_array($table, $_SESSION['WORKING']['DB_CHECK']['DONETABLE']))
+				continue;
 			$result=mysql_query('CHECK TABLE `'.$table.'` MEDIUM');
 			if (!$result) {
 				trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "CHECK TABLE `".$table."` MEDIUM"),E_USER_ERROR);
@@ -40,12 +45,14 @@ function db_check() {
 				else
 					trigger_error(sprintf(__('Result of table repair for %1$s is: %2$s','backwpup'), $table, $repair['Msg_text']),E_USER_NOTICE);
 			}
+			$_SESSION['WORKING']['DB_CHECK']['DONETABLE'][]=$table;
+			$_SESSION['WORKING']['STEPDONE']=sizeof($_SESSION['WORKING']['DB_CHECK']['DONETABLE']);
 		}
 		maintenance_mode(false);
-		$_SESSION['WORKING']['DB_CHECK']['DONE']=true; //set done
 		trigger_error(__('Database check done!','backwpup'),E_USER_NOTICE);
 	} else {
 		trigger_error(__('No Tables to check','backwpup'),E_USER_WARNING);
 	}
+	$_SESSION['WORKING']['STEPSDONE'][]='DB_CHECK'; //set done
 }
 ?>

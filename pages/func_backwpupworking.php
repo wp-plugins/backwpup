@@ -11,12 +11,17 @@ function backwpup_working_update() {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		die('-1');
 	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-		$runningfile=unserialize(trim($runfile));
-		backwpup_read_logfile(trim($runningfile['LOGFILE']));
+		$runfile=trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
+		if (!empty($runfile)) {
+			$infile=unserialize($runfile);
+			$infile['LOG']=@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
+			@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
+			echo json_encode($infile);
+		}
 	} else {
-		echo '<div id="stopworking"></div>';
-		backwpup_read_logfile($_POST['logfile']);
+		$log=@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
+		@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
+		echo json_encode(array('LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>'','ERROR'=>'','STEPSPERSENT'=>100,'STEPPERSENT'=>100));
 	}
 	die();
 }

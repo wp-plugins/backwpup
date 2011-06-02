@@ -131,15 +131,23 @@ function maintenance_mode($enable = false) {
 }
 
 function update_working_file() {
-	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$_SESSION['WORKING']['ACTIVE_STEP']='JOB_END';
-		return false;
-	}
+	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+		job_end();
+	if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
+		$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
+	else
+		$steppersent=1;
+	if (count($_SESSION['WORKING']['STEPSDONE'])>0)
+		$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
+	else
+		$stepspersent=1;
 	$pid=0;
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
+	$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+	$infile=unserialize(trim($runningfile));		
 	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'])));
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent)));
 	fclose($fd);
 	return true;
 }
@@ -156,13 +164,13 @@ function joberrorhandler() {
 		break;
 	case E_WARNING:
 	case E_USER_WARNING:
-		$_SESSION['WORKING']['WARNING']=$_SESSION['WORKING']['WARNING']+1;
+		$_SESSION['WORKING']['WARNING']++;
 		$adderrorwarning=true;
 		$massage="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_ERROR: 
 	case E_USER_ERROR:
-		$_SESSION['WORKING']['ERROR']=$_SESSION['WORKING']['ERROR']+1;
+		$_SESSION['WORKING']['ERROR']++;
 		$adderrorwarning=true;
 		$massage="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
@@ -183,7 +191,9 @@ function joberrorhandler() {
 
 	//genrate timestamp
 	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
-	
+	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
+	fwrite($fd,$timestamp.$massage."<br />\n");
+	fclose($fd);
 	//wirte log file
 	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
 	fwrite($fd,$timestamp.$massage."<br />\n");
@@ -191,19 +201,22 @@ function joberrorhandler() {
 
 	//write new log header
 	if ($adderrorwarning) {
+		$found=0;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
 				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
-				break;
+				$found++;
 			}
 			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
 				fseek($fd,$filepos);
 				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$_SESSION['WORKING']['WARNING']."\" />",100)."\n");
-				break;
+				$found++;
 			}
+			if ($found>=2)
+				break;
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
@@ -223,6 +236,8 @@ function joberrorhandler() {
 //job end function
 function job_end() {
 	global $mysqlconlink;
+	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPDONE']=0;
 	//delete old logs
 	if (!empty($_SESSION['CFG']['maxlogs'])) {
 		if ( $dir = opendir($_SESSION['CFG']['dirlogs']) ) { //make file list
@@ -250,9 +265,7 @@ function job_end() {
 		$filesize=0;
 
 	//clean up
-	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
-		unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-	else
+	if (!is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
 		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
 	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))
 		unlink($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql');
@@ -364,7 +377,11 @@ function job_end() {
 		$phpmailer->AddAttachment($_SESSION['STATIC']['LOGFILE']);
 		$phpmailer->Send();
 	}
-	
+
+	$_SESSION['WORKING']['STEPDONE']=0;
+	$_SESSION['WORKING']['STEPSDONE'][]='JOB_END'; //set done
+	update_working_file();
+	unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 	//Destroy session
 	$_SESSION = array();
 	session_destroy();
@@ -383,7 +400,7 @@ function job_shutdown() {
 		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
 		fclose($fd);
 		//write new log header
-		$_SESSION['WORKING']['ERROR']=$_SESSION['WORKING']['ERROR']+1;
+		$_SESSION['WORKING']['ERROR']++;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
@@ -395,8 +412,14 @@ function job_shutdown() {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
+		$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
+		fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n");
+		fclose($fd);
 	}
 	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'a');
+	fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
+	fclose($fd);
+	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage','a');
 	fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n");
 	fclose($fd);
 	//Close session

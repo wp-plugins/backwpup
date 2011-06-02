@@ -10,24 +10,21 @@ if (isset($_GET['action']) and $_GET['action']=='runnow' and !empty($_GET['jobid
 	check_admin_referer('runnow-job_'.$jobid);
 	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
 		$backwpup_message=__('A job alredy running!!! Pleace try again if its done.','backwpup');
-		$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-		$runningfile=unserialize(trim($runfile));
-		$_GET['logfile']=$runningfile['LOGFILE'];
+		$_GET['logfile']='';
 	} else {
-		$_GET['logfile']=backwpup_jobstart($jobid);
+		backwpup_jobstart($jobid);
 	}
 }
-elseif (!empty($_GET['logfile'])) {
-	check_admin_referer('view-log_'.basename($_GET['logfile']));
+if (!empty($_GET['logfile'])) {
+	check_admin_referer('view-log_'.basename(trim($_GET['logfile'])));
 }
-elseif (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
+if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
 	$backwpup_message=__('A job is running!!!','backwpup');
-	$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-	$runningfile=unserialize(trim($runfile));
-	$_GET['logfile']=$runningfile['LOGFILE'];
+	$_GET['logfile']='';
 }
-else {
+if (!isset($_GET['action']) and !isset($_GET['logfile']) and empty($backwpup_message)) {
 	$backwpup_message=__('Nothing...','backwpup');
+	$_GET['logfile']='';
 }
 
 //add Help

@@ -7,11 +7,14 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 
 function db_dump() {
-	trigger_error(__('Run Database Dump to file...','backwpup'),E_USER_NOTICE);
+	trigger_error($_SESSION['WORKING']['DB_DUMP']['STEP_TRY'].'. '.__('Try for database to file...','backwpup'),E_USER_NOTICE);
+	if (!isset($_SESSION['WORKING']['DB_DUMP']['DONETABLE']) or !is_array($_SESSION['WORKING']['DB_DUMP']['DONETABLE']))
+		$_SESSION['WORKING']['DB_DUMP']['DONETABLE']=array();
+	$_SESSION['WORKING']['STEPTODO']=count($_SESSION['JOB']['dbtables']);
 	//Set maintenance
 	maintenance_mode(true);
 
-	if (sizeof($_SESSION['JOB']['dbtables'])>0) {
+	if (count($_SESSION['JOB']['dbtables'])>0) {
 		$result=mysql_query("SHOW TABLE STATUS FROM `".$_SESSION['WP']['DB_NAME']."`"); //get table status
 		if (!$result)
 			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$_SESSION['WP']['DB_NAME']."`;"),E_USER_ERROR);
@@ -45,9 +48,13 @@ function db_dump() {
 			fwrite($file, "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n");
 			//make table dumps
 			foreach($_SESSION['JOB']['dbtables'] as $table) {
+				if (in_array($table, $_SESSION['WORKING']['DB_DUMP']['DONETABLE']))
+					continue;
 				trigger_error(__('Dump Database table: ','backwpup').' '.$table,E_USER_NOTICE);
 				need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get more memory if needed
 				_db_dump_table($table,$status[$table],$file);
+				$_SESSION['WORKING']['DB_DUMP']['DONETABLE'][]=$table;
+				$_SESSION['WORKING']['STEPDONE']=count($_SESSION['WORKING']['DB_DUMP']['DONETABLE']);
 			}
 			//for better import with mysql client
 			fwrite($file, "\n");
@@ -74,10 +81,10 @@ function db_dump() {
 		trigger_error(__('Add Database Dump to Backup list:','backwpup').' '.$_SESSION['WP']['DB_NAME'].'.sql '.formatbytes($filestat['size']),E_USER_NOTICE);
 		$_SESSION['WORKING']['ALLFILESIZE']+=$filestat['size'];
 		$_SESSION['WORKING']['FILELIST'][]=array('FILE'=>$_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql','OUTFILE'=>$_SESSION['WP']['DB_NAME'].'.sql','SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
-		$_SESSION['WORKING']['DB_DUMP']['DONE']=true; //set done
 	}
 	//Back from maintenance
 	maintenance_mode(false);
+	$_SESSION['WORKING']['STEPSDONE'][]='DB_DUMP'; //set done
 }
 
 
@@ -113,10 +120,14 @@ function _db_dump_table($table,$status,$file) {
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 
-
+	$i=0;
 	while ($data = mysql_fetch_assoc($result)) {
 		$keys = array();
 		$values = array();
+		if ($_SESSION['WORKING']['DB_DUMP']['DONETABLEROW']>$i) {
+			$i++;
+			continue;
+		}
 		foreach($data as $key => $value) {
 			if (!$_SESSION['JOB']['dbshortinsert'])
 				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
@@ -133,9 +144,11 @@ function _db_dump_table($table,$status,$file) {
 			fwrite($file, "INSERT INTO `".$table."` VALUES ( ".implode(", ",$values)." );\n");
 		else
 			fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
-
+		$_SESSION['WORKING']['DB_DUMP']['DONETABLEROW']=$i;
+		$i++;
 	}
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
+	$_SESSION['WORKING']['DB_DUMP']['DONETABLEROW']=0;
 }
 ?>

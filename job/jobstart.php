@@ -24,6 +24,7 @@ function backwpup_jobstart($jobid='') {
 			sleep(3);
 		}
 	}
+	@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
 	// set the cache limiter to 'nocache'
 	session_cache_limiter('nocache');
 	// set the cache expire to 30 minutes 
@@ -157,7 +158,7 @@ function backwpup_jobstart($jobid='') {
 	fclose($fd);
 	//write working file
 	$fd=fopen(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running','w');
-	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
+	fwrite($fd,serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
 	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
@@ -245,8 +246,6 @@ function backwpup_jobstart($jobid='') {
 	if (in_array('OPTIMIZE',$_SESSION['STATIC']['TODO']))
 		$_SESSION['WORKING']['STEPS'][]='DB_OPTIMIZE';	
 	$_SESSION['WORKING']['STEPS'][]='JOB_END';
-	//setiing first set as active
-	$_SESSION['WORKING']['ACTIVE_STEP']=$_SESSION['WORKING']['STEPS'][0];
 	//mark all as not done
 	foreach($_SESSION['WORKING']['STEPS'] as $step) 
 		$_SESSION['WORKING'][$step]['DONE']=false;

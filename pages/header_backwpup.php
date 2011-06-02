@@ -65,6 +65,7 @@ if (!empty($doaction)) {
 		$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 		$runningfile=unserialize(trim($runfile));
 		unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+		unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
 		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
 			if (posix_kill($runningfile['PID'],SIGKILL))
