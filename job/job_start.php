@@ -88,7 +88,7 @@ function backwpup_jobstart($jobid='') {
 	//Set job data
 	$_SESSION['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data
-	$_SESSION['STATIC']['JOBRUNURL']=plugins_url('jobrun.php',__FILE__);
+	$_SESSION['STATIC']['JOBRUNURL']=plugins_url('job_run.php',__FILE__);
 	$_SESSION['STATIC']['TEMPDIR']=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/'; //PHP 5.2.1 sys_get_temp_dir
 	if (!is_writable($_SESSION['STATIC']['TEMPDIR'])) {
 		_e("Temp dir not writeable","backwpup");
@@ -141,8 +141,9 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,".timestamp {background-color:grey;}\n");
 	fwrite($fd,".warning {background-color:yellow;}\n");
 	fwrite($fd,".error {background-color:red;}\n");
+	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
 	fwrite($fd,"</style>\n");
-	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body style=\"font-family:monospace;font-size:12px;white-space:nowrap;\">\n");
+	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//write working file
 	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
@@ -198,6 +199,10 @@ function backwpup_jobstart($jobid='') {
 	//set ERROR and WARNINGS counter
 	$_SESSION['WORKING']['WARNING']=0;
 	$_SESSION['WORKING']['ERROR']=0;
+	$_SESSION['WORKING']['RESTART']=0;
+	$_SESSION['WORKING']['STEPSDONE']=array();
+	$_SESSION['WORKING']['STEPTODO']=0;
+	$_SESSION['WORKING']['STEPDONE']=0;
 	//build working steps
 	$_SESSION['WORKING']['STEPS']=array();
 	//setup job steps

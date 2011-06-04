@@ -32,14 +32,14 @@ if (!empty($_SESSION) and !file_exists($_SESSION['STATIC']['LOGFILE'])) {
 //Set a constance for not direkt loding in other files
 define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 // get needed functions for the jobrun
-require_once(BACKWPUP_JOBRUN_FOLDER.'jobfunctions.php');
+require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 //disable safe mode
-ini_set('safe_mode','Off');
+@ini_set('safe_mode','Off');
 // Now user abrot allowed
-ini_set('ignore_user_abort','Off');
+@ini_set('ignore_user_abort','Off');
 ignore_user_abort(true);
 // set max execution time for script 300=5 min most webservers
-set_time_limit(300);
+@set_time_limit(300);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
 //set function for PHP user defineid error handling
@@ -55,7 +55,6 @@ $mysqlconlink=mysql_connect($_SESSION['WP']['DB_HOST'], $_SESSION['WP']['DB_USER
 if (!$mysqlconlink) {
     trigger_error(__('No MySQL connection:','backwpup').' ' . mysql_error(),E_USER_ERROR);
 	job_end();
-	die();
 } 
 //set connecten charset
 if (!empty($_SESSION['WP']['DB_CHARSET'])) {
@@ -73,13 +72,7 @@ $mysqldblink = mysql_select_db($_SESSION['WP']['DB_NAME'], $mysqlconlink);
 if (!$mysqldblink) {
     trigger_error(__('No MySQL connection to database:','backwpup').' ' . mysql_error(),E_USER_ERROR);
 	job_end();
-	mysql_close($mysqlconlink);
-	die();
 }
-//set som def. vars
-$_SESSION['WORKING']['STEPTODO']=0;
-$_SESSION['WORKING']['STEPDONE']=0;
-$_SESSION['WORKING']['STEPSDONE']=array();
 //update running file
 update_working_file();
 
@@ -97,6 +90,7 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 
 // Working step by step
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
+	sleep(1);
 	//update running file
 	update_working_file();
 	//Set next step
@@ -109,13 +103,13 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 	//Run next step
 	if (!in_array($step,$_SESSION['WORKING']['STEPSDONE'])) {
 		if (function_exists(strtolower($step))) {
-			while ($_SESSION['WORKING'][$step]['STEP_TRY']<3) {
+			while ($_SESSION['WORKING'][$step]['STEP_TRY']<$_SESSION['CFG']['jobstepretry']) {
 				if (in_array($step,$_SESSION['WORKING']['STEPSDONE']))
 					break;
 				$_SESSION['WORKING'][$step]['STEP_TRY']++;
 				$func=call_user_func(strtolower($step));
 			}
-			if ($_SESSION['WORKING'][$step]['STEP_TRY']>=3)
+			if ($_SESSION['WORKING'][$step]['STEP_TRY']>=$_SESSION['CFG']['jobstepretry'])
 				trigger_error(__('Step arborted has too many trys!!!','backwpup'),E_USER_ERROR);
 		} else {
 			trigger_error(__('Can not find job step function:','backwpup').' '.strtolower($step),E_USER_ERROR);

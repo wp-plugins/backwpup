@@ -14,6 +14,8 @@ if (isset($_GET['action']) and $_GET['action']=='runnow' and !empty($_GET['jobid
 		$infile=unserialize($runfile);
 		$_GET['logfile']=$infile['LOGFILE'];
 	} else {
+		//include jobstart function
+		require_once(dirname(__FILE__).'/../job/job_start.php');
 		$_GET['logfile']=backwpup_jobstart($jobid);
 	}
 }

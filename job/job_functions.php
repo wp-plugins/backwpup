@@ -134,11 +134,11 @@ function update_working_file() {
 	if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
 		$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
 	else
-		$steppersent=1;
+		$steppersent=0;
 	if (count($_SESSION['WORKING']['STEPSDONE'])>0)
 		$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
 	else
-		$stepspersent=1;
+		$stepspersent=0;
 	$pid=0;
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
@@ -382,6 +382,27 @@ function job_end() {
 function job_shutdown() {
 	if (empty($_SESSION['STATIC']['LOGFILE'])) //nothing on empy session
 		return;
+	$_SESSION['WORKING']['RESTART']++;
+	if ($_SESSION['WORKING']['RESTART']>$_SESSION['CFG']['jobscriptretry'] and file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {  //only x restarts allowed
+		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
+		$_SESSION['WORKING']['ERROR']++;
+		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
+		while (!feof($fd)) {
+			$line=fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
+				break;
+			}
+			$filepos=ftell($fd);
+		}
+		fclose($fd);
+		$_SESSION['WORKING']['STEPSDONE']=array(); //got to end on next call.
+		foreach($_SESSION['WORKING']['STEPS'] as $step) {  
+			if ($step!='JOB_END')
+				$_SESSION['WORKING']['STEPSDONE']=$_SESSION['WORKING']['STEPS'];
+		}
+	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if ($lasterror['type']==E_ERROR) {

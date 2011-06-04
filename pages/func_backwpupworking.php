@@ -4,6 +4,29 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
+// Remove header and footer form logfile
+function backwpup_read_logfile($logfile) {
+	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')
+		$logfiledata=gzfile($logfile);
+	elseif (is_file($logfile.'.gz'))
+		$logfiledata=gzfile($logfile.'.gz');
+	elseif (is_file($logfile))
+		$logfiledata=file($logfile);	
+	else
+		return false;
+	$lines=array();
+	$start=false;
+	foreach ($logfiledata as $line){
+		$line=trim($line);
+		if (strripos($line,'<body')!== false) {  // jop over header
+			$start=true;
+			continue;
+		}
+		if ($line!='</body>' and $line!='</html>' and $start) //no Footer
+			$lines[]=$line;
+	}
+	return $lines;
+}
 
 //ajax show info div for jobs
 function backwpup_working_update() {
@@ -16,30 +39,24 @@ function backwpup_working_update() {
 			$infile=unserialize($runfile);
 			$infile['LOG']='';
 			if (is_file($infile['LOGFILE'])) {
-				$logfilarray=file($infile['LOGFILE']);
-				for ($i=$_POST['logpos'];$i<count($logfilarray);$i++) {
-					if (trim($logfilarray[$i])!="</body>" and trim($logfilarray[$i])!="</html>")
-						$infile['LOG'].=trim($logfilarray[$i]);
-				}
+				$logfilarray=backwpup_read_logfile($infile['LOGFILE']);
+				for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
+					$infile['LOG'].=$logfilarray[$i];
 				$infile['logpos']=count($logfilarray);
 			}
 			echo json_encode($infile);
 		}
 	} else {
 		$log='';
-		$logpos='';
 		$logheader['warnings']=0;
 		$logheader['errors']=0;
 		if (is_file(trim($_POST['logfile']))) {
-			$logfilarray=file(trim($_POST['logfile']));
-			for ($i=$_POST['logpos'];$i<count($logfilarray);$i++) {
-				if (trim($logfilarray[$i])!="</body>" and trim($logfilarray[$i])!="</html>")
-					$log.=trim($logfilarray[$i]);
-			}
-			$logpos=count($logfilarray);
+			$logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
+			for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
+					$log.=$logfilarray[$i];
 			$logheader=backwpup_read_logheader(trim($_POST['logfile']));
 		}
-		echo json_encode(array('logpos'=>$logpos,'LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>$logheader['warnings'],'ERROR'=>$logheader['errors'],'STEPSPERSENT'=>100,'STEPPERSENT'=>100));
+		echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>$logheader['warnings'],'ERROR'=>$logheader['errors'],'STEPSPERSENT'=>100,'STEPPERSENT'=>100));
 	}
 	die();
 }

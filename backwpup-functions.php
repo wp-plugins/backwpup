@@ -136,9 +136,11 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['mailsecure'])) $cfg['mailsecure']='';
 	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
 	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
+	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 99<=$cfg['jobstepretry']) $cfg['jobstepretry']=3;
+	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 99<=$cfg['jobscriptretry']) $cfg['jobscriptretry']=5;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
-	if (!isset($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
+	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
@@ -199,7 +201,7 @@ function backwpup_cron() {
 		$infile=unserialize(trim($runningfile));
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
-			curl_setopt($ch,CURLOPT_URL,plugins_url('job/jobrun.php',__FILE__));
+			curl_setopt($ch,CURLOPT_URL,plugins_url('job/job_run.php',__FILE__));
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
@@ -212,6 +214,8 @@ function backwpup_cron() {
 			if (!$jobvalue['activated'])
 				continue;
 			if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
+				//include jobstart function
+				require_once(dirname(__FILE__).'/job/job_start.php');
 				backwpup_jobstart($jobid);
 			}
 		}
@@ -599,25 +603,6 @@ function backwpup_admin_notice() {
 	global $backwpup_admin_message;
 	echo $backwpup_admin_message;
 }
-
-
-function backwpup_read_logfile($logfile) {
-	if (is_file(trim($logfile)) and strtolower(substr($logfile,-3))=='.gz')
-		$logfiledata=gzfile(trim($logfile));
-	elseif (is_file(trim($logfile.'.gz')))
-		$logfiledata=gzfile(trim($logfile.'.gz'));
-	elseif (is_file(trim($logfile)))
-		$logfiledata=file(trim($logfile));	
-	else
-		return false;
-		
-	foreach ($logfiledata as $line) {
-		$line=trim($line);
-		//if (false === stripos($line,'<html>') and false === stripos($line,'</html>') and false === stripos($line,'<head>') and false === stripos($line,'</head>') and false === stripos($line,'<meta') and false === stripos($line,'<style') and false === stripos($line,'.timestamp') and false === stripos($line,'.warning') and false === stripos($line,'.error') and false === stripos($line,'</style>') and false === stripos($line,'<body') and false === stripos($line,'</body>') and false === stripos($line,'<title'))
-			echo $line;
-	}
-}
-
 
 //Checking,upgrade and default job setting
 function backwpup_get_job_vars($jobid='',$jobnewsettings='') {

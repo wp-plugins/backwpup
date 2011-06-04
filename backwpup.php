@@ -60,8 +60,6 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Admin message
 add_action('admin_notices', 'backwpup_admin_notice'); 
 if (backwpup_env_checks()) {
-	//include jobstart function
-	require_once(dirname(__FILE__).'/job/jobstart.php');
 	//add Menu
 	add_action('admin_menu', 'backwpup_admin_menu');
 	//add cron intervals
