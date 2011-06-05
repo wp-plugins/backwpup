@@ -144,7 +144,7 @@ function update_working_file() {
 		$pid=posix_getpid();
 	$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
 	$infile=unserialize(trim($runningfile));		
-	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent)));
+	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
 	return true;
 }
 
@@ -260,8 +260,8 @@ function job_end() {
 		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
 	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))
 		unlink($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql');
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.' . date( 'Y-m-d' ) . '.xml'))	
-		unlink($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.' . date( 'Y-m-d' ) . '.xml');
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml'))	
+		unlink($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');
 	if ($_SESSION['JOB']['backupdir']==$_SESSION['STATIC']['TEMPDIR'] and is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) 
 		unlink($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	

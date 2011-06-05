@@ -5,6 +5,13 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 	die();
 }
 
+function dest_sugarsync() {
+	trigger_error($_SESSION['WORKING']['DEST_SUGARSYNC']['STEP_TRY'].'. '.__('Try to sending backup file to sugarsync...','backwpup'),E_USER_NOTICE);
+	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPDONE']=0;
 
 
+	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
+}
 ?>
