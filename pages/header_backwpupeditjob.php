@@ -81,7 +81,7 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
 	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';
 	$jobvalues['dirinclude']=isset($_POST['dirinclude']) ? stripslashes($_POST['dirinclude']) : '';
-	$jobvalues['backuproot']= $_POST['backuproot']==1 ? true : false;
+	$jobvalues['backuproot']= (isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false;
 	$jobvalues['backuprootexcludedirs']=!empty($_POST['backuprootexcludedirs']) ? (array)$_POST['backuprootexcludedirs'] : array();
 	$jobvalues['backupcontent']= (isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false;
 	$jobvalues['backupcontentexcludedirs']=!empty($_POST['backupcontentexcludedirs']) ? (array)$_POST['backupcontentexcludedirs'] : array();

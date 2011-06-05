@@ -421,7 +421,7 @@ function job_shutdown() {
 		}
 		fclose($fd);
 	}
-	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".__('Script stopped will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	//Close session
 	session_write_close();
 	//Excute jobrun again

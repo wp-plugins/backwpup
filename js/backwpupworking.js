@@ -44,7 +44,7 @@ jQuery(document).ready( function($) {
 				$("#message").remove();
 				clearInterval(refreshId);
 			});
-		}, 1000);
+		}, 500);
 	}
 });
 

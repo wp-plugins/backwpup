@@ -90,7 +90,6 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 
 // Working step by step
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
-	sleep(1);
 	//update running file
 	update_working_file();
 	//Set next step

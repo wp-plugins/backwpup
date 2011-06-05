@@ -55,11 +55,11 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['WP']['TIMEDIFF']=current_time('timestamp')-time();
 	$_SESSION['WP']['WPLANG']=WPLANG;
 	//WP folder
-	$_SESSION['WP']['ABSPATH']=ABSPATH;
-	$_SESSION['WP']['WP_CONTENT_DIR']=WP_CONTENT_DIR;
-	$_SESSION['WP']['WP_PLUGIN_DIR']=WP_PLUGIN_DIR;
-	$_SESSION['WP']['WP_THEMES_DIR']=trailingslashit(WP_CONTENT_DIR).'themes/';
-	$_SESSION['WP']['WP_UPLOAD_DIR']=backwpup_get_upload_dir();
+	$_SESSION['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
+	$_SESSION['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
+	$_SESSION['WP']['WP_PLUGIN_DIR']=rtrim(str_replace('\\','/',WP_PLUGIN_DIR),'/').'/';
+	$_SESSION['WP']['WP_THEMES_DIR']=rtrim(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),'/').'/';
+	$_SESSION['WP']['WP_UPLOAD_DIR']=rtrim(str_replace('\\','/',backwpup_get_upload_dir()),'/').'/';
 	$_SESSION['WP']['WPINC']=WPINC;
 	$_SESSION['WP']['MULTISITE']=is_multisite();
 	//Load Translation
@@ -94,6 +94,16 @@ function backwpup_jobstart($jobid='') {
 		_e("Temp dir not writeable","backwpup");
 		session_destroy();
 		return false;
+	} else {  //clean up old temp files
+		if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
+			while (($file = readdir($dir)) !== false) {
+				if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
+					if ((!empty($_SESSION['JOB']['fileprefix']) and false !== strpos($file,$_SESSION['JOB']['fileprefix'])) or $_SESSION['WP']['DB_NAME'].'.sql'==$file or false !== strpos($file,'.wordpress.')) {
+						unlink($_SESSION['STATIC']['TEMPDIR'].$file);
+					}
+				}
+			}
+		}
 	}
 	$_SESSION['CFG']['dirlogs']=rtrim(str_replace('\\','/',$_SESSION['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($_SESSION['CFG']['dirlogs'])) {

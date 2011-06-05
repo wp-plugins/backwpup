@@ -410,15 +410,15 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
 	$excludedir[]=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/'); //exclude temp
-	if (false !== stripos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
+	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
-	if (false !== stripos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
+	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
-	if (false !== stripos(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR))!=$folder)
+	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
-	if (false !== stripos(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),$folder) and str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/')!=$folder)
+	if (false !== strpos(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),$folder) and str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/')!=$folder)
 		$excludedir[]=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/');
-	if (false !== stripos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
+	if (false !== strpos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
 		$excludedir[]=backwpup_get_upload_dir();
 	//Exclude Backup dirs
 	$jobs=(array)get_option('backwpup_jobs');

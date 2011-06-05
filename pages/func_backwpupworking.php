@@ -33,31 +33,35 @@ function backwpup_working_update() {
 	check_ajax_referer('backwpupworking_ajax_nonce');
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		die('-1');
-	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$runfile=trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
+	if (is_file(trim($_POST['logfile']).'.gz'))
+		$_POST['logfile']=trim($_POST['logfile']).'.gz';
+	$log='';
+	if (is_file(trim($_POST['logfile']))) {
+		$runfile="";
+		if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+			$runfile=trim(@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
 		if (!empty($runfile)) {
 			$infile=unserialize($runfile);
-			$infile['LOG']='';
-			if (is_file($infile['LOGFILE'])) {
-				$logfilarray=backwpup_read_logfile($infile['LOGFILE']);
-				for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
-					$infile['LOG'].=$logfilarray[$i];
-				$infile['logpos']=count($logfilarray);
-			}
-			echo json_encode($infile);
-		}
-	} else {
-		$log='';
-		$logheader['warnings']=0;
-		$logheader['errors']=0;
-		if (is_file(trim($_POST['logfile']))) {
-			$logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
-			for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
-					$log.=$logfilarray[$i];
+			$warnings=$infile['WARNING'];
+			$errors=$infile['ERROR'];
+			$stepspersent=$infile['STEPSPERSENT'];
+			$steppersent=$infile['STEPPERSENT'];
+		} else {
 			$logheader=backwpup_read_logheader(trim($_POST['logfile']));
+			$warnings=$logheader['warnings'];
+			$errors=$logheader['errors'];
+			$stepspersent=100;
+			$steppersent=100;
+			$log.='<span id="stopworking"></span>';			
 		}
-		echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log.'<span id="stopworking"></span>','WARNING'=>$logheader['warnings'],'ERROR'=>$logheader['errors'],'STEPSPERSENT'=>100,'STEPPERSENT'=>100));
+		$logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
+		for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
+				$log.=$logfilarray[$i];
+		echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));
+		die();
+		
 	}
+	echo json_encode(array('logpos'=>$_POST['logpos'],'LOG'=>$log,'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0));
 	die();
 }
 //add ajax function

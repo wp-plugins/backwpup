@@ -17,7 +17,7 @@ function backup_create() {
 			trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive;
 			if ($res=$zip->open($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
-				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
+				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<$_SESSION['WORKING']['STEPTODO'];$i++) {
 					update_working_file();
 					if (!$zip->addFile($_SESSION['WORKING']['FILELIST'][$i]['FILE'], $_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'])) 
 						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],E_USER_ERROR);
@@ -37,7 +37,7 @@ function backup_create() {
 			if (is_array($_SESSION['WORKING']['FILELIST'][0])) {
 				trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
+				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<$_SESSION['WORKING']['STEPTODO'];$i++) {
 					update_working_file();
 					need_free_memory(10485760); //10MB free memory for zip
 					if (0==$zipbackupfile -> add($_SESSION['WORKING']['FILELIST'][$i]['FILE'],PCLZIP_OPT_REMOVE_PATH,str_replace($_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],'',$_SESSION['WORKING']['FILELIST'][$i]['FILE']),PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
@@ -66,13 +66,14 @@ function backup_create() {
 		}
 
 		
-		for ($i=$_SESSION['WORKING']['STEPDONE'];$i<=$_SESSION['WORKING']['STEPTODO'];$i++) {
+		for ($index=$_SESSION['WORKING']['STEPDONE'];$index<$_SESSION['WORKING']['STEPTODO'];$index++) {
 			update_working_file();
 			need_free_memory(2097152); //2MB free memory for tar
-			$files=$_SESSION['WORKING']['FILELIST'][$i];
-			//check file exists
-			if (!is_readable($files['FILE'])) {
+			$files=$_SESSION['WORKING']['FILELIST'][$index];
+			//check file readable
+			if (!is_readable($files['FILE']) or empty($files['FILE'])) {
 				trigger_error(__('File not readable:','backwpup').' '.$files['FILE'],E_USER_WARNING);
+				$_SESSION['WORKING']['STEPDONE']++;
 				continue;
 			}
 
@@ -103,11 +104,11 @@ function backup_create() {
 			// Generate the TAR header for this file
 			$header = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
 					  $filename,  									//name of file  100
-					  sprintf("%07o", $files['MODE']), 	//file mode  8
-					  sprintf("%07o", $files['UID']),	//owner user ID  8
-					  sprintf("%07o", $files['GID']),	//owner group ID  8
-					  sprintf("%011o", $files['SIZE']),	//length of file in bytes  12
-					  sprintf("%011o", $files['MTIME']),	//modify time of file  12
+					  sprintf("%07o", $files['MODE']), 				//file mode  8
+					  sprintf("%07o", $files['UID']),				//owner user ID  8
+					  sprintf("%07o", $files['GID']),				//owner group ID  8
+					  sprintf("%011o", $files['SIZE']),				//length of file in bytes  12
+					  sprintf("%011o", $files['MTIME']),			//modify time of file  12
 					  "        ",									//checksum for header  8
 					  0,											//type of file  0 or null = File, 5=Dir
 					  "",											//name of linked file  100

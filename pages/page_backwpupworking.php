@@ -18,6 +18,13 @@ if (!defined('ABSPATH')) {
 		$logfilarray=backwpup_read_logfile(trim($_GET['logfile']));
 		$runfile=trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
 		$infile=unserialize($runfile);
+		if (empty($infile)) {
+			$logheader=backwpup_read_logheader(trim($_GET['logfile']));
+			$infile['WARNING']=$logheader['warnings'];
+			$infile['ERROR']=$logheader['errors'];
+			$infile['STEPSPERSENT']=100;
+			$infile['STEPPERSENT']=100;
+		}
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".trim($_GET['logfile'])."\">";
 		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";		
 		echo "<div id=\"showworking\">";
@@ -32,7 +39,7 @@ if (!defined('ABSPATH')) {
 		$styleerror=" style=\"display:none;\"";
 		if ($infile['ERROR']>0)
 			$styleerror="";		
-		echo "<span id=\"errorid\"".$styleerror.">".__('Error:','backwpup')." <span id=\"errors\">".$infile['ERROR']."</span></span>";
+		echo "<span id=\"errorid\"".$styleerror.">".__('Errors:','backwpup')." <span id=\"errors\">".$infile['ERROR']."</span></span>";
 		echo "<div>";
 		echo "<div class=\"clear\"></div>";
 		echo "<div class=\"progressbar\"><div id=\"progressstep\" style=\"width:".$infile['STEPSPERSENT']."%;\">".$infile['STEPSPERSENT']."%</div></div>";

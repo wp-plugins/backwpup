@@ -27,12 +27,14 @@
 	background-color:red;
 }
 #warningsid {
-	padding-left:10px;
+	margin-left:10px;
+	margin-bottom:5px;
 	color:yellow;
 	font-size:20px;
 }
 #errorid {
-	padding-left:10px;
+	margin-left:10px;
+	margin-bottom:5px;
 	color:red;
 	font-size:20px;
 }
