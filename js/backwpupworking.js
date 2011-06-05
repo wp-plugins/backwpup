@@ -1,5 +1,5 @@
 jQuery(document).ready( function($) {
-	if ($('#logfile').val() !='') {
+	if ($('#logfile').length>0) {
 		$.ajaxSetup({ cache: false });
 		var refreshId = setInterval(function() {
 			$.ajax({type: 'POST',
