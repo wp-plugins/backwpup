@@ -15,10 +15,9 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
 			if (!class_exists('Dropbox'))
-				require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
+				require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
-			var_dump($oAuthStuff);
 			//Save Tokens
 			$jobs=get_option('backwpup_jobs');
 			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -36,7 +35,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 }
 
 //Save Job settings
-if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
+if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['jobid'])) {
 	check_admin_referer('edit-job');
 	$jobvalues['jobid']=(int) $_POST['jobid'];
 	$jobvalues['type']= implode('+',(array)$_POST['type']);
@@ -171,9 +170,9 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		}
 	}
 	
-	if (isset($_POST['dropboxauth']) && $_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
+	if (isset($_POST['dropboxauth']) and $_POST['dropboxauth']==__('Authenticate!', 'backwpup')) {
 		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/libs/dropbox/dropbox.php');
+			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
 		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 		// request request tokens
 		$response = $dropbox->oAuthRequestToken();
@@ -183,7 +182,7 @@ if (isset($_POST['submit']) and  !empty($_POST['jobid'])) {
 		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 	}
 	
-	if (isset($_POST['dropboxauth']) && $_POST['dropboxauth']==__('Delete!', 'backwpup')) {
+	if (isset($_POST['dropboxauth']) and $_POST['dropboxauth']==__('Delete!', 'backwpup')) {
 		$jobvalues['dropetoken']='';
 		$jobvalues['dropesecret']='';
 		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';

@@ -140,6 +140,7 @@ function update_working_file() {
 	else
 		$stepspersent=0;
 	$pid=0;
+	@set_time_limit(30);
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
 	$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');

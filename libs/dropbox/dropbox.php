@@ -12,6 +12,7 @@ class Dropbox {
 	protected $OAuthToken;
 	protected $OAuthConsumer;
 	protected $OAuthSignatureMethod;
+	protected $ProgressFunction = false;
 	
 	public function __construct($applicationKey, $applicationSecret) {	
 		$this->OAuthConsumer = new OAuthConsumer($applicationKey, $applicationSecret);
@@ -28,6 +29,13 @@ class Dropbox {
 	
 	public function setSandbox() {
 		$this->root = 'sandbox';
+	}
+
+	public function setProgressFunction($function) {
+		if (function_exists($function))
+			$this->ProgressFunction = $function;
+		else
+			$this->ProgressFunction = false;
 	}
 	
 	public function accountInfo(){
@@ -92,7 +100,7 @@ class Dropbox {
 			return 'data:image/' . $format . ';base64,' . base64_encode( (isset($result['body'])) ? $result['body'] : (!is_array($result)) ? $result : '' );
 		}
 	}
-	
+
 	public function oAuthRequestToken() {
 		$req_req = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, NULL, "GET", self::API_URL.self::API_VERSION_URL.'oauth/request_token');
 		$req_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, NULL);
@@ -201,6 +209,11 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
+		if (function_exists($this->ProgressFunction)) {
+			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 256);
+		}
 		
 		/* file upload */
 		if (is_file($file)){

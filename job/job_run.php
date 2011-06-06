@@ -38,8 +38,6 @@ require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 // Now user abrot allowed
 @ini_set('ignore_user_abort','Off');
 ignore_user_abort(true);
-// set max execution time for script 300=5 min most webservers
-@set_time_limit(300);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
 //set function for PHP user defineid error handling

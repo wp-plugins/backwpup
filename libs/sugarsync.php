@@ -51,6 +51,8 @@ class SugarSync {
 	
 	protected $folder = '';
 	
+	protected $ProgressFunction = false;
+	
 // class methods
 	/**
 	 * Default constructor/Auth
@@ -178,6 +180,11 @@ class SugarSync {
 		// set headers
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$headers);
 		curl_setopt($curl,CURLINFO_HEADER_OUT,self::DEBUG);
+		if (function_exists($this->ProgressFunction)) {
+			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
+			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+			curl_setopt($curl, CURLOPT_BUFFERSIZE, 256);
+		}
 
 		// execute
 		$response = curl_exec($curl);
@@ -215,7 +222,6 @@ class SugarSync {
 		}
 	}
 
-	
 	public function chdir($folder,$root='') {
 		$folder=rtrim($folder,'/');
 		if (substr($folder,0,1)=='/' or empty($this->folder)) {
@@ -309,6 +315,7 @@ class SugarSync {
 
 	
 	public function getcontents($type='',$start=0,$max=500) {
+		$parameters='';
 		if (strtolower($type)=='folder' or strtolower($type)=='file')
 			$parameters.='type='.strtolower($type);
 		if (!empty($start) and is_integer($start)) {
@@ -348,7 +355,13 @@ class SugarSync {
 			}
 		}	
 	}
-	
+
+	public function setProgressFunction($function) {
+		if (function_exists($function))
+			$this->ProgressFunction = $function;
+		else
+			$this->ProgressFunction = false;
+	}	
 }
 
 
