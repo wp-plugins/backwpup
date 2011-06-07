@@ -13,18 +13,15 @@ function backwpup_jobstart($jobid='') {
 		return false;
 	}
 	//check if a job running
-	if (file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-		$infile=unserialize(trim($runningfile));
+	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']<time()-1800) {
 			_e("A job already running!","backwpup");
 			return false;
 		} else { //delete working file job thing it not works longer.
-			unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+			unlink(backwpup_get_working_dir().'/.running');
 			sleep(3);
 		}
 	}
-	@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_massage');
 	// set the cache limiter to 'nocache'
 	session_cache_limiter('nocache');
 	// set the cache expire to 30 minutes 
@@ -89,7 +86,25 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data
 	$_SESSION['STATIC']['JOBRUNURL']=plugins_url('job_run.php',__FILE__);
-	$_SESSION['STATIC']['TEMPDIR']=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/'; //PHP 5.2.1 sys_get_temp_dir
+	//get and create temp dir
+	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
+	$tempdir=getenv('TMP');
+	if (!$tempdir)
+		$tempdir=getenv('TEMP');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=getenv('TMPDIR');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=ini_get('upload_tmp_dir');
+	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=sys_get_temp_dir();
+	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
+	$_SESSION['STATIC']['TEMPDIR']=$tempdir.$folder;
+	if (!is_dir($_SESSION['STATIC']['TEMPDIR'])) {
+		if (!mkdir($_SESSION['STATIC']['TEMPDIR'],0755,true)) {
+			sprintf(__('Can not create temp folder: %1$s','backwpup'),$_SESSION['STATIC']['TEMPDIR']);
+			return false;
+		}		
+	}
 	if (!is_writable($_SESSION['STATIC']['TEMPDIR'])) {
 		_e("Temp dir not writeable","backwpup");
 		session_destroy();
@@ -98,12 +113,23 @@ function backwpup_jobstart($jobid='') {
 		if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
 			while (($file = readdir($dir)) !== false) {
 				if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
-					if ((!empty($_SESSION['JOB']['fileprefix']) and false !== strpos($file,$_SESSION['JOB']['fileprefix'])) or $_SESSION['WP']['DB_NAME'].'.sql'==$file or false !== strpos($file,'.wordpress.')) {
+					if ($file!='.' or $file!='..') {
 						unlink($_SESSION['STATIC']['TEMPDIR'].$file);
 					}
 				}
 			}
+			closedir($dir);
 		}
+		//create .htaccess for apache and index.html for other
+		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+			if (!is_file($_SESSION['STATIC']['TEMPDIR'].'.htaccess')) 
+				file_put_contents($_SESSION['STATIC']['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
+		} else {
+			if (!is_file($_SESSION['STATIC']['TEMPDIR'].'index.html')) 
+				file_put_contents($_SESSION['STATIC']['TEMPDIR'].'index.html',"\n");
+			if (!is_file($_SESSION['STATIC']['TEMPDIR'].'index.php'))
+				file_put_contents($_SESSION['STATIC']['TEMPDIR'].'index.php',"\n");
+		}	
 	}
 	$_SESSION['CFG']['dirlogs']=rtrim(str_replace('\\','/',$_SESSION['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($_SESSION['CFG']['dirlogs'])) {
@@ -156,7 +182,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//write working file
-	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0)));
+	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0)));
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$_SESSION['JOB']['jobid']]['starttime']=time(); //set start time for job

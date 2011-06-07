@@ -13,18 +13,9 @@ if (!defined('ABSPATH')) {
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif; 	
-	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
+	if ($infile=backwpup_get_working_file()) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile(trim($_GET['logfile']));
-		$runfile=trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
-		$infile=unserialize($runfile);
-		if (empty($infile)) {
-			$logheader=backwpup_read_logheader(trim($_GET['logfile']));
-			$infile['WARNING']=$logheader['warnings'];
-			$infile['ERROR']=$logheader['errors'];
-			$infile['STEPSPERSENT']=100;
-			$infile['STEPPERSENT']=100;
-		}
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".trim($_GET['logfile'])."\">";
 		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";		
 		echo "<div id=\"showworking\">";

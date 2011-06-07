@@ -14,7 +14,7 @@ function dest_sugarsync() {
 	$_SESSION['WORKING']['STEPTODO']=1;
 	$_SESSION['WORKING']['STEPDONE']=0;
 
-	require_once (dirname(__FILE__).'/../libs/sugarsync.php');
+	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 	
 	need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*1.5); 
 	
@@ -42,7 +42,7 @@ function dest_sugarsync() {
 		trigger_error(__('Upload to SugarSync now started ... ','backwpup'),E_USER_NOTICE);
 		$reponse=$sugarsync->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		if (is_object($reponse)) {
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
 			trigger_error(__('Backup File transferred to SugarSync.','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to SugarSync:','backwpup'),E_USER_ERROR);

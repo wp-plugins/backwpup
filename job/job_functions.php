@@ -128,8 +128,49 @@ function maintenance_mode($enable = false) {
 	}
 }
 
+function get_working_dir() {
+	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
+	$tempdir=getenv('TMP');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=getenv('TEMP');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=getenv('TMPDIR');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=ini_get('upload_tmp_dir');
+	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=sys_get_temp_dir();
+	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
+	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
+		return $tempdir.$folder;
+	} else {
+		return false;
+	}
+}
+
+function get_working_file() {
+	$tempdir=get_working_dir();
+	if (is_file($tempdir.'.running')) {
+		if ($runningfile=file_get_contents($tempdir.'.running'))
+			return unserialize(trim($runningfile));
+		else
+			return false;
+	} else {
+		return false;
+	}
+}
+
+function delete_working_file() {
+	$tempdir=get_working_dir();
+	if (is_file($tempdir.'.running')) {
+		unlink($tempdir.'.running');
+		return true;
+	} else {
+		return false;
+	}
+}
+
 function update_working_file() {
-	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
 		job_end();
 	if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
 		$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
@@ -143,9 +184,9 @@ function update_working_file() {
 	@set_time_limit(30);
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
-	$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+	$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
 	$infile=unserialize(trim($runningfile));		
-	file_put_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
+	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
 	return true;
 }
 
@@ -256,15 +297,20 @@ function job_end() {
 	if (!is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']) or !($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))) //Set the filezie corectly
 		$filesize=0;
 
-	//clean up
-	if (!is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
+	if (!is_file($_SESSION['STATIC']['TEMPDIR'].'/.running')) 
 		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql'))
-		unlink($_SESSION['STATIC']['TEMPDIR'].$_SESSION['WP']['DB_NAME'].'.sql');
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml'))	
-		unlink($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');
-	if ($_SESSION['JOB']['backupdir']==$_SESSION['STATIC']['TEMPDIR'] and is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) 
-		unlink($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
+	//clean up temp
+	if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
+		while (($file = readdir($dir)) !== false) {
+			if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
+				if ($file!='.' or $file!='..' or $file!='.running') {
+					unlink($_SESSION['STATIC']['TEMPDIR'].$file);
+				}
+			}
+		}
+		closedir($dir);
+		rmdir($_SESSION['STATIC']['TEMPDIR']);
+	}
 	
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$_SESSION['JOB']['jobid']]['lastrun']=$jobs[$_SESSION['JOB']['jobid']]['starttime']+$_SESSION['WP']['TIMEDIFF'];
@@ -371,7 +417,7 @@ function job_end() {
 	$_SESSION['WORKING']['STEPDONE']=0;
 	$_SESSION['WORKING']['STEPSDONE'][]='JOB_END'; //set done
 	update_working_file();
-	unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+	unlink($_SESSION['STATIC']['TEMPDIR'].'/.running');
 	//Destroy session
 	$_SESSION = array();
 	session_destroy();
@@ -384,7 +430,7 @@ function job_shutdown() {
 	if (empty($_SESSION['STATIC']['LOGFILE'])) //nothing on empy session
 		return;
 	$_SESSION['WORKING']['RESTART']++;
-	if ($_SESSION['WORKING']['RESTART']>$_SESSION['CFG']['jobscriptretry'] and file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {  //only x restarts allowed
+	if ($_SESSION['WORKING']['RESTART']>=$_SESSION['CFG']['jobscriptretry'] and file_exists($_SESSION['STATIC']['TEMPDIR'].'/.running')) {  //only x restarts allowed
 		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
 		$_SESSION['WORKING']['ERROR']++;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
@@ -398,11 +444,7 @@ function job_shutdown() {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
-		$_SESSION['WORKING']['STEPSDONE']=array(); //got to end on next call.
-		foreach($_SESSION['WORKING']['STEPS'] as $step) {  
-			if ($step!='JOB_END')
-				$_SESSION['WORKING']['STEPSDONE']=$_SESSION['WORKING']['STEPS'];
-		}
+		job_end();
 	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
@@ -422,12 +464,12 @@ function job_shutdown() {
 		}
 		fclose($fd);
 	}
-	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	//Close session
 	session_write_close();
 	//Excute jobrun again
-	if (!file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'))
+	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'/.running'))
 		return;
+	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);

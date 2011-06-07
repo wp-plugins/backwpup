@@ -196,9 +196,7 @@ function backwpup_intervals($schedules) {
 //cron work
 function backwpup_cron() {	
 	$jobs=(array)get_option('backwpup_jobs');
-	if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-		$runningfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-		$infile=unserialize(trim($runningfile));
+	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,plugins_url('job/job_run.php',__FILE__));
@@ -557,6 +555,37 @@ function backwpup_cron_next($cronstring) {
 	return false;
 }
 
+function backwpup_get_working_dir() {
+	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/job/'))),8,16).'/';
+	$tempdir=getenv('TMP');
+	if (!$tempdir)
+		$tempdir=getenv('TEMP');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=getenv('TMPDIR');
+	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=ini_get('upload_tmp_dir');
+	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
+		$tempdir=sys_get_temp_dir();
+	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
+	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
+		return $tempdir.$folder;
+	} else {
+		return false;
+	}
+}
+
+function backwpup_get_working_file() {
+	$tempdir=backwpup_get_working_dir();
+	if (is_file($tempdir.'.running')) {
+		if ($runningfile=file_get_contents($tempdir.'.running'))
+			return unserialize(trim($runningfile));
+		else
+			return false;
+	} else {
+		return false;
+	}
+}
+
 function backwpup_env_checks() {
 	global $wp_version,$backwpup_admin_message;
 	$message='';
@@ -568,6 +597,10 @@ function backwpup_env_checks() {
 	}
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version sys_get_temp_dir
 		$message.=__('- PHP 5.2.4 or higher needed!','backwpup') . '<br />';
+		$checks=false;
+	}
+	if (is_multisite()) {
+		$message.=__('- Multiseite Blogs not allowed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (!function_exists('curl_init')) { // check curl

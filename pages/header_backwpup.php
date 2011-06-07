@@ -15,9 +15,9 @@ if (!empty($doaction)) {
 	switch($doaction) {
 	case 'delete': //Delete Job
 		$jobs=get_option('backwpup_jobs');
-		if (is_array($_REQUEST['jobs'])) {
+		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
-			foreach ($_REQUEST['jobs'] as $jobid) {
+			foreach ($_GET['jobs'] as $jobid) {
 				unset($jobs[$jobid]);
 			}
 		}
@@ -40,9 +40,9 @@ if (!empty($doaction)) {
 		break;
 	case 'export': //Copy Job
 		$jobs=get_option('backwpup_jobs');
-		if (is_array($_REQUEST['jobs'])) {
+		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
-			foreach ($_REQUEST['jobs'] as $jobid) {
+			foreach ($_GET['jobs'] as $jobid) {
 				$jobsexport[$jobid]=backwpup_check_job_vars($jobs[$jobid],$jobid);
 			}
 		}
@@ -62,9 +62,8 @@ if (!empty($doaction)) {
 		break;
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
-		$runfile=file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
-		$runningfile=unserialize(trim($runfile));
-		unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+		$runningfile=backwpup_get_working_file();
+		unlink(backwpup_get_working_dir().'/.running');
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
 		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
 			if (posix_kill($runningfile['PID'],SIGKILL))

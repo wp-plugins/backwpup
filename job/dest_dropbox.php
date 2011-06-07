@@ -14,7 +14,7 @@ function dest_dropbox() {
 	$_SESSION['WORKING']['STEPTODO']=1;
 	$_SESSION['WORKING']['STEPDONE']=0;
 
-	require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 	try {
 		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);
 		// set the tokens 
@@ -39,7 +39,7 @@ function dest_dropbox() {
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=BackWPup&subpage=backups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to DropBox:','backwpup').' '.$response['error'],E_USER_ERROR);

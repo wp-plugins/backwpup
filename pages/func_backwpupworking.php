@@ -37,11 +37,7 @@ function backwpup_working_update() {
 		$_POST['logfile']=trim($_POST['logfile']).'.gz';
 	$log='';
 	if (is_file(trim($_POST['logfile']))) {
-		$runfile="";
-		if (is_file(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) 
-			$runfile=trim(@file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running'));
-		if (!empty($runfile)) {
-			$infile=unserialize($runfile);
+		if ($infile=backwpup_get_working_file()) {
 			$warnings=$infile['WARNING'];
 			$errors=$infile['ERROR'];
 			$stepspersent=$infile['STEPSPERSENT'];
@@ -59,7 +55,6 @@ function backwpup_working_update() {
 				$log.=$logfilarray[$i];
 		echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));
 		die();
-		
 	}
 	echo json_encode(array('logpos'=>$_POST['logpos'],'LOG'=>$log,'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0));
 	die();

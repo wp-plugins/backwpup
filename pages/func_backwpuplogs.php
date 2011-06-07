@@ -35,13 +35,13 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
-			if ( !isset( $_REQUEST['orderby'] ) or $_REQUEST['orderby']=='log') {
-				if (isset($_REQUEST['order']) and $_REQUEST['order']=='asc')
+			if ( !isset( $_GET['orderby'] ) or $_GET['orderby']=='log') {
+				if (isset($_GET['order']) and $_GET['order']=='asc')
 					sort($logfiles);
 				else
 					rsort($logfiles);
 			}
-			if (!isset( $_REQUEST['orderby'] ) and !isset( $_REQUEST['order'] ))
+			if (!isset( $_GET['orderby'] ) and !isset( $_GET['order'] ))
 				rsort($logfiles);
 		}
 		//by page

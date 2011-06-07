@@ -1,4 +1,8 @@
 <?PHP
+//Set a constance for not direkt loding in other files
+define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
+// get needed functions for the jobrun
+require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 // set the cache limiter to 'nocache'
 session_cache_limiter('nocache');
 // set the cache expire to 30 minutes 
@@ -7,8 +11,7 @@ session_cache_expire(30);
 session_name('BackWPupSession');
 //check and set session id must bevor session_start
 //read runningfile with SID
-if (file_exists(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')) {
-	$runningfile=unserialize(trim(file_get_contents(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running')));
+if ($runningfile=get_working_file()) {
 	session_id($runningfile['SID']);//Set session id
 } else {
 	die();
@@ -26,17 +29,14 @@ ob_end_flush();
 flush();
 //check existing session and Logfile
 if (!empty($_SESSION) and !file_exists($_SESSION['STATIC']['LOGFILE'])) {
-	@unlink(rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/.backwpup_running');
+	delete_working_file();
 	die();
 }
-//Set a constance for not direkt loding in other files
-define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
-// get needed functions for the jobrun
-require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 //disable safe mode
 @ini_set('safe_mode','Off');
 // Now user abrot allowed
 @ini_set('ignore_user_abort','Off');
+//disable user abort
 ignore_user_abort(true);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');

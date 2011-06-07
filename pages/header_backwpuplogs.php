@@ -15,10 +15,10 @@ if (!empty($doaction)) {
 	switch($doaction) {
 	case 'delete': 
 		$cfg=get_option('backwpup'); //Load Settings
-		if (is_array($_REQUEST['logfiles'])) {
+		if (is_array($_GET['logfiles'])) {
 			check_admin_referer('bulk-logs');
 			$num=0;
-			foreach ($_REQUEST['logfiles'] as $logfile) {
+			foreach ($_GET['logfiles'] as $logfile) {
 				if (is_file($cfg['dirlogs'].'/'.$logfile))
 					unlink($cfg['dirlogs'].'/'.$logfile);
 				$num++;

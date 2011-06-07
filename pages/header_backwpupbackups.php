@@ -16,15 +16,15 @@ if (!empty($doaction)) {
 	case 'delete': //Delete Backup archives
 		check_admin_referer('bulk-backups');
 		$jobs=get_option('backwpup_jobs'); //Load jobs
-		list($jobid,$dest)=explode(',',$_REQUEST['jobdest']);
+		list($jobid,$dest)=explode(',',$_GET['jobdest']);
 		$jobvalue=$jobs[$jobid];
-		foreach ($_REQUEST['backupfiles'] as $backupfile) {
+		foreach ($_GET['backupfiles'] as $backupfile) {
 			if ($dest=='FOLDER') {
 				if (is_file($backupfile))
 					unlink($backupfile);
 			} elseif ($dest=='S3') {
 				if (!class_exists('AmazonS3'))
-					require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
+					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						try {
@@ -38,7 +38,7 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='MSAZURE') {
 				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-					set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../libs');
+					set_include_path(get_include_path().PATH_SEPARATOR.realpath(dirname(__FILE__).'/../libs'));
 					require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
 				}
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
@@ -54,7 +54,7 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='DROPBOX') {
 				if (!class_exists('Dropbox'))
-					require_once(dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+					require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 				if (class_exists('Dropbox')) {
 					if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 						try {
@@ -69,7 +69,7 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='SUGARSYNC') {
 				if (!class_exists('SugarSync'))
-					require_once (dirname(__FILE__).'/../libs/sugarsync.php');
+					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 				if (class_exists('SugarSync')) {
 					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
 						try {
@@ -83,7 +83,7 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='RSC') {
 				if (!class_exists('CF_Authentication'))
-					require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
+					require_once(realpath(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 				if (class_exists('CF_Authentication')) {
 					if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
 						try {
@@ -160,7 +160,7 @@ if (!empty($doaction)) {
 		break;
 	case 'downloads3': //Download S3 Backup
 		check_admin_referer('download-backup');
-		require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+		require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
@@ -189,7 +189,7 @@ if (!empty($doaction)) {
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		require_once(dirname(__FILE__).'/libs/dropbox/dropbox.php');
+		require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
@@ -213,7 +213,7 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadsugarsync': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		require_once(dirname(__FILE__).'/libs/sugarsync.php');
+		require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
@@ -237,7 +237,7 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadmsazure': //Download Microsoft Azure Backup
 		check_admin_referer('download-backup');
-		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
+		set_include_path(get_include_path().PATH_SEPARATOR.realpath(dirname(__FILE__).'/../libs'));
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
 		$jobs=get_option('backwpup_jobs');
@@ -262,7 +262,7 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadrsc': //Download RSC Backup
 		check_admin_referer('download-backup');
-		require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
+		require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {

@@ -14,11 +14,11 @@ function dest_mail() {
 	$_SESSION['WORKING']['STEPTODO']=1;
 	$_SESSION['WORKING']['STEPDONE']=0;
 	//Create PHP Mailer
-	require_once($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC'].'/class-phpmailer.php');
+	require_once(realpath($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC']).'/class-phpmailer.php');
 	$phpmailer = new PHPMailer();
 	//Setting den methode
 	if ($_SESSION['CFG']['mailmethod']=="SMTP") {
-		require_once($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC'].'/class-smtp.php');
+		require_once(realpath($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC']).'/class-smtp.php');
 		$smtpport=25;
 		$smtphost=$_SESSION['CFG']['mailhost'];
 		if (false !== strpos($_SESSION['CFG']['mailhost'],':')) //look for port

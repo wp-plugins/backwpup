@@ -30,31 +30,46 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		if ( empty( $per_page ) || $per_page < 1 )
 			$per_page = 20;
 		
-		if (isset($_REQUEST['jobdest'])) {
-			$jobdest=$_REQUEST['jobdest'];
+		if (isset($_GET['jobdest'])) {
+			$jobdest=$_GET['jobdest'];
 		} else {
 			$jobdests=$this->get_dest_list();
 			if (empty($jobdests))
 				$jobdests=array(',');
 			$jobdest=$jobdests[0];
-			$_REQUEST['jobdest']=$jobdests[0];
+			$_GET['jobdest']=$jobdests[0];
 		}
 		
 		list($this->jobid,$this->dest)=explode(',',$jobdest);
 		
-		if (false === ($backups=get_transient('backwpup_backups_chache')) or isset($_POST['dests'])) {  //create new list
+		if (false === ($backups=get_transient('backwpup_backups_chache'))) {  //create new list
 			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
 			set_transient('backwpup_backups_chache',$backups,300);
 		}
+		
+		if ($this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
+			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
+			set_transient('backwpup_backups_chache',$backups,300);		
+		}
+		
+		
 		//Sorting
+		$order=isset($_GET['order']) ? $_GET['order'] : 'time';
+		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'desc';
 		$tmp = Array();
-		if (!isset( $_REQUEST['orderby'] ) and !isset( $_REQUEST['order'] )) {
-			foreach($backups as &$ma)
-				$tmp[] = &$ma["time"];
-			array_multisort($tmp, SORT_DESC, $backups);	
+		if ($orderby=='time') {
+			if ($order=='asc') {
+				foreach($backups as &$ma)
+					$tmp[] = &$ma["time"];
+				array_multisort($tmp, SORT_ASC, $backups);			
+			} else {
+				foreach($backups as &$ma)
+					$tmp[] = &$ma["time"];
+				array_multisort($tmp, SORT_DESC, $backups);	
+			}
 		}		
-		elseif ($_REQUEST['orderby']=='file') {
-			if (isset($_REQUEST['order']) and $_REQUEST['order']=='asc') {
+		elseif ($orderby=='file') {
+			if ($order=='asc') {
 				foreach($backups as &$ma)
 					$tmp[] = &$ma["filename"];
 				array_multisort($tmp, SORT_ASC, $backups);			
@@ -64,25 +79,25 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}
-		elseif ($_REQUEST['orderby']=='folder') {
-			if (isset($_REQUEST['order']) and $_REQUEST['order']=='asc') {
+		elseif ($orderby=='folder') {
+			if ($order=='asc') {
 				foreach($backups as &$ma)
-					$tmp[] = &$ma["file"];
+					$tmp[] = &$ma["folder"];
 				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
 				foreach($backups as &$ma)
-					$tmp[] = &$ma["file"];
+					$tmp[] = &$ma["folder"];
 				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}
-		elseif ($_REQUEST['orderby']=='size') {
-			if (isset($_REQUEST['order']) and $_REQUEST['order']=='asc') {
+		elseif ($orderby=='size') {
+			if ($order=='asc') {
 				foreach($backups as &$ma)
-					$tmp[] = &$ma["size"];
+					$tmp[] = &$ma["filesize"];
 				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
 				foreach($backups as &$ma)
-					$tmp[] = &$ma["size"];
+					$tmp[] = &$ma["filesize"];
 				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}	
@@ -100,7 +115,9 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		$this->set_pagination_args( array(
 			'total_items' => count($backups),
 			'per_page' => $per_page,
-			'jobdest' => $jobdest
+			'jobdest' => $jobdest,
+			'orderby' => $orderby,
+			'order' => $order
 		) );
 
 	}
@@ -162,14 +179,17 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		$posts_columns['file'] = __('File','backwpup');
 		$posts_columns['folder'] = __('Folder','backwpup');
 		$posts_columns['size'] = __('Size','backwpup');
+		$posts_columns['folder'] = __('Folder','backwpup');
+		$posts_columns['time'] = __('Time','backwpup');
 		return $posts_columns;
 	}
 
 	function get_sortable_columns() {
 		return array(
-			'file'    => 'file',
+			'file'    => array('file',true),
 			'folder'    => 'folder',
-			'size'    => 'size'
+			'size'    => 'size',
+			'time'    => array('time',true)
 		);
 	}	
 
@@ -203,34 +223,16 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					$r .= '<th scope="row" class="check-column"><input type="checkbox" name="backupfiles[]" value="'. esc_attr($backup['file']) .'" /></th>';
 					break;
 				case 'file':
-					$r .= "<td $attributes><strong>".basename($backup['file'])."</strong>";
+					$r .= "<td $attributes><strong>".$backup['filename']."</strong>";
 					$actions = array();
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=backwpupbackups&action=delete&jobdest='.$_REQUEST['jobdest'].'&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=backwpupbackups&action=delete&jobdest='.$this->jobid.','.$this->dest.'&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 					$actions['download'] = "<a href=\"" . wp_nonce_url($backup['downloadurl'], 'download-backup') . "\">" . __('Download','backwpup') . "</a>";
 					$r .= $this->row_actions($actions);
 					$r .= "</td>";
 					break;
 				case 'folder':
 					$r .= "<td $attributes>";
-					$dir=dirname($backup['file']);
-					if ($dir=='.')
-						$dir='';
-					else
-						$dir.='/';
-					if ($this->dest=='FOLDER') 
-						$r .= $dir;
-					elseif ($this->dest=='S3') 
-						$r .= "S3://".$jobvalue['awsBucket']."/".$dir;
-					elseif ($this->dest=='FTP')
-						$r .= "FTP://".$jobvalue['ftphost'].$dir;
-					elseif ($this->dest=='RSC')
-						$r .= "RSC://".$jobvalue['rscContainer']."/".$dir;
-					elseif ($this->dest=='MSAZURE')
-						$r .= "MSAZURE://".$jobvalue['msazureContainer']."/".$dir;
-					elseif ($this->dest=='DROPBOX')
-						$r .= "DROPBOX:/".$dir;
-					elseif ($this->dest=='SUGARSYNC')
-						$r .= "SUGARSYNC://magicBriefcase/".$jobvalue['sugardir']; 
+					$r .= $backup['folder'];
 					$r .= "</td>";
 					break;
 				case 'size':
@@ -240,6 +242,11 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					} else {
 						$r .= __('?','backwpup');
 					}
+					$r .= "</td>";
+					break;
+				case 'time':
+					$r .= "<td $attributes>";
+					$r .= date_i18n(get_option('date_format'),$backup['time']).'<br />'. date_i18n(get_option('time_format'),$backup['time']); 
 					$r .= "</td>";
 					break;
 			}
@@ -266,6 +273,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 				if (substr($file,0,1)=='.')
 					continue;
 				if (is_file($jobvalue['backupdir'].$file)) {
+					$files[$filecounter]['JOBID']=$jobid;
+					$files[$filecounter]['DEST']=$dest;
+					$files[$filecounter]['folder']=$jobvalue['backupdir'];
 					$files[$filecounter]['file']=$jobvalue['backupdir'].$file;
 					$files[$filecounter]['filename']=$file;
 					$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=download&file='.$jobvalue['backupdir'].$file;
@@ -289,6 +299,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 				if (is_array($contents)) {
 					foreach ($contents['contents'] as $object) {
 						if ($object['is_dir']!=true) {
+							$files[$filecounter]['JOBID']=$jobid;
+							$files[$filecounter]['DEST']=$dest;
+							$files[$filecounter]['folder']="DROPBOX:/".dirname($object['path']).'/';
 							$files[$filecounter]['file']=$object['path'];
 							$files[$filecounter]['filename']=basename($object['path']);
 							$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;
@@ -313,8 +326,11 @@ function backwpup_get_backup_files($jobid,$dest) {
 				$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
 				$getfiles=$sugarsync->getcontents('file');
 				if (is_object($getfiles)) {
-					foreach ($getfiles->file as $getfile) {						
-						$files[$filecounter]['file']= (string) $getfile->ref;
+					foreach ($getfiles->file as $getfile) {
+						$files[$filecounter]['JOBID']=$jobid;
+						$files[$filecounter]['DEST']=$dest;					
+						$files[$filecounter]['folder']="SUGARSYNC://".$jobvalue['sugarroot']."/".dirname((string)$getfile->ref);
+						$files[$filecounter]['file']=(string)$getfile->ref;
 						$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
 						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=(int) $getfile->size;
@@ -336,6 +352,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 				$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
 				if (($contents = $s3->list_objects($jobvalue['awsBucket'],array('prefix'=>$jobvalue['awsdir']))) !== false) {
 					foreach ($contents->body->Contents as $object) {
+						$files[$filecounter]['JOBID']=$jobid;
+						$files[$filecounter]['DEST']=$dest;
+						$files[$filecounter]['folder']="S3://".$jobvalue['awsBucket']."/".dirname((string)$object->Key).'/';
 						$files[$filecounter]['file']=(string)$object->Key;
 						$files[$filecounter]['filename']=basename($object->Key);
 						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
@@ -361,6 +380,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 				$blobs = $storageClient->listBlobs($jobvalue['msazureContainer'],$jobvalue['msazuredir']);
 				if (is_array($blobs)) {
 					foreach ($blobs as $blob) {
+						$files[$filecounter]['JOBID']=$jobid;
+						$files[$filecounter]['DEST']=$dest;
+						$files[$filecounter]['folder']="MSAZURE://".$jobvalue['msazureContainer']."/".dirname($blob->Name)."/";
 						$files[$filecounter]['file']=$blob->Name;
 						$files[$filecounter]['filename']=basename($blob->Name);
 						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
@@ -387,7 +409,10 @@ function backwpup_get_backup_files($jobid,$dest) {
 					$conn->ssl_use_cabundle();
 					$backwpupcontainer = $conn->get_container($jobvalue['rscContainer']);
 					$contents = $backwpupcontainer->get_objects(0,NULL,NULL,$jobvalue['rscdir']);
-					foreach ($contents as $object) {							
+					foreach ($contents as $object) {
+						$files[$filecounter]['JOBID']=$jobid;
+						$files[$filecounter]['DEST']=$dest;
+						$files[$filecounter]['folder']="RSC://".$jobvalue['rscContainer']."/".dirname($object->name)."/";
 						$files[$filecounter]['file']=$object->name;
 						$files[$filecounter]['filename']=basename($object->name);
 						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
@@ -432,7 +457,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 				foreach($ftpfilelist as $ftpfiles) {
 					if (substr(basename($ftpfiles),0,1)=='.')
 						continue;
-					$files[$filecounter]['file']=$ftpfiles;
+					$files[$filecounter]['JOBID']=$jobid;
+					$files[$filecounter]['DEST']=$dest;
+					$files[$filecounter]['folder']="FTP://".$jobvalue['ftphost'].dirname($ftpfiles)."/";
 					$files[$filecounter]['filename']=basename($ftpfiles);
 					$files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].rawurlencode($ftpfiles);
 					$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
