@@ -134,14 +134,12 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					break;
 				case 'status':
 					$r .= "<td $attributes>";
-					if($logdata['errors']>0 or $logdata['warnings']>0) { 
-						if ($logdata['errors']>0)
-							$r .= '<span style="color:red;">'.$logdata['errors'].' '.__('ERROR(S)','backwpup').'</span><br />'; 
-						if ($logdata['warnings']>0)
-							$r .= '<span style="color:yellow;">'.$logdata['warnings'].' '.__('WARNING(S)','backwpup').'</span>'; 
-					} else { 
-						$r .= '<span style="color:green;">'.__('OK','backwpup').'</span>';
-					} 
+					if ($logdata['errors']>0)
+						$r .= str_replace('%d',$logdata['errors'],'<span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span><br />'); 
+					if ($logdata['warnings']>0)
+						$r .= str_replace('%d',$logdata['warnings'],'<span style="color:#e66f00;font-weight:bold;">'._n("%d WARNING", "%d WARNINGS", $logdata['warnings'],'backwpup').'</span><br />'); 
+					if($logdata['errors']==0 and $logdata['warnings']==0) 
+						$r .= '<span style="color:green;font-weight:bold;">'.__('O.K.','backwpup').'</span>';
 					$r .= "</td>"; 
 					break;
 				case 'size':

@@ -105,8 +105,8 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpupworking&action=runnow&jobid='.$jobvalue["jobid"], 'runnow-job_'.$jobvalue["jobid"]) . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if ($runningfile['JOBID']==$jobvalue["jobid"]) {
-							$actions['abort'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!!!','backwpup') . "</a>";
 							$actions['working'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
+							$actions['abort'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 						}
 					}
 					$r .= $this->row_actions($actions);

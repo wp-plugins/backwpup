@@ -292,13 +292,12 @@ function backwpup_read_logheader($logfile) {
 	return $joddata;
 }
 
-//Dashboard widget
-function backwpup_dashboard_output() {
-	global $wpdb;
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
-		return;
+//Dashboard widget for Logs
+function backwpup_dashboard_logs() {
 	$cfg=get_option('backwpup');
-	echo '<strong>'.__('Logs:','backwpup').'</strong><br />';
+	$widgets = get_option( 'dashboard_widget_options' );
+	if (!isset($widgets['backwpup_dashboard_logs']) or $widgets['backwpup_dashboard_logs']<1 or $widgets['backwpup_dashboard_logs']>20)
+		$widgets['backwpup_dashboard_logs'] =5;
 	//get log files
 	$logfiles=array();
 	if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
@@ -309,57 +308,92 @@ function backwpup_dashboard_output() {
 		closedir( $dir );
 		rsort($logfiles);
 	}
-
-	if (is_array($logfiles)) {
+	echo '<ul>';
+	if (count($logfiles)>0) {
 		$count=0;
 		foreach ($logfiles as $logfile) {
 			$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
-			echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&subpage=view_log&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log','backwpup').'">'.date_i18n(get_option('date_format'),$logdata['logtime']).' '.date_i18n(get_option('time_format'),$logdata['logtime']).': <i>';
-			if (empty($logdata['name']))
-				echo $logdata['type'];
-			else
-				echo $logdata['name'];
-			echo '</i>';
-			if($logdata['errors']>0 or $logdata['warnings']>0) {
-				if ($logdata['errors']>0)
-					echo ' <span style="color:red;">'.$logdata['errors'].' '.__('ERROR(S)','backwpup').'</span>';
-				if ($logdata['warnings']>0)
-					echo ' <span style="color:yellow;">'.$logdata['warnings'].' '.__('WARNING(S)','backwpup').'</span>';
-			} else {
-				echo ' <span style="color:green;">'.__('OK','backwpup').'</span>';
-			}
-			echo '</a><br />';
+			echo '<li>';
+			echo '<span>'.date_i18n(get_option('date_format').' '.get_option('time_format'),$logdata['logtime']).'</span> ';
+			echo '<a href="'.wp_nonce_url('admin.php?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
+			if ($logdata['errors']>0)
+				printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
+			if ($logdata['warnings']>0)
+				printf(' <span style="color:#e66f00;font-weight:bold;">'._n("%d WARNING", "%d WARNINGS", $logdata['warnings'],'backwpup').'</span>', $logdata['warnings']);
+			if($logdata['errors']==0 and $logdata['warnings']==0) 
+				echo ' <span style="color:green;font-weight:bold;">'.__('O.K.','backwpup').'</span>';			
+			echo '</li>';
 			$count++;
-			if ($count>=5)
+			if ($count>=$widgets['backwpup_dashboard_logs'])
 				break;
 		}
+		echo '</ul>';
 	} else {
-		echo '<i>'.__('none','backwpup').'</i><br />';
+		echo '<i>'.__('none','backwpup').'</i>';
 	}
+}
+
+//Dashboard widget for Logs config
+function backwpup_dashboard_logs_config() {
+	if ( !$widget_options = get_option( 'dashboard_widget_options' ) )
+		$widget_options = array();
+
+	if ( !isset($widget_options['backwpup_dashboard_logs']) )
+		$widget_options['backwpup_dashboard_logs'] = 5;		
+
+	if ( 'POST' == $_SERVER['REQUEST_METHOD'] && isset($_POST['backwpup_dashboard_logs']) ) {
+		$number = absint( $_POST['backwpup_dashboard_logs'] );
+		$widget_options['backwpup_dashboard_logs'] = $number;
+		update_option( 'dashboard_widget_options', $widget_options );
+	}
+
+	echo '<p><label for="backwpup-logs">'.__('How many of the lastes logs would you like to display?','backwpup').'</label>';
+	echo '<select id="backwpup-logs" name="backwpup_dashboard_logs">';
+	for ($i=0;$i<=20;$i++)
+		echo '<option value="'.$i.'" '.selected($i,$widget_options['backwpup_dashboard_logs']).'>'.$i.'</option>';
+	echo '</select>';
+
+}
+
+//Dashboard widget for Jobs
+function backwpup_dashboard_activejobs() {
 	$jobs=(array)get_option('backwpup_jobs');
-	echo '<strong>'.__('Scheduled Jobs:','backwpup').'</strong><br />';
+	$runningfile['JOBID']='';
+	$runningfile=backwpup_get_working_file();
+	$tmp = Array();
+	foreach($jobs as &$ma)
+		$tmp[] = &$ma["cronnextrun"];
+	array_multisort($tmp, SORT_DESC, $jobs);
+	$count=0;
+	echo '<ul>';
 	foreach ($jobs as $jobid => $jobvalue) {
-		if ($jobvalue['activated']) {
-			echo '<a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">';
-			if ($jobvalue['starttime']>0 and empty($jobvalue['stoptime'])) {
-				$runtime=current_time('timestamp')-$jobvalue['starttime'];
-				echo __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
-			} elseif ($jobvalue['activated']) {
-				echo date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']);
-			}
-			echo ': <span>'.$jobvalue['name'].'</span></a><br />';
+		if ($runningfile['JOBID']==$jobvalue["jobid"]) {
+			$runtime=time()-$jobvalue['starttime'];
+			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
+			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
+			echo " <a style=\"color:green;\" href=\"" . wp_nonce_url('admin.php?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
+			echo " <a style=\"color:red;\" href=\"" . wp_nonce_url('admin.php?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
+			echo "</li>";
+			$count++;
+		} elseif ($jobvalue['activated']) {
+			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
+			echo ' <a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
+			echo "</li>";
+			$count++;
 		}
 	}
-	if (empty($jobs)) 
-		echo '<i>'.__('none','backwpup').'</i><br />';
-
+	
+	if ($count==0) 
+		echo '<li><i>'.__('none','backwpup').'</i></li>';
+	echo '</ul>';
 }
 
 //add dashboard widget
 function backwpup_add_dashboard() {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
-	wp_add_dashboard_widget( 'backwpup_dashboard_widget', 'BackWPup', 'backwpup_dashboard_output' );
+	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
+	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
 }
 
 //turn cache off

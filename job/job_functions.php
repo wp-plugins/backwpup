@@ -5,7 +5,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 	header("Status: 404 Not Found");
 	die();
 }
-//For Later Translation ;)
+
 function __($message,$domain='backwpup') {
 	$msgid=md5($message);
 	if (!empty($_SESSION['TRANSLATE'][$msgid]))
@@ -13,12 +13,21 @@ function __($message,$domain='backwpup') {
 	return $message;
 }
 
-//For Later Translation ;)
 function _e($message,$domain='backwpup') {
 	$msgid=md5($message);
 	if (!empty($_SESSION['TRANSLATE'][$msgid]))
 		$message=$_SESSION['TRANSLATE'][$msgid];
 	echo $message;
+}
+
+function _n($singular,$plural,$count,$domain='backwpup') {
+	if ($count<=1)
+		$msgid=md5($singular);
+	else
+		$msgid=md5($plural);
+	if (!empty($_SESSION['TRANSLATE'][$msgid]))
+		$message=$_SESSION['TRANSLATE'][$msgid];
+	return $message;
 }
 
 function exists_option($option='backwpup_jobs') {
