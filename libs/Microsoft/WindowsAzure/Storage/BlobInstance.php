@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,21 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
- * @version    $Id: BlobInstance.php 53615 2010-11-16 20:45:11Z unknown $
+ * @version    $Id: BlobInstance.php 61044 2011-04-19 10:21:34Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Exception.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_StorageEntityAbstract
- */
-require_once 'Microsoft/WindowsAzure/Storage/StorageEntityAbstract.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * 
  * @property string  $Container       The name of the blob container in which the blob is stored.
@@ -67,14 +62,8 @@ require_once 'Microsoft/WindowsAzure/Storage/StorageEntityAbstract.php';
  * @property array   $Metadata        Key/value pairs of meta data
  */
 class Microsoft_WindowsAzure_Storage_BlobInstance
+	extends Microsoft_WindowsAzure_Storage_StorageEntityAbstract
 {
-    /**
-     * Data
-     * 
-     * @var array
-     */
-    protected $_data = null;
-    
     /**
      * Constructor
      * 
@@ -113,33 +102,5 @@ class Microsoft_WindowsAzure_Storage_BlobInstance
             'isprefix'         => $isPrefix,
             'metadata'         => $metadata
         );
-    }
-    
-    /**
-     * Magic overload for setting properties
-     * 
-     * @param string $name     Name of the property
-     * @param string $value    Value to set
-     */
-    public function __set($name, $value) {
-        if (array_key_exists(strtolower($name), $this->_data)) {
-            $this->_data[strtolower($name)] = $value;
-            return;
-        }
-
-        throw new Exception("Unknown property: " . $name);
-    }
-
-    /**
-     * Magic overload for getting properties
-     * 
-     * @param string $name     Name of the property
-     */
-    public function __get($name) {
-        if (array_key_exists(strtolower($name), $this->_data)) {
-            return $this->_data[strtolower($name)];
-        }
-
-        throw new Exception("Unknown property: " . $name);
     }
 }

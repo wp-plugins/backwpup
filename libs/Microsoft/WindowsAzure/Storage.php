@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,46 +28,21 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
- * @version    $Id: Storage.php 51671 2010-09-30 08:33:45Z unknown $
+ * @version    $Id: Storage.php 61044 2011-04-19 10:21:34Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Credentials_CredentialsAbstract
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Credentials/CredentialsAbstract.php';
-
-/**
- * @see Microsoft_WindowsAzure_Credentials_SharedKey
- */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedKey.php';
-
-/**
- * @see Microsoft_WindowsAzure_RetryPolicy_RetryPolicyAbstract
- */
-require_once 'Microsoft/WindowsAzure/RetryPolicy/RetryPolicyAbstract.php';
-
-/**
- * @see Microsoft_WindowsAzure_Exception
- */
-require_once 'Microsoft/WindowsAzure/Exception.php';
-
-/**
- * @see Microsoft_Http_Client
- */
-require_once 'Microsoft/Http/Client.php';
-
-/**
- * @see Microsoft_Http_Response
- */
-require_once 'Microsoft/Http/Response.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage

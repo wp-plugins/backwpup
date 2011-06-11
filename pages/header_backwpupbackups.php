@@ -37,10 +37,8 @@ if (!empty($doaction)) {
 					}
 				}
 			} elseif ($dest=='MSAZURE') {
-				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-					set_include_path(get_include_path().PATH_SEPARATOR.realpath(dirname(__FILE__).'/../libs'));
-					require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
-				}
+				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+					require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 					if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
 						try {
@@ -60,6 +58,10 @@ if (!empty($doaction)) {
 						try {
 							$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 							$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+							if ($jobvalue['droperoot']=='sandbox')
+								$dropbox->setSandbox();
+							else
+								$dropbox->setDropbox();
 							$dropbox->fileopsDelete($backupfile);
 							unset($dropbox);
 						} catch (Exception $e) {
@@ -195,6 +197,10 @@ if (!empty($doaction)) {
 		try {
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
+			if ($jobs[$jobid]['droperoot']=='sandbox')
+				$dropbox->setSandbox();
+			else
+				$dropbox->setDropbox();
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -237,9 +243,8 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadmsazure': //Download Microsoft Azure Backup
 		check_admin_referer('download-backup');
-		set_include_path(get_include_path().PATH_SEPARATOR.realpath(dirname(__FILE__).'/../libs'));
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
-			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {

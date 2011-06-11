@@ -38,7 +38,7 @@ function dest_sugarsync() {
 		$sugarsync->mkdir($_SESSION['JOB']['sugardir'],$_SESSION['JOB']['sugarroot']);
 		$sugarsync->chdir($_SESSION['JOB']['sugardir'],$_SESSION['JOB']['sugarroot']);
 		//Upload to Sugarsync
-		$sugarsync->setProgressFunction('dest_sugarsync_progresscallback');
+		$sugarsync->setProgressFunction('curl_progresscallback');
 		trigger_error(__('Upload to SugarSync now started ... ','backwpup'),E_USER_NOTICE);
 		$reponse=$sugarsync->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		if (is_object($reponse)) {
@@ -63,12 +63,12 @@ function dest_sugarsync() {
 			if (sizeof($backupfilelist)>0) {
 				rsort($backupfilelist);
 				$numdeltefiles=0;
-				for ($i=$_SESSION['JOB']['sugarmaxbackups'];$i<sizeof($backupfilelist);$i++) {
+				for ($i=$_SESSION['JOB']['sugarmaxbackups'];$i<count($backupfilelist);$i++) {
 					$sugarsync->delete($backupfileref[utf8_encode($backupfilelist[$i])]); //delete files on Cloud
 					$numdeltefiles++;
 				}
 				if ($numdeltefiles>0)
-					trigger_error($numdeltefiles.' '.__('files deleted on Sugarsync Folder!','backwpup'),E_USER_NOTICE);
+					trigger_error($numdeltefiles.' '.__('files deleted on Sugarsync folder!','backwpup'),E_USER_NOTICE);
 			}
 		}	
 	} catch (Exception $e) {
@@ -77,12 +77,5 @@ function dest_sugarsync() {
 
 	$_SESSION['WORKING']['STEPDONE']=1;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
-}
-
-function dest_sugarsync_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
-	$_SESSION['WORKING']['STEPDONE']=$uploaded;
-	$_SESSION['WORKING']['STEPTODO']=$upload_size;
-	update_working_file();
-	return(0);
 }
 ?>

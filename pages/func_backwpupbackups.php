@@ -52,7 +52,6 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			set_transient('backwpup_backups_chache',$backups,300);		
 		}
 		
-		
 		//Sorting
 		$order=isset($_GET['order']) ? $_GET['order'] : 'time';
 		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'desc';
@@ -295,6 +294,10 @@ function backwpup_get_backup_files($jobid,$dest) {
 			try {
 				$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 				$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+				if ($jobvalue['droperoot']=='sandbox')
+					$dropbox->setSandbox();
+				else
+					$dropbox->setDropbox();
 				$contents = $dropbox->metadata($jobvalue['dropedir']);
 				if (is_array($contents)) {
 					foreach ($contents['contents'] as $object) {
@@ -370,10 +373,8 @@ function backwpup_get_backup_files($jobid,$dest) {
 	}
 	//Get files/filinfo from Microsoft Azure
 	if ($dest=='MSAZURE' and !empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
-		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../libs');
-			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
-		}
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) 
+			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 		if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 			try {
 				$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
@@ -417,10 +418,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['filename']=basename($object->name);
 						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=$object->content_length;
-						$files[$filecounter]['time']=$object->last_modified;
+						$files[$filecounter]['time']=strtotime($object->last_modified);
 						$filecounter++;						
 					}
-					$donefolders[]=$jobvalue['rscUsername'].'|'.$jobvalue['rscContainer'].'|'.$jobvalue['rscdir'];
 				}
 			} catch (Exception $e) {
 				$backwpup_message.='RSC: '.$e->getMessage().'<br />';
@@ -460,6 +460,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 					$files[$filecounter]['JOBID']=$jobid;
 					$files[$filecounter]['DEST']=$dest;
 					$files[$filecounter]['folder']="FTP://".$jobvalue['ftphost'].dirname($ftpfiles)."/";
+					$files[$filecounter]['file']=$ftpfiles;
 					$files[$filecounter]['filename']=basename($ftpfiles);
 					$files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].rawurlencode($ftpfiles);
 					$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);

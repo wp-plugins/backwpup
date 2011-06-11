@@ -21,9 +21,9 @@
  */
 
 /**
- * @see Microsoft_Http_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Http/Exception.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 /**
  * @category   Microsoft

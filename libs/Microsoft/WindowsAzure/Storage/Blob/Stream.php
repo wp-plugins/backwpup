@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,27 +28,22 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure_Storage
  * @subpackage Blob
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://todo     name_todo
  * @version    $Id: Blob.php 24511 2009-07-28 09:17:56Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Storage_Blob
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
-
-/**
- * @see Microsoft_WindowsAzure_Exception
- */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure_Storage
  * @subpackage Blob
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_Blob_Stream
@@ -58,42 +53,42 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
      * 
      * @var string
      */
-    private $_fileName = null;
+    protected $_fileName = null;
     
     /**
      * Temporary file name
      * 
      * @var string
      */
-    private $_temporaryFileName = null;
+    protected $_temporaryFileName = null;
     
     /**
      * Temporary file handle
      * 
      * @var resource
      */
-    private $_temporaryFileHandle = null;
+    protected $_temporaryFileHandle = null;
     
     /**
      * Blob storage client
      * 
      * @var Microsoft_WindowsAzure_Storage_Blob
      */
-    private $_storageClient = null;
+    protected $_storageClient = null;
     
     /**
      * Write mode?
      * 
      * @var boolean
      */
-    private $_writeMode = false;
+    protected $_writeMode = false;
     
     /**
      * List of blobs
      * 
      * @var array
      */
-    private $_blobs = null;
+    protected $_blobs = null;
     
     /**
      * Retrieve storage client for this stream type
@@ -163,7 +158,7 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
      * @param  string  $opened_path
      * @return boolean
      */
-    public function stream_open($path, $mode, $options, $opened_path)
+    public function stream_open($path, $mode, $options, &$opened_path)
     {
         $this->_fileName = $path;
         $this->_temporaryFileName = tempnam(sys_get_temp_dir(), 'azure');
@@ -360,36 +355,7 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
             return false;
         }
 
-        $stat = array();
-        $stat['dev'] = 0;
-        $stat['ino'] = 0;
-        $stat['mode'] = 0;
-        $stat['nlink'] = 0;
-        $stat['uid'] = 0;
-        $stat['gid'] = 0;
-        $stat['rdev'] = 0;
-        $stat['size'] = 0;
-        $stat['atime'] = 0;
-        $stat['mtime'] = 0;
-        $stat['ctime'] = 0;
-        $stat['blksize'] = 0;
-        $stat['blocks'] = 0;
-
-        $info = null;
-        try {
-            $info = $this->_getStorageClient($this->_fileName)->getBlobInstance(
-                        $this->_getContainerName($this->_fileName),
-                        $this->_getFileName($this->_fileName)
-                    );
-        } catch (Microsoft_WindowsAzure_Exception $ex) {
-            // Unexisting file...
-        }
-        if (!is_null($info)) {
-            $stat['size']  = $info->Size;
-            $stat['atime'] = time();
-        }     
-        
-        return $stat;
+        return $this->url_stat($this->_fileName, 0);
     }
 
     /**
@@ -404,6 +370,10 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
             $this->_getContainerName($path),
             $this->_getFileName($path)
         );
+
+        // Clear the stat cache for this path.
+        clearstatcache(true, $path);
+        return true;
     }
 
     /**
@@ -433,6 +403,10 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
             $this->_getContainerName($path_from),
             $this->_getFileName($path_from)
         );
+
+        // Clear the stat cache for the affected paths.
+        clearstatcache(true, $path_from);
+        clearstatcache(true, $path_to);
         return true;
     }
     
@@ -466,15 +440,21 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
                         $this->_getContainerName($path),
                         $this->_getFileName($path)
                     );
+            $stat['size']  = $info->Size;
+
+            // Set the modification time and last modified to the Last-Modified header.
+            $lastmodified = strtotime($info->LastModified);
+            $stat['mtime'] = $lastmodified;
+            $stat['ctime'] = $lastmodified;
+
+            // Entry is a regular file.
+            $stat['mode'] = 0100000;
+
+            return array_values($stat) + $stat;
         } catch (Microsoft_WindowsAzure_Exception $ex) {
             // Unexisting file...
+            return false;
         }
-        if (!is_null($info)) {
-            $stat['size']  = $info->Size;
-            $stat['atime'] = time();
-        } 
-
-        return $stat;
     }
 
     /**
@@ -493,6 +473,7 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
                 $this->_getStorageClient($path)->createContainer(
                     $this->_getContainerName($path)
                 );
+                return true;
             } catch (Microsoft_WindowsAzure_Exception $ex) {
                 return false;
             }
@@ -511,11 +492,15 @@ class Microsoft_WindowsAzure_Storage_Blob_Stream
     public function rmdir($path, $options)
     {
         if ($this->_getContainerName($path) == $this->_getFileName($path)) {
+            // Clear the stat cache so that affected paths are refreshed.
+            clearstatcache();
+
             // Delete container
             try {
                 $this->_getStorageClient($path)->deleteContainer(
                     $this->_getContainerName($path)
                 );
+                return true;
             } catch (Microsoft_WindowsAzure_Exception $ex) {
                 return false;
             }

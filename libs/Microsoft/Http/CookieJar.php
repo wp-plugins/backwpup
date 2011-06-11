@@ -21,17 +21,9 @@
  */
 
 /**
- * @see Microsoft_Uri
+ * @see Microsoft_AutoLoader
  */
-require_once "Microsoft/Uri.php";
-/**
- * @see Microsoft_Http_Cookie
- */
-require_once "Microsoft/Http/Cookie.php";
-/**
- * @see Microsoft_Http_Response
- */
-require_once "Microsoft/Http/Response.php";
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * A Microsoft_Http_CookieJar object is designed to contain and maintain HTTP cookies, and should

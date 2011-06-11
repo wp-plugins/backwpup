@@ -58,6 +58,23 @@ jQuery(document).ready( function($) {
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
 
+	function gstoragegetbucket() {
+		var data = {
+			action: 'backwpup_get_gstorage_buckets',
+			backwpupajaxpage: 'backwpupeditjob',
+			GStorageAccessKey: jQuery('#GStorageAccessKey').val(),
+			GStorageSecret: jQuery('#GStorageSecret').val(),
+			GStorageselected: jQuery('#GStorageselected').val(),
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#GStorageBucket').remove();
+			$('#GStorageselected').after(response);
+		});		
+	}
+	$('#GStorageAccessKey').change(function() {gstoragegetbucket();});
+	$('#GStorageSecret').change(function() {gstoragegetbucket();});	
+	
 	function msazuregetcontainer() {
 		var data = {
 			action: 'backwpup_get_msazure_container',

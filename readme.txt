@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=daniel%40huesken-net%2ede&item_name=Daniel%20Huesken%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
-Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync
+Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.0
 Tested up to: 3.2.0
 Stable tag: 1.7.3
@@ -21,6 +21,7 @@ Do backups and more.
 * Store backup to Folder
 * Store backup to FTP Server
 * Store backup to Amazon S3
+* Store backup to Google Storage
 * Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
 * Store backup to DropBox
@@ -92,6 +93,7 @@ Destinations are:
 * MAIL = mail (can't disable)
 * DIR = Directory (can't disable)
 * S3 = Amazon S3
+* GSTORAGE = Google Storage
 * RSC = RackSpaceCloud
 * FTP = FTP Server
 * DROPBOX = DropBox
@@ -107,10 +109,12 @@ Destinations are:
 * PHP Sessions, curl and PHP version 5.2.4 required!
 * Wordpress 3.2 required!
 * Using the system temp dir now
-* Updatet AWS lib to 1.3.3
+* Updatet AWS lib to 1.3.4
 * Updated RSC lib to 1.7.9
+* Updated MS Azure lib to 3.0.0
+* Added Google storage as destination
 * Reworked GUI (Wordpress Dropboxes, working screen options, ....)
-
+* Complete new job working (backend and frontend)
 
 = 1.7.3 =
 * Fixed Dropbox PLAINTEXT signatre

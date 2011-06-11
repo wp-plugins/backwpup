@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,82 +28,22 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: Blob.php 14561 2009-05-07 08:05:12Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Credentials_CredentialsAbstract
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Credentials/CredentialsAbstract.php';
-
-/**
- * @see Microsoft_WindowsAzure_Credentials_SharedKey
- */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedKey.php';
-
-/**
- * @see Microsoft_WindowsAzure_Credentials_SharedKeyLite
- */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedKeyLite.php';
-
-/**
- * @see Microsoft_WindowsAzure_RetryPolicy_RetryPolicyAbstract
- */
-require_once 'Microsoft/WindowsAzure/RetryPolicy/RetryPolicyAbstract.php';
-
-/**
- * @see Microsoft_Http_Client
- */
-require_once 'Microsoft/Http/Client.php';
-
-/**
- * @see Microsoft_Http_Response
- */
-require_once 'Microsoft/Http/Response.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage
- */
-require_once 'Microsoft/WindowsAzure/Storage.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_BatchStorageAbstract
- */
-require_once 'Microsoft/WindowsAzure/Storage/BatchStorageAbstract.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_TableInstance
- */
-require_once 'Microsoft/WindowsAzure/Storage/TableInstance.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_TableEntity
- */
-require_once 'Microsoft/WindowsAzure/Storage/TableEntity.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_DynamicTableEntity
- */
-require_once 'Microsoft/WindowsAzure/Storage/DynamicTableEntity.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_TableEntityQuery
- */
-require_once 'Microsoft/WindowsAzure/Storage/TableEntityQuery.php';
-
-/**
- * @see Microsoft_WindowsAzure_Exception
- */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_Table
@@ -393,7 +333,7 @@ class Microsoft_WindowsAzure_Storage_Table
 		    $result = $this->_parseResponse($response);
 		    
 		    $timestamp = $result->xpath('//m:properties/d:Timestamp');
-		    $timestamp = (string)$timestamp[0];
+		    $timestamp = $this->_convertToDateTime( (string)$timestamp[0] );
 
 		    $etag      = $result->attributes('http://schemas.microsoft.com/ado/2007/08/dataservices/metadata');
 		    $etag      = (string)$etag['etag'];
@@ -461,18 +401,18 @@ class Microsoft_WindowsAzure_Storage_Table
 	 * @return Microsoft_WindowsAzure_Storage_TableEntity
 	 * @throws Microsoft_WindowsAzure_Exception
 	 */
-	public function retrieveEntityById($tableName = '', $partitionKey = '', $rowKey = '', $entityClass = 'Microsoft_WindowsAzure_Storage_DynamicTableEntity')
+	public function retrieveEntityById($tableName, $partitionKey, $rowKey, $entityClass = 'Microsoft_WindowsAzure_Storage_DynamicTableEntity')
 	{
-		if ($tableName === '') {
+		if (is_null($tableName) || $tableName === '') {
 			throw new Microsoft_WindowsAzure_Exception('Table name is not specified.');
 		}
-		if ($partitionKey === '') {
+		if (is_null($partitionKey) || $partitionKey === '') {
 			throw new Microsoft_WindowsAzure_Exception('Partition key is not specified.');
 		}
-		if ($rowKey === '') {
+		if (is_null($rowKey) || $rowKey === '') {
 			throw new Microsoft_WindowsAzure_Exception('Row key is not specified.');
 		}
-		if ($entityClass === '') {
+		if (is_null($entityClass) || $entityClass === '') {
 			throw new Microsoft_WindowsAzure_Exception('Entity class is not specified.');
 		}
 
@@ -550,7 +490,9 @@ class Microsoft_WindowsAzure_Storage_Table
 		    // Option 1: $tableName is a string
 		    
 		    // Append parentheses
-		    $tableName .= '()';
+		    if (strpos($tableName, '()') === false) {
+		    	$tableName .= '()';
+		    }
 		    
     	    // Build query
     	    $query = array();
@@ -580,9 +522,11 @@ class Microsoft_WindowsAzure_Storage_Table
 		if (!is_null($nextPartitionKey) && !is_null($nextRowKey)) {
 		    if ($queryString !== '') {
 		        $queryString .= '&';
+		    } else {
+		    	$queryString .= '?';
 		    }
 		        
-		    $queryString .= '&NextPartitionKey=' . rawurlencode($nextPartitionKey) . '&NextRowKey=' . rawurlencode($nextRowKey);
+		    $queryString .= 'NextPartitionKey=' . rawurlencode($nextPartitionKey) . '&NextRowKey=' . rawurlencode($nextRowKey);
 		}
 
 		// Perform request
@@ -635,13 +579,13 @@ class Microsoft_WindowsAzure_Storage_Table
     		    $entity = new $entityClass('', '');
     		    $entity->setAzureValues((array)$properties, $this->_throwExceptionOnMissingData);
     		    
-    		    // If we have a Microsoft_WindowsAzure_Storage_DynamicTableEntity, make sure all property types are OK
+    		    // If we have a Microsoft_WindowsAzure_Storage_DynamicTableEntity, make sure all property types are set
     		    if ($entity instanceof Microsoft_WindowsAzure_Storage_DynamicTableEntity) {
     		        foreach ($properties as $key => $value) {  
     		            $attributes = $value->attributes('http://schemas.microsoft.com/ado/2007/08/dataservices/metadata');
     		            $type = (string)$attributes['type'];
     		            if ($type !== '') {
-    		                $entity->setAzurePropertyType($key, $type);
+    		            	$entity->setAzureProperty($key, (string)$value, $type);
     		            }
     		        }
     		    }
@@ -710,7 +654,7 @@ class Microsoft_WindowsAzure_Storage_Table
 		}
 		
 		// Ensure entity timestamp matches updated timestamp 
-        $entity->setTimestamp($this->isoDate());
+        $entity->setTimestamp(new DateTime());
         
 	    return $this->_changeEntity(Microsoft_Http_Client::MERGE, $tableName, $mergeEntity, $verifyEtag);
 	}
@@ -778,12 +722,9 @@ class Microsoft_WindowsAzure_Storage_Table
 		
 		// Attempt to get timestamp from entity
         $timestamp = $entity->getTimestamp();
-        if ($timestamp == Microsoft_WindowsAzure_Storage_TableEntity::DEFAULT_TIMESTAMP) {
-            $timestamp = $this->isoDate();
-        }
         
         $requestBody = $this->_fillTemplate($requestBody, array(
-        	'Updated'    => $timestamp,
+        	'Updated'    => $this->_convertToEdmDateTime($timestamp),
             'Properties' => $this->_generateAzureRepresentation($entity)
         ));
 
@@ -807,7 +748,7 @@ class Microsoft_WindowsAzure_Storage_Table
 		if ($response->isSuccessful()) {
 		    // Update properties
 			$entity->setEtag($response->getHeader('Etag'));
-			$entity->setTimestamp($response->getHeader('Last-modified'));
+			$entity->setTimestamp( $this->_convertToDateTime($response->getHeader('Last-modified')) );
 
 		    return $entity;
 		} else {
@@ -865,6 +806,8 @@ class Microsoft_WindowsAzure_Storage_Table
 		    if (!is_null($azureValue->Value)) {
 		        if (strtolower($azureValue->Type) == 'edm.boolean') {
 		            $value[] = ($azureValue->Value == true ? '1' : '0');
+		        } else if (strtolower($azureValue->Type) == 'edm.datetime') {
+		        	$value[] = $this->_convertToEdmDateTime($azureValue->Value);
 		        } else {
 		            $value[] = htmlspecialchars($azureValue->Value);
 		        }
@@ -915,5 +858,42 @@ class Microsoft_WindowsAzure_Storage_Table
 			$resourceType,
 			$requiredPermission
 		);
-	}
+	}  
+	  
+    /**
+     * Converts a string to a DateTime object. Returns false on failure.
+     * 
+     * @param string $value The string value to parse
+     * @return DateTime|boolean
+     */
+    protected function _convertToDateTime($value = '') 
+    {
+    	if ($value instanceof DateTime) {
+    		return $value;
+    	}
+    	
+    	try {
+    		if (substr($value, -1) == 'Z') {
+    			$value = substr($value, 0, strlen($value) - 1);
+    		}
+    		return new DateTime($value, new DateTimeZone('UTC'));
+    	}
+    	catch (Exception $ex) {
+    		return false;
+    	}
+    }
+    
+    /**
+     * Converts a DateTime object into an Edm.DaeTime value in UTC timezone,
+     * represented as a string.
+     * 
+     * @param DateTime $value
+     * @return string
+     */
+    protected function _convertToEdmDateTime(DateTime $value) 
+    {
+    	$cloned = clone $value;
+    	$cloned->setTimezone(new DateTimeZone('UTC'));
+    	return str_replace('+0000', 'Z', $cloned->format(DateTime::ISO8601));
+    }
 }

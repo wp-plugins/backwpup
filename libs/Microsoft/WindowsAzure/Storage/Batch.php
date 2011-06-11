@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,21 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: Storage.php 21617 2009-06-12 10:46:31Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Exception.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_BatchStorageAbstract
- */
-require_once 'Microsoft/WindowsAzure/Storage/BatchStorageAbstract.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_Batch
@@ -210,7 +205,7 @@ class Microsoft_WindowsAzure_Storage_Batch
      * @throws Microsoft_WindowsAzure_Exception
      */
     public function commit()
-    {
+    {    	
         // Perform batch
         $response = $this->_storageClient->performBatch($this->_operations, $this->_forTableStorage, $this->_isSingleSelect);
         

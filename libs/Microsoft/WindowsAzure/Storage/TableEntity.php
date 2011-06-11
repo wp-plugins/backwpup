@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,26 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: BlobInstance.php 14561 2009-05-07 08:05:12Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_TableEntity
 {
-	/**
-	 * Default timestamp if none has been provided
-	 */
-	const DEFAULT_TIMESTAMP = '1900-01-01T00:00:00';
-	
     /**
      * Partition key
      * 
@@ -146,7 +141,7 @@ class Microsoft_WindowsAzure_Storage_TableEntity
     public function getTimestamp()
     {
     	if (null === $this->_timestamp) {
-            $this->setTimestamp(self::DEFAULT_TIMESTAMP);
+            $this->setTimestamp(new DateTime());
         }
         return $this->_timestamp;
     }
@@ -155,9 +150,9 @@ class Microsoft_WindowsAzure_Storage_TableEntity
      * Set timestamp
      * 
      * @azure Timestamp Edm.DateTime
-     * @param string $value
+     * @param DateTime $value
      */
-    public function setTimestamp($value = '1900-01-01T00:00:00')
+    public function setTimestamp(DateTime $value)
     {
         $this->_timestamp = $value;
     }
@@ -246,6 +241,8 @@ class Microsoft_WindowsAzure_Storage_TableEntity
         	                break;
         	            case 'edm.double':
         	                $values[$accessor->AzurePropertyName] = floatval($values[$accessor->AzurePropertyName]); break;
+        	            case 'edm.datetime':
+        	            	$values[$accessor->AzurePropertyName] = $this->_convertToDateTime($values[$accessor->AzurePropertyName]); break;
         	        }
                 }
                 
@@ -340,5 +337,36 @@ class Microsoft_WindowsAzure_Storage_TableEntity
             'AzurePropertyName' => $azureProperties[0],
         	'AzurePropertyType' => isset($azureProperties[1]) ? $azureProperties[1] : ''
         );
+    }
+    
+    /**
+     * Converts a string to a DateTime object. Returns false on failure.
+     * 
+     * @param string $value The string value to parse
+     * @return DateTime|boolean
+     */
+    protected function _convertToDateTime($value = '') 
+    {
+    	if ($value === '') {
+    		return false;
+    	}
+    	
+    	if ($value instanceof DateTime) {
+    		return $value;
+    	}
+    	
+    	if (@strtotime($value) !== false) {
+	    	try {
+	    		if (substr($value, -1) == 'Z') {
+	    			$value = substr($value, 0, strlen($value) - 1);
+	    		}
+	    		return new DateTime($value, new DateTimeZone('UTC'));
+	    	}
+	    	catch (Exception $ex) {
+	    		return false;
+	    	}
+	    }
+    	
+    	return false;
     }
 }

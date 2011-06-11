@@ -22,17 +22,9 @@
  */
 
 /**
- * @see Microsoft_Uri_Http
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri/Http.php';
-/**
- * @see Microsoft_Http_Client_Adapter_Interface
- */
-require_once 'Microsoft/Http/Client/Adapter/Interface.php';
-/**
- * @see Microsoft_Http_Client_Adapter_Stream
- */
-require_once 'Microsoft/Http/Client/Adapter/Stream.php';
+require_once dirname(__FILE__) . '/../../../AutoLoader.php';
 
 /**
  * A sockets based (stream_socket_client) adapter class for Microsoft_Http_Client. Can be used

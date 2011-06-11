@@ -1230,6 +1230,11 @@ class CF_Http
         if ($conn_type == "PUT_OBJ") {
             curl_setopt($ch, CURLOPT_PUT, 1);
             curl_setopt($ch, CURLOPT_READFUNCTION, array(&$this, '_read_cb'));
+			/* start Backwpup */
+			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+			/* end Backwpup */
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         }
         if ($conn_type == "HEAD") {
@@ -1238,7 +1243,7 @@ class CF_Http
         }
         if ($conn_type == "PUT_CONT") {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-            curl_setopt($ch, CURLOPT_INFILESIZE, 0);
+            curl_setopt($ch, CURLOPT_INFILESIZE, 0);			
 	    curl_setopt($ch, CURLOPT_NOBODY, 1);
         }
         if ($conn_type == "DEL_POST") {

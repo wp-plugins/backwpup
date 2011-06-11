@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,57 +28,22 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://todo     name_todo
  * @version    $Id: Blob.php 24241 2009-07-22 09:43:13Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Credentials_SharedKey
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedKey.php';
-
-/**
- * @see Microsoft_WindowsAzure_RetryPolicy_RetryPolicyAbstract
- */
-require_once 'Microsoft/WindowsAzure/RetryPolicy/RetryPolicyAbstract.php';
-
-/**
- * @see Microsoft_Http_Client
- */
-require_once 'Microsoft/Http/Client.php';
-
-/**
- * @see Microsoft_Http_Response
- */
-require_once 'Microsoft/Http/Response.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage
- */
-require_once 'Microsoft/WindowsAzure/Storage.php';
-
-/**
- * Microsoft_WindowsAzure_Storage_QueueInstance
- */
-require_once 'Microsoft/WindowsAzure/Storage/QueueInstance.php';
-
-/**
- * Microsoft_WindowsAzure_Storage_QueueMessage
- */
-require_once 'Microsoft/WindowsAzure/Storage/QueueMessage.php';
-
-/**
- * @see Microsoft_WindowsAzure_Exception
- */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_Queue extends Microsoft_WindowsAzure_Storage
@@ -485,6 +450,18 @@ class Microsoft_WindowsAzure_Storage_Queue extends Microsoft_WindowsAzure_Storag
 	}
 	
 	/**
+	 * Checks to see if a given queue has messages
+	 *
+	 * @param string $queueName         Queue name
+	 * @return boolean
+	 * @throws Microsoft_WindowsAzure_Exception
+	 */
+	public function hasMessages($queueName = '')
+	{
+		return count($this->peekMessages($queueName)) > 0;
+	}
+	
+	/**
 	 * Clear queue messages
 	 *
 	 * @param string $queueName         Queue name
@@ -526,7 +503,7 @@ class Microsoft_WindowsAzure_Storage_Queue extends Microsoft_WindowsAzure_Storag
 		}
 
 		// Perform request
-		$response = $this->_performRequest($queueName . '/messages/' . $message->MessageId, '?popreceipt=' . $message->PopReceipt, Microsoft_Http_Client::DELETE);	
+		$response = $this->_performRequest($queueName . '/messages/' . $message->MessageId, '?popreceipt=' . urlencode($message->PopReceipt), Microsoft_Http_Client::DELETE);	
 		if (!$response->isSuccessful()) {
 			throw new Microsoft_WindowsAzure_Exception($this->_getErrorMessage($response, 'Resource could not be accessed.'));
 		}

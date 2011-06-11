@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: Blob.php 14561 2009-05-07 08:05:12Z unknown $
  */
@@ -37,7 +37,7 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_TableEntityQuery
@@ -248,7 +248,7 @@ class Microsoft_WindowsAzure_Storage_TableEntityQuery
 	        $identifier .= '(';
 	        
 	        if (!is_null($this->_partitionKey)) {
-	            $identifier .= 'PartitionKey=\'' . $this->_partitionKey . '\'';
+	            $identifier .= 'PartitionKey=\'' . self::encodeQuery($this->_partitionKey) . '\'';
 	        }
 	            
 	        if (!is_null($this->_partitionKey) && !is_null($this->_rowKey)) {
@@ -256,7 +256,7 @@ class Microsoft_WindowsAzure_Storage_TableEntityQuery
 	        }
 	            
 	        if (!is_null($this->_rowKey)) {
-	            $identifier .= 'RowKey=\'' . $this->_rowKey . '\'';
+	            $identifier .= 'RowKey=\'' . self::encodeQuery($this->_rowKey) . '\'';
 	        }
 	            
 	        $identifier .= ')';
@@ -344,8 +344,9 @@ class Microsoft_WindowsAzure_Storage_TableEntityQuery
 		$query = str_replace('+', '%2B', $query);
 		$query = str_replace(',', '%2C', $query);
 		$query = str_replace('$', '%24', $query);
-		
-		
+		$query = str_replace('{', '%7B', $query);
+		$query = str_replace('}', '%7D', $query);
+
 		$query = str_replace(' ', '%20', $query);
 		
 		return $query;

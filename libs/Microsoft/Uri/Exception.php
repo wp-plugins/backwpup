@@ -20,9 +20,9 @@
  */
 
 /**
- * @see Microsoft_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Exception.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * Exceptions for Microsoft_Uri

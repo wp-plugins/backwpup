@@ -39,11 +39,10 @@ if (!empty($doaction)) {
 		update_option('backwpup_jobs',$jobs);
 		break;
 	case 'export': //Copy Job
-		$jobs=get_option('backwpup_jobs');
 		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
-				$jobsexport[$jobid]=backwpup_check_job_vars($jobs[$jobid],$jobid);
+				$jobsexport[$jobid]=backwpup_get_job_vars($jobid);
 			}
 		}
 		$export=serialize($jobsexport);

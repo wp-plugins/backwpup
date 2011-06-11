@@ -203,6 +203,22 @@ function backwpup_jobedit_metabox_dests3($jobvalue) {
 	<?PHP
 }
 
+function backwpup_jobedit_metabox_destgstorage($jobvalue) {
+	?>
+	<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://code.google.com/apis/console/?pli=1#storage:legacy" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
+	<input id="GStorageAccessKey" name="GStorageAccessKey" type="text" value="<?PHP echo $jobvalue['GStorageAccessKey'];?>" class="large-text" /><br />
+	<b><?PHP _e('Secret:','backwpup'); ?></b><br />
+	<input id="GStorageSecret" name="GStorageSecret" type="password" value="<?PHP echo $jobvalue['GStorageSecret'];?>" class="large-text" /><br />
+	<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
+	<input id="GStorageselected" name="GStorageselected" type="hidden" value="<?PHP echo $jobvalue['GStorageBucket'];?>" />
+	<?PHP if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret'])) backwpup_get_gstorage_buckets(array('GStorageAccessKey'=>$jobvalue['GStorageAccessKey'],'GStorageSecret'=>$jobvalue['GStorageSecret'],'GStorageselected'=>$jobvalue['GStorageBucket'])); ?>
+	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newGStorageBucket" type="text" value="" class="text" /><br />
+	<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
+	<input name="GStoragedir" type="text" value="<?PHP echo $jobvalue['GStoragedir'];?>" class="large-text" /><br />
+	<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['GStoragemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	<?PHP
+}
+
 function backwpup_jobedit_metabox_destazure($jobvalue) {
 	?>
 	<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -248,6 +264,11 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 	<?PHP } else  { ?>
 		<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
 	<?PHP } ?><br />
+	<b><?PHP _e('Root:','backwpup'); ?></b><br />
+	<select name="droperoot" id="droperoot">
+	<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('dropbox', 'backwpup'); ?></option>
+	<option <?PHP selected($jobvalue['droperoot'],'sandbox',true); ?> value="sandbox" disabled="disabled"><?php _e('sandbox (disabled by DropBox)', 'backwpup'); ?></option> 
+	</select><br />
 	<b><?PHP _e('Directory:','backwpup'); ?></b><br />
 	<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
 	<?PHP _e('Max. Backup Files in Dopbox Folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
@@ -320,22 +341,74 @@ function backwpup_get_aws_buckets($args='') {
 		else
 			return;
 	}
-	if ($buckets->status<200 and $buckets->status>=300) {
-		echo '<span id="awsBucket" style="color:red;">'.__('S3 Message:','backwpup').' '.$buckets->status.': '.$buckets->body->Message.'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	} else {
+	if ($buckets->status<200 or $buckets->status>=300) {
 		echo '<span id="awsBucket" style="color:red;">'.$buckets->status.': '.$buckets->body->Message.'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
-	}	
+	} 
 	echo '<select name="awsBucket" id="awsBucket">';
 	foreach ($buckets->body->Buckets->Bucket as $bucket) {
 		echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
+	}
+	echo '</select>';
+	if ($ajax)
+		die();
+	else
+		return;
+}
+
+//ajax/normal get buckests select box
+function backwpup_get_gstorage_buckets($args='') {
+	if (is_array($args)) {
+		extract($args);
+		$ajax=false;
+	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
+		$GStorageAccessKey=$_POST['GStorageAccessKey'];
+		$GStorageSecret=$_POST['GStorageSecret'];
+		$GStorageselected=$_POST['GStorageselected'];
+		$ajax=true;
+	}
+	if (!class_exists('Tws_Service_Google_Storage'))
+		require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+	if (empty($GStorageAccessKey)) {
+		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing Access Key!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (empty($GStorageSecret)) {
+		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing Secret!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	try {
+		$googlestorage = new GoogleStorage($GStorageAccessKey, $GStorageSecret);
+		$gbuckets=$googlestorage->listBuckets();
+	} catch (Exception $e) {
+		echo '<span id="GStorageBucket" style="color:red;">'.$e->getMessage().'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	}
+	if (!is_object($gbuckets)) {
+		echo '<span id="GStorageBucket" style="color:red;">'.$gbuckets.'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	} 
+	echo '<select name="GStorageBucket" id="GStorageBucket">';
+	foreach ($gbuckets as $bucket) {
+		echo "<option ".selected(strtolower($GStorageselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
 	}
 	echo '</select>';
 	if ($ajax)
@@ -422,10 +495,8 @@ function backwpup_get_msazure_container($args='') {
 		$msazureselected=$_POST['msazureselected'];
 		$ajax=true;
 	}
-	if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-		set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../libs');
-		require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
-	}
+	if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) 
+		require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 	if (empty($msazureHost)) {
 		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Hostname!','backwpup').'</span>';
 		if ($ajax)
@@ -538,6 +609,7 @@ function backwpup_get_sugarsync_root($args='') {
 }
 //add ajax function
 add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
+add_action('wp_ajax_backwpup_get_gstorage_buckets', 'backwpup_get_gstorage_buckets');
 add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
 add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
 add_action('wp_ajax_backwpup_get_sugarsync_root', 'backwpup_get_sugarsync_root');

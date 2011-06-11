@@ -918,6 +918,24 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['awsmaxbackups']) or !is_int($jobsettings['awsmaxbackups']))
 		$jobsettings['awsmaxbackups']=0;
 		
+	if (!isset($jobsettings['GStorageAccessKey']) or !is_string($jobsettings['GStorageAccessKey']))
+		$jobsettings['GStorageAccessKey']='';
+
+	if (!isset($jobsettings['GStorageSecret']) or !is_string($jobsettings['GStorageSecret']))
+		$jobsettings['GStorageSecret']='';
+
+	if (!isset($jobsettings['GStorageBucket']) or !is_string($jobsettings['GStorageBucket']))
+		$jobsettings['GStorageBucket']='';
+
+	if (!isset($jobsettings['GStoragedir']) or !is_string($jobsettings['GStoragedir']) or $jobsettings['GStoragedir']=='/')
+		$jobsettings['GStoragedir']='';
+	$jobsettings['GStoragedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['GStoragedir']))));
+	if (substr($jobsettings['GStoragedir'],0,1)=='/')
+		$jobsettings['GStoragedir']=substr($jobsettings['GStoragedir'],1);
+
+	if (!isset($jobsettings['GStoragemaxbackups']) or !is_int($jobsettings['GStoragemaxbackups']))
+		$jobsettings['GStoragemaxbackups']=0;
+
 	if (!isset($jobsettings['msazureHost']) or !is_string($jobsettings['msazureHost']))
 		$jobsettings['msazureHost']='blob.core.windows.net';
 
@@ -969,6 +987,9 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (substr($jobsettings['dropedir'],0,1)=='/')
 		$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);
 	
+	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
+		$jobsettings['droperoot']='dropbox';	
+
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;	
 		

@@ -22,9 +22,9 @@
  */
 
 /**
- * @see Microsoft_Uri_Http
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri/Http.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 
 /**

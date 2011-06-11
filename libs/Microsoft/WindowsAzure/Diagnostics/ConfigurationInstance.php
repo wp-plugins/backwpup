@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,31 +28,21 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Diagnostics
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: Storage.php 45989 2010-05-03 12:19:10Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Diagnostics_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Diagnostics/Exception.php';
-
-/**
- * @see Microsoft_WindowsAzure_Diagnostics_ConfigurationObjectBaseAbstract
- */
-require_once 'Microsoft/WindowsAzure/Diagnostics/ConfigurationObjectBaseAbstract.php';
-
-/**
- * @see Microsoft_WindowsAzure_Diagnostics_ConfigurationDataSources
- */
-require_once 'Microsoft/WindowsAzure/Diagnostics/ConfigurationDataSources.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Diagnostics
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  *
  * @property Microsoft_WindowsAzure_Diagnostics_ConfigurationDataSources	DataSources	Data sources
@@ -226,6 +216,7 @@ class Microsoft_WindowsAzure_Diagnostics_ConfigurationInstance
 		$returnValue[] = '    </Directories>';
 		
 		$returnValue[] = '  </DataSources>';
+		$returnValue[] = '  <IsDefault>false</IsDefault>';
 		$returnValue[] = '</ConfigRequest>';
 		
 		// Return

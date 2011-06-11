@@ -23,26 +23,9 @@
 
 
 /**
- * @see Microsoft_Uri
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri.php';
-
-
-/**
- * @see Microsoft_Http_Client_Adapter_Interface
- */
-require_once 'Microsoft/Http/Client/Adapter/Interface.php';
-
-
-/**
- * @see Microsoft_Http_Response
- */
-require_once 'Microsoft/Http/Response.php';
-
-/**
- * @see Microsoft_Http_Response_Stream
- */
-require_once 'Microsoft/Http/Response/Stream.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * Microsoft_Http_Client is an implemetation of an HTTP client in PHP. The client

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,28 +28,23 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: BlobInstance.php 14561 2009-05-07 08:05:12Z unknown $
  */
 
 
 /**
- * @see Microsoft_WindowsAzure_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Exception.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_TableEntity
- */
-require_once 'Microsoft/WindowsAzure/Storage/TableEntity.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_DynamicTableEntity extends Microsoft_WindowsAzure_Storage_TableEntity
@@ -107,6 +102,11 @@ class Microsoft_WindowsAzure_Storage_DynamicTableEntity extends Microsoft_Window
                         $type = 'Edm.Double';
                     } else if (is_bool($value)) {
                         $type = 'Edm.Boolean';
+                    } else if ($value instanceof DateTime || $this->_convertToDateTime($value) !== false) {
+                        if (!$value instanceof DateTime) {
+                            $value = $this->_convertToDateTime($value);
+                        }
+                        $type = 'Edm.DateTime';
                     }
                 }
                 
@@ -117,7 +117,28 @@ class Microsoft_WindowsAzure_Storage_DynamicTableEntity extends Microsoft_Window
                     	'Value' => $value,
                     );
             }
-    
+            
+            // Set type?
+            if (!is_null($type)) {
+            	$this->_dynamicProperties[strtolower($name)]->Type = $type;
+            	
+            	// Try to convert the type
+            	if ($type == 'Edm.Int32' || $type == 'Edm.Int64') {
+            		$value = intval($value);
+            	} else if ($type == 'Edm.Double') {
+            		$value = floatval($value);
+            	} else if ($type == 'Edm.Boolean') {
+            		if (!is_bool($value)) {
+            			$value = strtolower($value) == 'true';
+            		}
+            	} else if ($type == 'Edm.DateTime') {
+            		if (!$value instanceof DateTime) {
+                    	$value = $this->_convertToDateTime($value);
+                    }
+            	}
+            }
+       
+    		// Set value
             $this->_dynamicProperties[strtolower($name)]->Value = $value;
         }
         return $this;

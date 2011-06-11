@@ -67,7 +67,7 @@ class Dropbox {
 	
 	public function createAccount($firstName, $lastName, $email, $password){
 		$url = self::API_URL.self::API_VERSION_URL.'account';
-		return $this->request($url, array('first_name' => $firstName, 'last_name' => $lastName, 'email' => $email, 'password' => $password), 'GET', true);	
+		return $this->request($url, array('first_name' => $firstName, 'last_name' => $lastName, 'email' => $email, 'password' => $password), 'POST', true);	
 	}
 	
 	public function fileopsDelete($path){
@@ -189,8 +189,6 @@ class Dropbox {
 		$dropoauthreq->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $this->OAuthToken);
 		
 		/* Header*/
-		if ($method == 'POST')
-			$headers[]=$dropoauthreq->to_header($url);
 	    if (!empty($_SERVER["HTTP_ACCEPT"]))
 				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
 		if (!empty($_SERVER["REMOTE_ADDR"]))
@@ -199,10 +197,21 @@ class Dropbox {
 		
 		/* Build cURL Request */
 		$ch = curl_init();
-		if ($method == 'POST')
+		if ($method == 'POST') {
+			curl_setopt($ch, CURLOPT_POST, true);
+			if (is_file($file)) { /* file upload */		
+				curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
+				$headers[]='Content-Length: ' .filesize($file)+strlen(http_build_query(array('file' => "$file")));
+			} else {
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
+				$args = (is_array($args)) ? http_build_query($args) : $args;
+				$headers[]='Content-Length: ' .strlen($args);
+			}
+			$headers[]=$dropoauthreq->to_header($url);
 			curl_setopt($ch, CURLOPT_URL, $url);
-		else
+		} else {
 			curl_setopt($ch, CURLOPT_URL, $dropoauthreq->to_url());
+		}
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
@@ -212,13 +221,7 @@ class Dropbox {
 		if (function_exists($this->ProgressFunction)) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-			curl_setopt($ch, CURLOPT_BUFFERSIZE, 256);
-		}
-		
-		/* file upload */
-		if (is_file($file)){
-			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
 		}
 		
 		$content = curl_exec($ch);

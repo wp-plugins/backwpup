@@ -20,6 +20,11 @@
  */
 
 /**
+ * @see Microsoft_AutoLoader
+ */
+require_once dirname(__FILE__) . '/AutoLoader.php';
+
+/**
  * Abstract class for all Microsoft_Uri handlers
  *
  * @category  Microsoft

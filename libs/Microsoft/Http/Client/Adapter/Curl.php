@@ -22,18 +22,9 @@
  */
 
 /**
- * @see Microsoft_Uri_Http
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri/Http.php';
-
-/**
- * @see Microsoft_Http_Client_Adapter_Interface
- */
-require_once 'Microsoft/Http/Client/Adapter/Interface.php';
-/**
- * @see Microsoft_Http_Client_Adapter_Stream
- */
-require_once 'Microsoft/Http/Client/Adapter/Stream.php';
+require_once dirname(__FILE__) . '/../../../AutoLoader.php';
 
 /**
  * An adapter class for Microsoft_Http_Client based on the curl extension.
@@ -378,7 +369,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
             // Make the setting of this options explicit (rather than setting it through the loop following a bit lower)
             // to group common functionality together.
             curl_setopt($this->_curl, CURLOPT_INFILE, $this->_config['curloptions'][CURLOPT_INFILE]);
-            curl_setopt($this->_curl, CURLOPT_INFILESIZE, $this->_config['curloptions'][CURLOPT_INFILESIZE]);
+            curl_setopt($this->_curl, CURLOPT_INFILESIZE, $this->_config['curloptions'][CURLOPT_INFILESIZE]);	
             unset($this->_config['curloptions'][CURLOPT_INFILE]);
             unset($this->_config['curloptions'][CURLOPT_INFILESIZE]);
         } elseif ($method == Microsoft_Http_Client::PUT) {

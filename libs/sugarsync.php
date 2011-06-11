@@ -109,7 +109,7 @@ class SugarSync {
 				$this->AuthToken=$matches[1];
 		} else {
 			if ($curlgetinfo['http_code']==401)
-				throw new SugarSyncException('Http Error: '. $curlgetinfo['http_code'].' Authorization required or worng.');
+				throw new SugarSyncException('Http Error: '. $curlgetinfo['http_code'].' Authorization required.');
 			elseif ($curlgetinfo['http_code']==403)
 				throw new SugarSyncException('Http Error: '. $curlgetinfo['http_code'].' (Forbidden)  Authentication failed.');
 			elseif ($curlgetinfo['http_code']==404)
@@ -145,7 +145,8 @@ class SugarSync {
 			throw new SugarSyncException('Auth Token not set correctly!!');
 		else
 			$headers[] = 'Authorization: '.$this->AuthToken;
-
+		$headers[] = 'Expect:';
+		
 		// init
 		$curl = curl_init();
 		//set otions
@@ -155,14 +156,16 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
-		curl_setopt($curl, CURLOPT_HTTPHEADER, array('Expect:'));
 		
 		if ($method == 'POST') {		
 			$headers[] = 'Content-Type: application/xml; charset=UTF-8';
+			$data = (is_array($data)) ? http_build_query($data) : $data;
+			$headers[]='Content-Length: ' .strlen($data);
 			curl_setopt($curl,CURLOPT_POSTFIELDS,$data);
 			curl_setopt($curl,CURLOPT_POST,true);
 		} elseif ($method == 'PUT') {
 			if (is_file($data) and is_readable($data)) {
+				$headers[]='Content-Length: ' .filesize($data);
 				curl_setopt($curl, CURLOPT_BINARYTRANSFER, true);
 				$datafilefd=fopen($data,'r');
 				curl_setopt($curl,CURLOPT_PUT,true);
@@ -183,7 +186,7 @@ class SugarSync {
 		if (function_exists($this->ProgressFunction)) {
 			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-			curl_setopt($curl, CURLOPT_BUFFERSIZE, 256);
+			curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
 		}
 
 		// execute

@@ -20,9 +20,9 @@
  */
 
 /**
- * @see Microsoft_Uri
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * HTTP(S) URI handler

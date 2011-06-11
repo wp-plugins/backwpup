@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,77 +28,22 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://todo     name_todo
- * @version    $Id: Blob.php 53747 2010-11-18 19:34:25Z unknown $
+ * @version    $Id: Blob.php 61044 2011-04-19 10:21:34Z unknown $
  */
 
 /**
- * @see Microsoft_WindowsAzure_Credentials_CredentialsAbstract_SharedKey
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedKey.php';
-
-/**
- * @see Microsoft_WindowsAzure_Credentials_SharedAccessSignature
- */
-require_once 'Microsoft/WindowsAzure/Credentials/SharedAccessSignature.php';
-
-/**
- * @see Microsoft_WindowsAzure_RetryPolicy_RetryPolicyAbstract
- */
-require_once 'Microsoft/WindowsAzure/RetryPolicy/RetryPolicyAbstract.php';
-
-/**
- * @see Microsoft_Http_Client
- */
-require_once 'Microsoft/Http/Client.php';
-
-/**
- * @see Microsoft_Http_Response
- */
-require_once 'Microsoft/Http/Response.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage
- */
-require_once 'Microsoft/WindowsAzure/Storage.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_BlobContainer
- */
-require_once 'Microsoft/WindowsAzure/Storage/BlobContainer.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_BlobInstance
- */
-require_once 'Microsoft/WindowsAzure/Storage/BlobInstance.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_PageRegionInstance
- */
-require_once 'Microsoft/WindowsAzure/Storage/PageRegionInstance.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_LeaseInstance
- */
-require_once 'Microsoft/WindowsAzure/Storage/LeaseInstance.php';
-
-/**
- * @see Microsoft_WindowsAzure_Storage_SignedIdentifier
- */
-require_once 'Microsoft/WindowsAzure/Storage/SignedIdentifier.php';
-
-/**
- * @see Microsoft_WindowsAzure_Exception
- */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../../AutoLoader.php';
 
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Storage
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_Storage_Blob extends Microsoft_WindowsAzure_Storage
@@ -167,7 +112,7 @@ class Microsoft_WindowsAzure_Storage_Blob extends Microsoft_WindowsAzure_Storage
 	 *
 	 * @var Microsoft_WindowsAzure_Credentials_SharedAccessSignature
 	 */
-	private $_sharedAccessSignatureCredentials = null;
+	protected $_sharedAccessSignatureCredentials = null;
 
 	/**
 	 * Creates a new Microsoft_WindowsAzure_Storage_Blob instance

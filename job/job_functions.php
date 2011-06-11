@@ -137,6 +137,13 @@ function maintenance_mode($enable = false) {
 	}
 }
 
+function curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
+	$_SESSION['WORKING']['STEPDONE']=$uploaded;
+	$_SESSION['WORKING']['STEPTODO']=$upload_size;
+	update_working_file();
+	return(0);
+}
+
 function get_working_dir() {
 	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
 	$tempdir=getenv('TMP');

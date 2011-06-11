@@ -19,6 +19,11 @@ function dest_dropbox() {
 		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);
 		// set the tokens 
 		$dropbox->setOAuthTokens($_SESSION['JOB']['dropetoken'],$_SESSION['JOB']['dropesecret']);
+		//set boxtype
+		if ($_SESSION['JOB']['droperoot']=='sandbox')
+			$dropbox->setSandbox();
+		else
+			$dropbox->setDropbox();
 		$info=$dropbox->accountInfo();
 		if (!empty($info['uid'])) {
 			trigger_error(__('Authed to DropBox from ','backwpup').$info['display_name'],E_USER_NOTICE);
@@ -34,7 +39,7 @@ function dest_dropbox() {
 			trigger_error(__('Free Space on DropBox: ','backwpup').formatBytes($dropboxfreespase),E_USER_NOTICE);
 		}
 		//set calback function
-		$dropbox->setProgressFunction('dest_dropbox_progresscallback');
+		$dropbox->setProgressFunction('curl_progresscallback');
 		// put the file 
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
@@ -61,7 +66,7 @@ function dest_dropbox() {
 			if (sizeof($backupfilelist)>0) {
 				rsort($backupfilelist);
 				$numdeltefiles=0;
-				for ($i=$_SESSION['JOB']['dropemaxbackups'];$i<sizeof($backupfilelist);$i++) {
+				for ($i=$_SESSION['JOB']['dropemaxbackups'];$i<count($backupfilelist);$i++) {
 					$dropbox->fileopsDelete($_SESSION['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
 					$numdeltefiles++;
 				}
@@ -75,12 +80,5 @@ function dest_dropbox() {
 
 	$_SESSION['WORKING']['STEPDONE']=1;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
-}
-
-function dest_dropbox_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
-	$_SESSION['WORKING']['STEPDONE']=$uploaded;
-	$_SESSION['WORKING']['STEPTODO']=$upload_size;
-	update_working_file();
-	return(0);
 }
 ?>

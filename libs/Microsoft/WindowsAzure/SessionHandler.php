@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,62 +28,95 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Session
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: Storage.php 21617 2009-06-12 10:46:31Z unknown $
  */
 
-/** Microsoft_WindowsAzure_Storage_Table */
-require_once 'Microsoft/WindowsAzure/Storage/Table.php';
-
 /**
- * @see Microsoft_WindowsAzure_Exception
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/WindowsAzure/Exception.php';
+require_once dirname(__FILE__) . '/../AutoLoader.php';
 
 /**
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Session
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  */
 class Microsoft_WindowsAzure_SessionHandler
 {
+	/**
+	 * Maximal property size in table storage.
+	 * 
+	 * @var int
+	 * @see http://msdn.microsoft.com/en-us/library/dd179338.aspx
+	 */
+	const MAX_TS_PROPERTY_SIZE = 65536;
+	
+	/** Storage backend type */
+	const STORAGE_TYPE_TABLE = 'table';
+	const STORAGE_TYPE_BLOB = 'blob';
+	
     /**
-     * Table storage
+     * Storage back-end
      * 
-     * @var Microsoft_WindowsAzure_Storage_Table
+     * @var Microsoft_WindowsAzure_Storage_Table|Microsoft_WindowsAzure_Storage_Blob
      */
-    protected $_tableStorage;
+    protected $_storage;
     
     /**
-     * Session table name
+     * Storage backend type
      * 
      * @var string
      */
-    protected $_sessionTable;
+    protected $_storageType;
     
     /**
-     * Session table partition
+     * Session container name
      * 
      * @var string
      */
-    protected $_sessionTablePartition;
+    protected $_sessionContainer;
+    
+    /**
+     * Session container partition
+     * 
+     * @var string
+     */
+    protected $_sessionContainerPartition;
 	
     /**
      * Creates a new Microsoft_WindowsAzure_SessionHandler instance
      * 
-     * @param Microsoft_WindowsAzure_Storage_Table $tableStorage Table storage
-     * @param string $sessionTable Session table name
-     * @param string $sessionTablePartition Session table partition
+     * @param Microsoft_WindowsAzure_Storage_Table|Microsoft_WindowsAzure_Storage_Blob $storage Storage back-end, can be table storage and blob storage
+     * @param string $sessionContainer Session container name
+     * @param string $sessionContainerPartition Session container partition
      */
-    public function __construct(Microsoft_WindowsAzure_Storage_Table $tableStorage, $sessionTable = 'phpsessions', $sessionTablePartition = 'sessions')
+    public function __construct(Microsoft_WindowsAzure_Storage $storage, $sessionContainer = 'phpsessions', $sessionContainerPartition = 'sessions')
 	{
+		// Validate $storage
+		if (!($storage instanceof Microsoft_WindowsAzure_Storage_Table || $storage instanceof Microsoft_WindowsAzure_Storage_Blob)) {
+			throw new Microsoft_WindowsAzure_Exception('Invalid storage back-end given. Storage back-end should be of type Microsoft_WindowsAzure_Storage_Table or Microsoft_WindowsAzure_Storage_Blob.');
+		}
+		
+		// Validate other parameters
+		if ($sessionContainer == '' || $sessionContainerPartition == '') {
+			throw new Microsoft_WindowsAzure_Exception('Session container and session partition should be specified.');
+		}
+		
+		// Determine storage type
+		$storageType = self::STORAGE_TYPE_TABLE;
+		if ($storage instanceof Microsoft_WindowsAzure_Storage_Blob) {
+			$storageType = self::STORAGE_TYPE_BLOB;
+		}
+		
 	    // Set properties
-		$this->_tableStorage = $tableStorage;
-		$this->_sessionTable = $sessionTable;
-		$this->_sessionTablePartition = $sessionTablePartition;
+		$this->_storage = $storage;
+		$this->_storageType = $storageType;
+		$this->_sessionContainer = $sessionContainer;
+		$this->_sessionContainerPartition = $sessionContainerPartition;
 	}
 	
 	/**
@@ -109,12 +142,13 @@ class Microsoft_WindowsAzure_SessionHandler
      */
     public function open()
     {
-    	// Make sure table exists
-    	$tableExists = $this->_tableStorage->tableExists($this->_sessionTable);
-    	if (!$tableExists) {
-		    $this->_tableStorage->createTable($this->_sessionTable);
-		}
-		
+    	// Make sure storage container exists
+    	if ($this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		$this->_storage->createTableIfNotExists($this->_sessionContainer);
+    	} else if ($this->_storageType == self::STORAGE_TYPE_BLOB) {
+    		$this->_storage->createContainerIfNotExists($this->_sessionContainer);
+    	}
+    	
 		// Ok!
 		return true;
     }
@@ -137,19 +171,37 @@ class Microsoft_WindowsAzure_SessionHandler
      */
     public function read($id)
     {
-        try
-        {
-            $sessionRecord = $this->_tableStorage->retrieveEntityById(
-                $this->_sessionTable,
-                $this->_sessionTablePartition,
-                $id
-            );
-            return base64_decode($sessionRecord->serializedData);
-        }
-        catch (Microsoft_WindowsAzure_Exception $ex)
-        {
-            return '';
-        }
+    	// Read data
+       	if ($this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		// In table storage
+	        try
+	        {
+	            $sessionRecord = $this->_storage->retrieveEntityById(
+	                $this->_sessionContainer,
+	                $this->_sessionContainerPartition,
+	                $id
+	            );
+	            return unserialize(base64_decode($sessionRecord->serializedData));
+	        }
+	        catch (Microsoft_WindowsAzure_Exception $ex)
+	        {
+	            return '';
+	        }
+       	} else if ($this->_storageType == self::STORAGE_TYPE_BLOB) {
+    		// In blob storage
+    	    try
+	        {
+    			$data = $this->_storage->getBlobData(
+    				$this->_sessionContainer,
+    				$this->_sessionContainerPartition . '/' . $id
+    			);
+	            return unserialize(base64_decode($data));
+	        }
+	        catch (Microsoft_WindowsAzure_Exception $ex)
+	        {
+	            return false;
+	        }
+    	}
     }
     
     /**
@@ -157,23 +209,42 @@ class Microsoft_WindowsAzure_SessionHandler
      * 
      * @param int $id Session Id
      * @param string $serializedData Serialized PHP object
+     * @throws Exception
      */
     public function write($id, $serializedData)
     {
-        $sessionRecord = new Microsoft_WindowsAzure_Storage_DynamicTableEntity($this->_sessionTablePartition, $id);
-        $sessionRecord->sessionExpires = time();
-        $sessionRecord->serializedData = base64_encode($serializedData);
-        
-        $sessionRecord->setAzurePropertyType('sessionExpires', 'Edm.Int32');
-
-        try
-        {
-            $this->_tableStorage->updateEntity($this->_sessionTable, $sessionRecord);
-        }
-        catch (Microsoft_WindowsAzure_Exception $unknownRecord)
-        {
-            $this->_tableStorage->insertEntity($this->_sessionTable, $sessionRecord);
-        }
+    	// Encode data
+    	$serializedData = base64_encode(serialize($serializedData));
+    	if (strlen($serializedData) >= self::MAX_TS_PROPERTY_SIZE && $this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		throw new Microsoft_WindowsAzure_Exception('Session data exceeds the maximum allowed size of ' . self::MAX_TS_PROPERTY_SIZE . ' bytes that can be stored using table storage. Consider switching to a blob storage back-end or try reducing session data size.');
+    	}
+    	
+    	// Store data
+       	if ($this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		// In table storage
+       	    $sessionRecord = new Microsoft_WindowsAzure_Storage_DynamicTableEntity($this->_sessionContainerPartition, $id);
+	        $sessionRecord->sessionExpires = time();
+	        $sessionRecord->serializedData = $serializedData;
+	        
+	        $sessionRecord->setAzurePropertyType('sessionExpires', 'Edm.Int32');
+	
+	        try
+	        {
+	            $this->_storage->updateEntity($this->_sessionContainer, $sessionRecord);
+	        }
+	        catch (Microsoft_WindowsAzure_Exception $unknownRecord)
+	        {
+	            $this->_storage->insertEntity($this->_sessionContainer, $sessionRecord);
+	        }
+    	} else if ($this->_storageType == self::STORAGE_TYPE_BLOB) {
+    		// In blob storage
+    		$this->_storage->putBlobData(
+    			$this->_sessionContainer,
+    			$this->_sessionContainerPartition . '/' . $id,
+    			$serializedData,
+    			array('sessionexpires' => time())
+    		);
+    	}
     }
     
     /**
@@ -184,21 +255,40 @@ class Microsoft_WindowsAzure_SessionHandler
      */
     public function destroy($id)
     {
-        try
-        {
-            $sessionRecord = $this->_tableStorage->retrieveEntityById(
-                $this->_sessionTable,
-                $this->_sessionTablePartition,
-                $id
-            );
-            $this->_tableStorage->deleteEntity($this->_sessionTable, $sessionRecord);
-            
-            return true;
-        }
-        catch (Microsoft_WindowsAzure_Exception $ex)
-        {
-            return false;
-        }
+		// Destroy data
+       	if ($this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		// In table storage
+       	    try
+	        {
+	            $sessionRecord = $this->_storage->retrieveEntityById(
+	                $this->_sessionContainer,
+	                $this->_sessionContainerPartition,
+	                $id
+	            );
+	            $this->_storage->deleteEntity($this->_sessionContainer, $sessionRecord);
+	            
+	            return true;
+	        }
+	        catch (Microsoft_WindowsAzure_Exception $ex)
+	        {
+	            return false;
+	        }
+    	} else if ($this->_storageType == self::STORAGE_TYPE_BLOB) {
+    		// In blob storage
+    	    try
+	        {
+    			$this->_storage->deleteBlob(
+    				$this->_sessionContainer,
+    				$this->_sessionContainerPartition . '/' . $id
+    			);
+	            
+	            return true;
+	        }
+	        catch (Microsoft_WindowsAzure_Exception $ex)
+	        {
+	            return false;
+	        }
+    	}
     }
     
     /**
@@ -213,18 +303,38 @@ class Microsoft_WindowsAzure_SessionHandler
      */
     public function gc($lifeTime)
     {
-        try
-        {
-            $result = $this->_tableStorage->retrieveEntities($this->_sessionTable, 'PartitionKey eq \'' . $this->_sessionTablePartition . '\' and sessionExpires lt ' . (time() - $lifeTime));
-            foreach ($result as $sessionRecord)
-            {
-                $this->_tableStorage->deleteEntity($this->_sessionTable, $sessionRecord);
-            }
-            return true;
-        }
-        catch (Microsoft_WindowsAzure_exception $ex)
-        {
-            return false;
-        }
+       	if ($this->_storageType == self::STORAGE_TYPE_TABLE) {
+    		// In table storage
+       	    try
+	        {
+	            $result = $this->_storage->retrieveEntities($this->_sessionContainer, 'PartitionKey eq \'' . $this->_sessionContainerPartition . '\' and sessionExpires lt ' . (time() - $lifeTime));
+	            foreach ($result as $sessionRecord)
+	            {
+	                $this->_storage->deleteEntity($this->_sessionContainer, $sessionRecord);
+	            }
+	            return true;
+	        }
+	        catch (Microsoft_WindowsAzure_exception $ex)
+	        {
+	            return false;
+	        }
+    	} else if ($this->_storageType == self::STORAGE_TYPE_BLOB) {
+    		// In blob storage
+    	    try
+	        {
+	            $result = $this->_storage->listBlobs($this->_sessionContainer, $this->_sessionContainerPartition, '', null, null, 'metadata');
+	            foreach ($result as $sessionRecord)
+	            {
+	            	if ($sessionRecord->Metadata['sessionexpires'] < (time() - $lifeTime)) {
+	                	$this->_storage->deleteBlob($this->_sessionContainer, $sessionRecord->Name);
+	            	}
+	            }
+	            return true;
+	        }
+	        catch (Microsoft_WindowsAzure_exception $ex)
+	        {
+	            return false;
+	        }
+    	}
     }
 }

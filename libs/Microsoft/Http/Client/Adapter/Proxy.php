@@ -22,17 +22,9 @@
  */
 
 /**
- * @see Microsoft_Uri_Http
+ * @see Microsoft_AutoLoader
  */
-require_once 'Microsoft/Uri/Http.php';
-/**
- * @see Microsoft_Http_Client
- */
-require_once 'Microsoft/Http/Client.php';
-/**
- * @see Microsoft_Http_Client_Adapter_Socket
- */
-require_once 'Microsoft/Http/Client/Adapter/Socket.php';
+require_once dirname(__FILE__) . '/../../../AutoLoader.php';
 
 /**
  * HTTP Proxy-supporting Microsoft_Http_Client adapter class, based on the default

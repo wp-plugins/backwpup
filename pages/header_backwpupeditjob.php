@@ -103,6 +103,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 	$jobvalues['ftpssl']= (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false;
 	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
+	$jobvalues['droperoot']=isset($_POST['droperoot']) ? $_POST['droperoot'] : 'dropbox';
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
@@ -110,6 +111,11 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 	$jobvalues['awsBucket']=isset($_POST['awsBucket']) ? $_POST['awsBucket'] : '';
 	$jobvalues['awsdir']=isset($_POST['awsdir']) ? stripslashes($_POST['awsdir']) : '';
 	$jobvalues['awsmaxbackups']=isset($_POST['awsmaxbackups']) ? (int)$_POST['awsmaxbackups'] : 0;
+	$jobvalues['GStorageAccessKey']=isset($_POST['GStorageAccessKey']) ? $_POST['GStorageAccessKey'] : '';
+	$jobvalues['GStorageSecret']=isset($_POST['GStorageSecret']) ? $_POST['GStorageSecret'] : '';
+	$jobvalues['GStorageBucket']=isset($_POST['GStorageBucket']) ? $_POST['GStorageBucket'] : '';
+	$jobvalues['GStoragedir']=isset($_POST['GStoragedir']) ? stripslashes($_POST['GStoragedir']) : '';
+	$jobvalues['GStoragemaxbackups']=isset($_POST['GStoragemaxbackups']) ? (int)$_POST['GStoragemaxbackups'] : 0;
 	$jobvalues['msazureHost']=isset($_POST['msazureHost']) ? $_POST['msazureHost'] : 'blob.core.windows.net';
 	$jobvalues['msazureAccName']=isset($_POST['msazureAccName']) ? $_POST['msazureAccName'] : '';
 	$jobvalues['msazureKey']=isset($_POST['msazureKey']) ? $_POST['msazureKey'] : '';
@@ -131,7 +137,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
 		if (!class_exists('CFRuntime'))
-			require_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
 			$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
 			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
@@ -140,11 +146,22 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
 	}
-
+	
+	if (!empty($_POST['GStorageAccessKey']) and !empty($_POST['GStorageSecret']) and !empty($_POST['newGStorageBucket'])) { //create new google strage bucket if needed
+		if (!class_exists('Tws_Service_Google_Storage'))
+			require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+		try {
+			$googlestorage = new GoogleStorage($_POST['GStorageAccessKey'], $_POST['GStorageSecret']);
+			$googlestorage->createBucket($_POST['newGStorageBucket'],'private');
+			$jobvalues['GStorageBucket']=$_POST['newGStorageBucket'];
+		} catch (Exception $e) {
+			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
+		}
+	}
+	
 	if (!empty($_POST['newmsazureContainer'])  and !empty($_POST['msazureHost']) and !empty($_POST['msazureAccName']) and !empty($_POST['msazureKey'])) { //create new s3 bucket if needed
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-			set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/libs');
-			require_once 'Microsoft/WindowsAzure/Storage/Blob.php';
+			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 		}
 		try {
 			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($_POST['msazureHost'],$_POST['msazureAccName'],$_POST['msazureKey']);
@@ -157,7 +174,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 	
 	if (!empty($_POST['rscUsername']) and !empty($_POST['rscAPIKey']) and !empty($_POST['newrscContainer'])) { //create new Rackspase Container if needed
 		if (!class_exists('CF_Authentication'))
-			require_once(plugin_dir_path(__FILE__).'libs/rackspace/cloudfiles.php');
+			require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 		try {
 			$auth = new CF_Authentication($_POST['rscUsername'], $_POST['rscAPIKey']);
 			if ($auth->authenticate()) {
@@ -209,16 +226,18 @@ add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), 'backw
 add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), 'backwpup_jobedit_metabox_sendlog', $current_screen->id, 'side', 'default');
 if (in_array('FTP',$dests))
 	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), 'backwpup_jobedit_metabox_destftp', $current_screen->id, 'advanced', 'default');
-if (in_array('S3',$dests))
-	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), 'backwpup_jobedit_metabox_dests3', $current_screen->id, 'advanced', 'default');
-if (in_array('MSAZURE',$dests))
-	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), 'backwpup_jobedit_metabox_destazure', $current_screen->id, 'advanced', 'default');
-if (in_array('RSC',$dests))
-	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), 'backwpup_jobedit_metabox_destrsc', $current_screen->id, 'advanced', 'default');
 if (in_array('DROPBOX',$dests))
 	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), 'backwpup_jobedit_metabox_destdropbox', $current_screen->id, 'advanced', 'default');
 if (in_array('SUGARSYNC',$dests))
 	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), 'backwpup_jobedit_metabox_destsugarsync', $current_screen->id, 'advanced', 'default');
+if (in_array('S3',$dests))
+	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), 'backwpup_jobedit_metabox_dests3', $current_screen->id, 'advanced', 'default');
+if (in_array('GSTORAGE',$dests))
+	add_meta_box('backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), 'backwpup_jobedit_metabox_destgstorage', $current_screen->id, 'advanced', 'default');
+if (in_array('MSAZURE',$dests))
+	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), 'backwpup_jobedit_metabox_destazure', $current_screen->id, 'advanced', 'default');
+if (in_array('RSC',$dests))
+	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), 'backwpup_jobedit_metabox_destrsc', $current_screen->id, 'advanced', 'default');
 //add clumns
 add_screen_option('layout_columns', array('max' => 2));
 
