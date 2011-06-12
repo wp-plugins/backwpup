@@ -155,7 +155,9 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
 				$dest=strtoupper($dest);
 				if ($dest=='S3' and !empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket']))
-					$jobdest[]=$jobid.','.$dest;			
+					$jobdest[]=$jobid.','.$dest;
+				if ($dest=='GSTORAGE' and !empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket']))
+					$jobdest[]=$jobid.','.$dest;						
 				if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret']))
 					$jobdest[]=$jobid.','.$dest;
 				if ($dest=='RSC' and !empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer']))
@@ -368,6 +370,32 @@ function backwpup_get_backup_files($jobid,$dest) {
 				}
 			} catch (Exception $e) {
 				$backwpup_message.='Amazon S3: '.$e->getMessage().'<br />';
+			}
+		}
+	}
+	//Get files/filinfo from Google Storage
+	if ($dest=='GSTORAGE' and !empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket']))	{
+		if (!class_exists('GoogleStorage'))
+			require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+		if (class_exists('GoogleStorage')) {
+			try {
+				$googlestorage = new GoogleStorage($jobvalue['GStorageAccessKey'],$jobvalue['GStorageSecret']);
+				$contents = $googlestorage->getBucket($jobvalue['GStorageBucket'],$jobvalue['GStoragedir']);
+				if (is_object($contents)) {
+					foreach ($contents as $object) {
+						$files[$filecounter]['JOBID']=$jobid;
+						$files[$filecounter]['DEST']=$dest;
+						$files[$filecounter]['folder']="GSTORAGE://".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';
+						$files[$filecounter]['file']=(string)$object->Key;
+						$files[$filecounter]['filename']=basename($object->Key);
+						$files[$filecounter]['downloadurl']='admin.php?page=backwpupbackups&action=downloadgstorage&file='.$object->Key.'&jobid='.$jobid;
+						$files[$filecounter]['filesize']=(string)$object->Size;
+						$files[$filecounter]['time']=strtotime($object->LastModified);
+						$filecounter++;							
+					}
+				}
+			} catch (Exception $e) {
+				$backwpup_message.='Google Sorage: '.$e->getMessage().'<br />';
 			}
 		}
 	}

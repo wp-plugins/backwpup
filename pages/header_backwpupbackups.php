@@ -36,7 +36,21 @@ if (!empty($doaction)) {
 						}
 					}
 				}
-			} elseif ($dest=='MSAZURE') {
+			}  elseif ($dest=='GSTORAGE') {
+				if (!class_exists('GoogleStorage'))
+					require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+				if (class_exists('GoogleStorage')) {
+					if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket'])) {
+						try {
+							$googlestorage = new GoogleStorage($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
+							$googlestorage->deleteObject($jobvalue['GStorageBucket'],$backupfile);
+							unset($googlestorage);
+						} catch (Exception $e) {
+							$backwpup_message.='Google Storage: '.$e->getMessage().'<br />';
+						}
+					}
+				}
+			}elseif ($dest=='MSAZURE') {
 				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 					require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
@@ -188,6 +202,32 @@ if (!empty($doaction)) {
 			header('HTTP/1.0 '.$s3file->status.' Not Found');
 			die();
 		}
+		break;
+	case 'downloadgstorage': //Download Google Storage Backup
+		check_admin_referer('download-backup');
+		require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+		$jobs=get_option('backwpup_jobs');
+		$jobid=$_GET['jobid'];
+		try {
+			$googlestorage = new GoogleStorage($jobs[$jobid]['GStorageAccessKey'], $jobs[$jobid]['GStorageSecret']);
+			$gstoragefile=$googlestorage->getObject($jobs[$jobid]['GStorageBucket'], $_GET['file']);
+		} catch (Exception $e) {
+			die($e->getMessage());
+		}
+		if ($gstoragefile) {
+			header("Pragma: public");
+			header("Expires: 0");
+			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+			//header("Content-Type: ".$gstoragefile->header->_info->content_type);
+			header("Content-Type: application/force-download");
+			header("Content-Type: application/octet-stream");
+			header("Content-Type: application/download");
+			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
+			header("Content-Transfer-Encoding: binary");
+			header("Content-Length: ".strlen($gstoragefile));
+			echo $gstoragefile;
+			die();
+		} 
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');

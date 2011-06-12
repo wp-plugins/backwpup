@@ -100,17 +100,6 @@ class GoogleStorage {
                         $headers[] = "x-goog-acl: " . $acl;
                 }
                 return $this->curlExec($name . "." . self::$host, "PUT", "/", "", array(), $body);
-
-
-
-                $headers = array('Content-Length: ' . mb_strlen($body), 'Date: ' . date("r"), 'Host: ' . self::$host);
-                $headers[] = $this->getAuthorizationHeader($bucket . "." . self::$host, 'PUT', '/', $headers);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_HEADER, true);
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-                $ret = curl_exec($ch);
-                $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                return $code;
         }
 
         /**
@@ -140,7 +129,7 @@ class GoogleStorage {
                 $parameters = (count($parameters) ? "?" : "") . implode("&", $parameters);
 
                 $ret = $this->curlExec($name . "." . self::$host, "GET", "/", $parameters);
-                return is_object($ret) ? $ret->ListBucketResult : $ret;
+                return is_object($ret) ? $ret->Contents : $ret;
         }
 
         /**
@@ -173,42 +162,17 @@ class GoogleStorage {
          * @param string $aclString
          * @return integer
          */
-        public function putObjectFile($bucket, $name, $file, $aclString = NULL) {
+        public function putObject($bucket, $name,  $content, $aclString = NULL, $mimeType = NULL) {
 				$headers = array();
 				
-				if (function_exists('finfo_open')) {
+				if (function_exists('finfo_open') and !empty($mimeType)) {
 					$finfo = finfo_open(FILEINFO_MIME_TYPE);
 					$headers[]= 'Content-Type: ' .finfo_file($finfo, $file);
 					finfo_close($finfo);
 				} else {
-					$headers[]= 'Content-Type: application/x-compressed';
+					$headers[]= 'Content-Type: '.$mimeType;
 				}
 
-                if (strlen($aclString)) {
-                        $headers[] = "x-goog-acl: " . $aclString;
-                }
-
-                $fh = fopen($file, 'r');
-                $content = fread($fh, filesize($file));
-                fclose($fh);
-				
-                return $this->curlExec($bucket . "." . self::$host, "PUT", "/" . $name, "", $headers, $content);
-        }
-
-        /**
-         * Stores data in an object.
-         *
-         * @param string $bucket
-         * @param string $name
-         * @param string $mimeType
-         * @param string $content
-         * @param string $aclString
-         * @return integer
-         */
-        public function putObjectData($bucket, $name, $mimeType, $content, $aclString = NULL) {
-                $headers = array(
-                        'Content-Type: ' . $mimeType,
-                );
                 if (strlen($aclString)) {
                         $headers[] = "x-goog-acl: " . $aclString;
                 }
@@ -250,23 +214,37 @@ class GoogleStorage {
          * @return SimpleXMLElement|integer|string
          */
         protected function curlExec($host, $method, $scope, $parameters = "", $headers = array(), $body = "") {
-                $headers[] = 'Content-Length: ' . strlen($body);
                 $headers[] = 'Date: ' . date("r");
                 $headers[] = 'Host: ' . $host;
+				//$headers[] = 'x-goog-api-version: 2';
 
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $host . "." . $scope . $parameters);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);			
-                if ($method != "GET") {
-                        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-                        if (strlen($body)) {
-                                curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
-                        }
+                if ($method == "POST") {
+					$headers[] = 'Content-Length: ' . strlen($body);
+					curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
                 }
-				if ($method == "PUT" and function_exists($this->ProgressFunction)) {
+				elseif ($method == "PUT" and function_exists($this->ProgressFunction)) {
+					if (is_file($body) and is_readable($body)) {
+						$headers[]='Content-Length: ' .filesize($body);
+						curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+						$datafilefd=fopen($body,'r');
+						curl_setopt($ch, CURLOPT_PUT,true);
+						curl_setopt($ch, CURLOPT_INFILE,$datafilefd);
+						curl_setopt($ch, CURLOPT_INFILESIZE,filesize($body));
+					} else {
+						$headers[]='Content-Length: ' .strnlen($body);
+						curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+						curl_setopt($ch, CURLOPT_PUT,true);
+						curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+					}
 					curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 					curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 					curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+				}
+				else {
+					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);				
 				}
                 $subdomain = str_replace(array(self::$host, "."), array("", ""), $host);
                 $subdomain = strlen($subdomain) ? ("/" . $subdomain) : "";
@@ -280,12 +258,11 @@ class GoogleStorage {
                 if ($this->debug) {
                         echo "<pre>" . $code . "\n" . $ret . "</pre>";
                 }
-				$ret=simplexml_load_string($ret);
+				if (false !== stripos(curl_getinfo($ch, CURLINFO_CONTENT_TYPE),'xml'))
+					$ret=simplexml_load_string($ret);
 				//var_dump($ret);
-                if ($code == 200) {
-					if (is_object($ret) and !empty($ret->Owner->ID)) {
-						return $ret;
-					}
+                if ($code >= 200 and $code<300) {
+					return $ret;
                 }
                 else {	
                     return $code.' '.$ret->Message;

@@ -42,7 +42,7 @@ define('BACKWPUP_VERSION', '2.0.0');
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS'))
-	define('BACKWPUP_DESTS', 'S3,GSTORAGE,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');
+	define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 //Set Dropbox Aplication Keys
 define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
 define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
