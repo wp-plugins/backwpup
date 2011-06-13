@@ -18,10 +18,10 @@ function backup_create() {
 			$zip = new ZipArchive;
 			if ($res=$zip->open($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
 				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<$_SESSION['WORKING']['STEPTODO'];$i++) {
-					update_working_file();
 					if (!$zip->addFile($_SESSION['WORKING']['FILELIST'][$i]['FILE'], $_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'])) 
 						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],E_USER_ERROR);
 					$_SESSION['WORKING']['STEPDONE']++;
+					update_working_file();
 				}
 				$zip->close();
 				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
@@ -38,12 +38,12 @@ function backup_create() {
 				trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<$_SESSION['WORKING']['STEPTODO'];$i++) {
-					update_working_file();
 					need_free_memory(10485760); //10MB free memory for zip
 					if (0==$zipbackupfile -> add($_SESSION['WORKING']['FILELIST'][$i]['FILE'],PCLZIP_OPT_REMOVE_PATH,str_replace($_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'],'',$_SESSION['WORKING']['FILELIST'][$i]['FILE']),PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'].':'.$zipbackupfile->errorInfo(true),E_USER_ERROR);
 					}
 					$_SESSION['WORKING']['STEPDONE']++;
+					update_working_file();
 				}
 				trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 			}
@@ -67,7 +67,6 @@ function backup_create() {
 
 		
 		for ($index=$_SESSION['WORKING']['STEPDONE'];$index<$_SESSION['WORKING']['STEPTODO'];$index++) {
-			update_working_file();
 			need_free_memory(2097152); //2MB free memory for tar
 			$files=$_SESSION['WORKING']['FILELIST'][$index];
 			//check file readable
@@ -153,6 +152,7 @@ function backup_create() {
 			}
 			fclose($fd);
 			$_SESSION['WORKING']['STEPDONE']++;
+			update_working_file();
 		}
 
 		if (strtolower($_SESSION['JOB']['fileformart'])=='.tar.gz') {

@@ -10,9 +10,9 @@ function dest_msazure() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_MSAZURE'; //set done	
 		return;
 	}
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	trigger_error($_SESSION['WORKING']['DEST_MSAZURE']['STEP_TRY'].'. '.__('Try to sending backup file to a Microsoft Azure (Blob)...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
-	$_SESSION['WORKING']['STEPDONE']=0;
+
 	require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 	need_free_memory(4194304*1.5); 
 	
@@ -31,6 +31,7 @@ function dest_msazure() {
 		$result = $storageClient->putBlob($_SESSION['JOB']['msazureContainer'], $_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'], $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		
 		if ($result->Name==$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile']) {
+			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to azure://','backwpup').$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadmsazure&file='.$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 		} else {
@@ -63,7 +64,7 @@ function dest_msazure() {
 		trigger_error(__('Microsoft Azure API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	} 
 		
-	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_MSAZURE'; //set done
 }
 ?>

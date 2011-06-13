@@ -11,7 +11,7 @@ function dest_rsc() {
 		return;
 	}
 	trigger_error($_SESSION['WORKING']['DEST_RSC']['STEP_TRY'].'. '.__('Try to sending backup file to Rackspace Cloud...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
 	require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 	
@@ -61,6 +61,7 @@ function dest_rsc() {
 			$backwpupbackup->content_type='application/x-compressed';			
 		trigger_error(__('Upload to RSC now started ... ','backwpup'),E_USER_NOTICE);
 		if ($backwpupbackup->load_from_filename($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) {
+			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to RSC://','backwpup').$_SESSION['JOB']['rscContainer'].'/'.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadrsc&file='.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 		} else {
@@ -96,7 +97,7 @@ function dest_rsc() {
 		trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	} 
 
-	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_RSC'; //set done
 }
 ?>

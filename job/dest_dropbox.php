@@ -10,10 +10,9 @@ function dest_dropbox() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done	
 		return;
 	}
-	trigger_error($_SESSION['WORKING']['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
-
+	trigger_error($_SESSION['WORKING']['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 	try {
 		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);
@@ -32,7 +31,6 @@ function dest_dropbox() {
 		$dropboxfreespase=$info['quota_info']['quota']-$info['quota_info']['shared']-$info['quota_info']['normal'];
 		if (filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])>$dropboxfreespase) {
 			trigger_error(__('No free space left on DropBox!!!','backwpup'),E_USER_ERROR);
-			$_SESSION['WORKING']['STEPDONE']=1;
 			$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
 			return;
 		} else {
@@ -45,6 +43,7 @@ function dest_dropbox() {
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {
 			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['WORKING']['STEPDONE']++;
 			trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to DropBox:','backwpup').' '.$response['error'],E_USER_ERROR);
@@ -78,7 +77,7 @@ function dest_dropbox() {
 		trigger_error(__('DropBox API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	} 
 
-	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
 }
 ?>

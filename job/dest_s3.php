@@ -11,7 +11,7 @@ function dest_s3() {
 		return;
 	}
 	trigger_error($_SESSION['WORKING']['DEST_S3']['STEP_TRY'].'. '.__('Try to sending backup file to Amazon S3...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
 
 	require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -26,8 +26,15 @@ function dest_s3() {
 				$storage=AmazonS3::STORAGE_REDUCED;
 			else 
 				$storage=AmazonS3::STORAGE_STANDARD;
+			//set surl Prozess bar
+			$curlops=array();
+			if (function_exists('curl_progresscallback') and is_numeric(CURLOPT_PROGRESSFUNCTION))
+				$curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
+			else 
+				@set_time_limit(300);
 			trigger_error(__('Upload to Amazon S3 now started ... ','backwpup'),E_USER_NOTICE);	
-			if ($s3->create_mpu_object($_SESSION['JOB']['awsBucket'], $_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'], array('fileUpload' => $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256))))  {//transfere file to S3
+			if ($s3->create_mpu_object($_SESSION['JOB']['awsBucket'], $_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'], array('fileUpload' => $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops)))  {//transfere file to S3
+				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				trigger_error(__('Backup File transferred to S3://','backwpup').$_SESSION['JOB']['awsBucket'].'/'.$_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 				$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloads3&file='.$_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			} else {
@@ -64,7 +71,7 @@ function dest_s3() {
 		return;
 	}
 	
-	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_S3'; //set done
 }
 ?>

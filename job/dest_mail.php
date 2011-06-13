@@ -10,9 +10,10 @@ function dest_mail() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_MAIL'; //set done
 		return;
 	}
-	trigger_error($_SESSION['WORKING']['DEST_MAIL']['STEP_TRY'].'. '.__('Try to sending backup file with mail...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPTODO']=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
+	trigger_error($_SESSION['WORKING']['DEST_MAIL']['STEP_TRY'].'. '.__('Try to sending backup file with mail...','backwpup'),E_USER_NOTICE);
+
 	//Create PHP Mailer
 	require_once(realpath($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC']).'/class-phpmailer.php');
 	$phpmailer = new PHPMailer();
@@ -69,9 +70,9 @@ function dest_mail() {
 	if (false == $phpmailer->Send()) {
 		trigger_error(__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo,E_USER_ERROR);
 	} else {
+		$_SESSION['WORKING']['STEPTODO']=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		trigger_error(__('Mail send!!!','backwpup'),E_USER_NOTICE);
 	}
-	$_SESSION['WORKING']['STEPDONE']=1;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_MAIL'; //set done
 }
 ?>

@@ -72,8 +72,9 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 		?>
 		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?><br />
 		<?PHP list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$jobvalue['cron'],5);    ?>
-		<fieldset id="cron-min">
-			<legend><?PHP _e('Minutes: ','backwpup'); ?></legend>
+		<div id="cron-min-box">
+			<b><?PHP _e('Minutes: ','backwpup'); ?></b>
+			<div id="cron-min">
 			<?PHP 
 			if (strstr($cronstr['minutes'],'*/'))
 				$minutes=explode('/',$cronstr['minutes']);
@@ -84,9 +85,11 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$minutes,true),true,false).' name="cronminutes[]" value="'.$i.'" /> '.$i.'<br />';
 			}
 			?>
-		</fieldset>
-		<fieldset id="cron-hour">
-			<legend><?PHP _e('Hours:','backwpup'); ?></legend>
+			</div>
+		</div>
+		<div id="cron-hour-box">
+			<b><?PHP _e('Hours:','backwpup'); ?></b>
+			<div id="cron-hour">
 			<?PHP 
 			if (strstr($cronstr['hours'],'*/'))
 				$hours=explode('/',$cronstr['hours']);
@@ -97,9 +100,11 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$hours,true),true,false).' name="cronhours[]" value="'.$i.'" /> '.$i.'<br />';
 			}
 			?>
-		</fieldset>
-		<fieldset id="cron-day">
-			<legend><?PHP _e('Day of Month:','backwpup'); ?></legend>
+			</div>
+		</div>
+		<div id="cron-day-box">
+			<b><?PHP _e('Day of Month:','backwpup'); ?></b>
+			<div id="cron-day">
 			<?PHP 
 			if (strstr($cronstr['mday'],'*/'))
 				$mday=explode('/',$cronstr['mday']);
@@ -110,10 +115,11 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$mday,true),true,false).' name="cronmday[]" value="'.$i.'" /> '.$i.'<br />';
 			}
 			?>
-			</select>
-		</fieldset>
-		<fieldset id="cron-month">
-			<legend><?PHP _e('Month:','backwpup'); ?></legend>
+			</div>
+		</div>
+		<div id="cron-month-box">
+			<b><?PHP _e('Month:','backwpup'); ?></b>
+			<div id="cron-month">
 			<?PHP 
 			if (strstr($cronstr['mon'],'*/'))
 				$mon=explode('/',$cronstr['mon']);
@@ -133,9 +139,11 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December').'<br />';
 			?>
-		</fieldset>
-		<fieldset id="cron-weekday">
-			<legend><?PHP _e('Day of Week:','backwpup'); ?></legend>
+			</div>
+		</div>
+		<div id="cron-weekday-box">
+			<b><?PHP _e('Day of Week:','backwpup'); ?></b>
+			<div id="cron-weekday">
 			<?PHP 
 			if (strstr($cronstr['wday'],'*/'))
 				$wday=explode('/',$cronstr['wday']);
@@ -150,7 +158,8 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$wday,true),true,false).' name="cronwday[]" value="5" /> '.__('Friday').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$wday,true),true,false).' name="cronwday[]" value="6" /> '.__('Saturday').'<br />';
 			?>
-		</fieldset>
+			</div>
+		</div>
 		<br class="clear" />
 		<div id="cron-text">
 		<?PHP 

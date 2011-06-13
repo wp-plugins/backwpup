@@ -10,9 +10,6 @@ function file_list() {
 	//Make filelist
 	trigger_error(__($_SESSION['WORKING']['FILE_LIST']['STEP_TRY'].'. '.'Try for make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
 	$_SESSION['WORKING']['STEPTODO']=2;
-	if (empty($_SESSION['WORKING']['STEPDONE']))
-		$_SESSION['WORKING']['STEPDONE']=0;
-	
 	
 	if ($_SESSION['WORKING']['STEPDONE']==0) {
 		//Check free memory for file list

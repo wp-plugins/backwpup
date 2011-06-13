@@ -6,9 +6,8 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function wp_export() {
-	trigger_error($_SESSION['WORKING']['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
 	$_SESSION['WORKING']['STEPTODO']=1;
-	$_SESSION['WORKING']['STEPDONE']=0;
+	trigger_error($_SESSION['WORKING']['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
 	need_free_memory(1048576); //1MB free memory
 	if (function_exists('curl_exec')) {
 		$ch = curl_init();

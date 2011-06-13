@@ -377,7 +377,7 @@ function backwpup_dashboard_activejobs() {
 			$count++;
 		} elseif ($jobvalue['activated']) {
 			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
-			echo ' <a href="'.wp_nonce_url('admin.php?page=BackWPup&action=edit&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
+			echo ' <a href="'.wp_nonce_url('admin.php?page=backwpupeditjob&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
 			echo "</li>";
 			$count++;
 		}

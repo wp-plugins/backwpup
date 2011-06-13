@@ -21,14 +21,14 @@ function db_optimize() {
 				continue;
 			}
 			$optimize=mysql_fetch_assoc($result);
+			$_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE'][]=$table;
+			$_SESSION['WORKING']['STEPDONE']=sizeof($_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']);
 			if ($optimize['Msg_type']=='error')
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_ERROR);
 			elseif ($optimize['Msg_type']=='warning')
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_WARNING);
 			else
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_NOTICE);
-			$_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE'][]=$table;
-			$_SESSION['WORKING']['STEPDONE']=sizeof($_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']);
 		}
 		trigger_error(__('Database optimize done!','backwpup'),E_USER_NOTICE);
 		maintenance_mode(false);

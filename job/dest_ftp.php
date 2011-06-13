@@ -10,8 +10,9 @@ function dest_ftp() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done	
 		return;
 	}
-	trigger_error($_SESSION['WORKING']['DEST_FTP']['STEP_TRY'].'. '.__('Try to sending backup file to a FTP Server...','backwpup'),E_USER_NOTICE);
 	$_SESSION['WORKING']['STEPTODO']=2;
+	trigger_error($_SESSION['WORKING']['DEST_FTP']['STEP_TRY'].'. '.__('Try to sending backup file to a FTP Server...','backwpup'),E_USER_NOTICE);
+
 	need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*1.5);
 	
 	$ftpport=21;
@@ -102,11 +103,11 @@ function dest_ftp() {
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 		@set_time_limit(300);
 		if (ftp_put($ftp_conn_id, $_SESSION['JOB']['ftpdir'].$_SESSION['STATIC']['backupfile'], $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'], FTP_BINARY)) { //transfere file
+			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to FTP Server:','backwpup').' '.$_SESSION['JOB']['ftpdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 			$_SESSION['JOB']['lastbackupdownloadurl']="ftp://".$_SESSION['JOB']['ftpuser'].":".base64_decode($_SESSION['JOB']['ftppass'])."@".$_SESSION['JOB']['ftphost'].$_SESSION['JOB']['ftpdir'].$_SESSION['STATIC']['backupfile'];
 		} else
 			trigger_error(__('Can not transfer backup to FTP server.','backwpup'),E_USER_ERROR);
-		$_SESSION['WORKING']['STEPDONE']=1;
 	}
 	
 	if ($_SESSION['JOB']['ftpmaxbackups']>0) { //Delete old backups
@@ -132,7 +133,7 @@ function dest_ftp() {
 	}
 
 	ftp_close($ftp_conn_id);
-	$_SESSION['WORKING']['STEPDONE']=2;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done
 }
 ?>

@@ -218,12 +218,13 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
-		if (function_exists($this->ProgressFunction)) {
+		if (function_exists($this->ProgressFunction) and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+		} else {
+			@set_time_limit(300);
 		}
-		
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		$output = json_decode($content, true);

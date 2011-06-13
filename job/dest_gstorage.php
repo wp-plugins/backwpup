@@ -10,8 +10,10 @@ function dest_gstorage() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done	
 		return;
 	}
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
+	$_SESSION['WORKING']['STEPDONE']=0;
 	trigger_error($_SESSION['WORKING']['DEST_GSTORAGE']['STEP_TRY'].'. '.__('Try to sending backup file to Google Storage...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=2;
+
 	require_once(dirname(__FILE__).'/../libs/googlestorage.php');
 	try {
 		$googlestorage = new GoogleStorage($_SESSION['JOB']['GStorageAccessKey'], $_SESSION['JOB']['GStorageSecret']);
@@ -32,6 +34,7 @@ function dest_gstorage() {
 			trigger_error(__('Upload to Google storage now started ... ','backwpup'),E_USER_NOTICE);
 			$upload=$googlestorage->putObject($_SESSION['JOB']['GStorageBucket'],$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'private',$content_type);
 			if (empty($upload))  {
+				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				trigger_error(__('Backup File transferred to GSTORAGE://','backwpup').$_SESSION['JOB']['GStorageBucket'].'/'.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 				$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadgstorage&file='.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			} else {
@@ -67,7 +70,7 @@ function dest_gstorage() {
 		return;
 	}
 	
-	$_SESSION['WORKING']['STEPDONE']=2;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done
 }
 ?>

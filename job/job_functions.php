@@ -139,7 +139,6 @@ function maintenance_mode($enable = false) {
 
 function curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
 	$_SESSION['WORKING']['STEPDONE']=$uploaded;
-	$_SESSION['WORKING']['STEPTODO']=$upload_size;
 	update_working_file();
 	return(0);
 }
@@ -191,11 +190,11 @@ function update_working_file() {
 	if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
 		$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
 	else
-		$steppersent=0;
+		$steppersent=1;
 	if (count($_SESSION['WORKING']['STEPSDONE'])>0)
 		$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
 	else
-		$stepspersent=0;
+		$stepspersent=1;
 	$pid=0;
 	@set_time_limit(30);
 	if (function_exists('posix_getpid'))
@@ -464,7 +463,7 @@ function job_shutdown() {
 	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
-	if ($lasterror['type']==E_ERROR) {
+	if ($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) {
 		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$_SESSION['WORKING']['ERROR']++;

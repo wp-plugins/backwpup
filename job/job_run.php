@@ -93,10 +93,9 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 	//Set next step
 	if (!isset($_SESSION['WORKING'][$step]['STEP_TRY']) or empty($_SESSION['WORKING'][$step]['STEP_TRY'])) {
 		$_SESSION['WORKING'][$step]['STEP_TRY']=0;
+		$_SESSION['WORKING']['STEPDONE']=0;
+		$_SESSION['WORKING']['STEPTODO']=0;
 	}
-	//ste back step working
-	$_SESSION['WORKING']['STEPDONE']=0;
-	$_SESSION['WORKING']['STEPTODO']=0;
 	//Run next step
 	if (!in_array($step,$_SESSION['WORKING']['STEPSDONE'])) {
 		if (function_exists(strtolower($step))) {

@@ -10,9 +10,9 @@ function dest_sugarsync() {
 		$_SESSION['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done	
 		return;
 	}
-	trigger_error($_SESSION['WORKING']['DEST_SUGARSYNC']['STEP_TRY'].'. '.__('Try to sending backup file to sugarsync...','backwpup'),E_USER_NOTICE);
-	$_SESSION['WORKING']['STEPTODO']=1;
+	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
+	trigger_error($_SESSION['WORKING']['DEST_SUGARSYNC']['STEP_TRY'].'. '.__('Try to sending backup file to sugarsync...','backwpup'),E_USER_NOTICE);
 
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 	
@@ -28,7 +28,7 @@ function dest_sugarsync() {
 		$sugarsyncfreespase=(float)$user->quota->limit-(float)$user->quota->usage; //float fixes bug for display of no free space
 		if (filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])>$sugarsyncfreespase) {
 			trigger_error(__('No free space left on SugarSync!!!','backwpup'),E_USER_ERROR);
-			$_SESSION['WORKING']['STEPDONE']=1;
+			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			$_SESSION['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 			return;
 		} else {
@@ -43,6 +43,7 @@ function dest_sugarsync() {
 		$reponse=$sugarsync->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		if (is_object($reponse)) {
 			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['WORKING']['STEPDONE']++;
 			trigger_error(__('Backup File transferred to SugarSync.','backwpup'),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to SugarSync:','backwpup'),E_USER_ERROR);
@@ -75,7 +76,7 @@ function dest_sugarsync() {
 		trigger_error(__('SugarSync API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	} 
 
-	$_SESSION['WORKING']['STEPDONE']=1;
+	$_SESSION['WORKING']['STEPDONE']++;
 	$_SESSION['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 }
 ?>

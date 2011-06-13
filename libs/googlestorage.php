@@ -225,7 +225,7 @@ class GoogleStorage {
 					$headers[] = 'Content-Length: ' . strlen($body);
 					curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
                 }
-				elseif ($method == "PUT" and function_exists($this->ProgressFunction)) {
+				elseif ($method == "PUT") {
 					if (is_file($body) and is_readable($body)) {
 						$headers[]='Content-Length: ' .filesize($body);
 						curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
@@ -239,9 +239,13 @@ class GoogleStorage {
 						curl_setopt($ch, CURLOPT_PUT,true);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 					}
-					curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-					curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-					curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+					if (function_exists($this->ProgressFunction)  and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+						curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+						curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+						curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+					} else {
+						@set_time_limit(300);
+					}
 				}
 				else {
 					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);				
