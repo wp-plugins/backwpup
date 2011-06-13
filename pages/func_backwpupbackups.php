@@ -47,7 +47,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			set_transient('backwpup_backups_chache',$backups,300);
 		}
 		
-		if ($this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
+		if (empty($backups) or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
 			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
 			set_transient('backwpup_backups_chache',$backups,300);		
 		}
