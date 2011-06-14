@@ -117,7 +117,7 @@ echo '</select>';
 <h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3> 
 <table class="form-table"> 
 <tr valign="top"> 
-<th scope="row"><?PHP _e('Disable WP-Cron','backwpup'); ?></th> 
+<th scope="row"><?PHP _e('Admin Bar','backwpup'); ?></th> 
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Admin Bar','backwpup'); ?></span></legend><label for="showadminbar"> 
 <input name="showadminbar" type="checkbox" id="showadminbar" value="1" <?php checked($cfg['showadminbar'],true); ?> /> 
 <?PHP _e('Show BackWPup Links in Admin Bar.','backwpup'); ?></label> 
