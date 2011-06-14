@@ -42,7 +42,7 @@ function dest_sugarsync() {
 		trigger_error(__('Upload to SugarSync now started ... ','backwpup'),E_USER_NOTICE);
 		$reponse=$sugarsync->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 		if (is_object($reponse)) {
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
 			$_SESSION['WORKING']['STEPDONE']++;
 			trigger_error(__('Backup File transferred to SugarSync.','backwpup'),E_USER_NOTICE);
 		} else {

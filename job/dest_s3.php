@@ -36,7 +36,7 @@ function dest_s3() {
 			if ($s3->create_mpu_object($_SESSION['JOB']['awsBucket'], $_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'], array('fileUpload' => $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops)))  {//transfere file to S3
 				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				trigger_error(__('Backup File transferred to S3://','backwpup').$_SESSION['JOB']['awsBucket'].'/'.$_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
-				$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloads3&file='.$_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+				$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloads3&file='.$_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			} else {
 				trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
 			}

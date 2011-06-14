@@ -36,7 +36,7 @@ function dest_gstorage() {
 			if (empty($upload))  {
 				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				trigger_error(__('Backup File transferred to GSTORAGE://','backwpup').$_SESSION['JOB']['GStorageBucket'].'/'.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
-				$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadgstorage&file='.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+				$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadgstorage&file='.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			} else {
 				trigger_error(__('Can not transfer backup to Google storage!','backwpup').' '.$upload,E_USER_ERROR);
 			}

@@ -63,7 +63,7 @@ function dest_rsc() {
 		if ($backwpupbackup->load_from_filename($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) {
 			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to RSC://','backwpup').$_SESSION['JOB']['rscContainer'].'/'.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadrsc&file='.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadrsc&file='.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 		} else {
 			trigger_error(__('Can not transfer backup to RSC.','backwpup'),E_USER_ERROR);
 		}

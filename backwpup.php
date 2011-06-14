@@ -68,6 +68,8 @@ if (backwpup_env_checks()) {
 	add_action('backwpup_cron', 'backwpup_cron');
 	//add Dashboard widget
 	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
+	//add Admin Bar menu
+	add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
 	//Additional links on the plugin page
 	add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);

@@ -136,6 +136,7 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['mailsecure'])) $cfg['mailsecure']='';
 	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
 	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
+	if (!isset($cfg['showadminbar'])) $cfg['showadminbar']=true;
 	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 99<=$cfg['jobstepretry']) $cfg['jobstepretry']=3;
 	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 99<=$cfg['jobscriptretry']) $cfg['jobscriptretry']=5;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
@@ -169,7 +170,7 @@ function backwpup_plugin_deactivate() {
 function backwpup_plugin_options_link($links) {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return $links;
-	$settings_link='<a href="admin.php?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings') . '</a>';
+	$settings_link='<a href="'.admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings') . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
 }
@@ -315,7 +316,7 @@ function backwpup_dashboard_logs() {
 			$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
 			echo '<li>';
 			echo '<span>'.date_i18n(get_option('date_format').' '.get_option('time_format'),$logdata['logtime']).'</span> ';
-			echo '<a href="'.wp_nonce_url('admin.php?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
+			echo '<a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
 			if ($logdata['errors']>0)
 				printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
 			if ($logdata['warnings']>0)
@@ -371,13 +372,13 @@ function backwpup_dashboard_activejobs() {
 			$runtime=time()-$jobvalue['starttime'];
 			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
 			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
-			echo " <a style=\"color:green;\" href=\"" . wp_nonce_url('admin.php?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
-			echo " <a style=\"color:red;\" href=\"" . wp_nonce_url('admin.php?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
+			echo " <a style=\"color:green;\" href=\"" . admin_url('admin.php').'?page=backwpupworking' . "\">" . __('View!','backwpup') . "</a>";
+			echo " <a style=\"color:red;\" href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 			echo "</li>";
 			$count++;
 		} elseif ($jobvalue['activated']) {
 			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
-			echo ' <a href="'.wp_nonce_url('admin.php?page=backwpupeditjob&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
+			echo ' <a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
 			echo "</li>";
 			$count++;
 		}
@@ -394,6 +395,23 @@ function backwpup_add_dashboard() {
 		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
+}
+
+//add admin bar menu
+function backwpup_add_adminbar() {
+	global $wp_admin_bar;
+	$cfg=get_option('backwpup'); //Load Settings
+	if (!$cfg['showadminbar'] || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
+		return;
+    /* Add the main siteadmin menu item */
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => admin_url('admin.php').'?page=backwpup'));
+	if (backwpup_get_working_file()) 
+		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupworking','meta' => array('class' => 'blink')));
+    $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpup'));
+	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpuplogs'));
+	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupbackups'));
+	
+	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
 //turn cache off
@@ -713,7 +731,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 		$jobsettings['type']='DB+FILE';
 
 	if (empty($jobsettings['name']) or !is_string($jobsettings['name']))
-		$jobsettings['name']= __('New');
+		$jobsettings['name']= __('New', 'backwpup');
 
 	if (!isset($jobsettings['activated']) or !is_bool($jobsettings['activated']))
 		$jobsettings['activated']=false;

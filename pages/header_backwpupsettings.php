@@ -17,6 +17,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['mailuser']=$_POST['mailuser'];
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['disablewpcron']=isset($_POST['disablewpcron']) ? true : false;
+	$cfg['showadminbar']=isset($_POST['showadminbar']) ? true : false;
     if (100>$_POST['jobstepretry'] and 0<$_POST['jobstepretry']) 
 		$cfg['jobstepretry']=(int)$_POST['jobstepretry'];
 	if (100>$_POST['jobscriptretry'] and 0<$_POST['jobscriptretry']) 

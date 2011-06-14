@@ -12,7 +12,7 @@ screen_icon();
 echo "<h2>".esc_html( __('BackWPup Settings', 'backwpup'))."</h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
-echo "<form id=\"posts-filter\" action=\"".get_admin_url()."admin.php?page=backwpupsettings\" method=\"post\">";
+echo "<form id=\"posts-filter\" action=\"".admin_url('admin.php')."?page=backwpupsettings\" method=\"post\">";
 wp_nonce_field('backwpup-cfg');
 ?>
 <input type="hidden" name="action" value="update" />
@@ -111,6 +111,17 @@ echo '</select>';
 <th scope="row"><label for="jobscriptretry"><?PHP _e('Max. retrys for job script restarts','backwpup'); ?></label></th> 
 <td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo $cfg['jobscriptretry'];?>" class="small-text code" />
 </td> 
+</tr>
+</table>
+
+<h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3> 
+<table class="form-table"> 
+<tr valign="top"> 
+<th scope="row"><?PHP _e('Disable WP-Cron','backwpup'); ?></th> 
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Admin Bar','backwpup'); ?></span></legend><label for="showadminbar"> 
+<input name="showadminbar" type="checkbox" id="showadminbar" value="1" <?php checked($cfg['showadminbar'],true); ?> /> 
+<?PHP _e('Show BackWPup Links in Admin Bar.','backwpup'); ?></label> 
+</fieldset></td>
 </tr>
 </table>
 

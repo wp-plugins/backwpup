@@ -95,18 +95,18 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					$r .=  "<td $attributes>".$jobvalue["jobid"]."</td>"; 
 					break;
 				case 'jobname':
-					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url('admin.php?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job')."\" title=\"".__('Edit:','backwpup').esc_html($jobvalue['name'])."\">".esc_html($jobvalue['name'])."</a></strong>";
+					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job')."\" title=\"".__('Edit:','backwpup').esc_html($jobvalue['name'])."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
 					if ($runningfile==false) {
-						$actions['edit'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit') . "</a>";
-						$actions['copy'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpup&action=copy&jobid='.$jobvalue["jobid"], 'copy-job_'.$jobvalue["jobid"]) . "\">" . __('Copy','backwpup') . "</a>";
-						$actions['export'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
-						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
-						$actions['runnow'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpupworking&action=runnow&jobid='.$jobvalue["jobid"], 'runnow-job_'.$jobvalue["jobid"]) . "\">" . __('Run Now','backwpup') . "</a>";
+						$actions['edit'] = "<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit') . "</a>";
+						$actions['copy'] = "<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=copy&jobid='.$jobvalue["jobid"], 'copy-job_'.$jobvalue["jobid"]) . "\">" . __('Copy','backwpup') . "</a>";
+						$actions['export'] = "<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
+						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
+						$actions['runnow'] = "<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpupworking&action=runnow&jobid='.$jobvalue["jobid"], 'runnow-job_'.$jobvalue["jobid"]) . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if ($runningfile['JOBID']==$jobvalue["jobid"]) {
-							$actions['working'] = "<a href=\"" . wp_nonce_url('admin.php?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
-							$actions['abort'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url('admin.php?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
+							$actions['working'] = "<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
+							$actions['abort'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 						}
 					}
 					$r .= $this->row_actions($actions);
@@ -149,7 +149,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					if (!empty($jobvalue['lastbackupdownloadurl']))
 						$r .="<a href=\"" . wp_nonce_url($jobvalue['lastbackupdownloadurl'], 'download-backup') . "\" title=\"".__('Download last Backup','backwpup')."\">" . __('Download','backwpup') . "</a> | ";
 					if (!empty($jobvalue['logfile']))
-						$r .="<a href=\"" . wp_nonce_url('admin.php?page=backwpupworking&logfile='.$jobvalue['logfile'], 'view-log_'.basename($jobvalue['logfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
+						$r .="<a href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpupworking&logfile='.$jobvalue['logfile'], 'view-log_'.basename($jobvalue['logfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
 
 					$r .=  "</td>";
 					break;

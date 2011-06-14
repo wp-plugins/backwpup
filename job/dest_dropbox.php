@@ -42,7 +42,7 @@ function dest_dropbox() {
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 			$_SESSION['WORKING']['STEPDONE']++;
 			trigger_error(__('Backup File transferred to DropBox.','backwpup'),E_USER_NOTICE);
 		} else {

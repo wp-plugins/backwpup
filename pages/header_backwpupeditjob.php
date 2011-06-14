@@ -196,7 +196,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 		// save job id and referer
 		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),3600);
 		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize($response['oauth_token'], get_admin_url().'admin.php?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
+		$response = $dropbox->oAuthAuthorize($response['oauth_token'], admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 	}
 	
 	if (isset($_POST['dropboxauth']) and $_POST['dropboxauth']==__('Delete!', 'backwpup')) {
@@ -210,7 +210,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']))and !empty($_POST['
 	$jobs[$jobvalues['jobid']]=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	update_option('backwpup_jobs',$jobs);
 	$_POST['jobid']=$jobvalues['jobid'];
-	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="admin.php?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
+	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
 }
 
 

@@ -27,7 +27,7 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 	<div id="major-publishing-actions">
 	<?php do_action('post_submitbox_start'); ?>
 	<div id="delete-action">
-	<a class="submitdelete deletion" style="color:red" href="<?PHP echo wp_nonce_url('admin.php?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
+	<a class="submitdelete deletion" style="color:red" href="<?PHP echo wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
 	</div>
 	<div id="publishing-action">
 		<input type="submit" name="submit" class="button-primary" id="publish" tabindex="1" accesskey="p" value="<?php _e('Save Changes', 'backwpup'); ?>" />

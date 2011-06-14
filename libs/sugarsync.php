@@ -5,12 +5,9 @@
  *
  * This source file can be used to communicate with SugarSync (http://sugarsync.com)
  *
- * The class is documented in the file itself. If you find any bugs help me out and report them. Reporting can be done by sending an email to php-dropbox-bugs[at]verkoyen[dot]eu.
+ * The class is documented in the file itself. If you find any bugs help me out and report them.
  * If you report a bug, make sure you give me enough information (include your code).
  *
- *
- * Changelog since 1.0.0
- * - fixed some issues with generation off the basestring
  *
  * License
  * Copyright (c), Daniel Huesken. All rights reserved.

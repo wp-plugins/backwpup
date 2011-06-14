@@ -59,6 +59,7 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['WP']['WP_UPLOAD_DIR']=rtrim(str_replace('\\','/',backwpup_get_upload_dir()),'/').'/';
 	$_SESSION['WP']['WPINC']=WPINC;
 	$_SESSION['WP']['MULTISITE']=is_multisite();
+	$_SESSION['WP']['ADMINURL']=admin_url('admin.php');
 	//Load Translation
 	if (!empty($_SESSION['WP']['WPLANG']) and is_file(dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po')) {
 		$file = fopen (dirname(__FILE__).'/../lang/backwpup-'.$_SESSION['WP']['WPLANG'].'.po', "r");

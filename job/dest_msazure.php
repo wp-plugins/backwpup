@@ -33,7 +33,7 @@ function dest_msazure() {
 		if ($result->Name==$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile']) {
 			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to azure://','backwpup').$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
-			$_SESSION['JOB']['lastbackupdownloadurl']='admin.php?page=backwpupbackups&action=downloadmsazure&file='.$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadmsazure&file='.$_SESSION['JOB']['msazuredir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
 		} else {
 			trigger_error(__('Can not transfer backup to Microsoft Azure.','backwpup'),E_USER_ERROR);
 		}
