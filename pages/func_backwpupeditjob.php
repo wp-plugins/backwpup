@@ -170,10 +170,10 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 
 function backwpup_jobedit_metabox_destfile($jobvalue) {
 	?>
-	<b><?PHP _e('Full Path to Folder for Backup Files:','backwpup'); ?></b><br />
+	<b><?PHP _e('Full Path to folder for Backup Files:','backwpup'); ?></b><br />
 	<input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobvalue['backupdir'];?>" class="large-text" /><br />
-	<span class="description"><?PHP _e('(Leave it empty to store Backups not local!)','backwpup');?></span><br />
-	<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
+	<span class="description"><?PHP _e('Your WordPress dir is:','backwpup'); echo ' '.trailingslashit(str_replace('\\','/',ABSPATH));?></span><br />&nbsp;<br />
+	<?PHP _e('Max. backup files in folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
 	<?PHP
 }
 
@@ -185,10 +185,10 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
 	<input name="ftpuser" type="text" value="<?PHP echo $jobvalue['ftpuser'];?>" class="user large-text" /><br />
 	<b><?PHP _e('Password:','backwpup'); ?></b><br />
 	<input name="ftppass" type="password" value="<?PHP echo base64_decode($jobvalue['ftppass']);?>" class="password large-text" /><br />
-	<b><?PHP _e('Directory on Server:','backwpup'); ?></b><br />
+	<b><?PHP _e('Folder on Server:','backwpup'); ?></b><br />
 	<input name="ftpdir" type="text" value="<?PHP echo $jobvalue['ftpdir'];?>" class="large-text" /><br />
 	<?PHP if (!is_numeric($jobvalue['ftpmaxbackups'])) $jobvalue['ftpmaxbackups']=0; ?>
-	<?PHP _e('Max. Backup Files in FTP Folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	<?PHP _e('Max. backup files in FTP folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftpssl'],true); ?> name="ftpssl" /> <?PHP _e('Use SSL-FTP Connection.','backwpup'); ?><br />
 	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftppasv'],true); ?> name="ftppasv" /> <?PHP _e('Use FTP Passiv mode.','backwpup'); ?><br />			
 	<?PHP
@@ -196,107 +196,147 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
 
 function backwpup_jobedit_metabox_dests3($jobvalue) {
 	?>
-	<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-	<b><?PHP _e('Access Key ID:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-	<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
-	<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
-	<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
-	<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
-	<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
-	<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
-	<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
-	<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
-	<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
-	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
+	<div class="dests">
+		<b><?PHP _e('Access Key ID:','backwpup'); ?></b>
+		<input id="awsAccessKey" name="awsAccessKey" type="text" value="<?PHP echo $jobvalue['awsAccessKey'];?>" class="large-text" /><br />
+		<b><?PHP _e('Secret Access Key:','backwpup'); ?></b><br />
+		<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo $jobvalue['awsSecretKey'];?>" class="large-text" /><br />
+		<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
+		<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
+		<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
+		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
+		<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
+		<?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
+	</div>
+	<div class="destlinks">
+		<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="http://aws-portal.amazon.com/gp/aws/developer/account/index.html?action=access-key" target="_blank"><?PHP _e('Find Keys','backwpup'); ?></a><br />
+		<a href="https://console.aws.amazon.com/s3/home" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 
 function backwpup_jobedit_metabox_destgstorage($jobvalue) {
 	?>
-	<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://code.google.com/apis/console/?pli=1#storage:legacy" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-	<input id="GStorageAccessKey" name="GStorageAccessKey" type="text" value="<?PHP echo $jobvalue['GStorageAccessKey'];?>" class="large-text" /><br />
-	<b><?PHP _e('Secret:','backwpup'); ?></b><br />
-	<input id="GStorageSecret" name="GStorageSecret" type="password" value="<?PHP echo $jobvalue['GStorageSecret'];?>" class="large-text" /><br />
-	<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
-	<input id="GStorageselected" name="GStorageselected" type="hidden" value="<?PHP echo $jobvalue['GStorageBucket'];?>" />
-	<?PHP if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret'])) backwpup_get_gstorage_buckets(array('GStorageAccessKey'=>$jobvalue['GStorageAccessKey'],'GStorageSecret'=>$jobvalue['GStorageSecret'],'GStorageselected'=>$jobvalue['GStorageBucket'])); ?>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Bucket:','backwpup'); ?><input name="newGStorageBucket" type="text" value="" class="text" /><br />
-	<b><?PHP _e('Directory in Bucket:','backwpup'); ?></b><br />
-	<input name="GStoragedir" type="text" value="<?PHP echo $jobvalue['GStoragedir'];?>" class="large-text" /><br />
-	<?PHP _e('Max. Backup Files in Bucket Folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['GStoragemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	<div class="dests">
+		<b><?PHP _e('Access Key:','backwpup'); ?></b><br />
+		<input id="GStorageAccessKey" name="GStorageAccessKey" type="text" value="<?PHP echo $jobvalue['GStorageAccessKey'];?>" class="large-text" /><br />
+		<b><?PHP _e('Secret:','backwpup'); ?></b><br />
+		<input id="GStorageSecret" name="GStorageSecret" type="password" value="<?PHP echo $jobvalue['GStorageSecret'];?>" class="large-text" /><br />
+		<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
+		<input id="GStorageselected" name="GStorageselected" type="hidden" value="<?PHP echo $jobvalue['GStorageBucket'];?>" />
+		<?PHP if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret'])) backwpup_get_gstorage_buckets(array('GStorageAccessKey'=>$jobvalue['GStorageAccessKey'],'GStorageSecret'=>$jobvalue['GStorageSecret'],'GStorageselected'=>$jobvalue['GStorageBucket'])); ?>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newGStorageBucket" type="text" value="" class="text" /><br />
+		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
+		<input name="GStoragedir" type="text" value="<?PHP echo $jobvalue['GStoragedir'];?>" class="large-text" /><br />
+		<?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['GStoragemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	</div>
+	<div class="destlinks">
+		<a href="http://code.google.com/apis/storage/docs/signup.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="https://code.google.com/apis/console/?pli=1#storage:legacy" target="_blank"><?PHP _e('Find Keys','backwpup'); ?></a><br />
+		<a href="https://sandbox.google.com/storage/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 
 function backwpup_jobedit_metabox_destazure($jobvalue) {
 	?>
-	<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-	<b><?PHP _e('Host:','backwpup'); ?></b><br />
-	<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
-	<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
-	<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
-	<b><?PHP _e('Access Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-	<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
-	<b><?PHP _e('Container:','backwpup'); ?></b><br />
-	<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
-	<?PHP if (!empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey'])) backwpup_get_msazure_container(array('msazureHost'=>$jobvalue['msazureHost'],'msazureAccName'=>$jobvalue['msazureAccName'],'msazureKey'=>$jobvalue['msazureKey'],'msazureselected'=>$jobvalue['msazureContainer'])); ?>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
-	<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
-	<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
-	<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />	
+	<div class="dests">
+		<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<b><?PHP _e('Host:','backwpup'); ?></b><br />
+		<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
+		<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
+		<input id="msazureAccName" name="msazureAccName" type="text" value="<?PHP echo $jobvalue['msazureAccName'];?>" class="large-text" /><br />
+		<b><?PHP _e('Access Key:','backwpup'); ?></b><br />
+		<input id="msazureKey" name="msazureKey" type="password" value="<?PHP echo $jobvalue['msazureKey'];?>" class="large-text" /><br />
+		<b><?PHP _e('Container:','backwpup'); ?></b><br />
+		<input id="msazureContainerselected" name="msazureContainerselected" type="hidden" value="<?PHP echo $jobvalue['msazureContainer'];?>" />
+		<?PHP if (!empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey'])) backwpup_get_msazure_container(array('msazureHost'=>$jobvalue['msazureHost'],'msazureAccName'=>$jobvalue['msazureAccName'],'msazureKey'=>$jobvalue['msazureKey'],'msazureselected'=>$jobvalue['msazureContainer'])); ?>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
+		<b><?PHP _e('Folder in Container:','backwpup'); ?></b><br />
+		<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
+		<?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />	
+	</div>
+	<div class="destlinks">
+		<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find Key','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 
 function backwpup_jobedit_metabox_destrsc($jobvalue) {
 	?>
-	<a href="http://www.rackspacecloud.com/2073.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-	<b><?PHP _e('Username:','backwpup'); ?></b><br />
-	<input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
-	<b><?PHP _e('API Key:','backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://manage.rackspacecloud.com/APIAccess.do" target="_blank"><?PHP _e('Find it','backwpup'); ?></a><br />
-	<input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
-	<b><?PHP _e('Container:','backwpup'); ?></b><br />
-	<input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
-	<?PHP if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey'])) backwpup_get_rsc_container(array('rscUsername'=>$jobvalue['rscUsername'],'rscAPIKey'=>$jobvalue['rscAPIKey'],'rscselected'=>$jobvalue['rscContainer'])); ?>
-	&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newrscContainer" type="text" value="" class="text" /> <br />
-	<b><?PHP _e('Directory in Container:','backwpup'); ?></b><br />
-	<input name="rscdir" type="text" value="<?PHP echo $jobvalue['rscdir'];?>" class="large-text" /><br />
-	<?PHP _e('Max. Backup Files in Container Folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />	
+	<div class="dests">
+		<b><?PHP _e('Username:','backwpup'); ?></b><br />
+		<input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
+		<b><?PHP _e('API Key:','backwpup'); ?></b><br />
+		<input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
+		<b><?PHP _e('Container:','backwpup'); ?></b><br />
+		<input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
+		<?PHP if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey'])) backwpup_get_rsc_container(array('rscUsername'=>$jobvalue['rscUsername'],'rscAPIKey'=>$jobvalue['rscAPIKey'],'rscselected'=>$jobvalue['rscContainer'])); ?>
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newrscContainer" type="text" value="" class="text" /> <br />
+		<b><?PHP _e('Folder in container:','backwpup'); ?></b><br />
+		<input name="rscdir" type="text" value="<?PHP echo $jobvalue['rscdir'];?>" class="large-text" /><br />
+		<?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />	
+	</div>
+	<div class="destlinks">
+		<a href="http://www.rackspacecloud.com/2073.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="https://manage.rackspacecloud.com/APIAccess.do" target="_blank"><?PHP _e('Find Key','backwpup'); ?></a><br />
+		<a href="https://manage.rackspacecloud.com/CloudFiles.do" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 
 function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 	?>
-	<a name="dropbox" href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-	<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
-	<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
-		<span style="color:red;"><?php _e('Not authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Authenticate!', 'backwpup'); ?>" /><br />
-	<?PHP } else  { ?>
-		<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
-	<?PHP } ?><br />
-	<b><?PHP _e('Root:','backwpup'); ?></b><br />
-	<select name="droperoot" id="droperoot">
-	<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('dropbox', 'backwpup'); ?></option>
-	<option <?PHP selected($jobvalue['droperoot'],'sandbox',true); ?> value="sandbox" disabled="disabled"><?php _e('sandbox (disabled by DropBox)', 'backwpup'); ?></option> 
-	</select><br />
-	<b><?PHP _e('Directory:','backwpup'); ?></b><br />
-	<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
-	<?PHP _e('Max. Backup Files in Dopbox Folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	<div class="dests">
+		<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
+		<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
+			<span style="color:red;"><?php _e('Not authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Authenticate!', 'backwpup'); ?>" /><br />
+		<?PHP } else  { ?>
+			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
+		<?PHP } ?><br />
+		<b><?PHP _e('Root:','backwpup'); ?></b><br />
+		<select name="droperoot" id="droperoot">
+		<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('dropbox', 'backwpup'); ?></option>
+		<option <?PHP selected($jobvalue['droperoot'],'sandbox',true); ?> value="sandbox" disabled="disabled"><?php _e('sandbox (disabled by DropBox)', 'backwpup'); ?></option> 
+		</select><br />
+		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
+		<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
+		<?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	</div>
+	<div class="destlinks">
+		<a name="dropbox" href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="https://dropbox.com" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 
 function backwpup_jobedit_metabox_destsugarsync($jobvalue) {
 	?>
-	<a href="https://www.sugarsync.com/referral?rf=cajw0b09tbw6k" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-	<b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
-	<input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
-	<b><?PHP _e('Password:','backwpup'); ?></b><br />
-	<input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo base64_decode($jobvalue['sugarpass']);?>" class="large-text" /><br />
-	<b><?PHP _e('Root:','backwpup'); ?></b><br />
-	<input id="sugarrootselected" name="sugarrootselected" type="hidden" value="<?PHP echo $jobvalue['sugarroot'];?>" />
-	<?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>base64_decode($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
-	<b><?PHP _e('Directory:','backwpup'); ?></b><br />
-	<input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
-	<?PHP _e('Max. Backup Files in Folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	<div class="dests">
+		<b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
+		<input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
+		<b><?PHP _e('Password:','backwpup'); ?></b><br />
+		<input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo base64_decode($jobvalue['sugarpass']);?>" class="large-text" /><br />
+		<b><?PHP _e('Root:','backwpup'); ?></b><br />
+		<input id="sugarrootselected" name="sugarrootselected" type="hidden" value="<?PHP echo $jobvalue['sugarroot'];?>" />
+		<?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>base64_decode($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
+		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
+		<input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
+		<?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
+	</div>
+	<div class="destlinks">
+		<a href="https://www.sugarsync.com/referral?rf=cajw0b09tbw6k" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="https://sugarsync.com" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+	</div>
+	<br class="clear" />
 	<?PHP
 }
 function backwpup_jobedit_metabox_destmail($jobvalue) {

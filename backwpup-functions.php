@@ -139,6 +139,8 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['showadminbar'])) $cfg['showadminbar']=true;
 	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 99<=$cfg['jobstepretry']) $cfg['jobstepretry']=3;
 	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 99<=$cfg['jobscriptretry']) $cfg['jobscriptretry']=5;
+	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 99<=$cfg['jobscriptruntime']) $cfg['jobscriptruntime']=30;
+	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 999<=$cfg['jobscriptruntimelong']) $cfg['jobscriptruntime']=300;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
@@ -406,7 +408,7 @@ function backwpup_add_adminbar() {
     /* Add the main siteadmin menu item */
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => admin_url('admin.php').'?page=backwpup'));
 	if (backwpup_get_working_file()) 
-		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupworking','meta' => array('class' => 'blink')));
+		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupworking'));
     $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpup'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpuplogs'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupbackups'));
@@ -643,8 +645,8 @@ function backwpup_env_checks() {
 	$message='';
 	$checks=true;
 	$cfg=get_option('backwpup');
-	if (version_compare($wp_version, '3.1', '<')) { // check WP Version
-		$message.=__('- WordPress 3.2 or heiger needed!','backwpup') . '<br />';
+	if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
+		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or heiger needed!','backwpup')) . '<br />';
 		$checks=false;
 	}
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version sys_get_temp_dir

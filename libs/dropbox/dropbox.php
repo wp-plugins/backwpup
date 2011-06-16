@@ -251,8 +251,6 @@ class Dropbox {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-		} else {
-			@set_time_limit(300);
 		}
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

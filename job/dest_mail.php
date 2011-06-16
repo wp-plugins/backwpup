@@ -66,7 +66,7 @@ function dest_mail() {
 	$phpmailer->AddAttachment($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 
 	trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);
-	@set_time_limit(300);
+	@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 	if (false == $phpmailer->Send()) {
 		trigger_error(__('Can not send mail:','backwpup').' '.$phpmailer->ErrorInfo,E_USER_ERROR);
 	} else {

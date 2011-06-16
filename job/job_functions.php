@@ -196,7 +196,7 @@ function update_working_file() {
 	else
 		$stepspersent=1;
 	$pid=0;
-	@set_time_limit(30);
+	@set_time_limit($_SESSION['CFG']['jobscriptruntime']);
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
 	$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');

@@ -22,10 +22,18 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$cfg['jobstepretry']=(int)$_POST['jobstepretry'];
 	if (100>$_POST['jobscriptretry'] and 0<$_POST['jobscriptretry']) 
 		$cfg['jobscriptretry']=(int)$_POST['jobscriptretry'];
+	if (100>$_POST['jobscriptruntime'] and 0<$_POST['jobscriptruntime']) 
+		$cfg['jobscriptruntime']=(int)$_POST['jobscriptruntime'];
+	if (1000>$_POST['jobscriptruntimelong'] and 0<$_POST['jobscriptruntimelong']) 
+		$cfg['jobscriptruntimelong']=(int)$_POST['jobscriptruntimelong'];
 	if (empty($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']))
 		$cfg['jobstepretry']=3;
 	if (empty($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']))
 		$cfg['jobscriptretry']=5;
+	if (empty($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']))
+		$cfg['jobscriptruntime']=30;
+	if (empty($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']))
+		$cfg['jobscriptruntimelong']=300;
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['gzlogs']=isset($_POST['gzlogs']) ? true : false;
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));

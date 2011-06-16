@@ -8,8 +8,8 @@ if (!defined('ABSPATH')) {
 global $wpdb;	
 
 ignore_user_abort(true);
-
-@set_time_limit(0); //300 is most webserver time limit.
+$cfg=get_option('backwpup'); //Load Settings
+@set_time_limit($cfg['jobscriptruntimelong']); //300 is most webserver time limit.
 	
 //Vars
 $oldblogabspath="";

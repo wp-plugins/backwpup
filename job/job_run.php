@@ -33,9 +33,20 @@ if (!empty($_SESSION) and !file_exists($_SESSION['STATIC']['LOGFILE'])) {
 	die();
 }
 //disable safe mode
-@ini_set('safe_mode','Off');
+@ini_set('safe_mode','0');
+//set execution time tom max on safe mode
+if (ini_get('safe_mode')) {
+	$_SESSION['CFG']['jobscriptruntime']=ini_get('max_execution_time');
+	$_SESSION['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
+	$disabled=' disabled="disabled"';
+} else {
+	if (empty($_SESSION['CFG']['jobscriptruntime']))
+		$_SESSION['CFG']['jobscriptruntime']=ini_get('max_execution_time');
+	if (empty($_SESSION['CFG']['jobscriptruntime']))
+		$_SESSION['CFG']['jobscriptruntime']=300;
+}
 // Now user abrot allowed
-@ini_set('ignore_user_abort','Off');
+@ini_set('ignore_user_abort','0');
 //disable user abort
 ignore_user_abort(true);
 // execute function on job shutdown

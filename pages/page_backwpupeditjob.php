@@ -10,7 +10,7 @@ global $wpdb,$screen_layout_columns;
 //may be needed to ensure that a special box is always available
 add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), 'backwpup_jobedit_metabox_save', $current_screen->id, 'side', 'high');
 add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), 'backwpup_jobedit_metabox_schedule', $current_screen->id, 'side', 'core');
-add_meta_box('backwpup_jobedit_destfile', __('Backup to Directory','backwpup'), 'backwpup_jobedit_metabox_destfile', $current_screen->id, 'advanced', 'core');
+add_meta_box('backwpup_jobedit_destfile', __('Backup to Folder','backwpup'), 'backwpup_jobedit_metabox_destfile', $current_screen->id, 'advanced', 'core');
 add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), 'backwpup_jobedit_metabox_destmail', $current_screen->id, 'advanced', 'core');
 
 //get and check job id

@@ -1235,8 +1235,6 @@ class CF_Http
 				curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 				curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
 				curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
-			} else {
-				@set_time_limit(300);
 			}
 			/* end Backwpup */
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

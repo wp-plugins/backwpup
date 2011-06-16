@@ -25,3 +25,14 @@
 	padding:0.5em 0.5em;
 	white-space:nowrap;
 }
+.dests {
+	float:left;
+	width:80%;
+}
+.destlinks {
+	font-style:italic;
+	letter-spacing:1px;
+	font-weight:bold;
+	line-height:20px;
+	white-space:nowrap;
+}

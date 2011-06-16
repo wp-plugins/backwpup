@@ -38,6 +38,8 @@ if (!defined('ABSPATH')) {
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 //Set Plugin Version
 define('BACKWPUP_VERSION', '2.0.0');
+//Set Min Wordpress Version
+define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2-RC1');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations

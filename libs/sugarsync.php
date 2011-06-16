@@ -184,10 +184,7 @@ class SugarSync {
 			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
-		} else {
-			@set_time_limit(300);
 		}
-
 		// execute
 		$response = curl_exec($curl);
 		$curlgetinfo = curl_getinfo($curl);

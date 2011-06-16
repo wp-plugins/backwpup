@@ -31,7 +31,7 @@ function dest_s3() {
 			if (function_exists('curl_progresscallback') and is_numeric(CURLOPT_PROGRESSFUNCTION))
 				$curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
 			else 
-				@set_time_limit(300);
+				@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 			trigger_error(__('Upload to Amazon S3 now started ... ','backwpup'),E_USER_NOTICE);	
 			if ($s3->create_mpu_object($_SESSION['JOB']['awsBucket'], $_SESSION['JOB']['awsdir'].$_SESSION['STATIC']['backupfile'], array('fileUpload' => $_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops)))  {//transfere file to S3
 				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);

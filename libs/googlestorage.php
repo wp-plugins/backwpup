@@ -243,9 +243,7 @@ class GoogleStorage {
 						curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 						curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 						curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-					} else {
-						@set_time_limit(300);
-					}
+					} 
 				}
 				else {
 					curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);				

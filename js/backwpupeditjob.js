@@ -7,6 +7,7 @@ jQuery(document).ready( function($) {
 			$('#backwpup_jobedit_backupfile').show();
 			$('#backwpup_jobedit_destftp').show();
 			$('#backwpup_jobedit_dests3').show();
+			$('#backwpup_jobedit_destgstorage').show();
 			$('#backwpup_jobedit_destazure').show();
 			$('#backwpup_jobedit_destrsc').show();
 			$('#backwpup_jobedit_destdropbox').show();
@@ -17,6 +18,7 @@ jQuery(document).ready( function($) {
 			$('#backwpup_jobedit_backupfile').hide();
 			$('#backwpup_jobedit_destftp').hide();
 			$('#backwpup_jobedit_dests3').hide();
+			$('#backwpup_jobedit_destgstorage').hide();
 			$('#backwpup_jobedit_destazure').hide();
 			$('#backwpup_jobedit_destrsc').hide();
 			$('#backwpup_jobedit_destdropbox').hide();

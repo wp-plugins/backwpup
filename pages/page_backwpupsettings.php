@@ -112,6 +112,26 @@ echo '</select>';
 <td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo $cfg['jobscriptretry'];?>" class="small-text code" />
 </td> 
 </tr>
+<tr valign="top"> 
+<?PHP
+@ini_set('safe_mode','0');
+$disabled='';
+if (ini_get('safe_mode')) {
+	$cfg['jobscriptruntime']=ini_get('max_execution_time');
+	$cfg['jobscriptruntimelong']=ini_get('max_execution_time');
+	$disabled=' disabled="disabled"';
+} 
+?>
+<th scope="row"><label for="jobscriptruntime"><?PHP _e('Max. normal script runtime:','backwpup'); ?></label></th> 
+<td><input name="jobscriptruntime" type="text" id="jobscriptruntime" value="<?PHP echo $cfg['jobscriptruntime'];?>" class="small-text code" <?PHP echo $disabled;?>/> <?PHP _e('sec.','backwpup');?>&nbsp;
+<span class="description"><?PHP _e('Script runtime will reset on many job functions. You can only set it if safemode off. Default runtime is 30 sec. Your ini setting is in sec.:','backwpup');echo ini_get('max_execution_time');?></span>
+</td> 
+</tr>
+<tr valign="top"> 
+<th scope="row"><label for="jobscriptruntimelong"><?PHP _e('Max. long script runtime:','backwpup'); ?></label></th>
+<td><input name="jobscriptruntimelong" type="text" id="jobscriptruntimelong" value="<?PHP echo $cfg['jobscriptruntimelong'];?>" class="small-text code" <?PHP echo $disabled;?>/> <?PHP _e('sec.','backwpup');?>&nbsp;
+<span class="description"><?PHP _e('Script runtime for loong operations withaut responce to script. You can only set it if safemode off. Default runtime is 300 sec.(Max. on most webservers.)','backwpup');?></span></td> 
+</tr>
 </table>
 
 <h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3> 
