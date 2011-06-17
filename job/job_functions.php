@@ -31,6 +31,7 @@ function _n($singular,$plural,$count,$domain='backwpup') {
 }
 
 function exists_option($option='backwpup_jobs') {
+	mysql_update();
 	$query="SELECT option_value as value FROM ".$_SESSION['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
 	if (!$res or mysql_num_rows($res)<1) {
@@ -40,6 +41,7 @@ function exists_option($option='backwpup_jobs') {
 }
 
 function get_option($option='backwpup_jobs') {
+	mysql_update();
 	$query="SELECT option_value FROM ".$_SESSION['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
 	if (!$res) {
@@ -50,6 +52,7 @@ function get_option($option='backwpup_jobs') {
 }
 
 function update_option($option='backwpup_jobs',$data) {
+	mysql_update();
 	$serdata=mysql_real_escape_string(serialize($data));
 	$query="UPDATE ".$_SESSION['WP']['OPTIONS_TABLE']." SET option_value= '".$serdata."' WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
@@ -197,12 +200,38 @@ function update_working_file() {
 		$stepspersent=1;
 	$pid=0;
 	@set_time_limit($_SESSION['CFG']['jobscriptruntime']);
+	mysql_update();
 	if (function_exists('posix_getpid'))
 		$pid=posix_getpid();
 	$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
 	$infile=unserialize(trim($runningfile));		
 	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
 	return true;
+}
+
+function mysql_update() {
+	global $mysqlconlink;
+	if (!$mysqlconlink or !@mysql_ping($mysqlconlink)) {
+		// make a mysql connection
+		$mysqlconlink=mysql_connect($_SESSION['WP']['DB_HOST'], $_SESSION['WP']['DB_USER'], $_SESSION['WP']['DB_PASSWORD'], true);
+		if (!$mysqlconlink) 
+			trigger_error(__('No MySQL connection:','backwpup').' ' . mysql_error(),E_USER_ERROR);
+		//set connecten charset
+		if (!empty($_SESSION['WP']['DB_CHARSET'])) {
+			if ( function_exists( 'mysql_set_charset' )) {
+				mysql_set_charset( $_SESSION['WP']['DB_CHARSET'], $mysqlconlink );
+			} else {
+				$query = "SET NAMES '".$_SESSION['WP']['DB_CHARSET']."'";
+				if (!empty($collate))
+					$query .= " COLLATE '".$_SESSION['WP']['DB_COLLATE']."'";
+				mysql_query($query,$mysqlconlink);
+			}
+		}
+		//connect to database
+		$mysqldblink = mysql_select_db($_SESSION['WP']['DB_NAME'], $mysqlconlink);
+		if (!$mysqldblink)
+			trigger_error(__('No MySQL connection to database:','backwpup').' ' . mysql_error(),E_USER_ERROR);
+	}
 }
 
 //function for PHP error handling
@@ -271,7 +300,8 @@ function joberrorhandler() {
 	}
 
 	//write working file
-	update_working_file();
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].'/.running'))
+		update_working_file();
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
 		die();
@@ -429,10 +459,12 @@ function job_end() {
 		$phpmailer->Send();
 	}
 
-	$_SESSION['WORKING']['STEPDONE']=0;
+	$_SESSION['WORKING']['STEPDONE']=1;
 	$_SESSION['WORKING']['STEPSDONE'][]='JOB_END'; //set done
-	update_working_file();
-	unlink($_SESSION['STATIC']['TEMPDIR'].'/.running');
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].'/.running')) {
+		update_working_file();
+		unlink($_SESSION['STATIC']['TEMPDIR'].'/.running');
+	}
 	//Destroy session
 	$_SESSION = array();
 	session_destroy();

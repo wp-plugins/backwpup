@@ -38,13 +38,11 @@ if (!empty($_SESSION) and !file_exists($_SESSION['STATIC']['LOGFILE'])) {
 if (ini_get('safe_mode')) {
 	$_SESSION['CFG']['jobscriptruntime']=ini_get('max_execution_time');
 	$_SESSION['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
-	$disabled=' disabled="disabled"';
-} else {
-	if (empty($_SESSION['CFG']['jobscriptruntime']))
-		$_SESSION['CFG']['jobscriptruntime']=ini_get('max_execution_time');
-	if (empty($_SESSION['CFG']['jobscriptruntime']))
-		$_SESSION['CFG']['jobscriptruntime']=300;
-}
+} 
+if (empty($_SESSION['CFG']['jobscriptruntime']) or !is_int($_SESSION['CFG']['jobscriptruntime']))
+	$_SESSION['CFG']['jobscriptruntime']=ini_get('max_execution_time');
+if (empty($_SESSION['CFG']['jobscriptruntimelong']) or !is_int($_SESSION['CFG']['jobscriptruntimelong']))
+	$_SESSION['CFG']['jobscriptruntimelong']=300;
 // Now user abrot allowed
 @ini_set('ignore_user_abort','0');
 //disable user abort
@@ -59,29 +57,7 @@ else
 //check max script execution tme
 if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1')
 	trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
-// make a mysql connection
-$mysqlconlink=mysql_connect($_SESSION['WP']['DB_HOST'], $_SESSION['WP']['DB_USER'], $_SESSION['WP']['DB_PASSWORD']);
-if (!$mysqlconlink) {
-    trigger_error(__('No MySQL connection:','backwpup').' ' . mysql_error(),E_USER_ERROR);
-	job_end();
-} 
-//set connecten charset
-if (!empty($_SESSION['WP']['DB_CHARSET'])) {
-	if ( function_exists( 'mysql_set_charset' )) {
-		mysql_set_charset( $_SESSION['WP']['DB_CHARSET'], $mysqlconlink );
-	} else {
-		$query = "SET NAMES '".$_SESSION['WP']['DB_CHARSET']."'";
-		if (!empty($collate))
-			$query .= " COLLATE '".$_SESSION['WP']['DB_COLLATE']."'";
-		mysql_query($query,$mysqlconlink);
-	}
-}
-//connect to database
-$mysqldblink = mysql_select_db($_SESSION['WP']['DB_NAME'], $mysqlconlink);
-if (!$mysqldblink) {
-    trigger_error(__('No MySQL connection to database:','backwpup').' ' . mysql_error(),E_USER_ERROR);
-	job_end();
-}
+
 //update running file
 update_working_file();
 

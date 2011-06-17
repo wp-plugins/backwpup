@@ -37,26 +37,27 @@ function backwpup_working_update() {
 		$_POST['logfile']=trim($_POST['logfile']).'.gz';
 	$log='';
 	if (is_file(trim($_POST['logfile']))) {
-		if ($infile=backwpup_get_working_file()) {
-			$warnings=$infile['WARNING'];
-			$errors=$infile['ERROR'];
-			$stepspersent=$infile['STEPSPERSENT'];
-			$steppersent=$infile['STEPPERSENT'];
+		if (is_file(backwpup_get_working_dir().'.running')) {
+			if ($infile=backwpup_get_working_file()) {
+				$warnings=$infile['WARNING'];
+				$errors=$infile['ERROR'];
+				$stepspersent=$infile['STEPSPERSENT'];
+				$steppersent=$infile['STEPPERSENT'];
+			}
 		} else {
 			$logheader=backwpup_read_logheader(trim($_POST['logfile']));
 			$warnings=$logheader['warnings'];
 			$errors=$logheader['errors'];
 			$stepspersent=100;
 			$steppersent=100;
-			$log.='<span id="stopworking"></span>';			
+			$log.='<span id="stopworking"></span>';		
 		}
 		$logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
-		for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
+		for ($i=0;$i<count($logfilarray);$i++)
+		//for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
 				$log.=$logfilarray[$i];
 		echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));
-		die();
 	}
-	echo json_encode(array('logpos'=>$_POST['logpos'],'LOG'=>$log,'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0));
 	die();
 }
 //add ajax function

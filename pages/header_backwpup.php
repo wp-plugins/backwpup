@@ -65,7 +65,7 @@ if (!empty($doaction)) {
 		unlink(backwpup_get_working_dir().'/.running');
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
 		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
-			if (posix_kill($runningfile['PID'],SIGKILL))
+			if (posix_kill($runningfile['PID'],9))
 				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$runningfile['PID'];
 			else
 				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['PID'];

@@ -17,7 +17,8 @@ jQuery(document).ready( function($) {
 						$('#logpos').val(rundata.logpos);
 					}
 					if ( '' != rundata.LOG ) {
-						$('#showworking').append(rundata.LOG);
+						//$('#showworking').append(rundata.LOG);
+						$('#showworking').replaceWith('<div id=\"showworking\">'+rundata.LOG+'</div>');
 						$('#showworking').scrollTop(rundata.logpos*12);
 					}
 					if ( 0 < rundata.ERROR ) {
@@ -44,7 +45,7 @@ jQuery(document).ready( function($) {
 				$("#message").remove();
 				clearInterval(refreshId);
 			});
-		}, 500);
+		}, 1000);
 	}
 });
 

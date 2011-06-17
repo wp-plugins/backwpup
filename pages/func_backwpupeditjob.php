@@ -246,7 +246,7 @@ function backwpup_jobedit_metabox_destgstorage($jobvalue) {
 function backwpup_jobedit_metabox_destazure($jobvalue) {
 	?>
 	<div class="dests">
-		<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		
 		<b><?PHP _e('Host:','backwpup'); ?></b><br />
 		<input id="msazureHost" name="msazureHost" type="text" value="<?PHP echo $jobvalue['msazureHost'];?>" class="large-text" /><span class="description"><?PHP _e('Normely: blob.core.windows.net','backwpup');?></span><br />
 		<b><?PHP _e('Account Name:','backwpup'); ?></b><br />
@@ -262,6 +262,7 @@ function backwpup_jobedit_metabox_destazure($jobvalue) {
 		<?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />	
 	</div>
 	<div class="destlinks">
+		<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
 		<a href="http://windows.azure.com/" target="_blank"><?PHP _e('Find Key','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />
@@ -299,7 +300,7 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
 			<span style="color:red;"><?php _e('Not authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Authenticate!', 'backwpup'); ?>" /><br />
 		<?PHP } else  { ?>
-			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
+			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauthdel" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
 		<?PHP } ?><br />
 		<b><?PHP _e('Root:','backwpup'); ?></b><br />
 		<select name="droperoot" id="droperoot">
@@ -312,7 +313,7 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 	</div>
 	<div class="destlinks">
 		<a name="dropbox" href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-		<a href="https://dropbox.com" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+		<a href="https://www.dropbox.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />
 	<?PHP
