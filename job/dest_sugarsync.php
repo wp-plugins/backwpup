@@ -36,7 +36,7 @@ function dest_sugarsync() {
 		}
 		//Create and change folder
 		$sugarsync->mkdir($_SESSION['JOB']['sugardir'],$_SESSION['JOB']['sugarroot']);
-		$sugarsync->chdir($_SESSION['JOB']['sugardir'],$_SESSION['JOB']['sugarroot']);
+		$dirid=$sugarsync->chdir($_SESSION['JOB']['sugardir'],$_SESSION['JOB']['sugarroot']);
 		//Upload to Sugarsync
 		$sugarsync->setProgressFunction('curl_progresscallback');
 		trigger_error(__('Upload to SugarSync now started ... ','backwpup'),E_USER_NOTICE);
@@ -44,7 +44,7 @@ function dest_sugarsync() {
 		if (is_object($reponse)) {
 			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$_SESSION['JOB']['jobid'];
 			$_SESSION['WORKING']['STEPDONE']++;
-			trigger_error(__('Backup File transferred to SugarSync.','backwpup'),E_USER_NOTICE);
+			trigger_error(__('Backup File transferred to SugarSync://','backwpup').$sugarsync->showdir($dirid).$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to SugarSync:','backwpup'),E_USER_ERROR);
 			return;
