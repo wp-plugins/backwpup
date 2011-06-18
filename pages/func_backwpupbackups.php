@@ -328,13 +328,14 @@ function backwpup_get_backup_files($jobid,$dest) {
 		if (class_exists('SugarSync')) {
 			try {
 				$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
-				$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
+				$dirid=$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
+				$dir=$sugarsync->showdir($dirid);
 				$getfiles=$sugarsync->getcontents('file');
 				if (is_object($getfiles)) {
 					foreach ($getfiles->file as $getfile) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;					
-						$files[$filecounter]['folder']="SUGARSYNC://".$jobvalue['sugarroot']."/".dirname((string)$getfile->ref);
+						$files[$filecounter]['folder']="SUGARSYNC://".$dir;
 						$files[$filecounter]['file']=(string)$getfile->ref;
 						$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
 						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;

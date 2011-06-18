@@ -199,16 +199,15 @@ class SugarSync {
 		// fetch curl errors
 		if (curl_errno($curl) != 0)
 			throw new SugarSyncException('cUrl Error: '. curl_error($curl));
-		
 		curl_close($curl);
-		if (isset($datafilefd) and is_resource($datafilefd))
+		if (!empty($datafilefd) and is_resource($datafilefd))
 			fclose($datafilefd);
 		
 		if ($curlgetinfo['http_code']>=200 and $curlgetinfo['http_code']<300) {
-			if (!empty($response) and $data == 'PLAIN')
-				return $response;
-			if (!empty($response))
+			if (false !== stripos($curlgetinfo['content_type'],'xml') and !empty($response))
 				return simplexml_load_string($response);
+			else
+				return $response;
 		} else {
 			if ($curlgetinfo['http_code']==401)
 				throw new SugarSyncException('Http Error: '. $curlgetinfo['http_code'].' Authorization required.');
@@ -250,6 +249,19 @@ class SugarSync {
 			}
 		}
 		return $this->folder;
+	}
+	
+	public function showdir($folderid) {
+		$showfolder='';
+		while ($folderid) {
+			$contents=$this->doCall($folderid);
+			$showfolder=$contents->displayName.'/'.$showfolder;
+			if (isset($contents->parent))
+				$folderid=$contents->parent;
+			else
+				break;
+		}
+		return $showfolder;
 	}
 	
 	public function mkdir($folder,$root='') {
@@ -305,7 +317,7 @@ class SugarSync {
 	}
 	
 	public function download($url) {
-		return $this->doCall($url.'/data','PLAIN','GET');
+		return $this->doCall($url.'/data');
 	}
 	
 	public function delete($url) {
