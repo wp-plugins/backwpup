@@ -599,7 +599,7 @@ function backwpup_cron_next($cronstring) {
 					foreach ($cron['minutes'] as $minutes) {
 						$timestamp=mktime($hours,$minutes,0,$mon,$mday,$year);
 						if (in_array(date('w',$timestamp),$cron['wday']) and $timestamp>$currenttime) {
-								return $timestamp;
+							return $timestamp;
 						}
 					}
 				}

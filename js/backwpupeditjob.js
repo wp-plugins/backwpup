@@ -43,6 +43,55 @@ jQuery(document).ready( function($) {
 		}
 	});
 	
+	$('input[name="fileprefix"]').keyup(function() {
+		$('#backupfileprefix').replaceWith('<span id="backupfileprefix">'+$(this).val()+'</span>');
+	});
+	
+	$('input[name="fileformart"]').change(function() {
+		$('#backupfileformart').replaceWith('<span id="backupfileformart">'+$(this).val()+'</span>');
+	});
+	
+	function cronstamp() {
+		var cronminutes = [];
+		var cronhours = [];
+		var cronmday = [];
+		var cronmon = [];
+		var cronwday = [];
+		$('input[name="cronminutes[]"]:checked').each(function() {
+			cronminutes.push($(this).val());
+		});
+		$('input[name="cronhours[]"]:checked').each(function() {
+			cronhours.push($(this).val());
+		});
+		$('input[name="cronmday[]"]:checked').each(function() {
+			cronmday.push($(this).val());
+		});
+		$('input[name="cronmon[]"]:checked').each(function() {
+			cronmon.push($(this).val());
+		});
+		$('input[name="cronwday[]"]:checked').each(function() {
+			cronwday.push($(this).val());
+		});		
+		var data = {
+			action: 'backwpup_get_cron_text',
+			backwpupajaxpage: 'backwpupeditjob',
+			cronminutes: cronminutes,
+			cronhours: cronhours,
+			cronmday: cronmday,
+			cronmon: cronmon,
+			cronwday: cronwday,
+			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+		};
+		$.post(ajaxurl, data, function(response) {
+			$('#cron-text').replaceWith(response);
+		});		
+	}
+	$('input[name="cronminutes[]"]').change(function() {cronstamp();});
+	$('input[name="cronhours[]"]').change(function() {cronstamp();});
+	$('input[name="cronmday[]"]').change(function() {cronstamp();});
+	$('input[name="cronmon[]"]').change(function() {cronstamp();});
+	$('input[name="cronwday[]"]').change(function() {cronstamp();});
+
 	function awsgetbucket() {
 		var data = {
 			action: 'backwpup_get_aws_buckets',

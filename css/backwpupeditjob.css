@@ -36,3 +36,8 @@
 	line-height:20px;
 	white-space:nowrap;
 }
+#cron-text {
+	line-height:20px;
+	white-space:nowrap;
+	color:#804000;
+}

@@ -25,9 +25,8 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 	</div>
 	</div>
 	<div id="major-publishing-actions">
-	<?php do_action('post_submitbox_start'); ?>
 	<div id="delete-action">
-	<a class="submitdelete deletion" style="color:red" href="<?PHP echo wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
+	<a class="submitdelete deletion" href="<?PHP echo wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
 	</div>
 	<div id="publishing-action">
 		<input type="submit" name="submit" class="button-primary" id="publish" tabindex="1" accesskey="p" value="<?php _e('Save Changes', 'backwpup'); ?>" />
@@ -57,8 +56,8 @@ function backwpup_jobedit_metabox_backupfile($jobvalue) {
 		echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" />'.__('Tar BZip2','backwpup').'<br />';
 	else
 		echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('Tar BZip2','backwpup').'<br />';	
-	_e('Example:','backwpup'); 
-	echo '<br /><i>'.$jobvalue['fileprefix'].date_i18n('Y-m-d_H-i-s').$jobvalue['fileformart'].'</i>';
+	_e('Preview:','backwpup'); 
+	echo '<br /><i><span id="backupfileprefix">'.$jobvalue['fileprefix'].'</span>'.date_i18n('Y-m-d_H-i-s').'<span id="backupfileformart">'.$jobvalue['fileformart'].'</span></i>';
 }
 
 function backwpup_jobedit_metabox_sendlog($jobvalue) {
@@ -69,18 +68,20 @@ function backwpup_jobedit_metabox_sendlog($jobvalue) {
 }
 
 function backwpup_jobedit_metabox_schedule($jobvalue) {
+		list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$jobvalue['cron'],5);
+		backwpup_get_cron_text(array('cronstamp'=>$jobvalue['cron']));
 		?>
+		<br />
 		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?><br />
-		<?PHP list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$jobvalue['cron'],5);    ?>
 		<div id="cron-min-box">
-			<b><?PHP _e('Minutes: ','backwpup'); ?></b>
-			<div id="cron-min">
+			<b><?PHP _e('Minutes: ','backwpup'); ?></b><br />
 			<?PHP 
 			if (strstr($cronstr['minutes'],'*/'))
 				$minutes=explode('/',$cronstr['minutes']);
 			else
 				$minutes=explode(',',$cronstr['minutes']);
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$minutes,true),true,false).' name="cronminutes[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+			echo '<div id="cron-min">';
 			for ($i=0;$i<60;$i=$i+5) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$minutes,true),true,false).' name="cronminutes[]" value="'.$i.'" /> '.$i.'<br />';
 			}
@@ -88,14 +89,14 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 		</div>
 		<div id="cron-hour-box">
-			<b><?PHP _e('Hours:','backwpup'); ?></b>
-			<div id="cron-hour">
+			<b><?PHP _e('Hours:','backwpup'); ?></b><br />
 			<?PHP 
 			if (strstr($cronstr['hours'],'*/'))
 				$hours=explode('/',$cronstr['hours']);
 			else
 				$hours=explode(',',$cronstr['hours']);
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$hours,true),true,false).' name="cronhours[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+			echo '<div id="cron-hour">';
 			for ($i=0;$i<24;$i++) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$hours,true),true,false).' name="cronhours[]" value="'.$i.'" /> '.$i.'<br />';
 			}
@@ -103,14 +104,14 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 		</div>
 		<div id="cron-day-box">
-			<b><?PHP _e('Day of Month:','backwpup'); ?></b>
-			<div id="cron-day">
+			<b><?PHP _e('Day of Month:','backwpup'); ?></b><br />
 			<?PHP 
 			if (strstr($cronstr['mday'],'*/'))
 				$mday=explode('/',$cronstr['mday']);
 			else
 				$mday=explode(',',$cronstr['mday']);
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+			echo '<div id="cron-day">';
 			for ($i=1;$i<=31;$i++) {
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$mday,true),true,false).' name="cronmday[]" value="'.$i.'" /> '.$i.'<br />';
 			}
@@ -118,14 +119,14 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 		</div>
 		<div id="cron-month-box">
-			<b><?PHP _e('Month:','backwpup'); ?></b>
-			<div id="cron-month">
+			<b><?PHP _e('Month:','backwpup'); ?></b><br />
 			<?PHP 
 			if (strstr($cronstr['mon'],'*/'))
 				$mon=explode('/',$cronstr['mon']);
 			else
 				$mon=explode(',',$cronstr['mon']);		
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+			echo '<div id="cron-month">';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March').'<br />';
@@ -142,14 +143,14 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 		</div>
 		<div id="cron-weekday-box">
-			<b><?PHP _e('Day of Week:','backwpup'); ?></b>
-			<div id="cron-weekday">
+			<b><?PHP _e('Day of Week:','backwpup'); ?></b><br />
 			<?PHP 
 			if (strstr($cronstr['wday'],'*/'))
 				$wday=explode('/',$cronstr['wday']);
 			else
 				$wday=explode(',',$cronstr['wday']);
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$wday,true),true,false).' name="cronwday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+			echo '<div id="cron-weekday">';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday').'<br />';
 			echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday').'<br />';
@@ -161,11 +162,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 		</div>
 		<br class="clear" />
-		<div id="cron-text">
-		<?PHP 
-		_e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i>'.$jobvalue['cron'].'</i><br />'; 
-		_e('Next runtime:'); echo ' '.date('D, j M Y H:i',backwpup_cron_next($jobvalue['cron']));
-		echo "</div>";
+		<?PHP
 }
 
 function backwpup_jobedit_metabox_destfile($jobvalue) {
@@ -349,7 +346,69 @@ function backwpup_jobedit_metabox_destmail($jobvalue) {
 	<?PHP
 }
 
-
+//ajax/normal get cron text
+function backwpup_get_cron_text($args='') {
+	if (is_array($args)) {
+		extract($args);
+		$ajax=false;
+	} else {
+		check_ajax_referer('backwpupeditjob_ajax_nonce');
+		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+			die('-1');
+		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
+			if (!empty($_POST['cronminutes'][1]))
+				$_POST['cronminutes']=array('*/'.$_POST['cronminutes'][1]);
+			else
+				$_POST['cronminutes']=array('*');
+		}
+		if (empty($_POST['cronhours']) or $_POST['cronhours'][0]=='*') {
+			if (!empty($_POST['cronhours'][1]))
+				$_POST['cronhours']=array('*/'.$_POST['cronhours'][1]);
+			else
+				$_POST['cronhours']=array('*');
+		}
+		if (empty($_POST['cronmday']) or $_POST['cronmday'][0]=='*') {
+			if (!empty($_POST['cronmday'][1]))
+				$_POST['cronmday']=array('*/'.$_POST['cronmday'][1]);
+			else
+				$_POST['cronmday']=array('*');
+		}
+		if (empty($_POST['cronmon']) or $_POST['cronmon'][0]=='*') {
+			if (!empty($_POST['cronmon'][1]))
+				$_POST['cronmon']=array('*/'.$_POST['cronmon'][1]);
+			else
+				$_POST['cronmon']=array('*');
+		}
+		if (empty($_POST['cronwday']) or $_POST['cronwday'][0]=='*') {
+			if (!empty($_POST['cronwday'][1]))
+				$_POST['cronwday']=array('*/'.$_POST['cronwday'][1]);
+			else
+				$_POST['cronwday']=array('*');
+		}
+		$cronstamp=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
+		$ajax=true;
+	}	
+	echo '<div id="cron-text">';
+	_e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i><b>'.$cronstamp.'</b></i><br />'; 
+	if (false !== strpos($_POST['cronminutes'][0],'*/') or ($_POST['cronminutes'][0]=='*' and count($_POST['cronminutes'])==1)) {
+		$repeatmins=str_replace('*/','',$_POST['cronminutes'][0]);
+		if ($repeatmins=='*' or empty($repeatmins))
+			$repeatmins=5;
+		echo '<span style="color:red;">'.str_replace('%d',$repeatmins,__('ATTENTION: Job runs every %d mins.!!!')).'</span><br />';
+	}
+	if (false !== strpos($_POST['cronhours'][0],'*/') or ($_POST['cronhours'][0]=='*' and count($_POST['cronhours'])==1)) {
+		$repeathouer=str_replace('*/','',$_POST['cronhours'][0]);
+		if ($repeathouer=='*' or empty($repeathouer))
+			$repeathouer=1;
+		echo '<span style="color:red;">'.str_replace('%d',$repeathouer,__('ATTENTION: Job runs every %d houers.!!!')).'</span><br />';
+	}
+	_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'<b>';
+	echo "</div>";	
+	if ($ajax)
+		die();
+	else
+		return;
+}
 
 //ajax/normal get buckests select box
 function backwpup_get_aws_buckets($args='') {
@@ -658,10 +717,10 @@ function backwpup_get_sugarsync_root($args='') {
 			return;
 }
 //add ajax function
+add_action('wp_ajax_backwpup_get_cron_text', 'backwpup_get_cron_text');
 add_action('wp_ajax_backwpup_get_aws_buckets', 'backwpup_get_aws_buckets');
 add_action('wp_ajax_backwpup_get_gstorage_buckets', 'backwpup_get_gstorage_buckets');
 add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
 add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
 add_action('wp_ajax_backwpup_get_sugarsync_root', 'backwpup_get_sugarsync_root');
-
 ?>

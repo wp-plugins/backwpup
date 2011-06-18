@@ -28,8 +28,9 @@ Do backups and more.
 * Store backup to SugarSync
 * Send Log/Backup by Email
 
+** WP 3.2 Required!! **
 
-** NO WARRANTY SUPPLIED. **
+** NO WARRANTY SUPPLIED! **
 ** Test your Backups! **
 
 == Installation ==
