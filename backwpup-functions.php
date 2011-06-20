@@ -884,7 +884,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
 		$jobsettings['mailefilesize']=0;
 
-	if (!isset($jobsettings['backupdir']) or !is_dir($jobsettings['backupdir']))
+	if (!isset($jobsettings['backupdir']))
 		$jobsettings['backupdir']='';
 	$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
 	if ($jobsettings['backupdir']=='/')

@@ -389,20 +389,21 @@ function backwpup_get_cron_text($args='') {
 		$ajax=true;
 	}	
 	echo '<div id="cron-text">';
-	_e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i><b>'.$cronstamp.'</b></i><br />'; 
-	if (false !== strpos($_POST['cronminutes'][0],'*/') or ($_POST['cronminutes'][0]=='*' and count($_POST['cronminutes'])==1)) {
-		$repeatmins=str_replace('*/','',$_POST['cronminutes'][0]);
+	_e('Working as <a href="http://wikipedia.org/wiki/Cron" target="_blank">Cron</a> job schedule:','backwpup'); echo ' <i><b><nobr>'.$cronstamp.'</nobr></b></i><br />'; 
+	list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$cronstamp,5);
+	if (false !== strpos($cronstr['minutes'],'*/') or ($cronstr['minutes']=='*')) {
+		$repeatmins=str_replace('*/','',$cronstr['minutes']);
 		if ($repeatmins=='*' or empty($repeatmins))
 			$repeatmins=5;
-		echo '<span style="color:red;">'.str_replace('%d',$repeatmins,__('ATTENTION: Job runs every %d mins.!!!')).'</span><br />';
+		echo '<span style="color:red;">'.str_replace('%d',$repeatmins,__('ATTENTION: Job runs every %d mins.!!!','backwpup')).'</span><br />';
 	}
-	if (false !== strpos($_POST['cronhours'][0],'*/') or ($_POST['cronhours'][0]=='*' and count($_POST['cronhours'])==1)) {
-		$repeathouer=str_replace('*/','',$_POST['cronhours'][0]);
+	if (false !== strpos($cronstr['hours'],'*/') or ($cronstr['hours']=='*')) {
+		$repeathouer=str_replace('*/','',$cronstr['hours']);
 		if ($repeathouer=='*' or empty($repeathouer))
 			$repeathouer=1;
-		echo '<span style="color:red;">'.str_replace('%d',$repeathouer,__('ATTENTION: Job runs every %d houers.!!!')).'</span><br />';
+		echo '<span style="color:red;">'.str_replace('%d',$repeathouer,__('ATTENTION: Job runs every %d houers.!!!','backwpup')).'</span><br />';
 	}
-	_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'<b>';
+	_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'</b>';
 	echo "</div>";	
 	if ($ajax)
 		die();

@@ -23,15 +23,7 @@ function wp_export() {
 			file_put_contents($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
 		}
 		curl_close($ch);
-	} elseif (ini_get('allow_url_fopen')==true or ini_get('allow_url_fopen')==1 or strtolower(ini_get('allow_url_fopen'))=="on") {
-		if (copy(substr($_SESSION['STATIC']['JOBRUNURL'],0,-11).'wp_export_generate.php',$_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
-			trigger_error(__('Export to XML done!','backwpup'),E_USER_NOTICE);
-		} else {
-			trigger_error(__('Can not Export to XML!','backwpup'),E_USER_ERROR);
-		}		
-	} else {
-		trigger_error(__('Can not Export to XML! no cURL or allow_url_fopen Support!','backwpup'),E_USER_WARNING);
-	}
+	} 
 	//add XML file to backupfiles
 	if (is_readable($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
 		$filestat=stat($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');

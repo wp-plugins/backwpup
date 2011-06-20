@@ -42,77 +42,73 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		
 		list($this->jobid,$this->dest)=explode(',',$jobdest);
 		
-		if (false === ($backups=get_transient('backwpup_backups_chache'))) {  //create new list
-			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$backups,300);
+		if (false === ($this->items=get_transient('backwpup_backups_chache'))) {  //create new list
+			$this->items=backwpup_get_backup_files($this->jobid,$this->dest);
+			set_transient('backwpup_backups_chache',$this->items,300);
 		}
 		
-		if (empty($backups) or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
-			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$backups,300);		
+		if (!$this->items or $this->dest!=$this->items[0]['DEST'] or $this->jobid!=$this->items[0]['JOBID']) {
+			$this->items=backwpup_get_backup_files($this->jobid,$this->dest);
+			set_transient('backwpup_backups_chache',$this->items,300);		
 		}
-		
+
 		//Sorting
 		$order=isset($_GET['order']) ? $_GET['order'] : 'time';
 		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'desc';
 		$tmp = Array();
 		if ($orderby=='time') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);			
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);	
 			}
 		}		
 		elseif ($orderby=='file') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);			
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);	
 			}
 		}
 		elseif ($orderby=='folder') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);			
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);	
 			}
 		}
 		elseif ($orderby=='size') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);			
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);	
 			}
 		}	
 
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );
 		$end=$start+$per_page;
-		if ($end>count($backups))
-			$end=count($backups);
-		
-		for ($i=$start;$i<$end;$i++) {
-			$this->items[] = $backups[$i];
-		}
+		if ($end>count($this->items))
+			$end=count($this->items);
 		
 		$this->set_pagination_args( array(
-			'total_items' => count($backups),
+			'total_items' => count($this->items),
 			'per_page' => $per_page,
 			'jobdest' => $jobdest,
 			'orderby' => $orderby,
@@ -150,7 +146,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		$jobdest=array();
 		$jobs=get_option('backwpup_jobs');
 		foreach ($jobs as $jobid => $jobvalue) {
-			if (!empty($jobvalue['backupdir']))
+			if (!empty($jobvalue['backupdir']) and is_dir($jobvalue['backupdir']))
 				$jobdest[]=$jobid.',FOLDER';
 			foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
 				$dest=strtoupper($dest);
@@ -261,15 +257,15 @@ class BackWPup_Backups_Table extends WP_List_Table {
 //get backup files and infos
 function backwpup_get_backup_files($jobid,$dest) {
 	global $backwpup_message;
-	if (empty($jobid) or !in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))))
+	if (empty($jobid) or (!in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))) and $dest!='FOLDER'))
 		return false;
 	$jobs=get_option('backwpup_jobs'); //Load jobs
 	$jobvalue=$jobs[$jobid];
 	$filecounter=0;
 	$files=array();
 	//Get files/filinfo in backup folder
-	if ($dest=='FOLDER' and !empty($jobvalue['backupdir'])) {
-		if ( $dir = @opendir( $jobvalue['backupdir'] ) ) {
+	if ($dest=='FOLDER' and !empty($jobvalue['backupdir']) and is_dir($jobvalue['backupdir'])) {
+		if ( $dir = opendir( $jobvalue['backupdir'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (substr($file,0,1)=='.')
 					continue;
