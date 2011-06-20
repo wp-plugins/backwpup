@@ -14,19 +14,14 @@ function dest_ftp() {
 	trigger_error($_SESSION['WORKING']['DEST_FTP']['STEP_TRY'].'. '.__('Try to sending backup file to a FTP Server...','backwpup'),E_USER_NOTICE);
 
 	need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*1.5);
-	
-	$ftpport=21;
-	$ftphost=$_SESSION['JOB']['ftphost'];
-	if (false !== strpos($_SESSION['JOB']['ftphost'],':')) //look for port
-		list($ftphost,$ftpport)=explode(':',$_SESSION['JOB']['ftphost'],2);
 
 	if ($_SESSION['JOB']['ftpssl']) { //make SSL FTP connection
 		if (function_exists('ftp_ssl_connect')) {
-			$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
+			$ftp_conn_id = ftp_ssl_connect($_SESSION['JOB']['ftphost'],$_SESSION['JOB']['ftphostport'],10);
 			if ($ftp_conn_id) 
-				trigger_error(__('Connected by SSL-FTP to Server:','backwpup').' '.$_SESSION['JOB']['ftphost'],E_USER_NOTICE);
+				trigger_error(__('Connected by SSL-FTP to Server:','backwpup').' '.$_SESSION['JOB']['ftphost'].':'.$_SESSION['JOB']['ftphostport'],E_USER_NOTICE);
 			else {
-				trigger_error(__('Can not connect by SSL-FTP to Server:','backwpup').' '.$_SESSION['JOB']['ftphost'],E_USER_ERROR);
+				trigger_error(__('Can not connect by SSL-FTP to Server:','backwpup').' '.$_SESSION['JOB']['ftphost'].':'.$_SESSION['JOB']['ftphostport'],E_USER_ERROR);
 				return false;
 			}
 		} else {
@@ -34,11 +29,11 @@ function dest_ftp() {
 			return false;			
 		}
 	} else { //make normal FTP conection if SSL not work
-		$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
+		$ftp_conn_id = ftp_connect($_SESSION['JOB']['ftphost'],$_SESSION['JOB']['ftphostport'],10);
 		if ($ftp_conn_id) 
-			trigger_error(__('Connected to FTP Server:','backwpup').' '.$_SESSION['JOB']['ftphost'],E_USER_NOTICE);
+			trigger_error(__('Connected to FTP Server:','backwpup').' '.$_SESSION['JOB']['ftphost'].':'.$_SESSION['JOB']['ftphostport'],E_USER_NOTICE);
 		else {
-			trigger_error(__('Can not connect to FTP Server:','backwpup').' '.$_SESSION['JOB']['ftphost'],E_USER_ERROR);
+			trigger_error(__('Can not connect to FTP Server:','backwpup').' '.$_SESSION['JOB']['ftphost'].':'.$_SESSION['JOB']['ftphostport'],E_USER_ERROR);
 			return false;
 		}
 	}

@@ -96,6 +96,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['backupdir']=isset($_POST['backupdir']) ? stripslashes($_POST['backupdir']) : '';
 	$jobvalues['maxbackups']=isset($_POST['maxbackups']) ? (int)$_POST['maxbackups'] : 0;
 	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
+	$jobvalues['ftphostport']=!empty($_POST['ftphostport']) ? $_POST['ftphostport'] : 21;
 	$jobvalues['ftpuser']=isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '';
 	$jobvalues['ftppass']=isset($_POST['ftppass']) ? base64_encode($_POST['ftppass']) : '';
 	$jobvalues['ftpdir']=isset($_POST['ftpdir']) ? stripslashes($_POST['ftpdir']) : '';

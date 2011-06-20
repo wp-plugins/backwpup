@@ -14,6 +14,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['mailsendmail']=untrailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['mailsendmail']))));
 	$cfg['mailsecure']=$_POST['mailsecure'];
 	$cfg['mailhost']=$_POST['mailhost'];
+	$cfg['mailhostport']=empty($_POST['mailhostport']) ? 25 : $_POST['mailhostport'];
 	$cfg['mailuser']=$_POST['mailuser'];
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['disablewpcron']=isset($_POST['disablewpcron']) ? true : false;

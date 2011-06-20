@@ -50,7 +50,8 @@ echo '</select>';
 <tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
 <th scope="row"><label for="mailhost"><?PHP _e('SMTP hostname','backwpup'); ?></label></th> 
 <td> 
-<input name="mailhost" id="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text code" />
+<input name="mailhost" id="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text code" />&nbsp;
+<?PHP _e('Port:','backwpup'); ?><input name="mailhostport" id="mailhostport" type="text" value="<?PHP echo $cfg['mailhostport'];?>" class="small-text code" />
 </td> 
 </tr>
 <tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 

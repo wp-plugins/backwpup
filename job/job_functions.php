@@ -423,12 +423,8 @@ function job_end() {
 		//Setting den methode
 		if ($_SESSION['CFG']['mailmethod']=="SMTP") {
 			require_once($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC'].'/class-smtp.php');
-			$smtpport=25;
-			$smtphost=$_SESSION['CFG']['mailhost'];
-			if (false !== strpos($_SESSION['CFG']['mailhost'],':')) //look for port
-				list($smtphost,$smtpport)=explode(':',$_SESSION['CFG']['mailhost'],2);
-			$phpmailer->Host=$smtphost;
-			$phpmailer->Port=$smtpport;
+			$phpmailer->Host=$_SESSION['CFG']['mailhost'];
+			$phpmailer->Port=$_SESSION['CFG']['mailhostport'];
 			$phpmailer->SMTPSecure=$_SESSION['CFG']['mailsecure'];
 			$phpmailer->Username=$_SESSION['CFG']['mailuser'];
 			$phpmailer->Password=base64_decode($_SESSION['CFG']['mailpass']);

@@ -178,6 +178,8 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
 	?>
 	<b><?PHP _e('Hostname:','backwpup'); ?></b><br />
 	<input name="ftphost" type="text" value="<?PHP echo $jobvalue['ftphost'];?>" class="large-text" /><br />
+	<b><?PHP _e('Port:','backwpup'); ?></b><br />
+	<input name="ftphostport" type="text" value="<?PHP echo $jobvalue['ftphostport'];?>" class="small-text" /><br />
 	<b><?PHP _e('Username:','backwpup'); ?></b><br />
 	<input name="ftpuser" type="text" value="<?PHP echo $jobvalue['ftpuser'];?>" class="user large-text" /><br />
 	<b><?PHP _e('Password:','backwpup'); ?></b><br />

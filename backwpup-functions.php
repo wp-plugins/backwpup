@@ -132,7 +132,10 @@ function backwpup_plugin_activate() {
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
+	if (false !== strpos($cfg['mailhost'],':')) 
+		list($cfg['mailhost'],$cfg['mailhostport'])=explode(':',$cfg['mailhost'],2);
 	if (!isset($cfg['mailhost'])) $cfg['mailhost']='';
+	if (!isset($cfg['mailhostport'])) $cfg['mailhostport']=25;
 	if (!isset($cfg['mailsecure'])) $cfg['mailsecure']='';
 	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
 	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
@@ -893,8 +896,14 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['maxbackups']) or !is_int($jobsettings['maxbackups']))
 		$jobsettings['maxbackups']=0;
 
+	if (false !== strpos($jobsettings['ftphost'],':')) 
+		list($jobsettings['ftphost'],$jobsettings['ftphostport'])=explode(':',$jobsettings['ftphost'],2);
+	
 	if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
 		$jobsettings['ftphost']='';
+	
+	if (!isset($jobsettings['ftphostport']) or !is_int($jobsettings['ftphostport']))
+		$jobsettings['ftphostport']=21;
 
 	if (!isset($jobsettings['ftpuser']) or !is_string($jobsettings['ftpuser']))
 		$jobsettings['ftpuser']='';
