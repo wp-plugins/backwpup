@@ -124,7 +124,10 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_backtime_mins']='5';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			file_put_contents(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance','<?php $upgrading = '.time().'; ?>');
+			if (is_writable(rtrim($_SESSION['WP']['ABSPATH'],'/')))
+				file_put_contents(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance','<?php $upgrading = '.time().'; ?>');
+			else
+				trigger_error(__('Can not set Blog to Maintenance Mode! Blog root is not wirtable!','backwpup'),E_USER_NOTICE);
 		}
 	} else {
 		trigger_error(__('Set Blog to normal Mode','backwpup'),E_USER_NOTICE);
@@ -135,7 +138,7 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_activate']='off';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			unlink(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance');
+			@unlink(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance');
 		}
 	}
 }
