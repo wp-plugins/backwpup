@@ -64,12 +64,45 @@ if (!empty($doaction)) {
 		$runningfile=backwpup_get_working_file();
 		unlink(backwpup_get_working_dir().'/.running');
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
+		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
+		//write new log header
+		$runningfile['ERROR']++;
+		$fd=fopen($runningfile['LOGFILE'],'r+');
+		while (!feof($fd)) {
+			$line=fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$runningfile['ERROR']."\" />",100)."\n");
+				break;
+			}
+			$filepos=ftell($fd);
+		}
+		fclose($fd);
 		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
 			if (posix_kill($runningfile['PID'],9))
 				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$runningfile['PID'];
+				//gzip logfile
+				file_put_contents($runningfile['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
+				$cfg=get_option('backwpup');
+				if ($cfg['gzlogs']) {
+					$fd=fopen($runningfile['LOGFILE'],'r');
+					$zd=gzopen($runningfile['LOGFILE'].'.gz','w9');
+					while (!feof($fd)) 
+						gzwrite($zd,fread($fd,4096));
+					gzclose($zd);
+					fclose($fd);
+					unlink($runningfile['LOGFILE']);
+					$runningfile['LOGFILE']=$runningfile['LOGFILE'].'.gz';
+				}
 			else
 				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['PID'];
-		}	
+		}
+		//update job settings
+		$jobs=get_option('backwpup_jobs');
+		$jobs[$runningfile['JOBID']]['logfile']=$runningfile['LOGFILE'];
+		$jobs[$runningfile['JOBID']]['lastrun']=$jobs[$runningfile['JOBID']]['starttime'];
+		$jobs[$runningfile['JOBID']]['lastruntime']=$runningfile['timestamp']-$jobs[$runningfile['JOBID']]['starttime'];
+		update_option('backwpup_jobs',$jobs); //Save Settings
 		break;
 	}
 }
