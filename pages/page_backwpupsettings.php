@@ -105,7 +105,7 @@ echo '</select>';
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="jobstepretry"><?PHP _e('Max. retrys for job steps','backwpup'); ?></label></th> 
-<td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo $cfg['jobstepretry'];?>" class="regular-text code" />
+<td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo $cfg['jobstepretry'];?>" class="small-text code" />
 </td> 
 </tr>
 <tr valign="top"> 
