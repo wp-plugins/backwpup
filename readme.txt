@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2.0
 Tested up to: 3.2.0
-Stable tag: 1.7.4
+Stable tag: 1.7.5
 
 Backup your WordPress Database and Files, and more!
 
@@ -123,6 +123,9 @@ Destinations are:
 * Added Google storage as destination
 * Reworked GUI (Wordpress Dropboxes, working screen options, ....)
 * Complete new job working ot of Wordpress (backend and frontend)
+
+= 1.7.5 =
+* fix problems in cron calculation
 
 = 1.7.4 =
 * jobs not longer work ever... max. time is 5 min.

@@ -508,7 +508,7 @@ function backwpup_cron_next($cronstring) {
 			if (strstr($value,'-')) {
 				list($first,$last)=explode('-',$value,2);
 				if (!is_numeric($first) or !is_numeric($last) or $last>60 or $first>60) //check
-					return false;
+					return 2147483647;
 				if ($cronarraykey=='minutes' and $step<5)  //set step ninmum to 5 min.
 					$step=5;
 				$range=array();
@@ -582,21 +582,24 @@ function backwpup_cron_next($cronstring) {
 				if (strtolower($value)=='fri')
 					$value=5;
 				if (!is_numeric($value) or $value>60) //check
-					return false;
+					return 2147483647;
 				$cron[$cronarraykey]=array_merge($cron[$cronarraykey],array(0=>$value));
 			}
 		}
 	}
-
+	//generate next 10 years
+	for ($i=date('Y');$i<2038;$i++)
+		$cron['year'][]=$i;
+	
 	//calc next timestamp
 	$currenttime=current_time('timestamp');
-	foreach (array(date('Y'),date('Y')+1) as $year) {
+	foreach ($cron['year'] as $year) {
 		foreach ($cron['mon'] as $mon) {
 			foreach ($cron['mday'] as $mday) {
 				foreach ($cron['hours'] as $hours) {
 					foreach ($cron['minutes'] as $minutes) {
 						$timestamp=mktime($hours,$minutes,0,$mon,$mday,$year);
-						if (in_array(date('w',$timestamp),$cron['wday']) and $timestamp>$currenttime) {
+						if ($timestamp and in_array(date('j',$timestamp),$cron['mday']) and in_array(date('w',$timestamp),$cron['wday']) and $timestamp>$currenttime) {
 							return $timestamp;
 						}
 					}
@@ -604,7 +607,7 @@ function backwpup_cron_next($cronstring) {
 			}
 		}
 	}
-	return false;
+	return 2147483647;
 }
 
 function backwpup_get_working_dir() {

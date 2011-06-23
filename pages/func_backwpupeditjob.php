@@ -405,7 +405,12 @@ function backwpup_get_cron_text($args='') {
 			$repeathouer=1;
 		echo '<span style="color:red;">'.str_replace('%d',$repeathouer,__('ATTENTION: Job runs every %d houers.!!!','backwpup')).'</span><br />';
 	}
-	_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'</b>';
+	$nextrun=backwpup_cron_next($cronstamp);
+	if (2147483647==$nextrun) {
+		echo '<span style="color:red;">'.__('ATTENTION: Can\'t caculate cron.!!!','backwpup').'</span><br />';
+	} else {
+		_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'</b>';
+	}
 	echo "</div>";	
 	if ($ajax)
 		die();
