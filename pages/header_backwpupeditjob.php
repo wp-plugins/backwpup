@@ -243,11 +243,5 @@ if (in_array('RSC',$dests))
 add_screen_option('layout_columns', array('max' => 2));
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
-
-
+backwpup_contextual_help(__('','backwpup'));
 ?>

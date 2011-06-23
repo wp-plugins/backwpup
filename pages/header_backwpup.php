@@ -108,11 +108,7 @@ if (!empty($doaction)) {
 }
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
+backwpup_contextual_help(__('Here is the job overview with some informations. You can see some informations of the jobs, how many can be switshed with the view button. Also you can manage the jobs or abbort working jobs. Some links are added to have direkt the last log or download.','backwpup'));
 
 $backwpup_listtable->prepare_items();
 ?>

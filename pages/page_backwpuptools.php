@@ -15,7 +15,6 @@ wp_nonce_field('backwpup-tools');
 ?>
 <input type="hidden" name="action" value="update" />
 <h3><?PHP _e('Database restore','backwpup'); ?></h3> 
-<p><?PHP _e('Here you can restore your database.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top">
 <th scope="row"><label for="mailsndemail"><?PHP _e('DB Restore','backwpup'); ?></label></th>

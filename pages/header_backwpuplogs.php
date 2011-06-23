@@ -58,11 +58,7 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 }
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
+backwpup_contextual_help(__('Here you can mange the log files of the jobs. You can download, view or delete them.','backwpup'));
 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpuplogs_per_page') );
 

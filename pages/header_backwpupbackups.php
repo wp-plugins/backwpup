@@ -357,11 +357,7 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
+backwpup_contextual_help(__('Here you see a list of backup files. Change the destionation to joname:destination to become a list of backups form other destionitions ond jobs. Than you kann delete or download backup files.','backwpup'));
 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpupbackups_per_page') );
 

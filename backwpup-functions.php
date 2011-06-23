@@ -89,24 +89,19 @@ function backwpup_load_ajax() {
 
 function backwpup_contextual_help($help='') {
 	global $current_screen;
-	//help Footer
-	$help.=	'<div class="metabox-prefs">'.
-			'<a href="http://wordpress.org/tags/backwpup" target="_blank">'.__('Support').'</a>'.
+	if (0!= stripos($help,'<p>'))
+		$help='<p>'.$help.'</p>';
+	add_contextual_help($current_screen,$help.
+			'<p><strong>'.__('For more information:','backwpup').'</strong></p>'.
+			'<p><a href="http://wordpress.org/tags/backwpup" target="_blank">'.__('Support').'</a>'.
 			' | <a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>'.
 			' | <a href="http://danielhuesken.de/portfolio/backwpup" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
 			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin Home on WordPress.org', 'backwpup') . '</a>'.
 			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=daniel%40huesken-net%2ede&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>'.
-			' | <script type="text/javascript">
-						var flattr_btn = \'compact\'
-						var flattr_url = \'http://danielhuesken.de/portfolio/backwpup/\'
-						</script><script src="http://api.flattr.com/button/load.js" type="text/javascript"></script>'.
-			'</div>'.
-			'<div class="metabox-prefs">'.
-			__('Version:', 'backwpup').' '.BACKWPUP_VERSION.' | '.
-			__('Author:', 'backwpup').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>'.
-			'</div>';
-	//add help
-	add_contextual_help($current_screen,$help);
+			' | <a href="https://flattr.com/thing/32235/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
+			' | '.__('Version:', 'backwpup').' '.BACKWPUP_VERSION.
+			' | '.__('Author:', 'backwpup').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>'.
+			'</p>');
 }
 
 //On Plugin activate

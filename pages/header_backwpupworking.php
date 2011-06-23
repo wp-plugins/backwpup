@@ -30,9 +30,5 @@ elseif (!isset($_GET['action']) and !isset($_GET['logfile']) and empty($backwpup
 }
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
+backwpup_contextual_help(__('Here you see working jobs or logfiles','backwpup'));
 ?>

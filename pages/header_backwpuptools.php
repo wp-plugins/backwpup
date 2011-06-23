@@ -6,9 +6,5 @@ if (!defined('ABSPATH')) {
 }
 
 //add Help
-backwpup_contextual_help(
-	'<div class="metabox-prefs">'.
-	''.
-	'</div>'
-);
+backwpup_contextual_help();
 ?>
