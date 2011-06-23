@@ -164,7 +164,7 @@ function backwpup_jobstart($jobid='') {
 	//Create log file header
 	fwrite($fd,"<html>\n<head>\n");
 	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-	fwrite($fd,"<meta name=\"php_version\" content=\"".phpversion()."\" />\n");
+	fwrite($fd,"<meta name=\"php_version\" content=\"".phpversion()." API:".php_sapi_name()."\" />\n");
 	fwrite($fd,"<meta name=\"mysql_version\" content=\"".$wpdb->get_var("SELECT VERSION() AS version")."\" />\n");
 	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
