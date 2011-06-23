@@ -103,7 +103,7 @@ Destinations are:
 
 == Changelog ==
 = 1.7.4 =
-* jobs not longer work ever... max. time is 5 min.
+* jobs not longer work ever... max. time is 5 min. 
 * hopfuly fix for dropbox upload
 * fix dropbox auth deletion
 * fixed bug in Sugarsync qouta
