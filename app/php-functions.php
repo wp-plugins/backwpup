@@ -806,8 +806,8 @@ function backwpup_env_checks() {
 	$message='';
 	$checks=true;
 	$cfg=get_option('backwpup');
-	if (version_compare($wp_version, '2.8', '<')) { // check WP Version
-		$message.=__('- WordPress 2.8 or heiger needed!','backwpup') . '<br />';
+	if (version_compare($wp_version, '3.1', '<')) { // check WP Version
+		$message.=__('- WordPress 3.1 or heiger needed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (version_compare(phpversion(), '5.2.0', '<')) { // check PHP Version
