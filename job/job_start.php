@@ -114,7 +114,7 @@ function backwpup_jobstart($jobid='') {
 		if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
 			while (($file = readdir($dir)) !== false) {
 				if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
-					if ($file!='.' or $file!='..') {
+					if ($file!='.' and $file!='..') {
 						unlink($_SESSION['STATIC']['TEMPDIR'].$file);
 					}
 				}
@@ -164,8 +164,6 @@ function backwpup_jobstart($jobid='') {
 	//Create log file header
 	fwrite($fd,"<html>\n<head>\n");
 	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-	fwrite($fd,"<meta name=\"php_version\" content=\"".phpversion()." API:".php_sapi_name()."\" />\n");
-	fwrite($fd,"<meta name=\"mysql_version\" content=\"".$wpdb->get_var("SELECT VERSION() AS version")."\" />\n");
 	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");

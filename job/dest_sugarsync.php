@@ -16,8 +16,6 @@ function dest_sugarsync() {
 
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 	
-	need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*1.5); 
-	
 	try {
 		$sugarsync = new SugarSync($_SESSION['JOB']['sugaruser'],base64_decode($_SESSION['JOB']['sugarpass']),$_SESSION['BACKWPUP']['SUGARSYNC_ACCESSKEY'], $_SESSION['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']);
 		//Check Quota

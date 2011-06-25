@@ -351,13 +351,12 @@ function job_end() {
 	if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
 		while (($file = readdir($dir)) !== false) {
 			if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
-				if ($file!='.' or $file!='..' or $file!='.running') {
+				if ($file!='.' and $file!='..' and $file!='.running') {
 					unlink($_SESSION['STATIC']['TEMPDIR'].$file);
 				}
 			}
 		}
 		closedir($dir);
-		rmdir($_SESSION['STATIC']['TEMPDIR']);
 	}
 	
 	$jobs=get_option('backwpup_jobs');

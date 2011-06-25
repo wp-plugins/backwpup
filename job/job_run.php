@@ -75,6 +75,19 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 
 // Working step by step
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
+	//display some info massages bevor fist step
+	if (count($_SESSION['WORKING']['STEPSDONE'])==0) {
+		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$_SESSION['JOB']['jobid'].'. '.$_SESSION['JOB']['name'],E_USER_NOTICE);
+		trigger_error(__('[INFO]: BackWPup jobtype:','backwpup').' '.$_SESSION['JOB']['type'],E_USER_NOTICE);
+		trigger_error(__('[INFO]: BackWPup ver.:','backwpup').' '.$_SESSION['BACKWPUP']['VERSION'],E_USER_NOTICE);
+		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name(),E_USER_NOTICE);
+		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
+		$curlversion=curl_version();
+		trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);
+		trigger_error(__('[INFO]: Temp folder is:','backwpup').' '.$_SESSION['STATIC']['TEMPDIR'],E_USER_NOTICE);
+		if(!empty($_SESSION['STATIC']['backupfile']))
+			trigger_error(__('[INFO]: Backup file is:','backwpup').' '.$_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
+	}
 	//update running file
 	update_working_file();
 	//Set next step
