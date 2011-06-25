@@ -77,9 +77,9 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 foreach($_SESSION['WORKING']['STEPS'] as $step) {
 	//display some info massages bevor fist step
 	if (count($_SESSION['WORKING']['STEPSDONE'])==0) {
-		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$_SESSION['JOB']['jobid'].'. '.$_SESSION['JOB']['name'],E_USER_NOTICE);
-		trigger_error(__('[INFO]: BackWPup jobtype:','backwpup').' '.$_SESSION['JOB']['type'],E_USER_NOTICE);
-		trigger_error(__('[INFO]: BackWPup ver.:','backwpup').' '.$_SESSION['BACKWPUP']['VERSION'],E_USER_NOTICE);
+		trigger_error('[INFO]: BackWPup version '.$_SESSION['BACKWPUP']['VERSION'].', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',E_USER_NOTICE);
+		trigger_error(__('INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
+		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$_SESSION['JOB']['jobid'].'. '.$_SESSION['JOB']['name'].'; ',$_SESSION['JOB']['type'],E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name(),E_USER_NOTICE);
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
 		$curlversion=curl_version();

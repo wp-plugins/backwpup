@@ -127,7 +127,7 @@ function maintenance_mode($enable = false) {
 			if (is_writable(rtrim($_SESSION['WP']['ABSPATH'],'/')))
 				file_put_contents(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance','<?php $upgrading = '.time().'; ?>');
 			else
-				trigger_error(__('Can not set Blog to Maintenance Mode! Blog root is not wirtable!','backwpup'),E_USER_NOTICE);
+				trigger_error(__('Cannot set Website/Blog to Maintenance Mode! Root folder is not writeable!','backwpup'),E_USER_NOTICE);
 		}
 	} else {
 		trigger_error(__('Set Blog to normal Mode','backwpup'),E_USER_NOTICE);

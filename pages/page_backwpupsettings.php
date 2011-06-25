@@ -17,7 +17,7 @@ wp_nonce_field('backwpup-cfg');
 ?>
 <input type="hidden" name="action" value="update" />
 <h3><?PHP _e('Send Mail','backwpup'); ?></h3> 
-<p><?PHP _e('Here you can set special things for Mail sending. The settings will used in jobs for sending backups with mail or sending log files.','backwpup'); ?></p>
+<p><?PHP _e('Here you can set special things for Mail sending. The settings will be used in jobs for sending backups via email or for sending log files.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="mailsndemail"><?PHP _e('Sender email','backwpup'); ?></label></th> 

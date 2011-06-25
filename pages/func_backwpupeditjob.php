@@ -407,7 +407,7 @@ function backwpup_get_cron_text($args='') {
 	}
 	$nextrun=backwpup_cron_next($cronstamp);
 	if (2147483647==$nextrun) {
-		echo '<span style="color:red;">'.__('ATTENTION: Can\'t caculate cron.!!!','backwpup').'</span><br />';
+		echo '<span style="color:red;">'.__('ATTENTION: Can\'t calculate cron!!!','backwpup').'</span><br />';
 	} else {
 		_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'</b>';
 	}
