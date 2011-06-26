@@ -123,6 +123,7 @@ Destinations are:
 * Added Google storage as destination
 * Reworked GUI (Wordpress Dropboxes, working screen options, ....)
 * Complete new job working ot of Wordpress (backend and frontend)
+* added easyer job sheduling selection
 
 = 1.7.7 =
 * cleanup brocken buckupfiels on job start

@@ -69,99 +69,154 @@ function backwpup_jobedit_metabox_sendlog($jobvalue) {
 
 function backwpup_jobedit_metabox_schedule($jobvalue) {
 		list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$jobvalue['cron'],5);
+		if (strstr($cronstr['minutes'],'*/'))
+			$minutes=explode('/',$cronstr['minutes']);
+		else
+			$minutes=explode(',',$cronstr['minutes']);
+		if (strstr($cronstr['hours'],'*/'))
+			$hours=explode('/',$cronstr['hours']);
+		else
+			$hours=explode(',',$cronstr['hours']);
+		if (strstr($cronstr['mday'],'*/'))
+			$mday=explode('/',$cronstr['mday']);
+		else
+			$mday=explode(',',$cronstr['mday']);
+		if (strstr($cronstr['mon'],'*/'))
+			$mon=explode('/',$cronstr['mon']);
+		else
+			$mon=explode(',',$cronstr['mon']);
+		if (strstr($cronstr['wday'],'*/'))
+			$wday=explode('/',$cronstr['wday']);
+		else
+			$wday=explode(',',$cronstr['wday']);
 		backwpup_get_cron_text(array('cronstamp'=>$jobvalue['cron']));
 		?>
 		<br />
-		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?><br />
-		<div id="cron-min-box">
-			<b><?PHP _e('Minutes: ','backwpup'); ?></b><br />
-			<?PHP 
-			if (strstr($cronstr['minutes'],'*/'))
-				$minutes=explode('/',$cronstr['minutes']);
-			else
-				$minutes=explode(',',$cronstr['minutes']);
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$minutes,true),true,false).' name="cronminutes[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-			echo '<div id="cron-min">';
-			for ($i=0;$i<60;$i=$i+5) {
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$minutes,true),true,false).' name="cronminutes[]" value="'.$i.'" /> '.$i.'<br />';
-			}
-			?>
+		<b><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<?PHP 	echo '<input class="radio" type="radio"'.checked("advanced",$jobvalue['cronselect'],false).' name="cronselect" value="advanced" />'.__('advanced','backwpup').'&nbsp;';
+				echo '<input class="radio" type="radio"'.checked("basic",$jobvalue['cronselect'],false).' name="cronselect" value="basic" />'.__('basic','backwpup');?>
+		<br />
+		<div id="schedadvanced" <?PHP if ($jobvalue['cronselect']!='advanced') echo 'style="display:none;"';?>>
+			<div id="cron-min-box">
+				<b><?PHP _e('Minutes: ','backwpup'); ?></b><br />
+				<?PHP 
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$minutes,true),true,false).' name="cronminutes[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<div id="cron-min">';
+				for ($i=0;$i<60;$i=$i+5) {
+					echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$minutes,true),true,false).' name="cronminutes[]" value="'.$i.'" /> '.$i.'<br />';
+				}
+				?>
+				</div>
 			</div>
-		</div>
-		<div id="cron-hour-box">
-			<b><?PHP _e('Hours:','backwpup'); ?></b><br />
-			<?PHP 
-			if (strstr($cronstr['hours'],'*/'))
-				$hours=explode('/',$cronstr['hours']);
-			else
-				$hours=explode(',',$cronstr['hours']);
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$hours,true),true,false).' name="cronhours[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-			echo '<div id="cron-hour">';
-			for ($i=0;$i<24;$i++) {
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$hours,true),true,false).' name="cronhours[]" value="'.$i.'" /> '.$i.'<br />';
-			}
-			?>
+			<div id="cron-hour-box">
+				<b><?PHP _e('Hours:','backwpup'); ?></b><br />
+				<?PHP 
+
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$hours,true),true,false).' name="cronhours[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<div id="cron-hour">';
+				for ($i=0;$i<24;$i++) {
+					echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$hours,true),true,false).' name="cronhours[]" value="'.$i.'" /> '.$i.'<br />';
+				}
+				?>
+				</div>
 			</div>
-		</div>
-		<div id="cron-day-box">
-			<b><?PHP _e('Day of Month:','backwpup'); ?></b><br />
-			<?PHP 
-			if (strstr($cronstr['mday'],'*/'))
-				$mday=explode('/',$cronstr['mday']);
-			else
-				$mday=explode(',',$cronstr['mday']);
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-			echo '<div id="cron-day">';
-			for ($i=1;$i<=31;$i++) {
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$mday,true),true,false).' name="cronmday[]" value="'.$i.'" /> '.$i.'<br />';
-			}
-			?>
+			<div id="cron-day-box">
+				<b><?PHP _e('Day of Month:','backwpup'); ?></b><br />
+				<?PHP 
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<div id="cron-day">';
+				for ($i=1;$i<=31;$i++) {
+					echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$mday,true),true,false).' name="cronmday[]" value="'.$i.'" /> '.$i.'<br />';
+				}
+				?>
+				</div>
 			</div>
-		</div>
-		<div id="cron-month-box">
-			<b><?PHP _e('Month:','backwpup'); ?></b><br />
-			<?PHP 
-			if (strstr($cronstr['mon'],'*/'))
-				$mon=explode('/',$cronstr['mon']);
-			else
-				$mon=explode(',',$cronstr['mon']);		
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-			echo '<div id="cron-month">';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mday,true),true,false).' name="cronmon[]" value="4" /> '.__('April').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mday,true),true,false).' name="cronmon[]" value="5" /> '.__('May').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mday,true),true,false).' name="cronmon[]" value="6" /> '.__('June').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mday,true),true,false).' name="cronmon[]" value="7" /> '.__('July').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mday,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mday,true),true,false).' name="cronmon[]" value="9" /> '.__('September').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mday,true),true,false).' name="cronmon[]" value="10" /> '.__('October').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December').'<br />';
-			?>
+			<div id="cron-month-box">
+				<b><?PHP _e('Month:','backwpup'); ?></b><br />
+				<?PHP 	
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<div id="cron-month">';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mday,true),true,false).' name="cronmon[]" value="4" /> '.__('April').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mday,true),true,false).' name="cronmon[]" value="5" /> '.__('May').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mday,true),true,false).' name="cronmon[]" value="6" /> '.__('June').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mday,true),true,false).' name="cronmon[]" value="7" /> '.__('July').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mday,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mday,true),true,false).' name="cronmon[]" value="9" /> '.__('September').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mday,true),true,false).' name="cronmon[]" value="10" /> '.__('October').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December').'<br />';
+				?>
+				</div>
 			</div>
-		</div>
-		<div id="cron-weekday-box">
-			<b><?PHP _e('Day of Week:','backwpup'); ?></b><br />
-			<?PHP 
-			if (strstr($cronstr['wday'],'*/'))
-				$wday=explode('/',$cronstr['wday']);
-			else
-				$wday=explode(',',$cronstr['wday']);
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$wday,true),true,false).' name="cronwday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-			echo '<div id="cron-weekday">';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$wday,true),true,false).' name="cronwday[]" value="3" /> '.__('Wednesday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$wday,true),true,false).' name="cronwday[]" value="4" /> '.__('Thursday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$wday,true),true,false).' name="cronwday[]" value="5" /> '.__('Friday').'<br />';
-			echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$wday,true),true,false).' name="cronwday[]" value="6" /> '.__('Saturday').'<br />';
-			?>
+			<div id="cron-weekday-box">
+				<b><?PHP _e('Day of Week:','backwpup'); ?></b><br />
+				<?PHP 
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$wday,true),true,false).' name="cronwday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<div id="cron-weekday">';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$wday,true),true,false).' name="cronwday[]" value="3" /> '.__('Wednesday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$wday,true),true,false).' name="cronwday[]" value="4" /> '.__('Thursday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$wday,true),true,false).' name="cronwday[]" value="5" /> '.__('Friday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$wday,true),true,false).' name="cronwday[]" value="6" /> '.__('Saturday').'<br />';
+				?>
+				</div>
 			</div>
+			<br class="clear" />
 		</div>
-		<br class="clear" />
+		<div id="schedbasic" <?PHP if ($jobvalue['cronselect']!='basic') echo 'style="display:none;"';?>>
+			<table>
+			<tr>
+			<th>
+			<?PHP _e('Type','backwpup')   ?>
+			</th>
+			<th>
+			</th>
+			<th>
+			<?PHP _e('Hour','backwpup')   ?>
+			</th>
+			<th>
+			<?PHP _e('Minute','backwpup')   ?>
+			</th>
+			</tr>
+			<tr>
+			<td><?PHP echo '<input class="radio" type="radio"'.checked(true,is_numeric($mday[0]),false).' name="cronbtype" value="mon" />'.__('monthly','backwpup'); ?></td>
+			<td><select name="moncronmday"><?PHP for ($i=1;$i<=31;$i++) {echo '<option '.selected(in_array("$i",$mday,true),true,false).'  value="'.$i.'" />'.__('on','backwpup').' '.$i.'.</option>';} ?></select></td>
+			<td><select name="moncronhours"><?PHP for ($i=0;$i<24;$i++) {echo '<option '.selected(in_array("$i",$hours,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			<td><select name="moncronminutes"><?PHP for ($i=0;$i<60;$i=$i+5) {echo '<option '.selected(in_array("$i",$minutes,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			</tr>
+			<tr>
+			<td><?PHP echo '<input class="radio" type="radio"'.checked(true,is_numeric($wday[0]),false).' name="cronbtype" value="week" />'.__('weekly','backwpup'); ?></td>
+			<td><select name="weekcronwday">
+					<?PHP 	echo '<option '.selected(in_array("0",$wday,true),true,false).'  value="0" />'.__('Sunday').'</option>';
+							echo '<option '.selected(in_array("1",$wday,true),true,false).'  value="1" />'.__('Monday').'</option>'; 
+							echo '<option '.selected(in_array("2",$wday,true),true,false).'  value="2" />'.__('Tuesday').'</option>'; 
+							echo '<option '.selected(in_array("3",$wday,true),true,false).'  value="3" />'.__('Wednesday').'</option>'; 
+							echo '<option '.selected(in_array("4",$wday,true),true,false).'  value="4" />'.__('Thursday').'</option>'; 
+							echo '<option '.selected(in_array("5",$wday,true),true,false).'  value="5" />'.__('Friday').'</option>'; 
+							echo '<option '.selected(in_array("6",$wday,true),true,false).'  value="6" />'.__('Saturday').'</option>'; ?>
+				</select></td>
+			<td><select name="weekcronhours"><?PHP for ($i=0;$i<24;$i++) {echo '<option '.selected(in_array("$i",$hours,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			<td><select name="weekcronminutes"><?PHP for ($i=0;$i<60;$i=$i+5) {echo '<option '.selected(in_array("$i",$minutes,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			</tr>
+			<tr>
+			<td><?PHP echo '<input class="radio" type="radio"'.checked("**",$mday[0].$wday[0],false).' name="cronbtype" value="day" />'.__('daily','backwpup'); ?></td>
+			<td></td>
+			<td><select name="daycronhours"><?PHP for ($i=0;$i<24;$i++) {echo '<option '.selected(in_array("$i",$hours,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			<td><select name="daycronminutes"><?PHP for ($i=0;$i<60;$i=$i+5) {echo '<option '.selected(in_array("$i",$minutes,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			</tr>
+			<tr>
+			<td><?PHP echo '<input class="radio" type="radio"'.checked("*",$hours[0],false,false).' name="cronbtype" value="hour" />'.__('hourly','backwpup'); ?></td>
+			<td></td>
+			<td></td>
+			<td><select name="hourcronminutes"><?PHP for ($i=0;$i<60;$i=$i+5) {echo '<option '.selected(in_array("$i",$minutes,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
+			</tr>
+			</table>
+		</div>
 		<?PHP
 }
 

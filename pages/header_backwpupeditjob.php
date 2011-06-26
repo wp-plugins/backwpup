@@ -41,37 +41,53 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['type']= implode('+',(array)$_POST['type']);
 	$jobvalues['name']= esc_html($_POST['name']);
 	$jobvalues['activated']= (isset($_POST['activated']) && $_POST['activated']==1) ? true : false;
-	if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
-		if (!empty($_POST['cronminutes'][1]))
-			$_POST['cronminutes']=array('*/'.$_POST['cronminutes'][1]);
-		else
-			$_POST['cronminutes']=array('*');
+	$jobvalues['cronselect']= $_POST['cronselect']=='basic' ? 'basic':'advanced';
+	if ($jobvalues['cronselect']=='advanced') {
+		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
+			if (!empty($_POST['cronminutes'][1]))
+				$_POST['cronminutes']=array('*/'.$_POST['cronminutes'][1]);
+			else
+				$_POST['cronminutes']=array('*');
+		}
+		if (empty($_POST['cronhours']) or $_POST['cronhours'][0]=='*') {
+			if (!empty($_POST['cronhours'][1]))
+				$_POST['cronhours']=array('*/'.$_POST['cronhours'][1]);
+			else
+				$_POST['cronhours']=array('*');
+		}
+		if (empty($_POST['cronmday']) or $_POST['cronmday'][0]=='*') {
+			if (!empty($_POST['cronmday'][1]))
+				$_POST['cronmday']=array('*/'.$_POST['cronmday'][1]);
+			else
+				$_POST['cronmday']=array('*');
+		}
+		if (empty($_POST['cronmon']) or $_POST['cronmon'][0]=='*') {
+			if (!empty($_POST['cronmon'][1]))
+				$_POST['cronmon']=array('*/'.$_POST['cronmon'][1]);
+			else
+				$_POST['cronmon']=array('*');
+		}
+		if (empty($_POST['cronwday']) or $_POST['cronwday'][0]=='*') {
+			if (!empty($_POST['cronwday'][1]))
+				$_POST['cronwday']=array('*/'.$_POST['cronwday'][1]);
+			else
+				$_POST['cronwday']=array('*');
+		}
+		$jobvalues['cron']=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
+	} else {
+		if ($_POST['cronbtype']=='mon') {
+			$jobvalues['cron']=$_POST['moncronminutes'].' '.$_POST['moncronhours'].' '.$_POST['moncronmday'].' * *';
+		}
+		if ($_POST['cronbtype']=='week') {
+			$jobvalues['cron']=$_POST['weekcronminutes'].' '.$_POST['weekcronhours'].' * * '.$_POST['weekcronwday'];
+		}
+		if ($_POST['cronbtype']=='day') {
+			$jobvalues['cron']=$_POST['daycronminutes'].' '.$_POST['daycronhours'].' * * *';
+		}
+		if ($_POST['cronbtype']=='hour') {
+			$jobvalues['cron']=$_POST['hourcronminutes'].' * * * *';
+		}
 	}
-	if (empty($_POST['cronhours']) or $_POST['cronhours'][0]=='*') {
-		if (!empty($_POST['cronhours'][1]))
-			$_POST['cronhours']=array('*/'.$_POST['cronhours'][1]);
-		else
-			$_POST['cronhours']=array('*');
-	}
-	if (empty($_POST['cronmday']) or $_POST['cronmday'][0]=='*') {
-		if (!empty($_POST['cronmday'][1]))
-			$_POST['cronmday']=array('*/'.$_POST['cronmday'][1]);
-		else
-			$_POST['cronmday']=array('*');
-	}
-	if (empty($_POST['cronmon']) or $_POST['cronmon'][0]=='*') {
-		if (!empty($_POST['cronmon'][1]))
-			$_POST['cronmon']=array('*/'.$_POST['cronmon'][1]);
-		else
-			$_POST['cronmon']=array('*');
-	}
-	if (empty($_POST['cronwday']) or $_POST['cronwday'][0]=='*') {
-		if (!empty($_POST['cronwday'][1]))
-			$_POST['cronwday']=array('*/'.$_POST['cronwday'][1]);
-		else
-			$_POST['cronwday']=array('*');
-	}
-	$jobvalues['cron']=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
 	$jobvalues['cronnextrun']=backwpup_cron_next($jobvalues['cron']);
 	$jobvalues['mailaddresslog']= isset($_POST['mailaddresslog']) ? sanitize_email($_POST['mailaddresslog']) : '';
 	$jobvalues['mailerroronly']= (isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false;

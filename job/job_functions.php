@@ -345,8 +345,6 @@ function job_end() {
 	if (!is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']) or !($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))) //Set the filezie corectly
 		$filesize=0;
 
-	if (!is_file($_SESSION['STATIC']['TEMPDIR'].'/.running')) 
-		trigger_error(__('Job aborted by user','backwpup'),E_USER_ERROR);
 	//clean up temp
 	if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
 		while (($file = readdir($dir)) !== false) {

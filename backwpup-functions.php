@@ -107,10 +107,6 @@ function backwpup_contextual_help($help='') {
 function backwpup_plugin_activate() {
 	$jobs=(array)get_option('backwpup_jobs');
 	foreach ($jobs as $jobid => $jobvalue) {
-		//remove old cron jobs
-		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
-		}
 		//check jobvaules
 		$jobs[$jobid]=backwpup_get_job_vars($jobid);
 	}
@@ -155,13 +151,6 @@ function backwpup_plugin_activate() {
 
 //on Plugin deaktivate
 function backwpup_plugin_deactivate() {
-	//remove old cron jobs
-	$jobs=(array)get_option('backwpup_jobs');
-	foreach ($jobs as $jobid => $jobvalue) {
-		if ($time=wp_next_scheduled('backwpup_cron',array('jobid'=>$jobid))) {
-			wp_unschedule_event($time,'backwpup_cron',array('jobid'=>$jobid));
-		}
-	}
 	wp_clear_scheduled_hook('backwpup_cron');
 }
 
@@ -195,7 +184,6 @@ function backwpup_intervals($schedules) {
 
 //cron work
 function backwpup_cron() {	
-	$jobs=(array)get_option('backwpup_jobs');
 	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
@@ -208,8 +196,8 @@ function backwpup_cron() {
 			curl_close($ch);
 		}
 	} else {
-		foreach ($jobs as $jobid => $jobvalue) {
-			if (!$jobvalue['activated'])
+		foreach ((array)get_option('backwpup_jobs') as $jobid => $jobvalue) {
+			if (!isset($jobvalue['activated']) or !$jobvalue['activated'])
 				continue;
 			if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
 				//include jobstart function
@@ -751,6 +739,14 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 		}
 	}
 
+	if (!isset($jobsettings['cronselect']) and !isset($jobsettings['cron']))
+		$jobsettings['cronselect']='basic';
+	elseif (!isset($jobsettings['cronselect']) and isset($jobsettings['cron']))
+		$jobsettings['cronselect']='advanced';
+		
+	if ($jobsettings['cronselect']!='advanced' and $jobsettings['cronselect']!='basic')
+		$jobsettings['cronselect']='advanced';
+	
 	if (!isset($jobsettings['cron']) or !is_string($jobsettings['cron']))
 		$jobsettings['cron']='0 3 * * *';
 		
@@ -893,7 +889,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['maxbackups']) or !is_int($jobsettings['maxbackups']))
 		$jobsettings['maxbackups']=0;
 
-	if (false !== strpos($jobsettings['ftphost'],':')) 
+	if (!empty($jobsettings['ftphost']) and false !== strpos($jobsettings['ftphost'],':')) 
 		list($jobsettings['ftphost'],$jobsettings['ftphostport'])=explode(':',$jobsettings['ftphost'],2);
 	
 	if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
