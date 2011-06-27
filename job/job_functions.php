@@ -193,22 +193,25 @@ function delete_working_file() {
 function update_working_file() {
 	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
 		job_end();
-	if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
-		$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
-	else
-		$steppersent=1;
-	if (count($_SESSION['WORKING']['STEPSDONE'])>0)
-		$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
-	else
-		$stepspersent=1;
-	$pid=0;
-	@set_time_limit($_SESSION['CFG']['jobscriptruntime']);
-	mysql_update();
-	if (function_exists('posix_getpid'))
-		$pid=posix_getpid();
-	$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
-	$infile=unserialize(trim($runningfile));		
-	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
+	if (empty($_SESSION['WORKING']['MICROTIME']) or $_SESSION['WORKING']['MICROTIME']>(microtime()-500)) { //only update all 500 ms
+		if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
+			$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
+		else
+			$steppersent=1;
+		if (count($_SESSION['WORKING']['STEPSDONE'])>0)
+			$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
+		else
+			$stepspersent=1;
+		$pid=0;
+		@set_time_limit($_SESSION['CFG']['jobscriptruntime']);
+		mysql_update();
+		if (function_exists('posix_getpid'))
+			$pid=posix_getpid();
+		$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
+		$infile=unserialize(trim($runningfile));		
+		file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
+		$_SESSION['WORKING']['MICROTIME']=microtime();
+	}
 	return true;
 }
 

@@ -188,6 +188,7 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['JOB']['starttime']=$jobs[$_SESSION['JOB']['jobid']]['starttime'];
 	$jobs[$_SESSION['JOB']['jobid']]['logfile']=$_SESSION['STATIC']['LOGFILE'];	   //Set current logfile
 	$jobs[$_SESSION['JOB']['jobid']]['cronnextrun']=backwpup_cron_next($jobs[$_SESSION['JOB']['jobid']]['cron']);  //set next run
+	$_SESSION['JOB']['cronnextrun']=$jobs[$_SESSION['JOB']['jobid']]['cronnextrun'];
 	$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']='';
 	$_SESSION['JOB']['lastbackupdownloadurl']='';
 	update_option('backwpup_jobs',$jobs); //Save job Settings	

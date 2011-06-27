@@ -726,19 +726,6 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['activated']) or !is_bool($jobsettings['activated']))
 		$jobsettings['activated']=false;
 
-	//upgrade old schedule
-	if (!isset($jobsettings['cron']) and isset($jobsettings['scheduletime']) and isset($jobsettings['scheduleintervaltype']) and isset($jobsettings['scheduleintervalteimes'])) {  //Upgrade to cron string
-		if ($jobsettings['scheduleintervaltype']==60) { //Min
-			$jobsettings['cron']='*/'.$jobsettings['scheduleintervalteimes'].' * * * *';
-		}
-		if ($jobsettings['scheduleintervaltype']==3600) { //Houer
-			$jobsettings['cron']=(date('i',$jobsettings['scheduletime'])*1).' */'.$jobsettings['scheduleintervalteimes'].' * * *';
-		}
-		if ($jobsettings['scheduleintervaltype']==86400) {  //Days
-			$jobsettings['cron']=(date('i',$jobsettings['scheduletime'])*1).' '.date('G',$jobsettings['scheduletime']).' */'.$jobsettings['scheduleintervalteimes'].' * *';
-		}
-	}
-
 	if (!isset($jobsettings['cronselect']) and !isset($jobsettings['cron']))
 		$jobsettings['cronselect']='basic';
 	elseif (!isset($jobsettings['cronselect']) and isset($jobsettings['cron']))
@@ -751,7 +738,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 		$jobsettings['cron']='0 3 * * *';
 		
 	if (!isset($jobsettings['cronnextrun']) or !is_numeric($jobsettings['cronnextrun']))
-		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);;
+		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);
 		
 	if (!isset($jobsettings['mailaddresslog']) or !is_string($jobsettings['mailaddresslog']))
 		$jobsettings['mailaddresslog']=get_option('admin_email');

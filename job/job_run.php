@@ -81,7 +81,7 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 		trigger_error(__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$_SESSION['JOB']['jobid'].'. '.$_SESSION['JOB']['name'].'; '.$_SESSION['JOB']['type'],E_USER_NOTICE);
 		if ($_SESSION['JOB']['activated'])
-			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$_SESSION['JOB']['cron'],E_USER_NOTICE);
+			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$_SESSION['JOB']['cron'].'; '.date('D, j M Y H:i',$_SESSION['JOB']['cronnextrun']),E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name(),E_USER_NOTICE);
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
 		$curlversion=curl_version();
