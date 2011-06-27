@@ -1,0 +1,40 @@
+<?PHP
+if (file_exists(trim($_GET['wpabs']).'wp-load.php') and is_numeric(trim($_GET['jobid']))) {
+	@ini_set('zlib.output_compression', 0);
+	define('DONOTCACHEPAGE', true);
+	define('DONOTCACHEDB', true);
+	define('DONOTMINIFY', true);
+	define('DONOTCDN', true);
+	define('DONOTCACHCEOBJECT', true);
+	define("QUICK_CACHE_ALLOWED", false);
+	$_SERVER["QUICK_CACHE_ALLOWED"] = false;
+	require_once(trim($_GET['wpabs']).'wp-load.php'); /** Setup WordPress environment */
+	if (function_exists('w3tc_pgcache_flush'))
+		w3tc_pgcache_flush();
+	check_admin_referer('dojob-now_' . (int)$_GET['jobid']);
+	backwpup_send_no_cache_header();
+	// flush any buffers and send the headers
+	@flush();
+	@ob_flush();
+?>
+<html>
+    <head>
+	<?PHP backwpup_meta_no_cache(); ?>
+	<title><?PHP _e('Do Job','backwpup');  ?></title>
+    </head>
+	<body style="font-family:monospace;font-size:12px;white-space:nowrap;">
+	<!--mfunc -->
+	<?PHP
+	@flush();
+	@ob_flush();
+	backwpup_dojob($_GET['jobid']);
+	?>
+	<!--/mfunc-->
+	</body>
+</html>
+<?PHP
+} else {	
+	header("HTTP/1.0 404 Not Found");
+	die();
+}
+?>
