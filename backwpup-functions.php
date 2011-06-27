@@ -183,7 +183,17 @@ function backwpup_intervals($schedules) {
 }
 
 //cron work
-function backwpup_cron() {	
+function backwpup_cron() {
+	define('DONOTCACHEPAGE', true);
+	define('DONOTCACHEDB', true);
+	define('DONOTMINIFY', true);
+	define('DONOTCDN', true);
+	define('DONOTCACHCEOBJECT', true);
+	define('QUICK_CACHE_ALLOWED', false);
+	$_SERVER["QUICK_CACHE_ALLOWED"] = false;
+	if (function_exists('w3tc_pgcache_flush'))
+		w3tc_pgcache_flush();	
+	echo "<!-- mfunc -->";
 	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
@@ -202,10 +212,11 @@ function backwpup_cron() {
 			if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
 				//include jobstart function
 				require_once(dirname(__FILE__).'/job/job_start.php');
-				backwpup_jobstart($jobid);
+				backwpup_jobstart($jobid);	
 			}
 		}
 	}
+	echo "<!--/mfunc-->";
 }
 
 //file size

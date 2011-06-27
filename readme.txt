@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=danie
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2.0
 Tested up to: 3.2.0
-Stable tag: 1.7.7
+Stable tag: 1.7.8
 
 Backup your WordPress Database and Files, and more!
 
@@ -124,6 +124,13 @@ Destinations are:
 * Reworked GUI (Wordpress Dropboxes, working screen options, ....)
 * Complete new job working ot of Wordpress (backend and frontend)
 * added easyer job sheduling selection
+
+= 1.7.8 =
+* Updated AWS SDK to ver.1.3.5 for Amazon S3
+* some extra outputs on job start
+* resart Script execution time on many job operations.
+* some changes too prevent cache addons
+* prevent job run twice on same time on background
 
 = 1.7.7 =
 * cleanup brocken buckupfiels on job start
