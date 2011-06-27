@@ -17,7 +17,8 @@ if (!defined('ABSPATH')) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile(trim($_GET['logfile']));
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".trim($_GET['logfile'])."\">";
-		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";		
+		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";
+		echo "<input type=\"hidden\" name=\"backwpupworkingajaxurl\" id=\"backwpupworkingajaxurl\" value=\"".BACKWPUP_PLUGIN_BASEURL."/job/show_working.php\">";			
 		echo "<div id=\"showworking\">";
 		for ($i=0;$i<count($logfilarray);$i++)
 			echo $logfilarray[$i]."\n";

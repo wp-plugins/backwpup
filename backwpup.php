@@ -37,6 +37,7 @@ if (!defined('ABSPATH')) {
 
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
+define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 //Set Plugin Version
 define('BACKWPUP_VERSION', '2.0-RC2');
 //Set Min Wordpress Version

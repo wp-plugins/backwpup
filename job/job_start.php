@@ -86,7 +86,7 @@ function backwpup_jobstart($jobid='') {
 	//Set job data
 	$_SESSION['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data
-	$_SESSION['STATIC']['JOBRUNURL']=plugins_url('job_run.php',__FILE__);
+	$_SESSION['STATIC']['JOBRUNURL']=BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php';
 	//get and create temp dir
 	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
 	$tempdir=getenv('TMP');

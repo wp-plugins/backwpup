@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 
 //Thems Option menu entry
 function backwpup_admin_menu() {
-	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', plugins_url('css/backup-icon20.gif',__FILE__) );
+	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', BACKWPUP_PLUGIN_BASEURL.'/css/backup-icon20.gif');
 	$hook = add_submenu_page( 'backwpup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', 'backwpup_menu_page' );
@@ -55,16 +55,16 @@ function backwpup_menu_page_header() {
 			//Css for Admin Section
 			if (is_file(dirname(__FILE__).'/css/'.$page.'.css')) {
 				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-					wp_enqueue_style($page,plugins_url('css/'.$page.'.css',__FILE__),'',time(),'screen');
+					wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',time(),'screen');
 				else
-					wp_enqueue_style($page,plugins_url('css/'.$page.'.css',__FILE__),'',BACKWPUP_VERSION,'screen');
+					wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',BACKWPUP_VERSION,'screen');
 			}
 			//add java
 			if (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
 				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-					wp_enqueue_script($page,plugins_url('js/'.$page.'.js',__FILE__),'',time(),true);
+					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',time(),true);
 				else
-					wp_enqueue_script($page,plugins_url('js/'.$page.'.js',__FILE__),'',BACKWPUP_VERSION,true);
+					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',BACKWPUP_VERSION,true);
 			}
 			//incude functions
 			if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php')) 
@@ -187,7 +187,7 @@ function backwpup_cron() {
 	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
-			curl_setopt($ch,CURLOPT_URL,plugins_url('job/job_run.php',__FILE__));
+			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);

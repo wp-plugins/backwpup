@@ -1,13 +1,11 @@
 jQuery(document).ready( function($) {
+	var backwpupajaxurl = $('#backwpupworkingajaxurl').val();
 	if ($('#logfile').length>0) {
 		$.ajaxSetup({ cache: false });
 		var refreshId = setInterval(function() {
 			$.ajax({type: 'POST',
-				url: ajaxurl,
+				url: backwpupajaxurl,
 				data: {
-					action: 'backwpup_working_update',
-					backwpupajaxpage: 'backwpupworking',
-					_ajax_nonce: $('#backwpupworkingajaxnonce').val(),
 					logfile: $('#logfile').val(),
 					logpos:  $('#logpos').val()
 				},
