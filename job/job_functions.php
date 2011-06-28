@@ -191,9 +191,10 @@ function delete_working_file() {
 }
 
 function update_working_file() {
+	global $runmicrotime;
 	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
 		job_end();
-	if (empty($_SESSION['WORKING']['MICROTIME']) or $_SESSION['WORKING']['MICROTIME']>(microtime()-500)) { //only update all 500 ms
+	if (empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
 		if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
 			$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
 		else
@@ -210,7 +211,7 @@ function update_working_file() {
 		$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
 		$infile=unserialize(trim($runningfile));		
 		file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
-		$_SESSION['WORKING']['MICROTIME']=microtime();
+		$runmicrotime=microtime();
 	}
 	return true;
 }
