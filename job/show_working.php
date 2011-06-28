@@ -81,20 +81,6 @@ function backwpup_read_logheader($logfile) {
 	return $joddata;
 }
 
-//compatibiltiy
-if (!function_exists('json_encode')) {
-    function json_encode($string) {
-        global $json;
-
-        if (!is_a($json, 'Services_JSON')) {
-            require_once('../libs/json.php');
-            $json = new Services_JSON();
-        }
-
-        return $json->encodeUnsafe($string);
-    }
-}
-
 if (is_file(trim($_POST['logfile']).'.gz'))
 	$_POST['logfile']=trim($_POST['logfile']).'.gz';
 
