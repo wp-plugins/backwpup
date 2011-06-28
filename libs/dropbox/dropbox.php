@@ -80,17 +80,17 @@ class Dropbox {
 		if (filesize($file)>314572800){
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . trim($path, '/');
-		return $this->request($url, array('file' => $file), 'POST', $file);
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . rawurlencode(trim($path, '/'));
+		return $this->request($url, array('file' => rawurlencode($file)), 'POST', $file);
 	}
 	
 	public function download($path){
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . trim($path, '/');
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . rawurlencode(trim($path, '/'));
 		return $this->request($url);
 	}
 	
 	public function metadata($path = '', $listContents = true, $fileLimit = 10000){
-		$url = self::API_URL.self::API_VERSION_URL. 'metadata/' . $this->root . '/' . ltrim($path, '/');
+		$url = self::API_URL.self::API_VERSION_URL. 'metadata/' . $this->root . '/' . rawurlencode(ltrim($path, '/'));
 		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
 	
@@ -101,22 +101,22 @@ class Dropbox {
 	
 	public function fileopsDelete($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/delete';
-		return $this->request($url, array('path' => $path, 'root' => $this->root));
+		return $this->request($url, array('path' => rawurlencode($path), 'root' => $this->root));
 	}
 	
 	public function fileopsMove($from, $to){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/move';
-		return $this->request($url, array('from_path' => $from, 'to_path' => $to, 'root' => $this->root));
+		return $this->request($url, array('from_path' => rawurlencode($from), 'to_path' => rawurlencode($to), 'root' => $this->root));
 	}
 	
 	public function fileopsCreateFolder($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/create_folder';
-		return $this->request($url, array('path' => $path, 'root' => $this->root));
+		return $this->request($url, array('path' => rawurlencode($path), 'root' => $this->root));
 	}
 	
 	public function fileopsCopy($from, $to){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/copy';
-		return $this->request($url, array('from_path' => $from, 'to_path' => $to, 'root' => $this->root));
+		return $this->request($url, array('from_path' => rawurlencode($from), 'to_path' => rawurlencode($to), 'root' => $this->root));
 	}
 
 	public function thumbnail($path, $size = 'small', $format = 'JPEG', $raw = false){
