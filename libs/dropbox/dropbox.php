@@ -78,7 +78,7 @@ class Dropbox {
 		if (filesize($file)>314572800){
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/'.$this->root.'/'.rawurlencode(trim($path, '/')).'/';
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('file' => $file), 'POST', $file);
 	}
 	
@@ -182,7 +182,7 @@ class Dropbox {
 	
 	protected function request($url, $args = null, $method = 'GET', $file = null){
 		$args = (is_array($args)) ? $args : array();
-		
+		$url=str_replace(' ','%20',$url); //encode spaces
 		/* Sign Request*/
 		$this->OAuthObject->reset();
 		$OAuthSign=$this->OAuthObject->sign(array(
