@@ -204,17 +204,6 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		}
 	}
 	
-	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
-		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
-		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-		// request request tokens
-		$response = $dropbox->oAuthRequestToken();
-		// save job id and referer
-		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken' => $response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),3600);
-		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize($response['oauth_token'], admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
-	}
 	
 	if (isset($_POST['dropboxauthdel']) and !empty($_POST['dropboxauthdel'])) {
 		$jobvalues['dropetoken']='';
@@ -226,6 +215,19 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobs=get_option('backwpup_jobs'); //Load Settings
 	$jobs[$jobvalues['jobid']]=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	update_option('backwpup_jobs',$jobs);
+	
+	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
+		if (!class_exists('Dropbox'))
+			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+		// let the user authorize (user will be redirected)
+		$response = $dropbox->oAuthAuthorize(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
+		// save oauth_token_secret 
+		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),600);
+		//forwar to auth page
+		header('Location: '.$response['authurl']);
+	}	
+	
 	$_POST['jobid']=$jobvalues['jobid'];
 	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
 }

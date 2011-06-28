@@ -28,8 +28,8 @@
  * @license		BSD License
  */
 
-if (!class_exists('OAuthException'))
-	require_once(dirname(__FILE__).'/oauth.php');
+if (!class_exists('OAuthSimple'))
+	require_once(dirname(__FILE__).'/OAuthSimple.php');
 
 class Dropbox {
 	const API_URL = 'https://api.dropbox.com/';
@@ -38,18 +38,16 @@ class Dropbox {
 	const API_VERSION_URL = '0/';
 	
 	protected $root = 'dropbox';
+	protected $OAuthObject;
 	protected $OAuthToken;
-	protected $OAuthConsumer;
-	protected $OAuthSignatureMethod;
 	protected $ProgressFunction = false;
 	
-	public function __construct($applicationKey, $applicationSecret) {	
-		$this->OAuthConsumer = new OAuthConsumer($applicationKey, $applicationSecret);
-		$this->OAuthSignatureMethod = new OAuthSignatureMethod_HMAC_SHA1;
+	public function __construct($applicationKey, $applicationSecret) {
+		$this->OAuthObject = new OAuthSimple($applicationKey, $applicationSecret);
 	}
 
 	public function setOAuthTokens($token,$secret) {
-		$this->OAuthToken = new OAuthToken($token, $secret);
+		$this->OAuthToken = array('oauth_token'=>$token,'oauth_secret'=> $secret);
 	}
 	
 	public function setDropbox() {
@@ -80,26 +78,17 @@ class Dropbox {
 		if (filesize($file)>314572800){
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
-
-        $content="--14c611e8c261a2001f0db4e196833a1e\r\n";
-        $content.="Content-Disposition: form-data; name=file; filename=".rawurldecode(basename($file))."\r\n";
-        $content.="Content-type: application/octet-stream\r\n";
-        $content.="\r\n";
-        $content.=file_get_contents($file);
-        $content.="\r\n";
-        $content.="--14c611e8c261a2001f0db4e196833a1e--";
-		
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . rawurlencode(trim($path, '/'));
-		return $this->request($url, array('file' => rawurlencode(basename($file))), 'POST', $content);
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/'.$this->root.'/'.rawurlencode(trim($path, '/')).'/';
+		return $this->request($url, array('file' => $file), 'POST', $file);
 	}
 	
 	public function download($path){
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . rawurlencode(trim($path, '/'));
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/'.$this->root.'/'.$path;
 		return $this->request($url);
 	}
 	
 	public function metadata($path = '', $listContents = true, $fileLimit = 10000){
-		$url = self::API_URL.self::API_VERSION_URL. 'metadata/' . $this->root . '/' . rawurlencode(ltrim($path, '/'));
+		$url = self::API_URL.self::API_VERSION_URL. 'metadata/' . $this->root . '/' . ltrim($path, '/');
 		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
 	
@@ -110,61 +99,41 @@ class Dropbox {
 	
 	public function fileopsDelete($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/delete';
-		return $this->request($url, array('path' => rawurlencode($path), 'root' => $this->root));
+		return $this->request($url, array('path' => $path, 'root' => $this->root));
 	}
 	
 	public function fileopsMove($from, $to){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/move';
-		return $this->request($url, array('from_path' => rawurlencode($from), 'to_path' => rawurlencode($to), 'root' => $this->root));
+		return $this->request($url, array('from_path' => $from, 'to_path' => $to, 'root' => $this->root));
 	}
 	
 	public function fileopsCreateFolder($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/create_folder';
-		return $this->request($url, array('path' => rawurlencode($path), 'root' => $this->root));
+		return $this->request($url, array('path' => $path, 'root' => $this->root));
 	}
 	
 	public function fileopsCopy($from, $to){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/copy';
-		return $this->request($url, array('from_path' => rawurlencode($from), 'to_path' => rawurlencode($to), 'root' => $this->root));
+		return $this->request($url, array('from_path' => $from, 'to_path' => $to, 'root' => $this->root));
 	}
 
-	public function thumbnail($path, $size = 'small', $format = 'JPEG', $raw = false){
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'dropbox/' . ltrim($path, '/');
-		$result = $this->request($url, array('size' => $size, 'format' => $format));
-		if ($raw){
-			return $result;
-		}
-		else{
-			return 'data:image/' . $format . ';base64,' . base64_encode( (isset($result['body'])) ? $result['body'] : (!is_array($result)) ? $result : '' );
-		}
-	}
-
-	public function oAuthRequestToken() {
-		$req_req = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, NULL, "GET", self::API_URL.self::API_VERSION_URL.'oauth/request_token');
-		$req_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, NULL);
-	    if (!empty($_SERVER["HTTP_ACCEPT"]))
-				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
-		if (!empty($_SERVER["REMOTE_ADDR"]))
-				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
-		$headers[]='Expect:';	
+	public function oAuthAuthorize($callback_url) {
+		//request tokens
+		$OAuthSign = $this->OAuthObject->sign(array(
+			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
+			'action'	=>'GET',
+			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $req_req);
+		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300 and 0==curl_errno($ch) ) {
-			$content = (array) explode('&', $content);
-			foreach($content as $chunk) {
-				$chunks = explode('=', $chunk, 2);
-				if(count($chunks) == 2) $return[$chunks[0]] = $chunks[1];
-			}
-			curl_close($ch);
-			return $return;
+			parse_str($content, $oauth_token);
 		} else {
 			$output = json_decode($content, true);
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
@@ -173,42 +142,34 @@ class Dropbox {
 			else $message = '('.$status.') Invalid response.';
 			throw new DropboxException($message);		
 		}
-	}
-	
-	public function oAuthAuthorize($oAuthToken,$callback_url) {
-		$auth_url = self::API_WWW_URL.self::API_VERSION_URL."oauth/authorize?oauth_token=".OAuthUtil::urlencode_rfc3986($oAuthToken)."&oauth_callback=".OAuthUtil::urlencode_rfc3986($callback_url);
-		header('Location: '. $auth_url);
-		exit;
+		curl_close($ch);
+		$OAuthSign = $this->OAuthObject->sign(array(
+			'path'      =>self::API_WWW_URL.self::API_VERSION_URL.'oauth/authorize',
+			'action'	=>'GET',
+			'parameters'=>array(
+				'oauth_token' => $oauth_token['oauth_token'])));
+		return array('authurl'=>$OAuthSign['signed_url'],'oauth_token'=>$oauth_token['oauth_token'],'oauth_token_secret'=>$oauth_token['oauth_token_secret']);
 	}
 	
 	public function oAuthAccessToken($oauth_token, $oauth_token_secret) {
-		$oAuthToken = new OAuthConsumer($oauth_token, $oauth_token_secret);
-		$acc_req = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, $oAuthToken, "GET", self::API_URL.self::API_VERSION_URL.'oauth/access_token');
-		$acc_req->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $oAuthToken);
-	    if (!empty($_SERVER["HTTP_ACCEPT"]))
-				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
-		if (!empty($_SERVER["REMOTE_ADDR"]))
-				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
-		$headers[]='Expect:';		
+		 $OAuthSign = $this->OAuthObject->sign(array(
+			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
+			'action'	=>'GET',
+			'parameters'=>array('oauth_token'    => $oauth_token),
+			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $acc_req);
+		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		$content = curl_exec($ch);
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300  and 0==curl_errno($ch)) {
-			$content = (array) explode('&', $content);
-			$return = array();
-			foreach($content as $chunk) {
-				$chunks = explode('=', $chunk, 2);
-				if(count($chunks) == 2) $return[$chunks[0]] = $chunks[1];
-			}
-			$this->setOAuthTokens($return['oauth_token'],$return['oauth_token_secret']);
-			return $return;
+			parse_str($content, $oauth_token);
+			$this->setOAuthTokens($oauth_token['oauth_token'],$oauth_token['oauth_token_secret']);
+			return $oauth_token;
 		} else {
 			$output = json_decode($content, true);
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
@@ -219,58 +180,58 @@ class Dropbox {
 		}
 	}	
 	
-	protected function request($url, $args = null, $method = 'GET', &$content = null){
+	protected function request($url, $args = null, $method = 'GET', $file = null){
 		$args = (is_array($args)) ? $args : array();
 		
 		/* Sign Request*/
-		$dropoauthreq = OAuthRequest::from_consumer_and_token($this->OAuthConsumer, $this->OAuthToken, $method, $url, $args);
-		$dropoauthreq->sign_request($this->OAuthSignatureMethod, $this->OAuthConsumer, $this->OAuthToken);
+		$this->OAuthObject->reset();
+		$OAuthSign=$this->OAuthObject->sign(array(
+			'path'      => $url,
+			'parameters'=> $args,
+			'action'=> $method,
+			'signatures'=> $this->OAuthToken));
 		
 		/* Header*/
-	    if (!empty($_SERVER["HTTP_ACCEPT"]))
-				$headers[] = 'Accept: ' . $_SERVER["HTTP_ACCEPT"];
-		if (!empty($_SERVER["REMOTE_ADDR"]))
-				$headers[] = 'X-Forwarded-For: ' . $_SERVER["REMOTE_ADDR"];
 		$headers[]='Expect:';
 		
 		/* Build cURL Request */
 		$ch = curl_init();
 		if ($method == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-			if (is_file($file)) { /* file upload */		
-				curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
-				$headers[]='Content-Length: ' .strlen($content);
-				$headers[]='Content-Type: multipart/form-data; boundary=14c611e8c261a2001f0db4e196833a1e';
+			if (!empty($file)) { /* file upload */		
+				curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
+				$headers[]='Content-Length: ' .filesize($file)+strlen($file)+192;
 			} else {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 				$args = (is_array($args)) ? http_build_query($args) : $args;
 				$headers[]='Content-Length: ' .strlen($args);
 			}
-			$headers[]=$dropoauthreq->to_header($url);
+			$headers[]='Authorization: '.$OAuthSign['header'];
 			curl_setopt($ch, CURLOPT_URL, $url);
 		} else {
-			curl_setopt($ch, CURLOPT_URL, $dropoauthreq->to_url());
+			curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
 		}
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
+		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		if (function_exists($this->ProgressFunction) and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
 		}
 		$content = curl_exec($ch);
-		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+		$status = curl_getinfo($ch);
 		$output = json_decode($content, true);
-
-		if (isset($output['error']) or $status>=300 or $status<200 or curl_errno($ch)>0) {
+		
+		if (isset($output['error']) or $status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
-			else $message = '('.$status.') Invalid response.';
+			else $message = '('.$status['http_code'].') Invalid response.';
 			throw new DropboxException($message);
 		} else {
 			curl_close($ch);

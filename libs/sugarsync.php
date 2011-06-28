@@ -29,9 +29,6 @@
 
 class SugarSync {
 
-	// debug
-	const DEBUG = false;
-
 	// url for the sugarsync-api
 	const API_URL = 'https://api.sugarsync.com';
 
@@ -130,7 +127,6 @@ class SugarSync {
 
 		// redefine
 		$url = (string) $url;
-		//$data = (string) $data;
 		$method = (string) $method;
 
 		// validate method
@@ -163,7 +159,6 @@ class SugarSync {
 		} elseif ($method == 'PUT') {
 			if (is_file($data) and is_readable($data)) {
 				$headers[]='Content-Length: ' .filesize($data);
-				curl_setopt($curl, CURLOPT_BINARYTRANSFER, true);
 				$datafilefd=fopen($data,'r');
 				curl_setopt($curl,CURLOPT_PUT,true);
 				curl_setopt($curl,CURLOPT_INFILE,$datafilefd);
@@ -179,7 +174,7 @@ class SugarSync {
 
 		// set headers
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$headers);
-		curl_setopt($curl,CURLINFO_HEADER_OUT,self::DEBUG);
+		curl_setopt($curl, CURLINFO_HEADER_OUT, true);
 		if (function_exists($this->ProgressFunction)  and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
 			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
@@ -188,13 +183,6 @@ class SugarSync {
 		// execute
 		$response = curl_exec($curl);
 		$curlgetinfo = curl_getinfo($curl);
-		
-		if (self::DEBUG) {
-			echo "<pre>";
-			var_dump($response);
-			var_dump($curlgetinfo);
-			echo "</pre>";
-		}
 		
 		// fetch curl errors
 		if (curl_errno($curl) != 0)
