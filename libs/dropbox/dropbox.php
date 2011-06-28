@@ -230,7 +230,7 @@ class Dropbox {
 			curl_setopt($ch, CURLOPT_POST, true);
 			if (is_file($file)) { /* file upload */		
 				curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
-				$headers[]='Content-Length: ' .filesize($file)+strlen(http_build_query(array('file' => "$file")));
+				$headers[]='Content-Length: ' .filesize($file)+strlen(http_build_query($args));
 			} else {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 				$args = (is_array($args)) ? http_build_query($args) : $args;
