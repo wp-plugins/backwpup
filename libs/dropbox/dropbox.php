@@ -80,8 +80,17 @@ class Dropbox {
 		if (filesize($file)>314572800){
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
+
+        $content="--14c611e8c261a2001f0db4e196833a1e\r\n";
+        $content.="Content-Disposition: form-data; name=file; filename=".rawurldecode(basename($file))."\r\n";
+        $content.="Content-type: application/octet-stream\r\n";
+        $content.="\r\n";
+        $content.=file_get_contents($file);
+        $content.="\r\n";
+        $content.="--14c611e8c261a2001f0db4e196833a1e--";
+		
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/' . $this->root . '/' . rawurlencode(trim($path, '/'));
-		return $this->request($url, array('file' => rawurlencode($file)), 'POST', $file);
+		return $this->request($url, array('file' => rawurlencode(basename($file))), 'POST', $content);
 	}
 	
 	public function download($path){
@@ -210,7 +219,7 @@ class Dropbox {
 		}
 	}	
 	
-	protected function request($url, $args = null, $method = 'GET', $file = null){
+	protected function request($url, $args = null, $method = 'GET', &$content = null){
 		$args = (is_array($args)) ? $args : array();
 		
 		/* Sign Request*/
@@ -229,8 +238,9 @@ class Dropbox {
 		if ($method == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
 			if (is_file($file)) { /* file upload */		
-				curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
-				$headers[]='Content-Length: ' .filesize($file)+strlen(http_build_query($args));
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $content);
+				$headers[]='Content-Length: ' .strlen($content);
+				$headers[]='Content-Type: multipart/form-data; boundary=14c611e8c261a2001f0db4e196833a1e';
 			} else {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 				$args = (is_array($args)) ? http_build_query($args) : $args;
