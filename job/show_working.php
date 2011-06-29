@@ -106,8 +106,8 @@ if (is_file(trim($_POST['logfile']))) {
 		$log.='<span id="stopworking"></span>';		
 	}
 	$logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
-	for ($i=0;$i<count($logfilarray);$i++)
-	//for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
+	//for ($i=0;$i<count($logfilarray);$i++)
+	for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
 			$log.=$logfilarray[$i];
 	echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));
 }
