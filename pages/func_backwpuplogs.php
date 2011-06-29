@@ -28,38 +28,45 @@ class BackWPup_Logs_Table extends WP_List_Table {
 			
 		//load logs
 		$cfg=get_option('backwpup');
-		$this->items=array();
+		$logfiles=array();
 		if ( $dir = @opendir( $cfg['dirlogs'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (is_file($cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8))) 
-					$this->items[]=$file;
+					$logfiles[]=$file;
 			}
 			closedir( $dir );
-			if ( !isset( $_GET['orderby'] ) or $_GET['orderby']=='log') {
-				if (isset($_GET['order']) and $_GET['order']=='asc')
-					sort($this->items);
-				else
-					rsort($this->items);
-			}
-			if (!isset( $_GET['orderby'] ) and !isset( $_GET['order'] ))
-				rsort($this->items);
+		}
+		//ordering
+		$order=isset($_GET['order']) ? $_GET['order'] : 'desc';
+		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'log';
+		if ($orderby=='log') {
+			if ($order=='asc')
+				sort($logfiles);
+			else
+				rsort($logfiles);
 		}
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );
 		$end=$start+$per_page;
-		if ($end>count($this->items))
-			$end=count($this->items);
+		if ($end>count($logfiles))
+			$end=count($logfiles);
+		
+		$this->items=array();
+		for ($i=$start;$i<$end;$i++)
+			$this->items[]=$logfiles[$i];
 		
 		$this->set_pagination_args( array(
-			'total_items' => count($this->items),
-			'per_page' => $per_page
+			'total_items' => count($logfiles),
+			'per_page' => $per_page,
+			'orderby' => $orderby,
+			'order' => $order
 		) );
 
 	}
 
 	function get_sortable_columns() {
 		return array(
-			'log'    => 'log',
+			'log'    => array('log',false),
 		);
 	}
 	

@@ -4,7 +4,6 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
-
 //Create Table
 $backwpup_listtable = new BackWPup_Backups_Table;
 

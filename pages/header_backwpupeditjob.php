@@ -224,8 +224,8 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		$response = $dropbox->oAuthAuthorize(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
 		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),600);
-		//forwar to auth page
-		header('Location: '.$response['authurl']);
+		//forward to auth page
+		wp_redirect($response['authurl']);
 	}	
 	
 	$_POST['jobid']=$jobvalues['jobid'];

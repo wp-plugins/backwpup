@@ -42,73 +42,77 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		
 		list($this->jobid,$this->dest)=explode(',',$jobdest);
 		
-		if (false === ($this->items=get_transient('backwpup_backups_chache'))) {  //create new list
-			$this->items=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$this->items,300);
+		if (false === ($backups=get_transient('backwpup_backups_chache'))) {  //create new list
+			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
+			set_transient('backwpup_backups_chache',$backups,300);
 		}
 		
-		if (!$this->items or $this->dest!=$this->items[0]['DEST'] or $this->jobid!=$this->items[0]['JOBID']) {
-			$this->items=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$this->items,300);		
+		if (!$backups or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
+			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
+			set_transient('backwpup_backups_chache',$backups,300);		
 		}
 
 		//Sorting
-		$order=isset($_GET['order']) ? $_GET['order'] : 'time';
-		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'desc';
+		$order=isset($_GET['order']) ? $_GET['order'] : 'desc';
+		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'time';
 		$tmp = Array();
 		if ($orderby=='time') {
 			if ($order=='asc') {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_ASC, $this->items);			
+				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_DESC, $this->items);	
+				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}		
 		elseif ($orderby=='file') {
 			if ($order=='asc') {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_ASC, $this->items);			
+				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_DESC, $this->items);	
+				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}
 		elseif ($orderby=='folder') {
 			if ($order=='asc') {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_ASC, $this->items);			
+				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_DESC, $this->items);	
+				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}
 		elseif ($orderby=='size') {
 			if ($order=='asc') {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_ASC, $this->items);			
+				array_multisort($tmp, SORT_ASC, $backups);			
 			} else {
-				foreach($this->items as &$ma)
+				foreach($backups as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_DESC, $this->items);	
+				array_multisort($tmp, SORT_DESC, $backups);	
 			}
 		}	
 
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );
 		$end=$start+$per_page;
-		if ($end>count($this->items))
-			$end=count($this->items);
-		
+		if ($end>count($backups))
+			$end=count($backups);
+
+		$this->items=array();
+		for ($i=$start;$i<$end;$i++)
+			$this->items[]=$backups[$i];
+	
 		$this->set_pagination_args( array(
-			'total_items' => count($this->items),
+			'total_items' => count($backups),
 			'per_page' => $per_page,
 			'jobdest' => $jobdest,
 			'orderby' => $orderby,
@@ -138,7 +142,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.','.$this->dest,$jobdest).">".$dest.": ".esc_html($jobs[$jobid]['name'])."</option>\n";
 		}
 		echo "</select>\n";
-		submit_button( __('Change Destination','backwpup'), 'secondary', 'dests', false, array( 'id' => 'post-query-submit' ) );
+		submit_button( __('Change Destination','backwpup'), 'secondary', '', false, array( 'id' => 'post-query-submit' ) );
 		echo '</div>';
 	}
 	
@@ -183,16 +187,12 @@ class BackWPup_Backups_Table extends WP_List_Table {
 
 	function get_sortable_columns() {
 		return array(
-			'file'    => array('file',true),
+			'file'    => array('file',false),
 			'folder'    => 'folder',
 			'size'    => 'size',
-			'time'    => array('time',true)
+			'time'    => array('time',false)
 		);
 	}	
-
-	function get_hidden_columns() {
-		return (array) get_user_option( 'backwpup_backups_columnshidden' );
-	}
 	
 	function display_rows() {
 		$style = '';
