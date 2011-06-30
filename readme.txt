@@ -93,6 +93,13 @@ Please deactivate passive mode and try it again.
 = Change Temp Folder =
 Create in Plugins folder of wordpress a file named '.backwpuptempfolder' with the temp Folder name in it.
 
+= Multible backups on one sheduled job =
+You have installed the Plugin W3 Total Cache ?
+Too fix it:
+* create a cron job on your hoster or on a free web crob service
+* point to http://youblogurl/wp-cron.php
+* Check the setting dectivate wp-cron in BackWPup
+
 = Disable some destinations for backups =
 You can set the following in wp-config.php:
 <i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');</i>
