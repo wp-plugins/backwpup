@@ -34,16 +34,17 @@ Do backups and more.
 ** Test your Backups! **
 
 == Installation ==
-
 1. Download BackWPup Plugin.
-1. Decompress and upload the contents of the archive into /wp-content/plugins/.
-1. Activate the Plugin through the 'Plugins' menu in WordPress
+2. Decompress and upload the contents of the archive into /wp-content/plugins/.
+3. Activate the Plugin through the 'Plugins' menu in WordPress
+
+== Upgrade Notice ==
+1. Deactivate Plugin
+2. Update Plugin 
+3. Update Wordpress to 3.2
+4. Activate Plugin
 
 == Frequently Asked Questions ==
-= Update to Wordpress 3.2 =
-1. Update Plugin 
-2. Update Wordpress to 3.2
-
 = Requires =
 * PHP 5.2.4
 * WordPress 3.2
@@ -62,7 +63,8 @@ in the root folder of the archive. <i>blogname</i>.wordpress.<i>jjjj-mm-dd</i>.x
 Plugin uses zip extension if PHP, if not, uses PCLZIP lib extension
 
 = Maintenance Mode =
-Supported Plugins
+Supported Plugins:
+
 * maintenance-mode
 * wp-maintenance-mode
 * WordPress .maintenance file
@@ -96,15 +98,17 @@ Create in Plugins folder of wordpress a file named '.backwpuptempfolder' with th
 = Multible backups on one sheduled job =
 You have installed the Plugin W3 Total Cache ?
 Too fix it:
-* create a cron job on your hoster or on a free web crob service
-* point to http://youblogurl/wp-cron.php
-* Check the setting dectivate wp-cron in BackWPup
+
+1. create a cron job on your hoster or on a free web crob service
+2. point to http://youblogurl/wp-cron.php
+3. Check the setting dectivate wp-cron in BackWPup
 
 = Disable some destinations for backups =
 You can set the following in wp-config.php:
 <i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');</i>
 all listed destinations are then disabled.
 Destinations are:
+
 * MAIL = mail (can't disable)
 * DIR = Directory (can't disable)
 * S3 = Amazon S3
