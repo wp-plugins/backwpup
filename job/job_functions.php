@@ -160,6 +160,8 @@ function get_working_dir() {
 		$tempdir=ini_get('upload_tmp_dir');
 	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
 		$tempdir=sys_get_temp_dir();
+	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
+		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
 	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
 	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
 		return $tempdir.$folder;

@@ -90,6 +90,9 @@ You should only send small archives via email.
 = FTP Warnings =
 Please deactivate passive mode and try it again.
 
+= Change Temp Folder =
+Create in Plugins folder of wordpress a file named '.backwpuptempfolder' with the temp Folder name in it.
+
 = Disable some destinations for backups =
 You can set the following in wp-config.php:
 <i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');</i>
@@ -121,9 +124,9 @@ Destinations are:
 * Updated RSC lib to 1.7.9
 * Updated MS Azure lib to 3.0.0
 * Added Google storage as destination
-* Reworked GUI (Wordpress Dropboxes, working screen options, ....)
-* Complete new job working ot of Wordpress (backend and frontend)
-* added easyer job sheduling selection
+* Reworked GUI (WordPress Dropboxes, working screen options, ....)
+* Complete new job working ot of Wordpress (less memory,automatic restart,...)
+* Added easyer job sheduling selection
 
 = 1.7.8 =
 * Updated AWS SDK to ver.1.3.5 for Amazon S3

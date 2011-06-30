@@ -458,7 +458,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	$cfg=get_option('backwpup'); //Load Settings
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
-	$excludedir[]=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/'; //exclude temp
+	$excludedir[]=rtrim(str_replace('\\','/',backwpup_get_working_dir()),'/').'/'; //exclude temp
 	$excludedir[]=rtrim(str_replace('\\','/',$cfg['dirlogs']),'/').'/'; //exclude logfiles
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
@@ -619,6 +619,8 @@ function backwpup_get_working_dir() {
 		$tempdir=ini_get('upload_tmp_dir');
 	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
 		$tempdir=sys_get_temp_dir();
+	if (is_readable(dirname(__FILE__).'/../.backwpuptempfolder'))
+		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../.backwpuptempfolder',false,NULL,0,255));
 	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
 	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
 		return $tempdir.$folder;

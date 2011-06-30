@@ -88,7 +88,6 @@ function backwpup_jobstart($jobid='') {
 	//STATIC data
 	$_SESSION['STATIC']['JOBRUNURL']=BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php';
 	//get and create temp dir
-	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
 	$tempdir=getenv('TMP');
 	if (!$tempdir)
 		$tempdir=getenv('TEMP');
@@ -98,8 +97,10 @@ function backwpup_jobstart($jobid='') {
 		$tempdir=ini_get('upload_tmp_dir');
 	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
 		$tempdir=sys_get_temp_dir();
+	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
+		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
 	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
-	$_SESSION['STATIC']['TEMPDIR']=$tempdir.$folder;
+	$_SESSION['STATIC']['TEMPDIR']=$tempdir.'backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
 	if (!is_dir($_SESSION['STATIC']['TEMPDIR'])) {
 		if (!mkdir($_SESSION['STATIC']['TEMPDIR'],0755,true)) {
 			sprintf(__('Can not create temp folder: %1$s','backwpup'),$_SESSION['STATIC']['TEMPDIR']);
