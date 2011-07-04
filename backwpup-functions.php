@@ -93,11 +93,11 @@ function backwpup_contextual_help($help='') {
 		$help='<p>'.$help.'</p>';
 	add_contextual_help($current_screen,$help.
 			'<p><strong>'.__('For more information:','backwpup').'</strong></p>'.
-			'<p><a href="http://wordpress.org/tags/backwpup" target="_blank">'.__('Support').'</a>'.
-			' | <a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>'.
-			' | <a href="http://danielhuesken.de/portfolio/backwpup" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
+			'<p><a href="http://backwpup.com/forum/" target="_blank">'.__('Support','backwpup').'</a>'.
+			' | <a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>'.
+			' | <a href="http://backwpup.com/" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
 			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin Home on WordPress.org', 'backwpup') . '</a>'.
-			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=daniel%40huesken-net%2ede&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>'.
+			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=mail%40backwpup%2ecom&amp;item_name=BackWPup%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate','backwpup') . '</a>'.
 			' | <a href="https://flattr.com/thing/32235/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
 			'<p>BackWPup version '.BACKWPUP_VERSION.', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a><br />'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
 			'</p>');
