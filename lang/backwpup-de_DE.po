@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BackWPup 2.0 Branch\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tags/backwpup\n"
 "POT-Creation-Date: 2010-06-23 17:08+0000\n"
-"PO-Revision-Date: 2011-07-05 14:43+0100\n"
+"PO-Revision-Date: 2011-07-05 21:59+0100\n"
 "Last-Translator: David Decker <deckerweb.mobil@googlemail.com>\n"
 "Language-Team: DECKERWEB <deckerweb.mobil@googlemail.com>\n"
 "MIME-Version: 1.0\n"
@@ -344,8 +344,8 @@ msgstr "Warnungen:"
 #@ textdomain
 #. translators: plugin header field 'Name'
 #: backwpup-functions.php:10
-#: backwpup-functions.php:180
-#: backwpup-functions.php:405
+#: backwpup-functions.php:204
+#: backwpup-functions.php:429
 #: backwpup.php:0
 msgid "BackWPup"
 msgstr "BackWPup"
@@ -356,7 +356,7 @@ msgid "Job"
 msgstr "Auftrag"
 
 #@ backwpup
-#: pages/func_backwpup.php:58
+#: pages/func_backwpup.php:63
 #: pages/func_backwpupeditjob.php:175
 #: pages/func_backwpuplogs.php:87
 msgid "Type"
@@ -373,7 +373,7 @@ msgid "Status"
 msgstr "Status"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:182
+#: pages/func_backwpupbackups.php:190
 #: pages/func_backwpuplogs.php:90
 msgid "Size"
 msgstr "Gr&ouml;&szlig;e"
@@ -384,36 +384,36 @@ msgid "Runtime"
 msgstr "Laufzeit"
 
 #@ backwpup
-#: pages/func_backwpup.php:56
+#: pages/func_backwpup.php:61
 msgid "ID"
 msgstr "ID"
 
 #@ backwpup
-#: pages/func_backwpup.php:57
+#: pages/func_backwpup.php:62
 msgid "Job Name"
 msgstr "Auftragsname"
 
 #@ backwpup
-#: pages/func_backwpup.php:60
+#: pages/func_backwpup.php:65
 msgid "Next Run"
 msgstr "N&auml;chster Durchlauf"
 
 #@ backwpup
-#: pages/func_backwpup.php:61
+#: pages/func_backwpup.php:66
 msgid "Last Run"
 msgstr "Letzter Durchlauf"
 
 #@ backwpup
 #@ default
 #: backwpup-functions.php:96
-#: backwpup-functions.php:172
+#: backwpup-functions.php:196
 msgid "Support"
 msgstr "Hilfe + Unterst&uuml;tzung (Support)"
 
 #@ backwpup
 #@ default
 #: backwpup-functions.php:97
-#: backwpup-functions.php:171
+#: backwpup-functions.php:195
 msgid "FAQ"
 msgstr "FAQ"
 
@@ -430,68 +430,68 @@ msgstr "Plugin-Seite bei WordPress.org"
 #@ backwpup
 #@ default
 #: backwpup-functions.php:100
-#: backwpup-functions.php:173
+#: backwpup-functions.php:197
 msgid "Donate"
 msgstr "Spenden"
 
 #@ backwpup
-#: backwpup-functions.php:161
+#: backwpup-functions.php:185
 msgid "Go to Settings Page"
 msgstr "Gehe zur Einstellungsseite"
 
 #@ backwpup
 #@ default
 #: backwpup-functions.php:23
-#: backwpup-functions.php:161
+#: backwpup-functions.php:185
 msgid "Settings"
 msgstr "Einstellungen"
 
 #@ backwpup
-#: backwpup-functions.php:240
+#: backwpup-functions.php:264
 msgid "WP XML Export"
 msgstr "WP XML Export"
 
 #@ backwpup
-#: backwpup-functions.php:243
+#: backwpup-functions.php:267
 msgid "Database Backup"
 msgstr "Datenbank-Sicherung"
 
 #@ backwpup
-#: backwpup-functions.php:246
+#: backwpup-functions.php:270
 #: pages/page_backwpupeditjob.php:78
 msgid "File Backup"
 msgstr "Dateien-Sicherung"
 
 #@ backwpup
-#: backwpup-functions.php:249
+#: backwpup-functions.php:273
 msgid "Optimize Database Tables"
 msgstr "Datenbanktabellen optimieren"
 
 #@ backwpup
-#: backwpup-functions.php:252
+#: backwpup-functions.php:276
 msgid "Check Database Tables"
 msgstr "Datenbanktabellen checken"
 
 #@ backwpup
-#: backwpup-functions.php:331
-#: backwpup-functions.php:386
+#: backwpup-functions.php:355
+#: backwpup-functions.php:410
 #: pages/page_backwpupsettings.php:61
 msgid "none"
 msgstr "nichts"
 
 #@ backwpup
-#: backwpup-functions.php:379
+#: backwpup-functions.php:403
 msgid "Edit Job"
 msgstr "Auftrag bearbeiten"
 
 #@ backwpup
-#: pages/func_backwpup.php:129
+#: pages/func_backwpup.php:134
 msgid "Running since:"
 msgstr "L&auml;uft seit:"
 
 #@ backwpup
-#: pages/func_backwpup.php:129
-#: pages/func_backwpup.php:145
+#: pages/func_backwpup.php:134
+#: pages/func_backwpup.php:150
 #: pages/func_backwpuplogs.php:159
 #: pages/page_backwpupsettings.php:127
 #: pages/page_backwpupsettings.php:133
@@ -519,10 +519,10 @@ msgstr ""
 
 #@ default
 #@ backwpup
-#: pages/func_backwpup.php:48
-#: pages/func_backwpup.php:104
-#: pages/func_backwpupbackups.php:130
-#: pages/func_backwpupbackups.php:225
+#: pages/func_backwpup.php:53
+#: pages/func_backwpup.php:109
+#: pages/func_backwpupbackups.php:136
+#: pages/func_backwpupbackups.php:233
 #: pages/func_backwpupeditjob.php:29
 #: pages/func_backwpuplogs.php:79
 #: pages/func_backwpuplogs.php:133
@@ -706,21 +706,21 @@ msgid "Max. File Size for sending Backups with mail:"
 msgstr "Maximale Dateigr&ouml;&szlig;e zum Senden von Datensicherungen via E-Mail:"
 
 #@ backwpup
-#: backwpup-functions.php:394
+#: backwpup-functions.php:418
 #: pages/page_backwpuplogs.php:10
 msgid "BackWPup Logs"
 msgstr "BackWPup Protokolle"
 
 #@ backwpup
 #: backwpup-functions.php:11
-#: backwpup-functions.php:408
+#: backwpup-functions.php:432
 #: pages/page_backwpupsettings.php:103
 msgid "Jobs"
 msgstr "Auftr&auml;ge"
 
 #@ backwpup
 #: backwpup-functions.php:17
-#: backwpup-functions.php:409
+#: backwpup-functions.php:433
 #: pages/header_backwpupbackups.php:361
 #: pages/header_backwpuplogs.php:63
 #: pages/page_backwpupsettings.php:81
@@ -816,37 +816,37 @@ msgid "Add New"
 msgstr "Neuer Auftrag"
 
 #@ backwpup
-#: pages/func_backwpup.php:98
+#: pages/func_backwpup.php:103
 msgid "Edit:"
 msgstr "Bearbeiten:"
 
 #@ default
-#: pages/func_backwpup.php:101
+#: pages/func_backwpup.php:106
 msgid "Edit"
 msgstr "Bearbeiten"
 
 #@ backwpup
-#: pages/func_backwpup.php:102
+#: pages/func_backwpup.php:107
 msgid "Copy"
 msgstr "Kopieren"
 
 #@ backwpup
-#: pages/func_backwpup.php:105
+#: pages/func_backwpup.php:110
 msgid "Run Now"
 msgstr "Jetzt starten"
 
 #@ backwpup
-#: pages/func_backwpup.php:133
+#: pages/func_backwpup.php:138
 msgid "Inactive"
 msgstr "Inaktiv"
 
 #@ backwpup
-#: pages/func_backwpup.php:145
+#: pages/func_backwpup.php:150
 msgid "Runtime:"
 msgstr "Laufzeit:"
 
 #@ backwpup
-#: pages/func_backwpup.php:147
+#: pages/func_backwpup.php:152
 msgid "None"
 msgstr "Nichts"
 
@@ -952,12 +952,12 @@ msgstr "BackWPup-Datensicherungen verwalten"
 
 #@ backwpup
 #: backwpup-functions.php:19
-#: backwpup-functions.php:410
+#: backwpup-functions.php:434
 msgid "Backups"
 msgstr "Datensicherungen"
 
 #@ backwpup
-#: backwpup-functions.php:737
+#: backwpup-functions.php:761
 msgid "New"
 msgstr "Neu"
 
@@ -988,52 +988,52 @@ msgid "No Containerss found!"
 msgstr "Keine Container gefunden!"
 
 #@ backwpup
-#: backwpup-functions.php:676
+#: backwpup-functions.php:700
 msgid "- Logs Folder not writeable:"
 msgstr "- Protokolldateien-Ordner ist nicht beschreibbar:"
 
 #@ backwpup
-#: backwpup-functions.php:681
+#: backwpup-functions.php:705
 msgid "- Please Check Scheduling time for Job:"
 msgstr "- Bitte &uuml;berpr&uuml;fen Sie die Zeitplanung f&uuml;r den Auftrag (Scheduling):"
 
 #@ backwpup
-#: backwpup-functions.php:684
+#: backwpup-functions.php:708
 msgid "- WP-Cron don't working please check it!"
 msgstr "- WP-Cron arbeitet nicht, bitte &uuml;berpr&uuml;fen Sie die Funktion!"
 
 #@ backwpup
-#: pages/func_backwpup.php:42
+#: pages/func_backwpup.php:47
 msgid "No Jobs."
 msgstr "Keine Auftr&auml;ge."
 
 #@ backwpup
-#: pages/func_backwpup.php:59
+#: pages/func_backwpup.php:64
 msgid "Information"
 msgstr "Information"
 
 #@ backwpup
-#: pages/func_backwpup.php:234
+#: pages/func_backwpup.php:239
 msgid "Files Size:"
 msgstr "Gr&ouml;&szlig;e der Dateien:"
 
 #@ backwpup
-#: pages/func_backwpup.php:236
+#: pages/func_backwpup.php:241
 msgid "Files count:"
 msgstr "Dateiz&auml;hler:"
 
 #@ backwpup
-#: pages/func_backwpup.php:251
+#: pages/func_backwpup.php:256
 msgid "DB Tables:"
 msgstr "Datenbank-Tabellen:"
 
 #@ backwpup
-#: pages/func_backwpup.php:252
+#: pages/func_backwpup.php:257
 msgid "DB Rows:"
 msgstr "Datenbank-Zeilen:"
 
 #@ backwpup
-#: pages/func_backwpup.php:136
+#: pages/func_backwpup.php:141
 msgid "<a href=\"http://wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a>:"
 msgstr "<a href=\"http://de.wikipedia.org/wiki/Cron\" target=\"_blank\">Cron</a>:"
 
@@ -1043,14 +1043,14 @@ msgid "No Logs."
 msgstr "Keine Protokolldateien."
 
 #@ backwpup
-#: pages/func_backwpup.php:150
-#: pages/func_backwpupbackups.php:226
+#: pages/func_backwpup.php:155
+#: pages/func_backwpupbackups.php:234
 #: pages/func_backwpuplogs.php:134
 msgid "Download"
 msgstr "Herunterladen"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:225
+#: pages/func_backwpupbackups.php:233
 msgid ""
 "You are about to delete this Backup Archive. \n"
 "  'Cancel' to stop, 'OK' to delete."
@@ -1059,7 +1059,7 @@ msgstr ""
 " 'Abbrechen' um zu stoppen, 'OK' um zu l&ouml;schen."
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:240
+#: pages/func_backwpupbackups.php:248
 msgid "?"
 msgstr "?"
 
@@ -1334,7 +1334,7 @@ msgstr "Daniel H&uuml;sken"
 #. translators: plugin header field 'AuthorURI'
 #: backwpup.php:0
 msgid "http://danielhuesken.de"
-msgstr "http://danielhuesken.de"
+msgstr "http://danielhuesken.de/"
 
 #@ backwpup
 #: job/dest_s3.php:70
@@ -1348,23 +1348,23 @@ msgstr "BackWPup Protokolldaten von"
 
 #@ default
 #@ backwpup
-#: pages/func_backwpup.php:47
-#: pages/func_backwpup.php:103
+#: pages/func_backwpup.php:52
+#: pages/func_backwpup.php:108
 msgid "Export"
 msgstr "Export"
 
 #@ backwpup
-#: pages/func_backwpup.php:150
+#: pages/func_backwpup.php:155
 msgid "Download last Backup"
 msgstr "Letzte Datensicherung herunterladen"
 
 #@ backwpup
-#: pages/func_backwpup.php:152
+#: pages/func_backwpup.php:157
 msgid "View last Log"
 msgstr "Letztes Protokoll ansehen"
 
 #@ backwpup
-#: pages/func_backwpup.php:152
+#: pages/func_backwpup.php:157
 msgid "Log"
 msgstr "Protokoll"
 
@@ -1637,7 +1637,7 @@ msgid "Copy SQL file to blog root folder to use for a restoration."
 msgstr "Die SQL-Datei in den root-Ordner Ihrer Webseite (bzw. WordPress-Installation) kopieren, damit die Datei f&uuml;r eine Wiederherstellung genutzt werden kann."
 
 #@ backwpup
-#: backwpup-functions.php:673
+#: backwpup-functions.php:697
 msgid "- Logs Folder not exists:"
 msgstr "- Der Protokolldateien-Ordner existiert nicht:"
 
@@ -1708,12 +1708,12 @@ msgid "Working"
 msgstr "In Bearbeitung"
 
 #@ backwpup
-#: backwpup-functions.php:317
+#: backwpup-functions.php:341
 msgid "View Log:"
 msgstr "Protokoll ansehen:"
 
 #@ backwpup
-#: backwpup-functions.php:319
+#: backwpup-functions.php:343
 #: pages/func_backwpuplogs.php:141
 #, php-format
 msgid "%d ERROR"
@@ -1722,7 +1722,7 @@ msgstr[0] "%d FEHLER"
 msgstr[1] "%d FEHLER"
 
 #@ backwpup
-#: backwpup-functions.php:321
+#: backwpup-functions.php:345
 #: pages/func_backwpuplogs.php:143
 #, php-format
 msgid "%d WARNING"
@@ -1731,56 +1731,56 @@ msgstr[0] "%d WARNUNG"
 msgstr[1] "%d WARNUNGEN"
 
 #@ backwpup
-#: backwpup-functions.php:323
+#: backwpup-functions.php:347
 #: pages/func_backwpuplogs.php:145
 msgid "O.K."
 msgstr "O.K."
 
 #@ backwpup
-#: backwpup-functions.php:349
+#: backwpup-functions.php:373
 msgid "How many of the lastes logs would you like to display?"
 msgstr "Wieviele der letzten Protokolle wollen Sie anzeigen lassen?"
 
 #@ backwpup
-#: backwpup-functions.php:372
+#: backwpup-functions.php:396
 #, php-format
 msgid "working since %d sec."
 msgstr "in Arbeit seit %d Sek."
 
 #@ backwpup
-#: backwpup-functions.php:373
-#: pages/func_backwpup.php:108
+#: backwpup-functions.php:397
+#: pages/func_backwpup.php:113
 msgid "View!"
 msgstr "Ansehen!"
 
 #@ backwpup
-#: backwpup-functions.php:374
-#: pages/func_backwpup.php:109
+#: backwpup-functions.php:398
+#: pages/func_backwpup.php:114
 msgid "Abort!"
 msgstr "Abbrechen!"
 
 #@ backwpup
-#: backwpup-functions.php:395
+#: backwpup-functions.php:419
 msgid "BackWPup Aktive Jobs"
 msgstr "BackWPup aktive Auftr&auml;ge"
 
 #@ backwpup
-#: backwpup-functions.php:654
+#: backwpup-functions.php:678
 msgid "- PHP 5.2.4 or higher needed!"
 msgstr "- PHP 5.2.4 oder h&ouml;her ist erforderlich!"
 
 #@ backwpup
-#: backwpup-functions.php:658
+#: backwpup-functions.php:682
 msgid "- Multiseite Blogs not allowed!"
 msgstr "- Multisite-Installationen sind nicht m&ouml;glich!"
 
 #@ backwpup
-#: backwpup-functions.php:662
+#: backwpup-functions.php:686
 msgid "- curl is needed!"
 msgstr "- CURL ist erforderlich!"
 
 #@ backwpup
-#: backwpup-functions.php:666
+#: backwpup-functions.php:690
 msgid "- PHP sessions needed!"
 msgstr "- PHP-Sessions sind erforderlich!"
 
@@ -2074,33 +2074,33 @@ msgid "Add XML export to backup list:"
 msgstr "F&uuml;ge XML-Exportdatei der Datensicherungsliste hinzu:"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:125
+#: pages/func_backwpupbackups.php:131
 msgid "No Files found."
 msgstr "Keine Dateien gefunden."
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:145
+#: pages/func_backwpupbackups.php:151
 msgid "Change Destination"
 msgstr "Ziel &auml;ndern"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:180
+#: pages/func_backwpupbackups.php:188
 msgid "File"
 msgstr "Datei"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:181
-#: pages/func_backwpupbackups.php:183
+#: pages/func_backwpupbackups.php:189
+#: pages/func_backwpupbackups.php:191
 msgid "Folder"
 msgstr "Ordner"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:184
+#: pages/func_backwpupbackups.php:192
 msgid "Time"
 msgstr "Zeit"
 
 #@ backwpup
-#: pages/func_backwpupbackups.php:497
+#: pages/func_backwpupbackups.php:505
 #: pages/header_backwpupbackups.php:149
 msgid "Login failure!"
 msgstr "Anmeldung fehlgeschlagen!"
@@ -2277,12 +2277,12 @@ msgid "BackWPup Working"
 msgstr "BackWPup arbeitet"
 
 #@ backwpup
-#: backwpup-functions.php:407
+#: backwpup-functions.php:431
 msgid "See Working!"
 msgstr "Siehe unter 'In Bearbeitung'!"
 
 #@ backwpup
-#: backwpup-functions.php:412
+#: backwpup-functions.php:436
 msgid "BackWPup Job"
 msgstr "BackWPup Auftrag"
 
@@ -2303,7 +2303,7 @@ msgid "Show BackWPup Links in Admin Bar."
 msgstr "BackWPup-Links in der Adminbar anzeigen."
 
 #@ backwpup
-#: backwpup-functions.php:650
+#: backwpup-functions.php:674
 #, php-format
 msgid "- WordPress %d or heiger needed!"
 msgstr "- WordPress %d oder h&ouml;her erforderlich!"
@@ -2494,12 +2494,6 @@ msgid "BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and yo
 msgstr "BackWPup erhalten Sie OHNE JEDWEDE GARANTIE. Dies ist freie Software (quelloffen, im Sinne von Open Source) und Sie sind eingeladen, sie unter bestimmten Bedingungen weiterzugeben."
 
 #@ backwpup
-#. translators: plugin header field 'Version'
-#: backwpup.php:0
-msgid "2.0-RC3"
-msgstr "2.0-RC3"
-
-#@ backwpup
 #: job/dest_dropbox.php:48
 msgid "Backup File transferred to DropBox://"
 msgstr "Datensicherungdatei zur Dropbox:// &uuml;bertragen"
@@ -2625,4 +2619,10 @@ msgstr "http://backwpup.com/"
 #: backwpup.php:0
 msgid "Wordpress Backup and more..."
 msgstr "WordPress-Datensicherung und mehr ..."
+
+#@ backwpup
+#. translators: plugin header field 'Version'
+#: backwpup.php:0
+msgid "2.0"
+msgstr "2.0"
 
