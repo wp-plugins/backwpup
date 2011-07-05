@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: Wordpress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.0-RC3
+Version: 2.0
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -39,9 +39,9 @@ if (!defined('ABSPATH')) {
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '2.0-RC3');
+define('BACKWPUP_VERSION', '2.0');
 //Set Min Wordpress Version
-define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2-RC2');
+define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
@@ -53,6 +53,8 @@ define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
 //Set SugarSync Aplication Keys
 define('BACKWPUP_SUGARSYNC_ACCESSKEY', 'OTcwNjc5MTI5OTQxMzY1Njc5OA');
 define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5YWVkMjFmYmI');
+//BAckWPup API url
+define('BACKWPUP_API_URL', 'http://api.backwpup.com');
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file

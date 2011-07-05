@@ -51,7 +51,13 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
 			set_transient('backwpup_backups_chache',$backups,300);		
 		}
-
+		
+		//if no itmes brake
+		if (empty($backups)) {
+			$this->items='';
+			return;
+		}
+		
 		//Sorting
 		$order=isset($_GET['order']) ? $_GET['order'] : 'desc';
 		$orderby=isset($_GET['orderby']) ? $_GET['orderby'] : 'time';
@@ -149,27 +155,29 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	function get_dest_list() {
 		$jobdest=array();
 		$jobs=get_option('backwpup_jobs');
-		foreach ($jobs as $jobid => $jobvalue) {
-			if (!empty($jobvalue['backupdir']) and is_dir($jobvalue['backupdir']))
-				$jobdest[]=$jobid.',FOLDER';
-			foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
-				$dest=strtoupper($dest);
-				if ($dest=='S3' and !empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket']))
-					$jobdest[]=$jobid.','.$dest;
-				if ($dest=='GSTORAGE' and !empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket']))
-					$jobdest[]=$jobid.','.$dest;						
-				if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret']))
-					$jobdest[]=$jobid.','.$dest;
-				if ($dest=='RSC' and !empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer']))
-					$jobdest[]=$jobid.','.$dest;
-				if ($dest=='FTP' and !empty($jobvalue['ftphost']) and function_exists('ftp_connect') and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']))
-					$jobdest[]=$jobid.','.$dest;
-				if ($dest=='MSAZURE' and !empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer']))
-					$jobdest[]=$jobid.','.$dest;
-				if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarpass']) and !empty($jobvalue['sugarpass']))
-					$jobdest[]=$jobid.','.$dest;					
-			}
+		if (!empty($jobs) and is_array($jobs)) {
+			foreach ($jobs as $jobid => $jobvalue) {
+				if (!empty($jobvalue['backupdir']) and is_dir($jobvalue['backupdir']))
+					$jobdest[]=$jobid.',FOLDER';
+				foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
+					$dest=strtoupper($dest);
+					if ($dest=='S3' and !empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket']))
+						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='GSTORAGE' and !empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket']))
+						$jobdest[]=$jobid.','.$dest;						
+					if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret']))
+						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='RSC' and !empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer']))
+						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='FTP' and !empty($jobvalue['ftphost']) and function_exists('ftp_connect') and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']))
+						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='MSAZURE' and !empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer']))
+						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarpass']) and !empty($jobvalue['sugarpass']))
+						$jobdest[]=$jobid.','.$dest;					
+				}
 
+			}
 		}
 		return $jobdest;
 	}

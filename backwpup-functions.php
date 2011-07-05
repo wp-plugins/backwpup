@@ -105,13 +105,15 @@ function backwpup_contextual_help($help='') {
 
 //On Plugin activate
 function backwpup_plugin_activate() {
-	$jobs=(array)get_option('backwpup_jobs');
-	foreach ($jobs as $jobid => $jobvalue) {
-		//check jobvaules
-		$jobs[$jobid]=backwpup_get_job_vars($jobid);
+	$jobs=get_option('backwpup_jobs');
+	if (!empty($jobs) and is_array($jobs)) {
+		foreach ($jobs as $jobid => $jobvalue) {
+			//check jobvaules
+			$jobs[$jobid]=backwpup_get_job_vars($jobid);
+		}
+		//save job values
+		update_option('backwpup_jobs',$jobs);
 	}
-	//save job values
-	update_option('backwpup_jobs',$jobs);
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
 	//make new schedule
@@ -147,11 +149,33 @@ function backwpup_plugin_activate() {
 	update_option('backwpup',$cfg);
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
+	backwpup_api(true);
 }
 
 //on Plugin deaktivate
 function backwpup_plugin_deactivate() {
 	wp_clear_scheduled_hook('backwpup_cron');
+	backwpup_api(false);
+}
+
+//Backwpup API
+function backwpup_api($active=false) {
+	global $wp_version;
+	if ($active)
+		$active='Y';
+	else
+		$active='N';
+	$ch=curl_init();
+	curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
+	curl_setopt($ch,CURLOPT_POST,true);
+	curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>get_option('siteurl'),'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
+	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+	curl_exec($ch);
+	curl_close($ch);
 }
 
 //add edit setting to plugins page

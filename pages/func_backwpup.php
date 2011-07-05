@@ -23,8 +23,13 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	
 	function prepare_items() {
 		global $mode;
-		foreach ((array)get_option('backwpup_jobs') as $key => $value) {
-			$this->items[]=backwpup_get_job_vars($key);
+		$jobs=get_option('backwpup_jobs');
+		if (!empty($jobs) and is_array($jobs)) {
+			foreach ($jobs as $key => $value) {
+				$this->items[]=backwpup_get_job_vars($key);
+			}
+		} else {
+			$this->items='';
 		}
 		$mode = empty( $_GET['mode'] ) ? 'list' : $_GET['mode'];
 	}
