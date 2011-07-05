@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BackWPup 2.0 Branch\n"
 "Report-Msgid-Bugs-To: http://wordpress.org/tags/backwpup\n"
 "POT-Creation-Date: 2010-06-23 17:08+0000\n"
-"PO-Revision-Date: 2011-07-01 12:39+0100\n"
+"PO-Revision-Date: 2011-07-05 14:43+0100\n"
 "Last-Translator: David Decker <deckerweb.mobil@googlemail.com>\n"
 "Language-Team: DECKERWEB <deckerweb.mobil@googlemail.com>\n"
 "MIME-Version: 1.0\n"
@@ -403,12 +403,14 @@ msgstr "N&auml;chster Durchlauf"
 msgid "Last Run"
 msgstr "Letzter Durchlauf"
 
+#@ backwpup
 #@ default
 #: backwpup-functions.php:96
 #: backwpup-functions.php:172
 msgid "Support"
 msgstr "Hilfe + Unterst&uuml;tzung (Support)"
 
+#@ backwpup
 #@ default
 #: backwpup-functions.php:97
 #: backwpup-functions.php:171
@@ -425,6 +427,7 @@ msgstr "Plugin Homepage"
 msgid "Plugin Home on WordPress.org"
 msgstr "Plugin-Seite bei WordPress.org"
 
+#@ backwpup
 #@ default
 #: backwpup-functions.php:100
 #: backwpup-functions.php:173
@@ -1320,18 +1323,6 @@ msgstr "Benutze SSL-FTP-Verbindung."
 #: pages/header_backwpupeditjob.php:249
 msgid "Backup to Dropbox"
 msgstr "Datensicherung in die Dropbox"
-
-#@ backwpup
-#. translators: plugin header field 'PluginURI'
-#: backwpup.php:0
-msgid "http://danielhuesken.de/portfolio/backwpup/"
-msgstr "http://danielhuesken.de/portfolio/backwpup/"
-
-#@ backwpup
-#. translators: plugin header field 'Description'
-#: backwpup.php:0
-msgid "Backup and more of your WordPress Blog Database and Files."
-msgstr "Datensicherung und mehr von Ihrer WordPress-Datenbank sowie den Dateien."
 
 #@ backwpup
 #. translators: plugin header field 'Author'
@@ -2622,4 +2613,16 @@ msgstr "Hier sehen Sie eine Liste der Datensicherungsdateien. Ver&auml;ndern Sie
 #: pages/page_backwpupsettings.php:20
 msgid "Here you can set special things for Mail sending. The settings will be used in jobs for sending backups via email or for sending log files."
 msgstr "Hier k&ouml;nnen Sie die Protokolle der einzelnen Auftr&auml;ge verwalten. Diese k&ouml;nnen angesehen, heruntergeladen oder gel&ouml;scht werden."
+
+#@ backwpup
+#. translators: plugin header field 'PluginURI'
+#: backwpup.php:0
+msgid "http://backwpup.com"
+msgstr "http://backwpup.com/"
+
+#@ backwpup
+#. translators: plugin header field 'Description'
+#: backwpup.php:0
+msgid "Wordpress Backup and more..."
+msgstr "WordPress-Datensicherung und mehr ..."
 
