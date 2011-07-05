@@ -136,18 +136,18 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				<?PHP 	
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
 				echo '<div id="cron-month">';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mday,true),true,false).' name="cronmon[]" value="4" /> '.__('April').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mday,true),true,false).' name="cronmon[]" value="5" /> '.__('May').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mday,true),true,false).' name="cronmon[]" value="6" /> '.__('June').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mday,true),true,false).' name="cronmon[]" value="7" /> '.__('July').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mday,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mday,true),true,false).' name="cronmon[]" value="9" /> '.__('September').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mday,true),true,false).' name="cronmon[]" value="10" /> '.__('October').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mday,true),true,false).' name="cronmon[]" value="4" /> '.__('April','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mday,true),true,false).' name="cronmon[]" value="5" /> '.__('May','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mday,true),true,false).' name="cronmon[]" value="6" /> '.__('June','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mday,true),true,false).' name="cronmon[]" value="7" /> '.__('July','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mday,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mday,true),true,false).' name="cronmon[]" value="9" /> '.__('September','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mday,true),true,false).' name="cronmon[]" value="10" /> '.__('October','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December','backwpup').'<br />';
 				?>
 				</div>
 			</div>
@@ -156,13 +156,13 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				<?PHP 
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$wday,true),true,false).' name="cronwday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
 				echo '<div id="cron-weekday">';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$wday,true),true,false).' name="cronwday[]" value="3" /> '.__('Wednesday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$wday,true),true,false).' name="cronwday[]" value="4" /> '.__('Thursday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$wday,true),true,false).' name="cronwday[]" value="5" /> '.__('Friday').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$wday,true),true,false).' name="cronwday[]" value="6" /> '.__('Saturday').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$wday,true),true,false).' name="cronwday[]" value="3" /> '.__('Wednesday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$wday,true),true,false).' name="cronwday[]" value="4" /> '.__('Thursday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$wday,true),true,false).' name="cronwday[]" value="5" /> '.__('Friday','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$wday,true),true,false).' name="cronwday[]" value="6" /> '.__('Saturday','backwpup').'<br />';
 				?>
 				</div>
 			</div>
@@ -192,13 +192,13 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			<tr>
 			<td><?PHP echo '<input class="radio" type="radio"'.checked(true,is_numeric($wday[0]),false).' name="cronbtype" value="week" />'.__('weekly','backwpup'); ?></td>
 			<td><select name="weekcronwday">
-					<?PHP 	echo '<option '.selected(in_array("0",$wday,true),true,false).'  value="0" />'.__('Sunday').'</option>';
-							echo '<option '.selected(in_array("1",$wday,true),true,false).'  value="1" />'.__('Monday').'</option>'; 
-							echo '<option '.selected(in_array("2",$wday,true),true,false).'  value="2" />'.__('Tuesday').'</option>'; 
-							echo '<option '.selected(in_array("3",$wday,true),true,false).'  value="3" />'.__('Wednesday').'</option>'; 
-							echo '<option '.selected(in_array("4",$wday,true),true,false).'  value="4" />'.__('Thursday').'</option>'; 
-							echo '<option '.selected(in_array("5",$wday,true),true,false).'  value="5" />'.__('Friday').'</option>'; 
-							echo '<option '.selected(in_array("6",$wday,true),true,false).'  value="6" />'.__('Saturday').'</option>'; ?>
+					<?PHP 	echo '<option '.selected(in_array("0",$wday,true),true,false).'  value="0" />'.__('Sunday','backwpup').'</option>';
+							echo '<option '.selected(in_array("1",$wday,true),true,false).'  value="1" />'.__('Monday','backwpup').'</option>'; 
+							echo '<option '.selected(in_array("2",$wday,true),true,false).'  value="2" />'.__('Tuesday','backwpup').'</option>'; 
+							echo '<option '.selected(in_array("3",$wday,true),true,false).'  value="3" />'.__('Wednesday','backwpup').'</option>'; 
+							echo '<option '.selected(in_array("4",$wday,true),true,false).'  value="4" />'.__('Thursday','backwpup').'</option>'; 
+							echo '<option '.selected(in_array("5",$wday,true),true,false).'  value="5" />'.__('Friday','backwpup').'</option>'; 
+							echo '<option '.selected(in_array("6",$wday,true),true,false).'  value="6" />'.__('Saturday','backwpup').'</option>'; ?>
 				</select></td>
 			<td><select name="weekcronhours"><?PHP for ($i=0;$i<24;$i++) {echo '<option '.selected(in_array("$i",$hours,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
 			<td><select name="weekcronminutes"><?PHP for ($i=0;$i<60;$i=$i+5) {echo '<option '.selected(in_array("$i",$minutes,true),true,false).'  value="'.$i.'" />'.$i.'</option>';} ?></select></td>
