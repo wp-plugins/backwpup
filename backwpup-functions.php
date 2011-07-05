@@ -134,8 +134,8 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['showadminbar'])) $cfg['showadminbar']=true;
 	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 99<=$cfg['jobstepretry']) $cfg['jobstepretry']=3;
 	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 99<=$cfg['jobscriptretry']) $cfg['jobscriptretry']=5;
-	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 99<=$cfg['jobscriptruntime']) $cfg['jobscriptruntime']=30;
-	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 999<=$cfg['jobscriptruntimelong']) $cfg['jobscriptruntime']=300;
+	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 100>$cfg['jobscriptruntime']) $cfg['jobscriptruntime']=30;
+	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 1000>$cfg['jobscriptruntimelong']) $cfg['jobscriptruntimelong']=300;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
