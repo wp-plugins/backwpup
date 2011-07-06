@@ -83,6 +83,8 @@ foreach($_SESSION['WORKING']['STEPS'] as $step) {
 		if ($_SESSION['JOB']['activated'])
 			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$_SESSION['JOB']['cron'].'; '.date('D, j M Y H:i',$_SESSION['JOB']['cronnextrun']),E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS,E_USER_NOTICE);
+		if (ini_get('safe_mode'))
+			trigger_error(__('[INFO]: PHP Safe mode is ON!','backwpup'),E_USER_NOTICE);		
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
 		$curlversion=curl_version();
 		trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);

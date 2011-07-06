@@ -246,6 +246,11 @@ function mysql_update() {
 //function for PHP error handling
 function joberrorhandler() {
 	$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
+
+	// if error has been supressed with an @
+    if (error_reporting()==0) 
+        return;
+	
 	$adderrorwarning=false;
 
 	switch ($args[0]) {

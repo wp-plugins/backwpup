@@ -13,7 +13,6 @@ function dest_dropbox() {
 	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 	$_SESSION['WORKING']['STEPDONE']=0;
 	trigger_error($_SESSION['WORKING']['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);
-	need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*1.1);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 	try {
 		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);

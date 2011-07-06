@@ -230,10 +230,8 @@ function backwpup_show_info_td() {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		die('-1');
 	global $wpdb;
-	$jobid=$_POST['jobid'];
 	$mode=$_POST['mode'];
-	$jobs=get_option('backwpup_jobs');
-	$jobvalue=$jobs[$jobid];
+	$jobvalue=backwpup_get_job_vars($_POST['jobid']);
 	if (in_array('FILE',explode('+',$jobvalue['type']))) {
 		$files=backwpup_calc_file_size($jobvalue);
 		echo __("Files Size:","backwpup")." ".backwpup_formatBytes($files['size'])."<br />";

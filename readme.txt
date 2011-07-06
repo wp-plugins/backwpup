@@ -127,6 +127,10 @@ Destinations are:
 4. Backups Manage Page
 
 == Changelog ==
+= 2.0.1 =
+* Zip file creation now faster agin but no stat output
+* serverl bug fixes
+
 = 2.0.0 =
 * PHP Sessions, curl and PHP version 5.2.4 required!
 * Wordpress 3.2 required!

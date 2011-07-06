@@ -105,9 +105,9 @@ function backwpup_contextual_help($help='') {
 
 //On Plugin activate
 function backwpup_plugin_activate() {
-	$jobs=get_option('backwpup_jobs');
-	if (!empty($jobs) and is_array($jobs)) {
-		foreach ($jobs as $jobid => $jobvalue) {
+	$jobsids=array_keys(get_option('backwpup_jobs'));
+	if (!empty($jobsids)) {
+		foreach ($jobsids as $jobid) {
 			//check jobvaules
 			$jobs[$jobid]=backwpup_get_job_vars($jobid);
 		}
@@ -132,10 +132,10 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['mailuser'])) $cfg['mailuser']='';
 	if (!isset($cfg['mailpass'])) $cfg['mailpass']='';
 	if (!isset($cfg['showadminbar'])) $cfg['showadminbar']=true;
-	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 99<=$cfg['jobstepretry']) $cfg['jobstepretry']=3;
-	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 99<=$cfg['jobscriptretry']) $cfg['jobscriptretry']=5;
-	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 100>$cfg['jobscriptruntime']) $cfg['jobscriptruntime']=30;
-	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 1000>$cfg['jobscriptruntimelong']) $cfg['jobscriptruntimelong']=300;
+	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 100<$cfg['jobstepretry'] or empty($cfg['jobstepretry'])) $cfg['jobstepretry']=3;
+	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 100<$cfg['jobscriptretry'] or empty($cfg['jobscriptretry'])) $cfg['jobscriptretry']=5;
+	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 100<$cfg['jobscriptruntime'] or empty($cfg['jobscriptruntime'])) $cfg['jobscriptruntime']=30;
+	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 1000<$cfg['jobscriptruntimelong'] or empty($cfg['jobscriptruntimelong'])) $cfg['jobscriptruntimelong']=300;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
@@ -380,8 +380,12 @@ function backwpup_dashboard_logs_config() {
 
 //Dashboard widget for Jobs
 function backwpup_dashboard_activejobs() {
-	$jobs=(array)get_option('backwpup_jobs');
-	$runningfile['JOBID']='';
+	$jobsids=array_keys(get_option('backwpup_jobs'));
+	if (!empty($jobsids)) {
+		foreach ($jobsids as $jobid) {
+			$jobs[$jobid]=backwpup_get_job_vars($jobid);
+		}
+	}		
 	$runningfile=backwpup_get_working_file();
 	$tmp = Array();
 	foreach($jobs as &$ma)
@@ -390,7 +394,7 @@ function backwpup_dashboard_activejobs() {
 	$count=0;
 	echo '<ul>';
 	foreach ($jobs as $jobid => $jobvalue) {
-		if ($runningfile['JOBID']==$jobvalue["jobid"]) {
+		if (!empty($runningfile['JOBID']) and $runningfile['JOBID']==$jobvalue['jobid']) {
 			$runtime=time()-$jobvalue['starttime'];
 			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
 			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
@@ -400,7 +404,7 @@ function backwpup_dashboard_activejobs() {
 			$count++;
 		} elseif ($jobvalue['activated']) {
 			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
-			echo ' <a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
+			echo ' <a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue['jobid'], 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
 			echo "</li>";
 			$count++;
 		}
