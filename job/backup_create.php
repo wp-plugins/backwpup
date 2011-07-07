@@ -13,7 +13,7 @@ function backup_create() {
 		$_SESSION['WORKING']['STEPDONE']=0;
 		
 	if (strtolower($_SESSION['JOB']['fileformart'])==".zip") { //Zip files
-		if (!class_exists('ZipArchive')) {  //use php zip lib
+		if (class_exists('ZipArchive')) {  //use php zip lib
 			trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip file...','backwpup'),E_USER_NOTICE);
 			$zip = new ZipArchive();
 			if ($res=$zip->open($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
@@ -37,11 +37,12 @@ function backup_create() {
 			if (is_array($_SESSION['WORKING']['FILELIST'][0])) {
 				trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-				need_free_memory(10485760); //10MB free memory for zip
+				need_free_memory(2097152); //free memory for file list
 				for ($i=0;$i<count($_SESSION['WORKING']['FILELIST']);$i++) {
 					$files[$i][79001]=$_SESSION['WORKING']['FILELIST'][$i]['FILE'];
 					$files[$i][79003]=$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'];
 				}
+				need_free_memory(11534336); //11MB free memory for zip
 				@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 				if (0==$zipbackupfile->create($files,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);

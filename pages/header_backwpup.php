@@ -63,7 +63,7 @@ if (!empty($doaction)) {
 		check_admin_referer('abort-job');
 		$runningfile=backwpup_get_working_file();
 		unlink(backwpup_get_working_dir().'/.running'); //delete runnig file
-		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
+		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$runningfile['ERROR']++;
 		$fd=fopen($runningfile['LOGFILE'],'r+');

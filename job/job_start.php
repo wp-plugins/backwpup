@@ -83,6 +83,15 @@ function backwpup_jobstart($jobid='') {
 	$_SESSION['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']=BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY;
 	//Set config data
 	$_SESSION['CFG']=get_option('backwpup');
+	//Check working times
+	if (empty($_SESSION['CFG']['jobstepretry']) or !is_int($_SESSION['CFG']['jobstepretry']) or $_SESSION['CFG']['jobstepretry']>100)
+		$_SESSION['CFG']['jobstepretry']=3;
+	if (empty($_SESSION['CFG']['jobscriptretry']) or !is_int($_SESSION['CFG']['jobscriptretry']) or $_SESSION['CFG']['jobscriptretry']>100)
+		$_SESSION['CFG']['jobscriptretry']=5;
+	if (empty($_SESSION['CFG']['jobscriptruntime']) or !is_int($_SESSION['CFG']['jobscriptruntime']) or $_SESSION['CFG']['jobscriptruntime']>100)
+		$_SESSION['CFG']['jobscriptruntime']=30;
+	if (empty($_SESSION['CFG']['jobscriptruntimelong']) or !is_int($_SESSION['CFG']['jobscriptruntimelong']) or $_SESSION['CFG']['jobscriptruntimelong']>1000)
+		$_SESSION['CFG']['jobscriptruntimelong']=300;
 	//Set job data
 	$_SESSION['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data

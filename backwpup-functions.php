@@ -165,17 +165,17 @@ function backwpup_api($active=false) {
 		$active='Y';
 	else
 		$active='N';
-	$ch=curl_init();
-	curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
-	curl_setopt($ch,CURLOPT_POST,true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>get_option('siteurl'),'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
-	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-	curl_exec($ch);
-	curl_close($ch);
+	$ch=@curl_init();
+	@curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
+	@curl_setopt($ch,CURLOPT_POST,true);
+	@curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>get_option('siteurl'),'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
+	@curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
+	@curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+	@curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+	@curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+	@curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+	@curl_exec($ch);
+	@curl_close($ch);
 }
 
 //add edit setting to plugins page
@@ -385,7 +385,10 @@ function backwpup_dashboard_activejobs() {
 		foreach ($jobsids as $jobid) {
 			$jobs[$jobid]=backwpup_get_job_vars($jobid);
 		}
-	}		
+	} else {
+		echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
+		return;
+	}
 	$runningfile=backwpup_get_working_file();
 	$tmp = Array();
 	foreach($jobs as &$ma)
@@ -1033,7 +1036,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
 		$jobsettings['dropedir']='';
-	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['dropedir']))));
+	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',str_replace(' ','_',trim($jobsettings['dropedir'])))));
 	if (substr($jobsettings['dropedir'],0,1)=='/')
 		$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);
 	

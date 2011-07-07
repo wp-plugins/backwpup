@@ -112,7 +112,7 @@ function _file_list( $folder = '', $levels = 100, $excludedirs=array()) {
 
 function _get_exclude_dirs($folder) {
 	$excludedir=array();
-	$excludedir[]=rtrim(str_replace('\\','/',sys_get_temp_dir()),'/').'/'; //exclude temp
+	$excludedir[]=get_working_dir(); //exclude working dir
 	$excludedir[]=$_SESSION['CFG']['dirlogs'];
 	if (false !== strpos($_SESSION['WP']['ABSPATH'],$folder) and $_SESSION['WP']['ABSPATH']!=$folder)
 		$excludedir[]=$_SESSION['WP']['ABSPATH'];
@@ -125,10 +125,9 @@ function _get_exclude_dirs($folder) {
 	if (false !== strpos($_SESSION['WP']['WP_UPLOAD_DIR'],$folder) and $_SESSION['WP']['WP_UPLOAD_DIR']!=$folder)
 		$excludedir[]=$_SESSION['WP']['WP_UPLOAD_DIR'];
 	//Exclude Backup dirs
-	$jobs=(array)get_option('backwpup_jobs');
-	foreach($jobs as $jobsvale) {
-		if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-			$excludedir[]=$jobsvale['backupdir'];
+	foreach((array)get_option('backwpup_jobs') as $jobsvalue) {
+		if (!empty($jobsvalue['backupdir']) and $jobsvalue['backupdir']!='/')
+			$excludedir[]=$jobsvalue['backupdir'];
 	}
 	return $excludedir;
 }

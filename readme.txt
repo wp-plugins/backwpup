@@ -127,6 +127,12 @@ Destinations are:
 4. Backups Manage Page
 
 == Changelog ==
+= 2.0.2 =
+* fixed bug Class 'ZipArchive' not found now
+* ficed bug in chnge logfile folder
+* replase spaces bei _ in dropboxfolder
+* some more bug fixes
+
 = 2.0.1 =
 * Zip file creation now faster agin but no stat output
 * serverl bug fixes
