@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: Wordpress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.0.3
+Version: 2.0.2
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
