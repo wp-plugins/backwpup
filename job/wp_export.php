@@ -8,17 +8,28 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 function wp_export() {
 	$_SESSION['WORKING']['STEPTODO']=1;
 	trigger_error($_SESSION['WORKING']['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
-	need_free_memory(1048576); //1MB free memory
+	need_free_memory(10485760); //10MB free memory
 	if (function_exists('curl_exec')) {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, substr($_SESSION['STATIC']['JOBRUNURL'],0,-11).'wp_export_generate.php');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		if (is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+		}
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
 		$return=curl_exec($ch);
-		if (!$return) {
-			trigger_error(__('cURL:','backwpup').' '.curl_error($ch),E_USER_ERROR);
+		$status=curl_getinfo($ch);
+		if ($status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
+			if (0!=curl_errno($ch)) 
+				trigger_error(__('cURL:','backwpup').' ('.curl_errno($ch).') '.curl_error($ch),E_USER_ERROR);
+			else 
+				trigger_error(__('cURL:','backwpup').' ('.$status['http_code'].')  Invalid response.',E_USER_ERROR);	
 		} else {
 			file_put_contents($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
 		}

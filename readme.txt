@@ -127,6 +127,12 @@ Destinations are:
 4. Backups Manage Page
 
 == Changelog ==
+= 2.0.3 =
+* Reimplemt deletion of backups in a folder
+* use now cookies for transmit Session IDs.
+* more error output on XML export
+*
+
 = 2.0.2 =
 * fixed bug Class 'ZipArchive' not found now
 * ficed bug in chnge logfile folder

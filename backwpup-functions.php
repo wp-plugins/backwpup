@@ -182,7 +182,7 @@ function backwpup_api($active=false) {
 function backwpup_plugin_options_link($links) {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return $links;
-	$settings_link='<a href="'.admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings') . '</a>';
+	$settings_link='<a href="'.admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings','backwpup') . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
 }
@@ -192,9 +192,9 @@ function backwpup_plugin_links($links, $file) {
 	if (!current_user_can('install_plugins'))
 		return $links;
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
-		$links[] = '<a href="http://wordpress.org/extend/plugins/backwpup/faq/" target="_blank">' . __('FAQ') . '</a>';
-		$links[] = '<a href="http://wordpress.org/tags/backwpup/" target="_blank">' . __('Support') . '</a>';
-		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=daniel%40huesken-net%2ede&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;currency_code=EUR&amp;lc=DE&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate') . '</a>';
+		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
+		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
+		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=mail%40backwpup%2ecom&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;
 }
@@ -222,6 +222,10 @@ function backwpup_cron() {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
+			curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$infile['SID'].'; path=/');
+			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);

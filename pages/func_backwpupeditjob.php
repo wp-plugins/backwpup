@@ -92,10 +92,10 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 		backwpup_get_cron_text(array('cronstamp'=>$jobvalue['cron']));
 		?>
 		<br />
-		<b><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?></b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<b><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?></b><br /><br />
 		<?PHP 	echo '<input class="radio" type="radio"'.checked("advanced",$jobvalue['cronselect'],false).' name="cronselect" value="advanced" />'.__('advanced','backwpup').'&nbsp;';
 				echo '<input class="radio" type="radio"'.checked("basic",$jobvalue['cronselect'],false).' name="cronselect" value="basic" />'.__('basic','backwpup');?>
-		<br />
+		<br /><br />
 		<div id="schedadvanced" <?PHP if ($jobvalue['cronselect']!='advanced') echo 'style="display:none;"';?>>
 			<div id="cron-min-box">
 				<b><?PHP _e('Minutes: ','backwpup'); ?></b><br />
@@ -220,7 +220,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 		<?PHP
 }
 
-function backwpup_jobedit_metabox_destfile($jobvalue) {
+function backwpup_jobedit_metabox_destfolder($jobvalue) {
 	?>
 	<b><?PHP _e('Full Path to folder for Backup Files:','backwpup'); ?></b><br />
 	<input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobvalue['backupdir'];?>" class="large-text" /><br />
@@ -464,7 +464,7 @@ function backwpup_get_cron_text($args='') {
 	if (2147483647==$nextrun) {
 		echo '<span style="color:red;">'.__('ATTENTION: Can\'t calculate cron!!!','backwpup').'</span><br />';
 	} else {
-		_e('Next runtime:'); echo ' <b>'.date('D, j M Y H:i',backwpup_cron_next($cronstamp)).'</b>';
+		_e('Next runtime:','backwpup'); echo ' <b>'.date_i18n('D, j M Y, H:i',backwpup_cron_next($cronstamp)).'</b>';
 	}
 	echo "</div>";	
 	if ($ajax)

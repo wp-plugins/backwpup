@@ -144,7 +144,8 @@ function maintenance_mode($enable = false) {
 }
 
 function curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
-	$_SESSION['WORKING']['STEPDONE']=$uploaded;
+	if ($_SESSION['WORKING']['STEPTODO']>10)
+		$_SESSION['WORKING']['STEPDONE']=$uploaded;
 	update_working_file();
 	return(0);
 }
@@ -519,6 +520,7 @@ function job_shutdown() {
 		fclose($fd);
 	}
 	//Close session
+	$backwpupsid=session_id();
 	session_write_close();
 	//Excute jobrun again
 	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'/.running'))
@@ -526,6 +528,10 @@ function job_shutdown() {
 	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path=/');
+	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);

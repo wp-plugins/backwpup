@@ -32,6 +32,8 @@ function backwpup_jobstart($jobid='') {
 	session_set_cookie_params(0);
 	// start session
 	session_start();
+	//get session id
+	$backwpupsid=session_id();
 	//clean session
 	$_SESSION = array();
 	//Set needed WP vars to Session
@@ -191,7 +193,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//write working file
-	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0)));
+	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>$backwpupsid,'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0)));
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$_SESSION['JOB']['jobid']]['starttime']=time(); //set start time for job
@@ -261,6 +263,7 @@ function backwpup_jobstart($jobid='') {
 	if (in_array('DB',$_SESSION['STATIC']['TODO']) or in_array('WPEXP',$_SESSION['STATIC']['TODO']) or in_array('FILE',$_SESSION['STATIC']['TODO'])) {
 		$_SESSION['WORKING']['STEPS'][]='BACKUP_CREATE';		
 		//ADD Destinations
+		$_SESSION['WORKING']['STEPS'][]='DEST_FOLDER';
 		$_SESSION['WORKING']['STEPS'][]='DEST_MAIL';
 		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 		foreach($dests as $dest)
@@ -279,6 +282,10 @@ function backwpup_jobstart($jobid='') {
 	//Run job
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path=/');
+	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);

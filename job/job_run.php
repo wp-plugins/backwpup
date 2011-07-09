@@ -9,13 +9,6 @@ session_cache_limiter('nocache');
 session_cache_expire(30);
 // give the session a name
 session_name('BackWPupSession');
-//check and set session id must bevor session_start
-//read runningfile with SID
-if ($runningfile=get_working_file()) {
-	session_id($runningfile['SID']);//Set session id
-} else {
-	die();
-}
 //delete session cookie
 session_set_cookie_params(0);
 // start session
@@ -54,6 +47,12 @@ if ($_SESSION['WP']['WP_DEBUG'])
 	set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 else
 	set_error_handler('joberrorhandler',E_ALL & ~E_NOTICE);
+//Ceck Session ID
+$runningfile=get_working_file();
+if ($runningfile['SID']!=session_id()) {
+	trigger_error(__('Wrong Session ID!','backwpup'),E_USER_ERROR);
+	job_end();
+}
 //check max script execution tme
 if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1')
 	trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);

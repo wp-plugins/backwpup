@@ -133,7 +133,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$runtime=time()-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($jobvalue['activated']) {
-						$r .=  date(get_option('date_format'),$jobvalue['cronnextrun']).'<br />'. date(get_option('time_format'),$jobvalue['cronnextrun']);
+						$r .=  date_i18n(get_option('date_format'),$jobvalue['cronnextrun']).'<br />'. date_i18n(get_option('time_format'),$jobvalue['cronnextrun']);
 					} else {
 						$r .= __('Inactive','backwpup');
 					}
@@ -249,7 +249,7 @@ function backwpup_show_info_td() {
 				$dbsize['rows']=$dbsize['rows']+$tablevalue["Rows"];
 			}
 		}
-		echo  "DB Size: ".backwpup_formatBytes($dbsize['size'])."<br />";
+		echo __("DB Size:","backwpup")." ".backwpup_formatBytes($dbsize['size'])."<br />";
 		if ( 'excerpt' == $mode ) {
 			echo  __("DB Tables:","backwpup")." ".$dbsize['num']."<br />";
 			echo  __("DB Rows:","backwpup")." ".$dbsize['rows']."<br />";
