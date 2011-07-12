@@ -17,7 +17,7 @@ function wp_export() {
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-		if (is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+		if (defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);

@@ -28,7 +28,7 @@ function dest_s3() {
 				$storage=AmazonS3::STORAGE_STANDARD;
 			//set surl Prozess bar
 			$curlops=array();
-			if (function_exists('curl_progresscallback') and is_numeric(CURLOPT_PROGRESSFUNCTION))
+			if (defined('CURLOPT_PROGRESSFUNCTION'))
 				$curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
 			else 
 				@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);

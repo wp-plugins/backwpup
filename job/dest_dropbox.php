@@ -40,6 +40,7 @@ function dest_dropbox() {
 		$dropbox->setProgressFunction('curl_progresscallback');
 		// put the file 
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
+		@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {
 			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];

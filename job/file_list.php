@@ -112,7 +112,7 @@ function _file_list( $folder = '', $levels = 100, $excludedirs=array()) {
 
 function _get_exclude_dirs($folder) {
 	$excludedir=array();
-	$excludedir[]=get_working_dir(); //exclude working dir
+	$excludedir[]=backwpup_get_temp(); //exclude working dir
 	$excludedir[]=$_SESSION['CFG']['dirlogs'];
 	if (false !== strpos($_SESSION['WP']['ABSPATH'],$folder) and $_SESSION['WP']['ABSPATH']!=$folder)
 		$excludedir[]=$_SESSION['WP']['ABSPATH'];

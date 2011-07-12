@@ -5,6 +5,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 	header("Status: 404 Not Found");
 	die();
 }
+require_once(dirname(__FILE__).'/../libs/backwpup_get_temp.php');
 
 function __($message,$domain='backwpup') {
 	$msgid=md5($message);
@@ -150,29 +151,8 @@ function curl_progresscallback($download_size, $downloaded, $upload_size, $uploa
 	return(0);
 }
 
-function get_working_dir() {
-	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
-	$tempdir=getenv('TMP');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=getenv('TEMP');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=getenv('TMPDIR');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=ini_get('upload_tmp_dir');
-	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=sys_get_temp_dir();
-	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
-		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
-	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
-	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
-		return $tempdir.$folder;
-	} else {
-		return false;
-	}
-}
-
 function get_working_file() {
-	$tempdir=get_working_dir();
+	$tempdir=backwpup_get_temp();
 	if (is_file($tempdir.'.running')) {
 		if ($runningfile=file_get_contents($tempdir.'.running'))
 			return unserialize(trim($runningfile));
@@ -184,7 +164,7 @@ function get_working_file() {
 }
 
 function delete_working_file() {
-	$tempdir=get_working_dir();
+	$tempdir=backwpup_get_temp();
 	if (is_file($tempdir.'.running')) {
 		unlink($tempdir.'.running');
 		return true;
@@ -528,8 +508,8 @@ function job_shutdown() {
 	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
-	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path=/');
+	//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+	//curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path='.ini_get('session.cookie_path'));
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);

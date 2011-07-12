@@ -1231,7 +1231,7 @@ class CF_Http
             curl_setopt($ch, CURLOPT_PUT, 1);
             curl_setopt($ch, CURLOPT_READFUNCTION, array(&$this, '_read_cb'));
 			/* start Backwpup */
-			if (function_exists('curl_progresscallback')  and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+			if (function_exists('curl_progresscallback')  and defined('CURLOPT_PROGRESSFUNCTION')) {
 				curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 				curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
 				curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);

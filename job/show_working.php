@@ -1,4 +1,6 @@
 <?PHP
+require_once(dirname(__FILE__).'/../libs/backwpup_get_temp.php');
+
 function backwpup_read_logfile($logfile) {
 	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')
 		$logfiledata=gzfile($logfile);
@@ -23,33 +25,12 @@ function backwpup_read_logfile($logfile) {
 }
 
 function backwpup_get_working_file() {
-	$tempdir=backwpup_get_working_dir();
+	$tempdir=backwpup_get_temp();
 	if (is_file($tempdir.'.running')) {
 		if ($runningfile=file_get_contents($tempdir.'.running'))
 			return unserialize(trim($runningfile));
 		else
 			return false;
-	} else {
-		return false;
-	}
-}
-
-function backwpup_get_working_dir() {
-	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
-	$tempdir=getenv('TMP');
-	if (!$tempdir)
-		$tempdir=getenv('TEMP');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=getenv('TMPDIR');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=ini_get('upload_tmp_dir');
-	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=sys_get_temp_dir();
-	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
-		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
-	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';	
-	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
-		return $tempdir.$folder;
 	} else {
 		return false;
 	}
@@ -92,7 +73,7 @@ if (substr(trim($_POST['logfile']),-3)!='.gz' and substr(trim($_POST['logfile'])
 	
 $log='';
 if (is_file(trim($_POST['logfile']))) {
-	if (is_file(backwpup_get_working_dir().'.running')) {
+	if (is_file(backwpup_get_temp().'.running')) {
 		if ($infile=backwpup_get_working_file()) {
 			$warnings=$infile['WARNING'];
 			$errors=$infile['ERROR'];

@@ -218,7 +218,7 @@ class Dropbox {
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-		if (function_exists($this->ProgressFunction) and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);

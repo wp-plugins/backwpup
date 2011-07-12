@@ -32,6 +32,7 @@ function dest_gstorage() {
 				$content_type='application/x-compressed';		
 			//Transfer Backup to Google Storrage
 			trigger_error(__('Upload to Google storage now started ... ','backwpup'),E_USER_NOTICE);
+			@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 			$upload=$googlestorage->putObject($_SESSION['JOB']['GStorageBucket'],$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'private',$content_type);
 			if (empty($upload))  {
 				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);

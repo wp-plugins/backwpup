@@ -3,7 +3,7 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=mail%40backwpup%2ecom&item_name=BackWPup%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2
-Tested up to: 3.2
+Tested up to: 3.2.1
 Stable tag: 2.0.2
 
 Backup your WordPress Database and Files, and more!
@@ -129,7 +129,7 @@ Destinations are:
 == Changelog ==
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder
-* use now cookies for transmit Session IDs.
+* Fixed 'Black Screen'
 * more error output on XML export
 *
 

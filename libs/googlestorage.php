@@ -239,7 +239,7 @@ class GoogleStorage {
 						curl_setopt($ch, CURLOPT_PUT,true);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 					}
-					if (function_exists($this->ProgressFunction)  and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+					if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 						curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 						curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 						curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);

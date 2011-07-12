@@ -88,5 +88,7 @@ if (backwpup_env_checks()) {
 	//test if cron active
 	if (!(wp_next_scheduled('backwpup_cron')))
 		wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
+	//get temp dir function
+	require_once(dirname(__FILE__).'/libs/backwpup_get_temp.php');
 }
 ?>

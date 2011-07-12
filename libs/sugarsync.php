@@ -175,7 +175,7 @@ class SugarSync {
 		// set headers
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$headers);
 		curl_setopt($curl, CURLINFO_HEADER_OUT, true);
-		if (function_exists($this->ProgressFunction)  and is_numeric(CURLOPT_PROGRESSFUNCTION)) {
+		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);

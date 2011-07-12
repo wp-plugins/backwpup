@@ -5,6 +5,8 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+backwpup_send_no_cache_header(); //no chache
+
 if (isset($_GET['action']) and $_GET['action']=='runnow' and !empty($_GET['jobid'])) {
 	$jobid = (int) $_GET['jobid'];
 	check_admin_referer('runnow-job_'.$jobid);

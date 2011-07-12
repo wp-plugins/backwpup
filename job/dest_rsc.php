@@ -60,6 +60,7 @@ function dest_rsc() {
 		if ($_SESSION['JOB']['fileformart']=='.tar.bz2')
 			$backwpupbackup->content_type='application/x-compressed';			
 		trigger_error(__('Upload to RSC now started ... ','backwpup'),E_USER_NOTICE);
+		@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 		if ($backwpupbackup->load_from_filename($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])) {
 			$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 			trigger_error(__('Backup File transferred to RSC://','backwpup').$_SESSION['JOB']['rscContainer'].'/'.$_SESSION['JOB']['rscdir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);

@@ -18,7 +18,7 @@ function backwpup_jobstart($jobid='') {
 			_e("A job already running!","backwpup");
 			return false;
 		} else { //delete working file job thing it not works longer.
-			unlink(backwpup_get_working_dir().'/.running');
+			unlink(backwpup_get_temp().'/.running');
 			sleep(3);
 		}
 	}
@@ -53,6 +53,17 @@ function backwpup_jobstart($jobid='') {
 		$_SESSION['WP']['SITEURL']=trailingslashit(get_option('siteurl'));
 	$_SESSION['WP']['TIMEDIFF']=current_time('timestamp')-time();
 	$_SESSION['WP']['WPLANG']=WPLANG;
+	//timezone
+	$_SESSION['WP']['GMTOFFSET']=get_option('gmt_offset');
+	$_SESSION['WP']['TIMEZONE']=get_option('timezone_string');
+	if (empty($_SESSION['WP']['TIMEZONE'])) { // Create a UTC+- zone if no timezone string exists
+		if ( 0 == $_SESSION['WP']['GMTOFFSET'] )
+			$_SESSION['WP']['TIMEZONE'] = 'UTC+0';
+		elseif ($_SESSION['WP']['GMTOFFSET'] < 0)
+			$_SESSION['WP']['TIMEZONE'] = 'UTC' . $_SESSION['WP']['GMTOFFSET'];
+		else
+			$_SESSION['WP']['TIMEZONE'] = 'UTC+' . $_SESSION['WP']['GMTOFFSET'];
+	}
 	//WP folder
 	$_SESSION['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
 	$_SESSION['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
@@ -99,21 +110,9 @@ function backwpup_jobstart($jobid='') {
 	//STATIC data
 	$_SESSION['STATIC']['JOBRUNURL']=BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php';
 	//get and create temp dir
-	$tempdir=getenv('TMP');
-	if (!$tempdir)
-		$tempdir=getenv('TEMP');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=getenv('TMPDIR');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=ini_get('upload_tmp_dir');
-	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=sys_get_temp_dir();
-	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
-		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
-	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
-	$_SESSION['STATIC']['TEMPDIR']=$tempdir.'backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/'))),8,16).'/';
+	$_SESSION['STATIC']['TEMPDIR']=backwpup_get_temp();
 	if (!is_dir($_SESSION['STATIC']['TEMPDIR'])) {
-		if (!mkdir($_SESSION['STATIC']['TEMPDIR'],0755,true)) {
+		if (!mkdir(rtrim($_SESSION['STATIC']['TEMPDIR'],'/'),0777,true)) {
 			sprintf(__('Can not create temp folder: %1$s','backwpup'),$_SESSION['STATIC']['TEMPDIR']);
 			return false;
 		}		
@@ -146,7 +145,7 @@ function backwpup_jobstart($jobid='') {
 	}
 	$_SESSION['CFG']['dirlogs']=rtrim(str_replace('\\','/',$_SESSION['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($_SESSION['CFG']['dirlogs'])) {
-		if (!mkdir($_SESSION['CFG']['dirlogs'],0755,true)) {
+		if (!mkdir(rtrim($_SESSION['CFG']['dirlogs'],'/'),0777,true)) {
 			sprintf(__('Can not create folder for log files: %1$s','backwpup'),$_SESSION['CFG']['dirlogs']);
 			return false;
 		}
@@ -219,7 +218,7 @@ function backwpup_jobstart($jobid='') {
 			$_SESSION['JOB']['backupdir']=rtrim(str_replace('\\','/',$_SESSION['JOB']['backupdir']),'/').'/'; 
 			//create backup dir if it not exists
 			if (!is_dir($_SESSION['JOB']['backupdir'])) {
-				if (!mkdir($_SESSION['JOB']['backupdir'],0755,true)) {
+				if (!mkdir(rtim($_SESSION['JOB']['backupdir'],'/'),0777,true)) {
 					sprintf(__('Can not create folder for backup files: %1$s','backwpup'),$_SESSION['JOB']['backupdir']);
 					return false;
 				}
@@ -282,8 +281,8 @@ function backwpup_jobstart($jobid='') {
 	//Run job
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
-	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path=/');
+	//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+	//curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path='.ini_get('session.cookie_path'));
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);

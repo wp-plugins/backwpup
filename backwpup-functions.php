@@ -222,8 +222,8 @@ function backwpup_cron() {
 		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
-			curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$infile['SID'].'; path=/');
+			//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+			//curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$infile['SID'].'; path='.ini_get('session.cookie_path'));
 			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
@@ -447,13 +447,8 @@ function backwpup_add_adminbar() {
 	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
-//turn cache off
-function backwpup_meta_no_cache() {
-	echo "<meta http-equiv=\"expires\" content=\"0\" />\n";
-	echo "<meta http-equiv=\"pragma\" content=\"no-cache\" />\n";
-	echo "<meta http-equiv=\"cache-control\" content=\"no-cache\" />\n";
-}
 
+//turn cache off
 function backwpup_send_no_cache_header() {
 	header("Expires: 0");
 	header("Cache-Control: no-cache, must-revalidate");
@@ -493,7 +488,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	$cfg=get_option('backwpup'); //Load Settings
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
-	$excludedir[]=rtrim(str_replace('\\','/',backwpup_get_working_dir()),'/').'/'; //exclude temp
+	$excludedir[]=rtrim(str_replace('\\','/',backwpup_get_temp()),'/').'/'; //exclude temp
 	$excludedir[]=rtrim(str_replace('\\','/',$cfg['dirlogs']),'/').'/'; //exclude logfiles
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
@@ -643,29 +638,8 @@ function backwpup_cron_next($cronstring) {
 	return 2147483647;
 }
 
-function backwpup_get_working_dir() {
-	$folder='backwpup_'.substr(md5(str_replace('\\','/',realpath(rtrim(basename(__FILE__),'/\\').'/job/'))),8,16).'/';
-	$tempdir=getenv('TMP');
-	if (!$tempdir)
-		$tempdir=getenv('TEMP');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=getenv('TMPDIR');
-	if (!$tempdir or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=ini_get('upload_tmp_dir');
-	if (!$tempdir or empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
-		$tempdir=sys_get_temp_dir();
-	if (is_readable(dirname(__FILE__).'/../.backwpuptempfolder'))
-		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../.backwpuptempfolder',false,NULL,0,255));
-	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
-	if (is_dir($tempdir.$folder) and is_writable($tempdir.$folder)) {
-		return $tempdir.$folder;
-	} else {
-		return false;
-	}
-}
-
 function backwpup_get_working_file() {
-	$tempdir=backwpup_get_working_dir();
+	$tempdir=backwpup_get_temp();
 	if (is_file($tempdir.'.running')) {
 		if ($runningfile=file_get_contents($tempdir.'.running'))
 			return unserialize(trim($runningfile));
@@ -685,7 +659,7 @@ function backwpup_env_checks() {
 		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or heiger needed!','backwpup')) . '<br />';
 		$checks=false;
 	}
-	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version sys_get_temp_dir
+	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 
 		$message.=__('- PHP 5.2.4 or higher needed!','backwpup') . '<br />';
 		$checks=false;
 	}
