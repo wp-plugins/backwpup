@@ -131,7 +131,7 @@ Destinations are:
 * Reimplemt deletion of backups in a folder
 * Fixed 'Black Screen'
 * more error output on XML export
-*
+* satus on pcl zip create is back and use off the wordpress class
 
 = 2.0.2 =
 * fixed bug Class 'ZipArchive' not found now

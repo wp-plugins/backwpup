@@ -23,7 +23,9 @@ function backup_create() {
 					$_SESSION['WORKING']['STEPDONE']++;
 					update_working_file();
 				}
-				$zip->close();
+				if ($zip->status>0)
+					trigger_error(__('Zip Status:','backwpup').' '.$zip->status ,E_USER_ERROR);
+				$res2=$zip->close();
 				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
 				$_SESSION['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
 			} else {
@@ -31,26 +33,23 @@ function backup_create() {
 			}
 		} else { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $_SESSION['STATIC']['TEMPDIR']);
-			if (!class_exists('PclZip'))
-				require_once(dirname(__FILE__).'/../libs/pclzip.lib.php');
+			require_once($_SESSION['WP']['ABSPATH'].'wp-admin/includes/class-pclzip.php');
 			//Create Zip File
 			if (is_array($_SESSION['WORKING']['FILELIST'][0])) {
 				trigger_error($_SESSION['WORKING']['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
 				need_free_memory(2097152); //free memory for file list
-				for ($i=0;$i<count($_SESSION['WORKING']['FILELIST']);$i++) {
+				for ($i=$_SESSION['WORKING']['STEPDONE'];$i<$_SESSION['WORKING']['STEPTODO'];$i++) {
 					$files[$i][79001]=$_SESSION['WORKING']['FILELIST'][$i]['FILE'];
 					$files[$i][79003]=$_SESSION['WORKING']['FILELIST'][$i]['OUTFILE'];
 				}
 				need_free_memory(11534336); //11MB free memory for zip
-				@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
-				if (0==$zipbackupfile->create($files,PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
+				if (0==$zipbackupfile->create($files,PCLZIP_CB_POST_ADD, '_pclzipPostAddCallBack',PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
 					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
 				} else {
-					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 					$_SESSION['WORKING']['STEPDONE']=count($_SESSION['WORKING']['FILELIST']);
-					update_working_file();
 					unset($files);
+					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
 				}
 			}
 		}
@@ -176,5 +175,14 @@ function backup_create() {
 	$_SESSION['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
 	if ($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))
 		trigger_error(sprintf(__('Backup archive file size is %1s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
+}
+
+
+function _pclzipPostAddCallBack($p_event, &$p_header) {
+	if ($p_header['status'] != 'ok') {
+		trigger_error(str_replace('%d',$p_header['status'],__('PCL ZIP Error %d on file:','backwpup')).' '.$p_header['filename'],E_USER_ERROR);
+	} 
+	$_SESSION['WORKING']['STEPDONE']++;
+	update_working_file();
 }
 ?>

@@ -105,7 +105,7 @@ function backwpup_contextual_help($help='') {
 
 //On Plugin activate
 function backwpup_plugin_activate() {
-	$jobsids=array_keys(get_option('backwpup_jobs'));
+	$jobsids=array_keys((array)get_option('backwpup_jobs'));
 	if (!empty($jobsids)) {
 		foreach ($jobsids as $jobid) {
 			//check jobvaules
@@ -384,7 +384,7 @@ function backwpup_dashboard_logs_config() {
 
 //Dashboard widget for Jobs
 function backwpup_dashboard_activejobs() {
-	$jobsids=array_keys(get_option('backwpup_jobs'));
+	$jobsids=array_keys((array)get_option('backwpup_jobs'));
 	if (!empty($jobsids)) {
 		foreach ($jobsids as $jobid) {
 			$jobs[$jobid]=backwpup_get_job_vars($jobid);

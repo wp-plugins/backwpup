@@ -15,7 +15,7 @@ function backwpup_get_temp() {
 		$tempdir=sys_get_temp_dir();
 	if (empty($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
 		$tempdir=$openbasedir[0];
-	if (is_readable(dirname(__FILE__).'/../.backwpuptempfolder'))
+	if (is_readable(dirname(__FILE__).'/../../.backwpuptempfolder'))
 		$tempdir=trim(file_get_contents(dirname(__FILE__).'/../../.backwpuptempfolder',false,NULL,0,255));
 	$tempdir=str_replace('\\','/',realpath(rtrim($tempdir,'/'))).'/';
 	return $tempdir.$tmpbackwpup;

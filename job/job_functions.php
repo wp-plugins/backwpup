@@ -191,9 +191,9 @@ function update_working_file() {
 		mysql_update();
 		if (function_exists('posix_getpid'))
 			$pid=posix_getpid();
-		$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'/.running');
+		$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
-		file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
+		file_put_contents($_SESSION['STATIC']['TEMPDIR'].'.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
 		$runmicrotime=microtime();
 	}
 	return true;
@@ -295,7 +295,7 @@ function joberrorhandler() {
 	}
 
 	//write working file
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'/.running'))
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.running'))
 		update_working_file();
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
@@ -449,9 +449,10 @@ function job_end() {
 
 	$_SESSION['WORKING']['STEPDONE']=1;
 	$_SESSION['WORKING']['STEPSDONE'][]='JOB_END'; //set done
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'/.running')) {
+	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.running')) {
 		update_working_file();
-		unlink($_SESSION['STATIC']['TEMPDIR'].'/.running');
+		unlink($_SESSION['STATIC']['TEMPDIR'].'.running');
+		rmdir($_SESSION['STATIC']['TEMPDIR']);
 	}
 	//Destroy session
 	$_SESSION = array();
@@ -465,7 +466,7 @@ function job_shutdown() {
 	if (empty($_SESSION['STATIC']['LOGFILE'])) //nothing on empy session
 		return;
 	$_SESSION['WORKING']['RESTART']++;
-	if ($_SESSION['WORKING']['RESTART']>=$_SESSION['CFG']['jobscriptretry'] and file_exists($_SESSION['STATIC']['TEMPDIR'].'/.running')) {  //only x restarts allowed
+	if ($_SESSION['WORKING']['RESTART']>=$_SESSION['CFG']['jobscriptretry'] and file_exists($_SESSION['STATIC']['TEMPDIR'].'.running')) {  //only x restarts allowed
 		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
 		$_SESSION['WORKING']['ERROR']++;
 		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
@@ -503,7 +504,7 @@ function job_shutdown() {
 	$backwpupsid=session_id();
 	session_write_close();
 	//Excute jobrun again
-	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'/.running'))
+	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
 		return;
 	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	$ch=curl_init();

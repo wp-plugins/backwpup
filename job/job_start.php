@@ -18,7 +18,7 @@ function backwpup_jobstart($jobid='') {
 			_e("A job already running!","backwpup");
 			return false;
 		} else { //delete working file job thing it not works longer.
-			unlink(backwpup_get_temp().'/.running');
+			unlink(backwpup_get_temp().'.running');
 			sleep(3);
 		}
 	}
@@ -192,7 +192,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$_SESSION['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//write working file
-	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'/.running',serialize(array('SID'=>$backwpupsid,'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0)));
+	file_put_contents($_SESSION['STATIC']['TEMPDIR'].'.running',serialize(array('SID'=>$backwpupsid,'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'WARNING'=>0,'ERROR'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0)));
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$_SESSION['JOB']['jobid']]['starttime']=time(); //set start time for job
