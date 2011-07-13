@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: Wordpress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.0.3
+Version: 2.0.4
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -39,7 +39,7 @@ if (!defined('ABSPATH')) {
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '2.0.3');
+define('BACKWPUP_VERSION', '2.0.4');
 //Set Min Wordpress Version
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
 //Set User Capability
@@ -69,9 +69,9 @@ if (backwpup_env_checks()) {
 	//add Menu
 	add_action('admin_menu', 'backwpup_admin_menu');
 	//add cron intervals
-	add_filter('cron_schedules', 'backwpup_intervals');
+	add_filter('cron_schedules', 'backwpup_intervals',10,2);
 	//Actions for Cron job
-	add_action('backwpup_cron', 'backwpup_cron');
+	add_action('backwpup_cron', 'backwpup_cron',1,0);
 	//add Dashboard widget
 	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 	//add Admin Bar menu

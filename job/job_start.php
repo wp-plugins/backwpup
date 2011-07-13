@@ -22,6 +22,13 @@ function backwpup_jobstart($jobid='') {
 			sleep(3);
 		}
 	}
+	//save old session and end it
+	$oldsessionid=session_id();
+	if (!empty($oldsessionid)) {
+		$oldsessionname=session_name();
+		$oldsessionvars=$_SESSION;
+		session_write_close();
+	}
 	// set the cache limiter to 'nocache'
 	session_cache_limiter('nocache');
 	// set the cache expire to 30 minutes 
@@ -32,6 +39,7 @@ function backwpup_jobstart($jobid='') {
 	session_set_cookie_params(0);
 	// start session
 	session_start();
+	session_regenerate_id();
 	//get session id
 	$backwpupsid=session_id();
 	//clean session
@@ -277,6 +285,7 @@ function backwpup_jobstart($jobid='') {
 	foreach($_SESSION['WORKING']['STEPS'] as $step) 
 		$_SESSION['WORKING'][$step]['DONE']=false;
 	//Close session
+	$logfile=$_SESSION['STATIC']['LOGFILE'];
 	session_write_close();
 	//Run job
 	$ch=curl_init();
@@ -291,6 +300,13 @@ function backwpup_jobstart($jobid='') {
 	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
 	curl_exec($ch);
 	curl_close($ch);
-	return $_SESSION['STATIC']['LOGFILE'];
+	//get old session back
+	if (!empty($oldsessionid)) {
+		session_start();
+		session_name($oldsessionname);
+		session_id($oldsessionid);
+		$_SESSION=$oldsessionvars;
+	}
+	return $logfile;
 }
 ?>

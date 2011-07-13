@@ -127,6 +127,9 @@ Destinations are:
 4. Backups Manage Page
 
 == Changelog ==
+= 2.0.4 =
+* save exisiting session on job start and restore it
+
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder
 * Hopfuly fix of 'temp is not writeable'

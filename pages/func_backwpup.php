@@ -232,13 +232,6 @@ function backwpup_show_info_td() {
 	global $wpdb;
 	$mode=$_POST['mode'];
 	$jobvalue=backwpup_get_job_vars($_POST['jobid']);
-	if (in_array('FILE',explode('+',$jobvalue['type']))) {
-		$files=backwpup_calc_file_size($jobvalue);
-		echo __("Files Size:","backwpup")." ".backwpup_formatBytes($files['size'])."<br />";
-		if ( 'excerpt' == $mode ) {
-			echo __("Files count:","backwpup")." ".$files['num']."<br />";
-		}
-	}
 	if (in_array('DB',explode('+',$jobvalue['type'])) or in_array('OPTIMIZE',explode('+',$jobvalue['type'])) or in_array('CHECK',explode('+',$jobvalue['type']))) {
 		$dbsize=array('size'=>0,'num'=>0,'rows'=>0);
 		$status=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A);
@@ -253,6 +246,13 @@ function backwpup_show_info_td() {
 		if ( 'excerpt' == $mode ) {
 			echo  __("DB Tables:","backwpup")." ".$dbsize['num']."<br />";
 			echo  __("DB Rows:","backwpup")." ".$dbsize['rows']."<br />";
+		}
+	}
+	if (in_array('FILE',explode('+',$jobvalue['type']))) {
+		$files=backwpup_calc_file_size($jobvalue);
+		echo __("Files Size:","backwpup")." ".backwpup_formatBytes($files['size'])."<br />";
+		if ( 'excerpt' == $mode ) {
+			echo __("Files count:","backwpup")." ".$files['num']."<br />";
 		}
 	}	
 	die();

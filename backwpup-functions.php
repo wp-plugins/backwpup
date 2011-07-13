@@ -13,7 +13,7 @@ function backwpup_admin_menu() {
 	$hook = add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Working','backwpup'), __('Working','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
-	add_action('load-'.$hook, 'backwpup_menu_page_header');
+	add_action('load-'.$hook, 'backwpup_menu_page_header',1);
 	$hook = add_submenu_page( 'backwpup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuplogs', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Backups','backwpup'), __('Backups','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupbackups', 'backwpup_menu_page' );
@@ -270,11 +270,11 @@ function backwpup_backup_types($type='',$echo=false) {
 			case 'WPEXP':
 				$typename.=__('WP XML Export','backwpup')."<br />";
 				break;
-			case 'DB':
-				$typename.=__('Database Backup','backwpup')."<br />";
-				break;
 			case 'FILE':
 				$typename.=__('File Backup','backwpup')."<br />";
+				break;
+			case 'DB':
+				$typename.=__('Database Backup','backwpup')."<br />";
 				break;
 			case 'OPTIMIZE':
 				$typename.=__('Optimize Database Tables','backwpup')."<br />";
