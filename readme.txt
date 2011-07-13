@@ -129,6 +129,7 @@ Destinations are:
 == Changelog ==
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder
+* Hopfuly fix of 'temp is not writeable'
 * Fixed 'Black Screen'
 * more error output on XML export
 * satus on pcl zip create is back and use off the wordpress class
