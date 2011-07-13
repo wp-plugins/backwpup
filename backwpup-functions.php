@@ -171,7 +171,7 @@ function backwpup_api($active=false) {
 	$ch=@curl_init();
 	@curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
 	@curl_setopt($ch,CURLOPT_POST,true);
-	@curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>get_option('siteurl'),'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
+	@curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>$blugurl,'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
 	@curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
 	@curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	@curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
