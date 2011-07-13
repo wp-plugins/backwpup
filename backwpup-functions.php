@@ -165,6 +165,9 @@ function backwpup_api($active=false) {
 		$active='Y';
 	else
 		$active='N';
+	$blugurl=get_option('siteurl');
+	if (defined('WP_SITEURL'))
+		$blugurl=WP_SITEURL;
 	$ch=@curl_init();
 	@curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
 	@curl_setopt($ch,CURLOPT_POST,true);
