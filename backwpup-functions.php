@@ -215,8 +215,6 @@ function backwpup_cron() {
 		if ($infile['timestamp']>current_time('timestamp')-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
-			//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-			//curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$infile['SID'].'; path='.ini_get('session.cookie_path'));
 			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
@@ -666,10 +664,6 @@ function backwpup_env_checks() {
 		$message.=__('- curl is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
-	if (!function_exists('session_start')) { // check sessions
-		$message.=__('- PHP sessions needed!','backwpup') . '<br />';
-		$checks=false;
-	}
 	if (!is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
 		@mkdir($cfg['dirlogs'],0755,true);
 	}
@@ -684,7 +678,8 @@ function backwpup_env_checks() {
 		if (isset($jobvalue['scheduletime']) and empty($jobvalue['cron']))
 			$message.=__('- Please Check Scheduling time for Job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
 	}
-	if (wp_next_scheduled('backwpup_cron')!=0 and wp_next_scheduled('backwpup_cron')>(time()+360)) {  //check cron jobs work
+	$nextrun=wp_next_scheduled('backwpup_cron');
+	if (empty($nextrun) or $nextrun>(time()+360)) {  //check cron jobs work
 		$message.=__("- WP-Cron don't working please check it!","backwpup") .'<br />';
 	}
 	//put massage if one

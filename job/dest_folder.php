@@ -6,19 +6,20 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function dest_folder() {
-	if (empty($_SESSION['JOB']['backupdir']) or $_SESSION['JOB']['backupdir']=='/' or $_SESSION['JOB']['backupdir']==$_SESSION['STATIC']['TEMPDIR']) {
-		$_SESSION['WORKING']['STEPSDONE'][]='DEST_FOLDER'; //set done	
+	global $WORKING,$STATIC;
+	if (empty($STATIC['JOB']['backupdir']) or $STATIC['JOB']['backupdir']=='/' or $STATIC['JOB']['backupdir']==$STATIC['TEMPDIR']) {
+		$WORKING['STEPSDONE'][]='DEST_FOLDER'; //set done	
 		return;
 	}
-	$_SESSION['WORKING']['STEPTODO']=1;
-	$_SESSION['WORKING']['STEPDONE']=0;
-	$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=download&file='.$_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'];
+	$WORKING['STEPTODO']=1;
+	$WORKING['STEPDONE']=0;
+	$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=download&file='.$STATIC['JOB']['backupdir'].$STATIC['backupfile'];
 	//Delete old Backupfiles
 	$backupfilelist=array();
-	if ($_SESSION['JOB']['maxbackups']>0) {
-		if ( $dir = @opendir($_SESSION['JOB']['backupdir']) ) { //make file list
+	if ($STATIC['JOB']['maxbackups']>0) {
+		if ( $dir = @opendir($STATIC['JOB']['backupdir']) ) { //make file list
 			while (($file = readdir($dir)) !== false ) {
-				if ($_SESSION['JOB']['fileprefix'] == substr($file,0,strlen($_SESSION['JOB']['fileprefix'])) and $_SESSION['JOB']['fileformart'] == substr($file,-strlen($_SESSION['JOB']['fileformart'])))
+				if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
 					$backupfilelist[]=$file;
 			}
 			@closedir( $dir );
@@ -26,16 +27,16 @@ function dest_folder() {
 		if (sizeof($backupfilelist)>0) {
 			rsort($backupfilelist);
 			$numdeltefiles=0;
-			for ($i=$_SESSION['JOB']['maxbackups'];$i<sizeof($backupfilelist);$i++) {
-				unlink($_SESSION['JOB']['backupdir'].$backupfilelist[$i]);
+			for ($i=$STATIC['JOB']['maxbackups'];$i<sizeof($backupfilelist);$i++) {
+				unlink($STATIC['JOB']['backupdir'].$backupfilelist[$i]);
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
 				trigger_error($numdeltefiles.' '.__('old backup files deleted!','backwpup'),E_USER_NOTICE);
 		}
 	}
-	$_SESSION['WORKING']['STEPDONE']++;
-	$_SESSION['WORKING']['STEPSDONE'][]='DEST_FOLDER'; //set done
+	$WORKING['STEPDONE']++;
+	$WORKING['STEPSDONE'][]='DEST_FOLDER'; //set done
 }
 
 ?>

@@ -49,7 +49,6 @@ Do backups and more.
 * PHP 5.2.4
 * WordPress 3.2
 * curl 
-* PHP Sessions
 * gzip (for PCLZIP and gzip archives)
 * bzip2 (for bzip2 archives)
 
@@ -127,8 +126,8 @@ Destinations are:
 4. Backups Manage Page
 
 == Changelog ==
-= 2.0.4 =
-* save exisiting session on job start and restore it
+= 2.0.5 =
+* no more sessions needed
 * respect open_basdir for temp dir
 * dropbox changes fo better uploads but needs meny memory
 

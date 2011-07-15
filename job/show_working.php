@@ -75,8 +75,8 @@ $log='';
 if (is_file(trim($_POST['logfile']))) {
 	if (is_file(backwpup_get_temp().'.running')) {
 		if ($infile=backwpup_get_working_file()) {
-			$warnings=$infile['WARNING'];
-			$errors=$infile['ERROR'];
+			$warnings=$infile['WORKING']['WARNING'];
+			$errors=$infile['WORKING']['ERROR'];
 			$stepspersent=$infile['STEPSPERSENT'];
 			$steppersent=$infile['STEPPERSENT'];
 		}

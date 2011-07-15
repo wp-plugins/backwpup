@@ -25,13 +25,13 @@ if (!defined('ABSPATH')) {
 		echo "</div>";
 		echo "<div id=\"runniginfos\">";
 		$stylewarning=" style=\"display:none;\"";
-		if ($infile['WARNING']>0)
+		if ($infile['WORKING']['WARNING']>0)
 			$stylewarning="";
-		echo "<span id=\"warningsid\"".$stylewarning.">".__('Warnings:','backwpup')." <span id=\"warnings\">".$infile['WARNING']."</span></span><br/>";
+		echo "<span id=\"warningsid\"".$stylewarning.">".__('Warnings:','backwpup')." <span id=\"warnings\">".$infile['WORKING']['WARNING']."</span></span><br/>";
 		$styleerror=" style=\"display:none;\"";
-		if ($infile['ERROR']>0)
+		if ($infile['WORKING']['ERROR']>0)
 			$styleerror="";		
-		echo "<span id=\"errorid\"".$styleerror.">".__('Errors:','backwpup')." <span id=\"errors\">".$infile['ERROR']."</span></span>";
+		echo "<span id=\"errorid\"".$styleerror.">".__('Errors:','backwpup')." <span id=\"errors\">".$infile['WORKING']['ERROR']."</span></span>";
 		echo "<div>";
 		echo "<div class=\"clear\"></div>";
 		echo "<div class=\"progressbar\"><div id=\"progressstep\" style=\"width:".$infile['STEPSPERSENT']."%;\">".$infile['STEPSPERSENT']."%</div></div>";

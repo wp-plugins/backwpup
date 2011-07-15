@@ -6,20 +6,21 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function dest_dropbox() {
-	if (empty($_SESSION['JOB']['dropetoken']) or empty($_SESSION['JOB']['dropesecret'])) {
-		$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done	
+	global $WORKING,$STATIC;
+	if (empty($STATIC['JOB']['dropetoken']) or empty($STATIC['JOB']['dropesecret'])) {
+		$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done	
 		return;
 	}
-	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-	$_SESSION['WORKING']['STEPDONE']=0;
-	trigger_error($_SESSION['WORKING']['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);
+	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
+	$WORKING['STEPDONE']=0;
+	trigger_error($WORKING['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 	try {
-		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);
+		$dropbox = new Dropbox($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
 		// set the tokens 
-		$dropbox->setOAuthTokens($_SESSION['JOB']['dropetoken'],$_SESSION['JOB']['dropesecret']);
+		$dropbox->setOAuthTokens($STATIC['JOB']['dropetoken'],$STATIC['JOB']['dropesecret']);
 		//set oAuth Sign method
-		if ($_SESSION['JOB']['dropesignmethod']=='PLAIN') {
+		if ($STATIC['JOB']['dropesignmethod']=='PLAIN') {
 			$dropbox->setoAuthSignMethodPlain();
 			trigger_error(__('oAuth sign method for DropBox set to:','backwpup').' '.__('PLAINTEXT', 'backwpup'),E_USER_NOTICE);
 		} else {
@@ -27,7 +28,7 @@ function dest_dropbox() {
 			trigger_error(__('oAuth sign method for DropBox set to:','backwpup').' '.__('HMAC-SHA1', 'backwpup'),E_USER_NOTICE);
 		}
 		//set boxtype
-		if ($_SESSION['JOB']['droperoot']=='sandbox')
+		if ($STATIC['JOB']['droperoot']=='sandbox')
 			$dropbox->setSandbox();
 		else
 			$dropbox->setDropbox();
@@ -37,9 +38,9 @@ function dest_dropbox() {
 		}
 		//Check Quota
 		$dropboxfreespase=$info['quota_info']['quota']-$info['quota_info']['shared']-$info['quota_info']['normal'];
-		if (filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])>$dropboxfreespase) {
+		if (filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])>$dropboxfreespase) {
 			trigger_error(__('No free space left on DropBox!!!','backwpup'),E_USER_ERROR);
-			$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
+			$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done
 			return;
 		} else {
 			trigger_error(__('Free Space on DropBox: ','backwpup').formatBytes($dropboxfreespase),E_USER_NOTICE);
@@ -48,13 +49,13 @@ function dest_dropbox() {
 		$dropbox->setProgressFunction('curl_progresscallback');
 		// put the file 
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
-		need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*2); //free memory to transfer to dropbox
-		@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
-		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
+		need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*2); //free memory to transfer to dropbox
+		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
+		$response = $dropbox->upload($STATIC['JOB']['backupdir'].$STATIC['backupfile'],$STATIC['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {
-			$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
-			$_SESSION['WORKING']['STEPDONE']++;
-			trigger_error(__('Backup File transferred to DropBox://','backwpup').$_SESSION['JOB']['droperoot'].'/'.$_SESSION['JOB']['dropedir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
+			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$STATIC['JOB']['dropedir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
+			$WORKING['STEPDONE']++;
+			trigger_error(__('Backup File transferred to DropBox://','backwpup').$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile'],E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfere Backup file to DropBox:','backwpup').' '.$response['error'],E_USER_ERROR);
 			return;
@@ -62,21 +63,21 @@ function dest_dropbox() {
 		//unset calback function
 		$dropbox->setProgressFunction('');
 		
-		if ($_SESSION['JOB']['dropemaxbackups']>0) { //Delete old backups
+		if ($STATIC['JOB']['dropemaxbackups']>0) { //Delete old backups
 			$backupfilelist=array();
-			$metadata = $dropbox->metadata($_SESSION['JOB']['dropedir']);
+			$metadata = $dropbox->metadata($STATIC['JOB']['dropedir']);
 			if (is_array($metadata)) {
 				foreach ($metadata['contents'] as $data) {
 					$file=basename($data['path']);
-					if ($data['is_dir']!=true and $_SESSION['JOB']['fileprefix'] == substr($file,0,strlen($_SESSION['JOB']['fileprefix'])) and $_SESSION['JOB']['fileformart'] == substr($file,-strlen($_SESSION['JOB']['fileformart'])))
+					if ($data['is_dir']!=true and $STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
 						$backupfilelist[]=$file;
 				}
 			}
 			if (sizeof($backupfilelist)>0) {
 				rsort($backupfilelist);
 				$numdeltefiles=0;
-				for ($i=$_SESSION['JOB']['dropemaxbackups'];$i<count($backupfilelist);$i++) {
-					$dropbox->fileopsDelete($_SESSION['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
+				for ($i=$STATIC['JOB']['dropemaxbackups'];$i<count($backupfilelist);$i++) {
+					$dropbox->fileopsDelete($STATIC['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
 					$numdeltefiles++;
 				}
 				if ($numdeltefiles>0)
@@ -87,7 +88,7 @@ function dest_dropbox() {
 		trigger_error(__('DropBox API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	} 
 
-	$_SESSION['WORKING']['STEPDONE']++;
-	$_SESSION['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
+	$WORKING['STEPDONE']++;
+	$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done
 }
 ?>

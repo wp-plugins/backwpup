@@ -6,12 +6,13 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function wp_export() {
-	$_SESSION['WORKING']['STEPTODO']=1;
-	trigger_error($_SESSION['WORKING']['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
+	global $WORKING,$STATIC;
+	$WORKING['STEPTODO']=1;
+	trigger_error($WORKING['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
 	need_free_memory(10485760); //10MB free memory
 	if (function_exists('curl_exec')) {
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, substr($_SESSION['STATIC']['JOBRUNURL'],0,-11).'wp_export_generate.php');
+		curl_setopt($ch, CURLOPT_URL, substr($STATIC['JOBRUNURL'],0,-11).'wp_export_generate.php');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
@@ -31,18 +32,18 @@ function wp_export() {
 			else 
 				trigger_error(__('cURL:','backwpup').' ('.$status['http_code'].')  Invalid response.',E_USER_ERROR);	
 		} else {
-			file_put_contents($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
+			file_put_contents($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
 		}
 		curl_close($ch);
 	} 
 	//add XML file to backupfiles
-	if (is_readable($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
-		$filestat=stat($_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');
-		trigger_error(__('Add XML export to backup list:','backwpup').' '.preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml '.formatbytes($filestat['size']),E_USER_NOTICE);
-		$_SESSION['WORKING']['ALLFILESIZE']+=$filestat['size'];
-		$_SESSION['WORKING']['FILELIST'][]=array('FILE'=>$_SESSION['STATIC']['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','OUTFILE'=>preg_replace( '/[^a-z0-9_\-]/', '', strtolower($_SESSION['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
+	if (is_readable($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
+		$filestat=stat($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');
+		trigger_error(__('Add XML export to backup list:','backwpup').' '.preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml '.formatbytes($filestat['size']),E_USER_NOTICE);
+		$WORKING['ALLFILESIZE']+=$filestat['size'];
+		add_file(array(array('FILE'=>$STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','OUTFILE'=>preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'])));
 	}
-	$_SESSION['WORKING']['STEPDONE']=1;
-	$_SESSION['WORKING']['STEPSDONE'][]='WP_EXPORT'; //set done
+	$WORKING['STEPDONE']=1;
+	$WORKING['STEPSDONE'][]='WP_EXPORT'; //set done
 }
 ?>

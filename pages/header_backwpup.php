@@ -62,16 +62,17 @@ if (!empty($doaction)) {
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
 		$runningfile=backwpup_get_working_file();
-		unlink(backwpup_get_temp().'/.running'); //delete runnig file
+		unlink(backwpup_get_temp().'.running'); //delete runnig file
+		unlink(backwpup_get_temp().'.static'); //delete static file
 		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 		//write new log header
-		$runningfile['ERROR']++;
+		$runningfile['WORKING']['ERROR']++;
 		$fd=fopen($runningfile['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$runningfile['ERROR']."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$runningfile['WORKING']['ERROR']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);

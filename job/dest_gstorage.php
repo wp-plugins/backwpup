@@ -6,57 +6,58 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function dest_gstorage() {
-	if (empty($_SESSION['JOB']['GStorageAccessKey']) or empty($_SESSION['JOB']['GStorageSecret']) or empty($_SESSION['JOB']['GStorageBucket'])) {
-		$_SESSION['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done	
+	global $WORKING,$STATIC;
+	if (empty($STATIC['JOB']['GStorageAccessKey']) or empty($STATIC['JOB']['GStorageSecret']) or empty($STATIC['JOB']['GStorageBucket'])) {
+		$WORKING['STEPSDONE'][]='DEST_GSTORAGE'; //set done	
 		return;
 	}
-	$_SESSION['WORKING']['STEPTODO']=2+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-	$_SESSION['WORKING']['STEPDONE']=0;
-	trigger_error($_SESSION['WORKING']['DEST_GSTORAGE']['STEP_TRY'].'. '.__('Try to sending backup file to Google Storage...','backwpup'),E_USER_NOTICE);
+	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
+	$WORKING['STEPDONE']=0;
+	trigger_error($WORKING['DEST_GSTORAGE']['STEP_TRY'].'. '.__('Try to sending backup file to Google Storage...','backwpup'),E_USER_NOTICE);
 
 	require_once(dirname(__FILE__).'/../libs/googlestorage.php');
 	try {
-		$googlestorage = new GoogleStorage($_SESSION['JOB']['GStorageAccessKey'], $_SESSION['JOB']['GStorageSecret']);
+		$googlestorage = new GoogleStorage($STATIC['JOB']['GStorageAccessKey'], $STATIC['JOB']['GStorageSecret']);
 		$googlestorage->setProgressFunction('curl_progresscallback');
-		$bucket=$googlestorage->getBucketAcl($_SESSION['JOB']['GStorageBucket']);
+		$bucket=$googlestorage->getBucketAcl($STATIC['JOB']['GStorageBucket']);
 		if (is_object($bucket)) {
-			trigger_error(__('Connected to Google storage bucket:','backwpup').' '.$_SESSION['JOB']['GStorageBucket'],E_USER_NOTICE);
+			trigger_error(__('Connected to Google storage bucket:','backwpup').' '.$STATIC['JOB']['GStorageBucket'],E_USER_NOTICE);
 			//set content Type
-			if ($_SESSION['JOB']['fileformart']=='.zip')
+			if ($STATIC['JOB']['fileformart']=='.zip')
 				$content_type='application/zip';
-			if ($_SESSION['JOB']['fileformart']=='.tar')
+			if ($STATIC['JOB']['fileformart']=='.tar')
 				$content_type='application/x-ustar';
-			if ($_SESSION['JOB']['fileformart']=='.tar.gz')
+			if ($STATIC['JOB']['fileformart']=='.tar.gz')
 				$content_type='application/x-compressed';
-			if ($_SESSION['JOB']['fileformart']=='.tar.bz2')
+			if ($STATIC['JOB']['fileformart']=='.tar.bz2')
 				$content_type='application/x-compressed';		
 			//Transfer Backup to Google Storrage
 			trigger_error(__('Upload to Google storage now started ... ','backwpup'),E_USER_NOTICE);
-			@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
-			$upload=$googlestorage->putObject($_SESSION['JOB']['GStorageBucket'],$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],'private',$content_type);
+			@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
+			$upload=$googlestorage->putObject($STATIC['JOB']['GStorageBucket'],$STATIC['JOB']['GStoragedir'].$STATIC['backupfile'],$STATIC['JOB']['backupdir'].$STATIC['backupfile'],'private',$content_type);
 			if (empty($upload))  {
-				$_SESSION['WORKING']['STEPTODO']=1+filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']);
-				trigger_error(__('Backup File transferred to GSTORAGE://','backwpup').$_SESSION['JOB']['GStorageBucket'].'/'.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'],E_USER_NOTICE);
-				$_SESSION['JOB']['lastbackupdownloadurl']=$_SESSION['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadgstorage&file='.$_SESSION['JOB']['GStoragedir'].$_SESSION['STATIC']['backupfile'].'&jobid='.$_SESSION['JOB']['jobid'];
+				$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
+				trigger_error(__('Backup File transferred to GSTORAGE://','backwpup').$STATIC['JOB']['GStorageBucket'].'/'.$STATIC['JOB']['GStoragedir'].$STATIC['backupfile'],E_USER_NOTICE);
+				$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadgstorage&file='.$STATIC['JOB']['GStoragedir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			} else {
 				trigger_error(__('Can not transfer backup to Google storage!','backwpup').' '.$upload,E_USER_ERROR);
 			}
 			
-			if ($_SESSION['JOB']['GStoragemaxbackups']>0) { //Delete old backups
+			if ($STATIC['JOB']['GStoragemaxbackups']>0) { //Delete old backups
 				$backupfilelist=array();
-				$contents = $googlestorage->getBucket($_SESSION['JOB']['GStorageBucket'],$_SESSION['JOB']['GStoragedir']);
+				$contents = $googlestorage->getBucket($STATIC['JOB']['GStorageBucket'],$STATIC['JOB']['GStoragedir']);
 				if (is_object($contents)) {
 					foreach ($contents as $object) {
 						$file=basename($object->Key);
-						if ($_SESSION['JOB']['fileprefix'] == substr($file,0,strlen($_SESSION['JOB']['fileprefix'])) and $_SESSION['JOB']['fileformart'] == substr($file,-strlen($_SESSION['JOB']['fileformart'])))
+						if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
 							$backupfilelist[]=$file;
 					}
 				}
 				if (sizeof($backupfilelist)>0) {
 					rsort($backupfilelist);
 					$numdeltefiles=0;
-					for ($i=$_SESSION['JOB']['GStoragemaxbackups'];$i<sizeof($backupfilelist);$i++) {
-						$googlestorage->deleteObject($_SESSION['JOB']['GStorageBucket'],$_SESSION['JOB']['GStoragedir'].$backupfilelist[$i]); //delte files on Google Storage
+					for ($i=$STATIC['JOB']['GStoragemaxbackups'];$i<sizeof($backupfilelist);$i++) {
+						$googlestorage->deleteObject($STATIC['JOB']['GStorageBucket'],$STATIC['JOB']['GStoragedir'].$backupfilelist[$i]); //delte files on Google Storage
 						$numdeltefiles++;
 					}
 					if ($numdeltefiles>0)
@@ -71,7 +72,7 @@ function dest_gstorage() {
 		return;
 	}
 	
-	$_SESSION['WORKING']['STEPDONE']++;
-	$_SESSION['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done
+	$WORKING['STEPDONE']++;
+	$WORKING['STEPSDONE'][]='DEST_GSTORAGE'; //set done
 }
 ?>

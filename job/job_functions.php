@@ -5,35 +5,38 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 	header("Status: 404 Not Found");
 	die();
 }
-require_once(dirname(__FILE__).'/../libs/backwpup_get_temp.php');
 
 function __($message,$domain='backwpup') {
+	global $WORKING,$STATIC;
 	$msgid=md5($message);
-	if (!empty($_SESSION['TRANSLATE'][$msgid]))
-		$message=$_SESSION['TRANSLATE'][$msgid];
+	if (!empty($STATIC['TRANSLATE'][$msgid]))
+		$message=$STATIC['TRANSLATE'][$msgid];
 	return $message;
 }
 
 function _e($message,$domain='backwpup') {
+	global $WORKING,$STATIC;
 	$msgid=md5($message);
-	if (!empty($_SESSION['TRANSLATE'][$msgid]))
-		$message=$_SESSION['TRANSLATE'][$msgid];
+	if (!empty($STATIC['TRANSLATE'][$msgid]))
+		$message=$STATIC['TRANSLATE'][$msgid];
 	echo $message;
 }
 
 function _n($singular,$plural,$count,$domain='backwpup') {
+	global $WORKING,$STATIC;
 	if ($count<=1)
 		$msgid=md5($singular);
 	else
 		$msgid=md5($plural);
-	if (!empty($_SESSION['TRANSLATE'][$msgid]))
-		$message=$_SESSION['TRANSLATE'][$msgid];
+	if (!empty($STATIC['TRANSLATE'][$msgid]))
+		$message=$STATIC['TRANSLATE'][$msgid];
 	return $message;
 }
 
 function exists_option($option='backwpup_jobs') {
+	global $WORKING,$STATIC;
 	mysql_update();
-	$query="SELECT option_value as value FROM ".$_SESSION['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
+	$query="SELECT option_value as value FROM ".$STATIC['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
 	if (!$res or mysql_num_rows($res)<1) {
 		return false;
@@ -42,8 +45,9 @@ function exists_option($option='backwpup_jobs') {
 }
 
 function get_option($option='backwpup_jobs') {
+	global $WORKING,$STATIC;
 	mysql_update();
-	$query="SELECT option_value FROM ".$_SESSION['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
+	$query="SELECT option_value FROM ".$STATIC['WP']['OPTIONS_TABLE']." WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
 	if (!$res) {
 		trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), $query),E_USER_ERROR);
@@ -53,15 +57,36 @@ function get_option($option='backwpup_jobs') {
 }
 
 function update_option($option='backwpup_jobs',$data) {
+	global $WORKING,$STATIC;
 	mysql_update();
 	$serdata=mysql_real_escape_string(serialize($data));
-	$query="UPDATE ".$_SESSION['WP']['OPTIONS_TABLE']." SET option_value= '".$serdata."' WHERE option_name='".trim($option)."' LIMIT 1";
+	$query="UPDATE ".$STATIC['WP']['OPTIONS_TABLE']." SET option_value= '".$serdata."' WHERE option_name='".trim($option)."' LIMIT 1";
 	$res=mysql_query($query);
 	if (!$res) {
 		trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), $query),E_USER_ERROR);
 		return false;
 	}
 	return true;
+}
+
+// add to file list
+function add_file($files) {
+	global $STATIC;
+	if (empty($files))
+		return;
+	$filelist=get_filelist();
+	foreach($files as $file)
+		$filelist[]=$file;
+	file_put_contents($STATIC['TEMPDIR'].'.filelist',serialize($filelist));
+}
+
+// add to file list
+function get_filelist() {
+	global $STATIC;
+	if (file_exists($STATIC['TEMPDIR'].'.filelist') and $filelistfile=file_get_contents($STATIC['TEMPDIR'].'.filelist'))
+		return unserialize(trim($filelistfile));
+	else 
+		return array();
 }
 
 //file size
@@ -111,7 +136,8 @@ function need_free_memory($memneed) {
 }
 
 function maintenance_mode($enable = false) {
-	if (!$_SESSION['JOB']['maintenance'])
+	global $WORKING,$STATIC;
+	if (!$STATIC['JOB']['maintenance'])
 		return;
 	if ( $enable ) {
 		trigger_error(__('Set Blog to Maintenance Mode','backwpup'),E_USER_NOTICE);
@@ -125,8 +151,8 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_backtime_mins']='5';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			if (is_writable(rtrim($_SESSION['WP']['ABSPATH'],'/')))
-				file_put_contents(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance','<?php $upgrading = '.time().'; ?>');
+			if (is_writable(rtrim($STATIC['WP']['ABSPATH'],'/')))
+				file_put_contents(rtrim($STATIC['WP']['ABSPATH'],'/').'/.maintenance','<?php $upgrading = '.time().'; ?>');
 			else
 				trigger_error(__('Cannot set Website/Blog to Maintenance Mode! Root folder is not writeable!','backwpup'),E_USER_NOTICE);
 		}
@@ -139,14 +165,15 @@ function maintenance_mode($enable = false) {
 			$mamo['mamo_activate']='off';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support
-			@unlink(rtrim($_SESSION['WP']['ABSPATH'],'/').'/.maintenance');
+			@unlink(rtrim($STATIC['WP']['ABSPATH'],'/').'/.maintenance');
 		}
 	}
 }
 
 function curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
-	if ($_SESSION['WORKING']['STEPTODO']>10)
-		$_SESSION['WORKING']['STEPDONE']=$uploaded;
+	global $WORKING,$STATIC;
+	if ($WORKING['STEPTODO']>10)
+		$WORKING['STEPDONE']=$uploaded;
 	update_working_file();
 	return(0);
 }
@@ -167,6 +194,7 @@ function delete_working_file() {
 	$tempdir=backwpup_get_temp();
 	if (is_file($tempdir.'.running')) {
 		unlink($tempdir.'.running');
+		unlink($tempdir.'.static');
 		return true;
 	} else {
 		return false;
@@ -174,51 +202,51 @@ function delete_working_file() {
 }
 
 function update_working_file() {
-	global $runmicrotime;
-	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
+	global $WORKING,$STATIC,$runmicrotime;
+	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
 	if (empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
-		if ($_SESSION['WORKING']['STEPTODO']>0 and $_SESSION['WORKING']['STEPDONE']>0)
-			$steppersent=round($_SESSION['WORKING']['STEPDONE']/$_SESSION['WORKING']['STEPTODO']*100);
+		if ($WORKING['STEPTODO']>0 and $WORKING['STEPDONE']>0)
+			$steppersent=round($WORKING['STEPDONE']/$WORKING['STEPTODO']*100);
 		else
 			$steppersent=1;
-		if (count($_SESSION['WORKING']['STEPSDONE'])>0)
-			$stepspersent=round(count($_SESSION['WORKING']['STEPSDONE'])/count($_SESSION['WORKING']['STEPS'])*100);
+		if (count($WORKING['STEPSDONE'])>0)
+			$stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
 		else
 			$stepspersent=1;
 		$pid=0;
-		@set_time_limit($_SESSION['CFG']['jobscriptruntime']);
+		@set_time_limit($STATIC['CFG']['jobscriptruntime']);
 		mysql_update();
 		if (function_exists('posix_getpid'))
 			$pid=posix_getpid();
-		$runningfile=file_get_contents($_SESSION['STATIC']['TEMPDIR'].'.running');
+		$runningfile=file_get_contents($STATIC['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
-		file_put_contents($_SESSION['STATIC']['TEMPDIR'].'.running',serialize(array('SID'=>session_id(),'timestamp'=>time(),'JOBID'=>$_SESSION['JOB']['jobid'],'LOGFILE'=>$_SESSION['STATIC']['LOGFILE'],'PID'=>$pid,'WARNING'=>$_SESSION['WORKING']['WARNING'],'ERROR'=>$_SESSION['WORKING']['ERROR'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$_SESSION['WP']['ABSPATH'])));
+		file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>$pid,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
 		$runmicrotime=microtime();
 	}
 	return true;
 }
 
 function mysql_update() {
-	global $mysqlconlink;
+	global $WORKING,$STATIC,$mysqlconlink;
 	if (!$mysqlconlink or !@mysql_ping($mysqlconlink)) {
 		// make a mysql connection
-		$mysqlconlink=mysql_connect($_SESSION['WP']['DB_HOST'], $_SESSION['WP']['DB_USER'], $_SESSION['WP']['DB_PASSWORD'], true);
+		$mysqlconlink=mysql_connect($STATIC['WP']['DB_HOST'], $STATIC['WP']['DB_USER'], $STATIC['WP']['DB_PASSWORD'], true);
 		if (!$mysqlconlink) 
 			trigger_error(__('No MySQL connection:','backwpup').' ' . mysql_error(),E_USER_ERROR);
 		//set connecten charset
-		if (!empty($_SESSION['WP']['DB_CHARSET'])) {
+		if (!empty($STATIC['WP']['DB_CHARSET'])) {
 			if ( function_exists( 'mysql_set_charset' )) {
-				mysql_set_charset( $_SESSION['WP']['DB_CHARSET'], $mysqlconlink );
+				mysql_set_charset( $STATIC['WP']['DB_CHARSET'], $mysqlconlink );
 			} else {
-				$query = "SET NAMES '".$_SESSION['WP']['DB_CHARSET']."'";
+				$query = "SET NAMES '".$STATIC['WP']['DB_CHARSET']."'";
 				if (!empty($collate))
-					$query .= " COLLATE '".$_SESSION['WP']['DB_COLLATE']."'";
+					$query .= " COLLATE '".$STATIC['WP']['DB_COLLATE']."'";
 				mysql_query($query,$mysqlconlink);
 			}
 		}
 		//connect to database
-		$mysqldblink = mysql_select_db($_SESSION['WP']['DB_NAME'], $mysqlconlink);
+		$mysqldblink = mysql_select_db($STATIC['WP']['DB_NAME'], $mysqlconlink);
 		if (!$mysqldblink)
 			trigger_error(__('No MySQL connection to database:','backwpup').' ' . mysql_error(),E_USER_ERROR);
 	}
@@ -226,6 +254,7 @@ function mysql_update() {
 
 //function for PHP error handling
 function joberrorhandler() {
+	global $WORKING,$STATIC;
 	$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
 
 	// if error has been supressed with an @
@@ -241,13 +270,13 @@ function joberrorhandler() {
 		break;
 	case E_WARNING:
 	case E_USER_WARNING:
-		$_SESSION['WORKING']['WARNING']++;
+		$WORKING['WARNING']++;
 		$adderrorwarning=true;
 		$message="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
 		break;
 	case E_ERROR: 
 	case E_USER_ERROR:
-		$_SESSION['WORKING']['ERROR']++;
+		$WORKING['ERROR']++;
 		$adderrorwarning=true;
 		$message="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
 		break;
@@ -269,22 +298,22 @@ function joberrorhandler() {
 	//genrate timestamp
 	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
 	//wirte log file
-	file_put_contents($_SESSION['STATIC']['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
+	file_put_contents($STATIC['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
 
 	//write new log header
 	if ($adderrorwarning) {
 		$found=0;
-		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
+		$fd=fopen($STATIC['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
 				$found++;
 			}
 			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$_SESSION['WORKING']['WARNING']."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$WORKING['WARNING']."\" />",100)."\n");
 				$found++;
 			}
 			if ($found>=2)
@@ -295,7 +324,7 @@ function joberrorhandler() {
 	}
 
 	//write working file
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.running'))
+	if (is_file($STATIC['TEMPDIR'].'.running'))
 		update_working_file();
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
@@ -308,12 +337,12 @@ function joberrorhandler() {
 
 //job end function
 function job_end() {
-	global $mysqlconlink;
-	$_SESSION['WORKING']['STEPTODO']=1;
-	$_SESSION['WORKING']['STEPDONE']=0;
+	global $WORKING,$STATIC,$mysqlconlink;
+	$WORKING['STEPTODO']=1;
+	$WORKING['STEPDONE']=0;
 	//delete old logs
-	if (!empty($_SESSION['CFG']['maxlogs'])) {
-		if ( $dir = opendir($_SESSION['CFG']['dirlogs']) ) { //make file list
+	if (!empty($STATIC['CFG']['maxlogs'])) {
+		if ( $dir = opendir($STATIC['CFG']['dirlogs']) ) { //make file list
 			while (($file = readdir($dir)) !== false ) {
 				if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and (".html" == substr($file,-5) or ".html.gz" == substr($file,-8)))
 					$logfilelist[]=$file;
@@ -323,8 +352,8 @@ function job_end() {
 		if (sizeof($logfilelist)>0) {
 			rsort($logfilelist);
 			$numdeltefiles=0;
-			for ($i=$_SESSION['CFG']['maxlogs'];$i<sizeof($logfilelist);$i++) {
-				unlink($_SESSION['CFG']['dirlogs'].$logfilelist[$i]);
+			for ($i=$STATIC['CFG']['maxlogs'];$i<sizeof($logfilelist);$i++) {
+				unlink($STATIC['CFG']['dirlogs'].$logfilelist[$i]);
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
@@ -332,17 +361,17 @@ function job_end() {
 		}
 	}
 	//Display job working time	
-	trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),time()-$_SESSION['JOB']['starttime']),E_USER_NOTICE);	
+	trigger_error(sprintf(__('Job done in %1s sec.','backwpup'),time()-$STATIC['JOB']['starttime']),E_USER_NOTICE);	
 	
-	if (!is_file($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']) or !($filesize=filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile']))) //Set the filezie corectly
+	if (!is_file($STATIC['JOB']['backupdir'].$STATIC['backupfile']) or !($filesize=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']))) //Set the filezie corectly
 		$filesize=0;
 
 	//clean up temp
-	if ($dir = opendir($_SESSION['STATIC']['TEMPDIR'])) {
+	if ($dir = opendir($STATIC['TEMPDIR'])) {
 		while (($file = readdir($dir)) !== false) {
-			if (is_readable($_SESSION['STATIC']['TEMPDIR'].$file) and is_file($_SESSION['STATIC']['TEMPDIR'].$file)) {
+			if (is_readable($STATIC['TEMPDIR'].$file) and is_file($STATIC['TEMPDIR'].$file)) {
 				if ($file!='.' and $file!='..' and $file!='.running') {
-					unlink($_SESSION['STATIC']['TEMPDIR'].$file);
+					unlink($STATIC['TEMPDIR'].$file);
 				}
 			}
 		}
@@ -350,25 +379,25 @@ function job_end() {
 	}
 	
 	$jobs=get_option('backwpup_jobs');
-	$jobs[$_SESSION['JOB']['jobid']]['lastrun']=$jobs[$_SESSION['JOB']['jobid']]['starttime']+$_SESSION['WP']['TIMEDIFF'];
-	$_SESSION['JOB']['lastrun']=$jobs[$_SESSION['JOB']['jobid']]['lastrun'];
-	$jobs[$_SESSION['JOB']['jobid']]['lastruntime']=time()-$_SESSION['JOB']['starttime'];
-	$_SESSION['JOB']['lastruntime']=$jobs[$_SESSION['JOB']['jobid']]['lastruntime'];
-	$jobs[$_SESSION['JOB']['jobid']]['starttime']='';
-	if (!empty($_SESSION['JOB']['lastbackupdownloadurl']))
-		$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']=$_SESSION['JOB']['lastbackupdownloadurl'];
+	$jobs[$STATIC['JOB']['jobid']]['lastrun']=$jobs[$STATIC['JOB']['jobid']]['starttime']+$STATIC['WP']['TIMEDIFF'];
+	$STATIC['JOB']['lastrun']=$jobs[$STATIC['JOB']['jobid']]['lastrun'];
+	$jobs[$STATIC['JOB']['jobid']]['lastruntime']=time()-$STATIC['JOB']['starttime'];
+	$STATIC['JOB']['lastruntime']=$jobs[$STATIC['JOB']['jobid']]['lastruntime'];
+	$jobs[$STATIC['JOB']['jobid']]['starttime']='';
+	if (!empty($STATIC['JOB']['lastbackupdownloadurl']))
+		$jobs[$STATIC['JOB']['jobid']]['lastbackupdownloadurl']=$STATIC['JOB']['lastbackupdownloadurl'];
 	else
-		$jobs[$_SESSION['JOB']['jobid']]['lastbackupdownloadurl']='';
+		$jobs[$STATIC['JOB']['jobid']]['lastbackupdownloadurl']='';
 	update_option('backwpup_jobs',$jobs); //Save Settings
 	
 	//write heder info
-	$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
+	$fd=fopen($STATIC['LOGFILE'],'r+');
 	$found=0;
 	while (!feof($fd)) {
 		$line=fgets($fd);
 		if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
 			fseek($fd,$filepos);
-			fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$_SESSION['JOB']['lastruntime']."\" />",100)."\n");
+			fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$STATIC['JOB']['lastruntime']."\" />",100)."\n");
 			$found++;
 		}
 		if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
@@ -384,97 +413,95 @@ function job_end() {
 	//Restore error handler
 	restore_error_handler();
 	//logfile end
-	file_put_contents($_SESSION['STATIC']['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
+	file_put_contents($STATIC['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
 	//gzip logfile
-	if ($_SESSION['CFG']['gzlogs']) {
-		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r');
-		$zd=gzopen($_SESSION['STATIC']['LOGFILE'].'.gz','w9');
+	if ($STATIC['CFG']['gzlogs']) {
+		$fd=fopen($STATIC['LOGFILE'],'r');
+		$zd=gzopen($STATIC['LOGFILE'].'.gz','w9');
 		while (!feof($fd)) {
 			gzwrite($zd,fread($fd,4096));
 		}
 		gzclose($zd);
 		fclose($fd);
-		unlink($_SESSION['STATIC']['LOGFILE']);
-		$_SESSION['STATIC']['LOGFILE']=$_SESSION['STATIC']['LOGFILE'].'.gz';
+		unlink($STATIC['LOGFILE']);
+		$STATIC['LOGFILE']=$STATIC['LOGFILE'].'.gz';
 		
 		$jobs=get_option('backwpup_jobs');
-		$jobs[$_SESSION['JOB']['jobid']]['logfile']=$_SESSION['STATIC']['LOGFILE'];
+		$jobs[$STATIC['JOB']['jobid']]['logfile']=$STATIC['LOGFILE'];
 		update_option('backwpup_jobs',$jobs); //Save Settings
 	}
 	
 	//Send mail with log
 	$sendmail=false;
-	if ($_SESSION['WORKING']['ERROR']>0 and $_SESSION['JOB']['mailerroronly'] and !empty($_SESSION['JOB']['mailaddresslog']))
+	if ($WORKING['ERROR']>0 and $STATIC['JOB']['mailerroronly'] and !empty($STATIC['JOB']['mailaddresslog']))
 		$sendmail=true;
-	if (!$_SESSION['JOB']['mailerroronly'] and !empty($_SESSION['JOB']['mailaddresslog']))
+	if (!$STATIC['JOB']['mailerroronly'] and !empty($STATIC['JOB']['mailaddresslog']))
 		$sendmail=true;
 	if ($sendmail) {
 		//Create PHP Mailer
-		require_once($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC'].'/class-phpmailer.php');
+		require_once($STATIC['WP']['ABSPATH'].$STATIC['WP']['WPINC'].'/class-phpmailer.php');
 		$phpmailer = new PHPMailer();
 		//Setting den methode
-		if ($_SESSION['CFG']['mailmethod']=="SMTP") {
-			require_once($_SESSION['WP']['ABSPATH'].$_SESSION['WP']['WPINC'].'/class-smtp.php');
-			$phpmailer->Host=$_SESSION['CFG']['mailhost'];
-			$phpmailer->Port=$_SESSION['CFG']['mailhostport'];
-			$phpmailer->SMTPSecure=$_SESSION['CFG']['mailsecure'];
-			$phpmailer->Username=$_SESSION['CFG']['mailuser'];
-			$phpmailer->Password=base64_decode($_SESSION['CFG']['mailpass']);
-			if (!empty($_SESSION['CFG']['mailuser']) and !empty($_SESSION['CFG']['mailpass']))
+		if ($STATIC['CFG']['mailmethod']=="SMTP") {
+			require_once($STATIC['WP']['ABSPATH'].$STATIC['WP']['WPINC'].'/class-smtp.php');
+			$phpmailer->Host=$STATIC['CFG']['mailhost'];
+			$phpmailer->Port=$STATIC['CFG']['mailhostport'];
+			$phpmailer->SMTPSecure=$STATIC['CFG']['mailsecure'];
+			$phpmailer->Username=$STATIC['CFG']['mailuser'];
+			$phpmailer->Password=base64_decode($STATIC['CFG']['mailpass']);
+			if (!empty($STATIC['CFG']['mailuser']) and !empty($STATIC['CFG']['mailpass']))
 				$phpmailer->SMTPAuth=true;
 			$phpmailer->IsSMTP();
-		} elseif ($_SESSION['CFG']['mailmethod']=="Sendmail") {
-			$phpmailer->Sendmail=$_SESSION['CFG']['mailsendmail'];
+		} elseif ($STATIC['CFG']['mailmethod']=="Sendmail") {
+			$phpmailer->Sendmail=$STATIC['CFG']['mailsendmail'];
 			$phpmailer->IsSendmail();
 		} else {
 			$phpmailer->IsMail();
 		}
 		
-		$mailbody=__("Jobname:","backwpup")." ".$_SESSION['JOB']['name']."\n";
-		$mailbody.=__("Jobtype:","backwpup")." ".$_SESSION['JOB']['type']."\n";
-		if (!empty($_SESSION['WORKING']['ERROR']))
-			$mailbody.=__("Errors:","backwpup")." ".$_SESSION['WORKING']['ERROR']."\n";
-		if (!empty($_SESSION['WORKING']['WARNINGS']))
-			$mailbody.=__("Warnings:","backwpup")." ".$_SESSION['WORKING']['WARNINGS']."\n";
+		$mailbody=__("Jobname:","backwpup")." ".$STATIC['JOB']['name']."\n";
+		$mailbody.=__("Jobtype:","backwpup")." ".$STATIC['JOB']['type']."\n";
+		if (!empty($WORKING['ERROR']))
+			$mailbody.=__("Errors:","backwpup")." ".$WORKING['ERROR']."\n";
+		if (!empty($WORKING['WARNINGS']))
+			$mailbody.=__("Warnings:","backwpup")." ".$WORKING['WARNINGS']."\n";
 		
-		$phpmailer->From     = $_SESSION['CFG']['mailsndemail'];
-		$phpmailer->FromName = $_SESSION['CFG']['mailsndname'];
-		$phpmailer->AddAddress($_SESSION['JOB']['mailaddresslog']);
-		$phpmailer->Subject  =  __('BackWPup Log from','backwpup').' '.date('Y-m-d H:i',$_SESSION['JOB']['starttime']).': '.$_SESSION['JOB']['name'];
+		$phpmailer->From     = $STATIC['CFG']['mailsndemail'];
+		$phpmailer->FromName = $STATIC['CFG']['mailsndname'];
+		$phpmailer->AddAddress($STATIC['JOB']['mailaddresslog']);
+		$phpmailer->Subject  =  __('BackWPup Log from','backwpup').' '.date('Y-m-d H:i',$STATIC['JOB']['starttime']).': '.$STATIC['JOB']['name'];
 		$phpmailer->IsHTML(false);
 		$phpmailer->Body  =  $mailbody;
-		$phpmailer->AddAttachment($_SESSION['STATIC']['LOGFILE']);
+		$phpmailer->AddAttachment($STATIC['LOGFILE']);
 		$phpmailer->Send();
 	}
 
-	$_SESSION['WORKING']['STEPDONE']=1;
-	$_SESSION['WORKING']['STEPSDONE'][]='JOB_END'; //set done
-	if (is_file($_SESSION['STATIC']['TEMPDIR'].'.running')) {
+	$WORKING['STEPDONE']=1;
+	$WORKING['STEPSDONE'][]='JOB_END'; //set done
+	if (is_file($STATIC['TEMPDIR'].'.running')) {
 		update_working_file();
-		unlink($_SESSION['STATIC']['TEMPDIR'].'.running');
-		rmdir($_SESSION['STATIC']['TEMPDIR']);
+		unlink($STATIC['TEMPDIR'].'.running');
+		rmdir($STATIC['TEMPDIR']);
 	}
-	//Destroy session
-	$_SESSION = array();
-	session_destroy();
 	mysql_close($mysqlconlink);
 	die();
 }
 
 // execute on script job shutdown
 function job_shutdown() {
-	if (empty($_SESSION['STATIC']['LOGFILE'])) //nothing on empy session
+	global $WORKING,$STATIC;
+	if (empty($STATIC['LOGFILE'])) //nothing on empy
 		return;
-	$_SESSION['WORKING']['RESTART']++;
-	if ($_SESSION['WORKING']['RESTART']>=$_SESSION['CFG']['jobscriptretry'] and file_exists($_SESSION['STATIC']['TEMPDIR'].'.running')) {  //only x restarts allowed
-		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
-		$_SESSION['WORKING']['ERROR']++;
-		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
+	$WORKING['RESTART']++;
+	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running')) {  //only x restarts allowed
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
+		$WORKING['ERROR']++;
+		$fd=fopen($STATIC['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
@@ -485,32 +512,28 @@ function job_shutdown() {
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if ($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) {
-		file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
-		$_SESSION['WORKING']['ERROR']++;
-		$fd=fopen($_SESSION['STATIC']['LOGFILE'],'r+');
+		$WORKING['ERROR']++;
+		$fd=fopen($STATIC['LOGFILE'],'r+');
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$_SESSION['WORKING']['ERROR']."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
 				break;
 			}
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
 	}
-	//Close session
-	$backwpupsid=session_id();
-	session_write_close();
 	//Excute jobrun again
-	if (!file_exists($_SESSION['STATIC']['TEMPDIR'].'.running'))
+	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		return;
-	file_put_contents($_SESSION['STATIC']['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$_SESSION['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+	file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+	update_working_file();
 	$ch=curl_init();
-	curl_setopt($ch,CURLOPT_URL,$_SESSION['STATIC']['JOBRUNURL']);
-	//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-	//curl_setopt($ch,CURLOPT_COOKIE,'BackWPupSession='.$backwpupsid.'; path='.ini_get('session.cookie_path'));
+	curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL']);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);

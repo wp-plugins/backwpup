@@ -6,14 +6,15 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function db_optimize() {
-	trigger_error($_SESSION['WORKING']['DB_OPTIMIZE']['STEP_TRY'].'. '.__('Try to run database optimize...','backwpup'),E_USER_NOTICE);
-	if (!isset($_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']) or !is_array($_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']))
-		$_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']=array();
-	$_SESSION['WORKING']['STEPTODO']=sizeof($_SESSION['JOB']['dbtables']);
-	if (sizeof($_SESSION['JOB']['dbtables'])>0) {
+	global $WORKING,$STATIC;
+	trigger_error($WORKING['DB_OPTIMIZE']['STEP_TRY'].'. '.__('Try to run database optimize...','backwpup'),E_USER_NOTICE);
+	if (!isset($WORKING['DB_OPTIMIZE']['DONETABLE']) or !is_array($WORKING['DB_OPTIMIZE']['DONETABLE']))
+		$WORKING['DB_OPTIMIZE']['DONETABLE']=array();
+	$WORKING['STEPTODO']=sizeof($STATIC['JOB']['dbtables']);
+	if (sizeof($STATIC['JOB']['dbtables'])>0) {
 		maintenance_mode(true);
-		foreach ($_SESSION['JOB']['dbtables'] as $table) {
-			if (in_array($table, $_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']))
+		foreach ($STATIC['JOB']['dbtables'] as $table) {
+			if (in_array($table, $WORKING['DB_OPTIMIZE']['DONETABLE']))
 				continue;
 			$result=mysql_query('OPTIMIZE TABLE `'.$table.'`');
 			if (!$result) {
@@ -21,8 +22,8 @@ function db_optimize() {
 				continue;
 			}
 			$optimize=mysql_fetch_assoc($result);
-			$_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE'][]=$table;
-			$_SESSION['WORKING']['STEPDONE']=sizeof($_SESSION['WORKING']['DB_OPTIMIZE']['DONETABLE']);
+			$WORKING['DB_OPTIMIZE']['DONETABLE'][]=$table;
+			$WORKING['STEPDONE']=sizeof($WORKING['DB_OPTIMIZE']['DONETABLE']);
 			if ($optimize['Msg_type']=='error')
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_ERROR);
 			elseif ($optimize['Msg_type']=='warning')
@@ -35,7 +36,7 @@ function db_optimize() {
 	} else {
 		trigger_error(__('No Tables to optimize','backwpup'),E_USER_WARNING);
 	}
-	$_SESSION['WORKING']['STEPSDONE'][]='DB_OPTIMIZE'; //set done
+	$WORKING['STEPSDONE'][]='DB_OPTIMIZE'; //set done
 }
 
 ?>
