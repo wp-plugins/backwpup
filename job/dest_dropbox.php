@@ -18,6 +18,14 @@ function dest_dropbox() {
 		$dropbox = new Dropbox($_SESSION['BACKWPUP']['DROPBOX_APP_KEY'], $_SESSION['BACKWPUP']['DROPBOX_APP_SECRET']);
 		// set the tokens 
 		$dropbox->setOAuthTokens($_SESSION['JOB']['dropetoken'],$_SESSION['JOB']['dropesecret']);
+		//set oAuth Sign method
+		if ($_SESSION['JOB']['dropesignmethod']=='PLAIN') {
+			$dropbox->setoAuthSignMethodPlain();
+			trigger_error(__('oAuth sign method for DropBox set to:','backwpup').' '.__('PLAINTEXT', 'backwpup'),E_USER_NOTICE);
+		} else {
+			$dropbox->setoAuthSignMethodSHA1();
+			trigger_error(__('oAuth sign method for DropBox set to:','backwpup').' '.__('HMAC-SHA1', 'backwpup'),E_USER_NOTICE);
+		}
 		//set boxtype
 		if ($_SESSION['JOB']['droperoot']=='sandbox')
 			$dropbox->setSandbox();
@@ -40,6 +48,7 @@ function dest_dropbox() {
 		$dropbox->setProgressFunction('curl_progresscallback');
 		// put the file 
 		trigger_error(__('Upload to DropBox now started ... ','backwpup'),E_USER_NOTICE);
+		need_free_memory(filesize($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'])*2); //free memory to transfer to dropbox
 		@set_time_limit($_SESSION['CFG']['jobscriptruntimelong']);
 		$response = $dropbox->upload($_SESSION['JOB']['backupdir'].$_SESSION['STATIC']['backupfile'],$_SESSION['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {

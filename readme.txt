@@ -129,6 +129,8 @@ Destinations are:
 == Changelog ==
 = 2.0.4 =
 * save exisiting session on job start and restore it
+* respect open_basdir for temp dir
+* dropbox changes fo better uploads but needs meny memory
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder

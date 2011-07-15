@@ -40,6 +40,7 @@ class Dropbox {
 	protected $root = 'dropbox';
 	protected $OAuthObject;
 	protected $OAuthToken;
+	protected $OAuthSignMethod='HMAC-SHA1';
 	protected $ProgressFunction = false;
 	
 	public function __construct($applicationKey, $applicationSecret) {
@@ -58,6 +59,14 @@ class Dropbox {
 		$this->root = 'sandbox';
 	}
 
+	public function setoAuthSignMethodSHA1() {
+		$this->OAuthSignMethod = 'HMAC-SHA1';
+	}
+	
+	public function setoAuthSignMethodPlain() {
+		$this->OAuthSignMethod = 'PLAINTEXT';
+	}
+	
 	public function setProgressFunction($function) {
 		if (function_exists($function))
 			$this->ProgressFunction = $function;
@@ -79,7 +88,7 @@ class Dropbox {
 			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
 		}
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files/'.$this->root.'/'.trim($path, '/');
-		return $this->request($url, array('file' => $file), 'POST', $file);
+		return $this->request($url, array('file' => basename($file)), 'POST', $file);
 	}
 	
 	public function download($path){
@@ -121,6 +130,7 @@ class Dropbox {
 		//request tokens
 		$OAuthSign = $this->OAuthObject->sign(array(
 			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
+			'method' 	=> $this->OAuthSignMethod,
 			'action'	=>'GET',
 			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
@@ -155,6 +165,7 @@ class Dropbox {
 		 $OAuthSign = $this->OAuthObject->sign(array(
 			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
 			'action'	=>'GET',
+			'method' 	=> $this->OAuthSignMethod,
 			'parameters'=>array('oauth_token'    => $oauth_token),
 			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
@@ -189,6 +200,7 @@ class Dropbox {
 			'path'      => $url,
 			'parameters'=> $args,
 			'action'=> $method,
+			'method' => $this->OAuthSignMethod,
 			'signatures'=> $this->OAuthToken));
 		
 		/* Header*/
@@ -198,9 +210,19 @@ class Dropbox {
 		$ch = curl_init();
 		if ($method == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-			if (!empty($file)) { /* file upload */		
-				curl_setopt($ch, CURLOPT_POSTFIELDS, array('file' => "@$file"));
-				$headers[]='Content-Length: ' .filesize($file)+strlen($file)+192;
+			if (!empty($file)) { /* file upload */
+				/* random string */
+				$boundary = md5_file($file);
+				$body="--" . $boundary . "\r\n";
+				$body.="Content-Disposition: form-data; name=file; filename=".basename($file)."\r\n";
+				$body.="Content-type: application/octet-stream\r\n";
+				$body.="\r\n";
+				$body.=file_get_contents($file);
+				$body.="\r\n";
+				$body.="--" . $boundary . "--";
+				curl_setopt($ch, CURLOPT_POSTFIELDS, &$body);
+				$headers[]='Content-Length: ' .strlen($body);
+				$headers[]='Content-Type: multipart/form-data; boundary=' . $boundary;
 			} else {
 				curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 				$args = (is_array($args)) ? http_build_query($args) : $args;

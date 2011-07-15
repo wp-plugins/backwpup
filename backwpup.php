@@ -69,9 +69,9 @@ if (backwpup_env_checks()) {
 	//add Menu
 	add_action('admin_menu', 'backwpup_admin_menu');
 	//add cron intervals
-	add_filter('cron_schedules', 'backwpup_intervals',10,2);
+	add_filter('cron_schedules', 'backwpup_intervals');
 	//Actions for Cron job
-	add_action('backwpup_cron', 'backwpup_cron',1,0);
+	add_action('backwpup_cron', 'backwpup_cron',1);
 	//add Dashboard widget
 	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 	//add Admin Bar menu

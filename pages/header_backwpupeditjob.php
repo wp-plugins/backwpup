@@ -121,6 +121,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
 	$jobvalues['droperoot']=isset($_POST['droperoot']) ? $_POST['droperoot'] : 'dropbox';
+	$jobvalues['dropesignmethod']=isset($_POST['dropesignmethod']) ? $_POST['dropesignmethod'] : 'SHA1';
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';

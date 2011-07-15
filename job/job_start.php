@@ -226,7 +226,7 @@ function backwpup_jobstart($jobid='') {
 			$_SESSION['JOB']['backupdir']=rtrim(str_replace('\\','/',$_SESSION['JOB']['backupdir']),'/').'/'; 
 			//create backup dir if it not exists
 			if (!is_dir($_SESSION['JOB']['backupdir'])) {
-				if (!mkdir(rtim($_SESSION['JOB']['backupdir'],'/'),0777,true)) {
+				if (!mkdir(rtrim($_SESSION['JOB']['backupdir'],'/'),0777,true)) {
 					sprintf(__('Can not create folder for backup files: %1$s','backwpup'),$_SESSION['JOB']['backupdir']);
 					return false;
 				}

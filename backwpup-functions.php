@@ -211,18 +211,8 @@ function backwpup_intervals($schedules) {
 
 //cron work
 function backwpup_cron() {
-	define('DONOTCACHEPAGE', true);
-	define('DONOTCACHEDB', true);
-	define('DONOTMINIFY', true);
-	define('DONOTCDN', true);
-	define('DONOTCACHCEOBJECT', true);
-	define('QUICK_CACHE_ALLOWED', false);
-	$_SERVER["QUICK_CACHE_ALLOWED"] = false;
-	if (function_exists('w3tc_pgcache_flush'))
-		w3tc_pgcache_flush();	
-	echo "<!-- mfunc -->";
 	if ($infile=backwpup_get_working_file()) {
-		if ($infile['timestamp']>time()-310) {
+		if ($infile['timestamp']>current_time('timestamp')-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
 			//curl_setopt($ch,CURLOPT_COOKIESESSION, true);
@@ -237,17 +227,19 @@ function backwpup_cron() {
 			curl_close($ch);
 		}
 	} else {
-		foreach ((array)get_option('backwpup_jobs') as $jobid => $jobvalue) {
-			if (!isset($jobvalue['activated']) or !$jobvalue['activated'])
-				continue;
-			if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
-				//include jobstart function
-				require_once(dirname(__FILE__).'/job/job_start.php');
-				backwpup_jobstart($jobid);	
+		$jobs=get_option('backwpup_jobs');
+		if (!empty($jobs)) {
+			foreach ($jobs as $jobid => $jobvalue) {
+				if (!isset($jobvalue['activated']) or !$jobvalue['activated'])
+					continue;
+				if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
+					//include jobstart function
+					require_once(dirname(__FILE__).'/job/job_start.php');
+					backwpup_jobstart($jobid);	
+				}
 			}
 		}
 	}
-	echo "<!--/mfunc-->";
 }
 
 //file size
@@ -1024,6 +1016,9 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
 		$jobsettings['droperoot']='dropbox';	
 
+	if (!isset($jobsettings['dropesignmethod']) or ($jobsettings['dropesignmethod']!='PLAIN' and $jobsettings['dropesignmethod']!='SHA1'))
+		$jobsettings['dropesignmethod']='SHA1';
+		
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;	
 		

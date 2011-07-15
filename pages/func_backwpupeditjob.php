@@ -356,6 +356,11 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<?PHP } else  { ?>
 			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauthdel" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />
 		<?PHP } ?><br />
+		<b><?PHP _e('oAuth sign method:','backwpup'); ?></b><br />
+		<select name="dropesignmethod" id="dropesignmethod">
+		<option <?PHP selected($jobvalue['dropesignmethod'],'SHA1',true); ?> value="SHA1"><?php _e('HMAC-SHA1', 'backwpup'); ?></option>
+		<option <?PHP selected($jobvalue['dropesignmethod'],'PLAIN',true); ?> value="PLAIN"><?php _e('PLAINTEXT', 'backwpup'); ?></option> 
+		</select><br />
 		<b><?PHP _e('Root:','backwpup'); ?></b><br />
 		<select name="droperoot" id="droperoot">
 		<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('dropbox', 'backwpup'); ?></option>

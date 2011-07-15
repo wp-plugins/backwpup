@@ -119,7 +119,7 @@ function maintenance_mode($enable = false) {
 			update_option('wp-maintenance-mode-msqld','1');
 		} elseif ( exists_option('plugin_maintenance-mode') ) { //Support for Maintenance Mode Plugin
 			$mamo=get_option('plugin_maintenance-mode');
-			$mamo['mamo_activate']='on_'.current_time('timestamp');
+			$mamo['mamo_activate']='on_'.time();
 			$mamo['mamo_backtime_days']='0';
 			$mamo['mamo_backtime_hours']='0';
 			$mamo['mamo_backtime_mins']='5';
