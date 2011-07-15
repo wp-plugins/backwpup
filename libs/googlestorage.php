@@ -234,7 +234,7 @@ class GoogleStorage {
 						curl_setopt($ch, CURLOPT_INFILE,$datafilefd);
 						curl_setopt($ch, CURLOPT_INFILESIZE,filesize($body));
 					} else {
-						$headers[]='Content-Length: ' .strnlen($body);
+						$headers[]='Content-Length: ' .strlen($body);
 						curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 						curl_setopt($ch, CURLOPT_PUT,true);
 						curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
