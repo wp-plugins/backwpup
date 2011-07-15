@@ -11,11 +11,11 @@ if ($runningfile['JOBID']>0) {
 	if ($staticfile=file_get_contents(backwpup_get_temp().'.static'))
 		$STATIC=unserialize(trim($staticfile));
 	else
-		die();
+		die('no config file');
 	unset($runningfile);
 	unset($staticfile);
 } else {
-	die();
+	die('no runnig file');
 }
 ob_end_clean();
 header("Connection: close");

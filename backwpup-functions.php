@@ -679,7 +679,7 @@ function backwpup_env_checks() {
 			$message.=__('- Please Check Scheduling time for Job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
 	}
 	$nextrun=wp_next_scheduled('backwpup_cron');
-	if (empty($nextrun) or $nextrun>(time()+360)) {  //check cron jobs work
+	if (empty($nextrun) or $nextrun>(time()+3600)) {  //check cron jobs work
 		$message.=__("- WP-Cron don't working please check it!","backwpup") .'<br />';
 	}
 	//put massage if one
