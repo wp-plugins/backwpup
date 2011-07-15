@@ -490,7 +490,7 @@ function job_end() {
 // execute on script job shutdown
 function job_shutdown() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['LOGFILE'])) //nothing on empy
+	if (empty($STATIC['LOGFILE'])) //nothing on empty
 		return;
 	$WORKING['RESTART']++;
 	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running')) {  //only x restarts allowed
@@ -507,7 +507,10 @@ function job_shutdown() {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
-		job_end();
+		foreach($WORKING['STEPS'] as $step) { //run job_end on next start
+			if (!in_array($step,$WORKING['STEPSDONE']) and $step!='JOB_END')
+				$WORKING['STEPSDONE'][]=$step;
+		}
 	}
 	//Put last error to log if one
 	$lasterror=error_get_last();

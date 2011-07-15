@@ -26,7 +26,7 @@ flush();
 //set timezone
 date_default_timezone_set($STATIC['WP']['TIMEZONE']);
 //check existing Logfile
-if (!empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
+if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	delete_working_file();
 	die();
 }
