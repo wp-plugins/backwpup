@@ -92,7 +92,7 @@ function backwpup_jobstart($jobid='') {
 	if (empty($backwpup_static['CFG']['jobscriptretry']) or !is_int($backwpup_static['CFG']['jobscriptretry']) or $backwpup_static['CFG']['jobscriptretry']>100)
 		$backwpup_static['CFG']['jobscriptretry']=5;
 	if (empty($backwpup_static['CFG']['jobscriptruntime']) or !is_int($backwpup_static['CFG']['jobscriptruntime']) or $backwpup_static['CFG']['jobscriptruntime']>100)
-		$backwpup_static['CFG']['jobscriptruntime']=30;
+		$backwpup_static['CFG']['jobscriptruntime']=ini_get('max_execution_time');
 	if (empty($backwpup_static['CFG']['jobscriptruntimelong']) or !is_int($backwpup_static['CFG']['jobscriptruntimelong']) or $backwpup_static['CFG']['jobscriptruntimelong']>1000)
 		$backwpup_static['CFG']['jobscriptruntimelong']=300;
 	//Set job data

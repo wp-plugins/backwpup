@@ -96,9 +96,9 @@ function backwpup_contextual_help($help='') {
 			'<p><a href="http://backwpup.com/forum/" target="_blank">'.__('Support','backwpup').'</a>'.
 			' | <a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>'.
 			' | <a href="http://backwpup.com/" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
-			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin Home on WordPress.org', 'backwpup') . '</a>'.
-			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=mail%40backwpup%2ecom&amp;item_name=BackWPup%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate','backwpup') . '</a>'.
-			' | <a href="https://flattr.com/thing/32235/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
+			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin on WordPress.org', 'backwpup') . '</a>'.
+			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>'.
+			' | <a href="https://flattr.com/thing/345067/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
 			'<p>BackWPup version '.BACKWPUP_VERSION.', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a><br />'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
 			'</p>');
 }
@@ -197,7 +197,7 @@ function backwpup_plugin_links($links, $file) {
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
 		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
 		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
-		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=mail%40backwpup%2ecom&amp;item_name=Daniel%20Huesken%20Plugin%20Donation&amp;item_number=BackWPup&amp;no_shipping=0&amp;no_note=1&amp;tax=0&amp;&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">' . __('Donate','backwpup') . '</a>';
+		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;
 }

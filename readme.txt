@@ -1,6 +1,6 @@
 === BackWPup ===
 Contributors: danielhuesken
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=mail%40backwpup%2ecom&item_name=BackWPup%20Plugin%20Donation&item_number=BackWPup&no_shipping=0&no_note=1&tax=0&bn=PP%2dDonationsBF&charset=UTF%2d8
+Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2
 Tested up to: 3.2.1

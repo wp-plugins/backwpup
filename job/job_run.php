@@ -10,12 +10,15 @@ if ($runningfile['JOBID']>0) {
 	$WORKING=$runningfile['WORKING'];
 	if ($staticfile=file_get_contents(backwpup_get_temp().'.static'))
 		$STATIC=unserialize(trim($staticfile));
-	else
-		die('no config file');
+	else {
+		trigger_error('No config file found!!!',E_USER_ERROR);
+		die();
+	}
 	unset($runningfile);
 	unset($staticfile);
 } else {
-	die('no runnig file');
+	trigger_error('No running file found!!!',E_USER_ERROR);
+	die();
 }
 ob_end_clean();
 header("Connection: close");
@@ -23,28 +26,14 @@ ob_start();
 header("Content-Length: 0");
 ob_end_flush();
 flush();
-//set timezone
-date_default_timezone_set($STATIC['WP']['TIMEZONE']);
 //check existing Logfile
 if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	delete_working_file();
+	trigger_error('No logfile found!!!',E_USER_ERROR);
 	die();
 }
-//disable safe mode
-@ini_set('safe_mode','0');
-//set execution time tom max on safe mode
-if (ini_get('safe_mode')) {
-	$STATIC['CFG']['jobscriptruntime']=ini_get('max_execution_time');
-	$STATIC['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
-} 
-if (empty($STATIC['CFG']['jobscriptruntime']) or !is_int($STATIC['CFG']['jobscriptruntime']))
-	$STATIC['CFG']['jobscriptruntime']=ini_get('max_execution_time');
-if (empty($STATIC['CFG']['jobscriptruntimelong']) or !is_int($STATIC['CFG']['jobscriptruntimelong']))
-	$STATIC['CFG']['jobscriptruntimelong']=300;
-// Now user abrot allowed
-@ini_set('ignore_user_abort','0');
-//disable user abort
-ignore_user_abort(true);
+//set timezone
+date_default_timezone_set($STATIC['WP']['TIMEZONE']);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
 //set function for PHP user defineid error handling
@@ -52,13 +41,20 @@ if ($STATIC['WP']['WP_DEBUG'])
 	set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 else
 	set_error_handler('joberrorhandler',E_ALL & ~E_NOTICE);
-//check max script execution tme
-if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1')
+//disable safe mode
+@ini_set('safe_mode','0');
+//set execution time tom max on safe mode
+if (ini_get('safe_mode')) {
 	trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
-
+	$STATIC['CFG']['jobscriptruntime']=ini_get('max_execution_time');
+	$STATIC['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
+} 
+// Now user abrot allowed
+@ini_set('ignore_user_abort','0');
+//disable user abort
+ignore_user_abort(true);
 //update running file
 update_working_file();
-
 //Load needed files
 foreach($WORKING['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
@@ -70,7 +66,6 @@ foreach($WORKING['STEPS'] as $step) {
 		} 
 	}
 }
-
 // Working step by step
 foreach($WORKING['STEPS'] as $step) {
 	//display some info massages bevor fist step
@@ -115,7 +110,6 @@ foreach($WORKING['STEPS'] as $step) {
 		}
 	} 
 }
-
 //close mysql
 mysql_close($mysqlconlink);
 ?>

@@ -91,7 +91,6 @@ function backup_create() {
 			trigger_error($WORKING['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup archive file...','backwpup'),E_USER_NOTICE);
 		}
 
-		
 		for ($index=$WORKING['STEPDONE'];$index<$WORKING['STEPTODO'];$index++) {
 			need_free_memory(2097152); //2MB free memory for tar
 			$files=$filelist[$index];
