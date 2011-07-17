@@ -47,6 +47,7 @@ function backup_create() {
 						$ziperror=__('(21) ER_INCONS','backwpup');
 					trigger_error(__('Zip Status:','backwpup').' '.$zip->status ,E_USER_ERROR);
 				}
+				@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 				$res2=$zip->close();
 				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
 				$WORKING['STEPSDONE'][]='BACKUP_CREATE'; //set done
