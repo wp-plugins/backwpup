@@ -25,7 +25,7 @@ function backup_create() {
 					$WORKING['STEPDONE']++;
 					update_working_file();
 				}
-				if ($zip->status>0)
+				if ($zip->status>0) {
 					$ziperror=$zip->status;
 					if ($zip->status==4)
 						$ziperror=__('(4) ER_SEEK','backwpup');
@@ -46,6 +46,7 @@ function backup_create() {
 					if ($zip->status==21)
 						$ziperror=__('(21) ER_INCONS','backwpup');
 					trigger_error(__('Zip Status:','backwpup').' '.$zip->status ,E_USER_ERROR);
+				}
 				$res2=$zip->close();
 				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
 				$WORKING['STEPSDONE'][]='BACKUP_CREATE'; //set done

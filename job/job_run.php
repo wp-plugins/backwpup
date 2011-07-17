@@ -54,7 +54,7 @@ if (ini_get('safe_mode')) {
 //disable user abort
 ignore_user_abort(true);
 //update running file
-update_working_file();
+update_working_file(true);
 //Load needed files
 foreach($WORKING['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
@@ -85,14 +85,14 @@ foreach($WORKING['STEPS'] as $step) {
 		if(!empty($STATIC['backupfile']))
 			trigger_error(__('[INFO]: Backup file is:','backwpup').' '.$STATIC['JOB']['backupdir'].$STATIC['backupfile'],E_USER_NOTICE);
 	}
-	//update running file
-	update_working_file();
 	//Set next step
 	if (!isset($WORKING[$step]['STEP_TRY']) or empty($WORKING[$step]['STEP_TRY'])) {
 		$WORKING[$step]['STEP_TRY']=0;
 		$WORKING['STEPDONE']=0;
 		$WORKING['STEPTODO']=0;
 	}
+	//update running file
+	update_working_file(true);
 	//Run next step
 	if (!in_array($step,$WORKING['STEPSDONE'])) {
 		if (function_exists(strtolower($step))) {
@@ -100,7 +100,8 @@ foreach($WORKING['STEPS'] as $step) {
 				if (in_array($step,$WORKING['STEPSDONE']))
 					break;
 				$WORKING[$step]['STEP_TRY']++;
-				$func=call_user_func(strtolower($step));
+				update_working_file(true);
+				call_user_func(strtolower($step));
 			}
 			if ($WORKING[$step]['STEP_TRY']>=$STATIC['CFG']['jobstepretry'])
 				trigger_error(__('Step arborted has too many trys!!!','backwpup'),E_USER_ERROR);

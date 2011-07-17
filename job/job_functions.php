@@ -201,11 +201,11 @@ function delete_working_file() {
 	}
 }
 
-function update_working_file() {
+function update_working_file($mustwrite=false) {
 	global $WORKING,$STATIC,$runmicrotime;
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
-	if (empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
+	if ($mustwrite or empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
 		if ($WORKING['STEPTODO']>0 and $WORKING['STEPDONE']>0)
 			$steppersent=round($WORKING['STEPDONE']/$WORKING['STEPTODO']*100);
 		else
@@ -479,7 +479,7 @@ function job_end() {
 	$WORKING['STEPDONE']=1;
 	$WORKING['STEPSDONE'][]='JOB_END'; //set done
 	if (is_file($STATIC['TEMPDIR'].'.running')) {
-		update_working_file();
+		update_working_file(true);
 		unlink($STATIC['TEMPDIR'].'.running');
 		rmdir($STATIC['TEMPDIR']);
 	}
@@ -534,7 +534,7 @@ function job_shutdown() {
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		return;
 	file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
-	update_working_file();
+	update_working_file(true);
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL']);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
