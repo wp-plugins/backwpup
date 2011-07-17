@@ -230,7 +230,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				case 'file':
 					$r .= "<td $attributes><strong>".$backup['filename']."</strong>";
 					$actions = array();
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpupbackups&action=delete&jobdest='.$this->jobid.','.$this->dest.'&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
+					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupbackups&action=delete&jobdest='.$this->jobid.','.$this->dest.'&paged='.$this->get_pagenum().'&backupfiles[]='.esc_attr($backup['file']), 'bulk-backups') . "\" onclick=\"if ( confirm('" . esc_js(__("You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.","backwpup")) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 					$actions['download'] = "<a href=\"" . wp_nonce_url($backup['downloadurl'], 'download-backup') . "\">" . __('Download','backwpup') . "</a>";
 					$r .= $this->row_actions($actions);
 					$r .= "</td>";
@@ -283,7 +283,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 					$files[$filecounter]['folder']=$jobvalue['backupdir'];
 					$files[$filecounter]['file']=$jobvalue['backupdir'].$file;
 					$files[$filecounter]['filename']=$file;
-					$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$jobvalue['backupdir'].$file;
+					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$jobvalue['backupdir'].$file;
 					$files[$filecounter]['filesize']=filesize($jobvalue['backupdir'].$file);
 					$files[$filecounter]['time']=filemtime($jobvalue['backupdir'].$file);
 					$filecounter++;
@@ -313,7 +313,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 							$files[$filecounter]['folder']="DROPBOX:/".dirname($object['path']).'/';
 							$files[$filecounter]['file']=$object['path'];
 							$files[$filecounter]['filename']=basename($object['path']);
-							$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;
+							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;
 							$files[$filecounter]['filesize']=$object['bytes'];
 							$files[$filecounter]['time']=strtotime($object['modified']);
 							$filecounter++;
@@ -342,7 +342,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['folder']="SUGARSYNC://".$dir;
 						$files[$filecounter]['file']=(string)$getfile->ref;
 						$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
-						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=(int) $getfile->size;
 						$files[$filecounter]['time']=strtotime((string) $getfile->lastModified);
 						$filecounter++;							
@@ -367,7 +367,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['folder']="S3://".$jobvalue['awsBucket']."/".dirname((string)$object->Key).'/';
 						$files[$filecounter]['file']=(string)$object->Key;
 						$files[$filecounter]['filename']=basename($object->Key);
-						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=(string)$object->Size;
 						$files[$filecounter]['time']=strtotime($object->LastModified);
 						$filecounter++;							
@@ -393,7 +393,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['folder']="GSTORAGE://".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';
 						$files[$filecounter]['file']=(string)$object->Key;
 						$files[$filecounter]['filename']=basename($object->Key);
-						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloadgstorage&file='.$object->Key.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadgstorage&file='.$object->Key.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=(string)$object->Size;
 						$files[$filecounter]['time']=strtotime($object->LastModified);
 						$filecounter++;							
@@ -419,7 +419,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['folder']="MSAZURE://".$jobvalue['msazureContainer']."/".dirname($blob->Name)."/";
 						$files[$filecounter]['file']=$blob->Name;
 						$files[$filecounter]['filename']=basename($blob->Name);
-						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=$blob->size;
 						$files[$filecounter]['time']=strtotime($blob->lastmodified);
 						$filecounter++;	
@@ -449,7 +449,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						$files[$filecounter]['folder']="RSC://".$jobvalue['rscContainer']."/".dirname($object->name)."/";
 						$files[$filecounter]['file']=$object->name;
 						$files[$filecounter]['filename']=basename($object->name);
-						$files[$filecounter]['downloadurl']=admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
 						$files[$filecounter]['filesize']=$object->content_length;
 						$files[$filecounter]['time']=strtotime($object->last_modified);
 						$filecounter++;						

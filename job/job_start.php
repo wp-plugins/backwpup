@@ -98,7 +98,7 @@ function backwpup_jobstart($jobid='') {
 	$backwpup_static['WP']['WP_UPLOAD_DIR']=rtrim(str_replace('\\','/',backwpup_get_upload_dir()),'/').'/';
 	$backwpup_static['WP']['WPINC']=WPINC;
 	$backwpup_static['WP']['MULTISITE']=is_multisite();
-	$backwpup_static['WP']['ADMINURL']=admin_url('admin.php');
+	$backwpup_static['WP']['ADMINURL']=backwpup_admin_url('admin.php');
 	//Load Translation
 	if (!empty($backwpup_static['WP']['WPLANG']) and is_file(dirname(__FILE__).'/../lang/backwpup-'.$backwpup_static['WP']['WPLANG'].'.po')) {
 		$file = fopen (dirname(__FILE__).'/../lang/backwpup-'.$backwpup_static['WP']['WPLANG'].'.po', "r");

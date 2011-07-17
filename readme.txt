@@ -27,6 +27,7 @@ Do backups and more.
 * Store backup to DropBox
 * Store backup to SugarSync
 * Send Log/Backup by Email
+* Multisite Support only as Network Admin
 
 ** WP 3.2 Required!! **
 
@@ -130,6 +131,7 @@ Destinations are:
 * no more sessions needed
 * respect open_basdir for temp dir
 * dropbox changes fo better uploads but needs meny memory
+* Added Multiseite support (only for Network Admin)
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder

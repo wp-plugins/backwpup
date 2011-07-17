@@ -67,7 +67,14 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 add_action('admin_notices', 'backwpup_admin_notice'); 
 if (backwpup_env_checks()) {
 	//add Menu
-	add_action('admin_menu', 'backwpup_admin_menu');
+	if (is_multisite()) {
+		if  (WP_NETWORK_ADMIN) {
+			add_action('plugins_loaded' , 'backwpup_plugin_activate'); //Activation for mu
+			add_action('network_admin_menu', 'backwpup_admin_menu');
+		}
+	} else {
+		add_action('admin_menu', 'backwpup_admin_menu');
+	}
 	//add cron intervals
 	add_filter('cron_schedules', 'backwpup_intervals');
 	//Actions for Cron job

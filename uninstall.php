@@ -6,4 +6,5 @@ if (!defined('ABSPATH') && !defined('WP_UNINSTALL_PLUGIN')) {
 }
 delete_option('backwpup');
 delete_option('backwpup_jobs');
+delete_option('backwpup_last_activate');
 ?>

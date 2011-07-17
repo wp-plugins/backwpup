@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 	
 echo "<div class=\"wrap\">";
 screen_icon();
-echo "<h2>".esc_html( __('BackWPup Jobs', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
+echo "<h2>".esc_html( __('BackWPup Jobs', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
 echo "<form id=\"posts-filter\" action=\"\" method=\"get\">";

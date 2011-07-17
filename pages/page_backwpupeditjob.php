@@ -32,7 +32,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 <div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif; ?>
 
-<form name="editjob" id="editjob" method="post" action="<?PHP echo admin_url('admin.php').'?page=backwpupeditjob';?>">
+<form name="editjob" id="editjob" method="post" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpupeditjob';?>">
 <input type="hidden" name="jobid" value="<?PHP echo $jobvalue['jobid'];?>" />
 <?php wp_nonce_field('edit-job'); ?>
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>

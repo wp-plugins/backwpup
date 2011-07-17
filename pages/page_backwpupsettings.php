@@ -12,7 +12,7 @@ screen_icon();
 echo "<h2>".esc_html( __('BackWPup Settings', 'backwpup'))."</h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
-echo "<form id=\"posts-filter\" action=\"".admin_url('admin.php')."?page=backwpupsettings\" method=\"post\">";
+echo "<form id=\"posts-filter\" action=\"".backwpup_admin_url('admin.php')."?page=backwpupsettings\" method=\"post\">";
 wp_nonce_field('backwpup-cfg');
 ?>
 <input type="hidden" name="action" value="update" />

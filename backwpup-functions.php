@@ -21,7 +21,7 @@ function backwpup_admin_menu() {
 	$hook = add_submenu_page( 'backwpup', __('Tools','backwpup'), __('Tools','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuptools', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Settings','backwpup'), __('Settings','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupsettings', 'backwpup_menu_page' );
-	add_action('load-'.$hook, 'backwpup_menu_page_header');
+	add_action('load-'.$hook, 'backwpup_menu_page_header');	
 }
 
 function backwpup_menu_page() {
@@ -95,8 +95,8 @@ function backwpup_contextual_help($help='') {
 			'<p><strong>'.__('For more information:','backwpup').'</strong></p>'.
 			'<p><a href="http://backwpup.com/forum/" target="_blank">'.__('Support','backwpup').'</a>'.
 			' | <a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>'.
-			' | <a href="http://backwpup.com/manual/" target="_blank">' . __('Manual','backwpup') . '</a>'.
 			' | <a href="http://backwpup.com/" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
+			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin on WordPress.org', 'backwpup') . '</a>'.
 			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>'.
 			' | <a href="https://flattr.com/thing/345067/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
 			'<p>BackWPup version '.BACKWPUP_VERSION.', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a><br />'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
@@ -105,6 +105,14 @@ function backwpup_contextual_help($help='') {
 
 //On Plugin activate
 function backwpup_plugin_activate() {
+	//Check multiseit only run once
+	if (is_multisite()) {
+		if (get_option('backwpup_last_activate')==BACKWPUP_VERSION) {
+			return;
+		} else {
+			update_option('backwpup_last_activate',BACKWPUP_VERSION);
+		}
+	}
 	$jobsids=array_keys((array)get_option('backwpup_jobs'));
 	if (!empty($jobsids)) {
 		foreach ($jobsids as $jobid) {
@@ -165,6 +173,8 @@ function backwpup_api($active=false) {
 		$active='Y';
 	else
 		$active='N';
+	if (is_multisite())
+		$active='M';
 	$blugurl=get_option('siteurl');
 	if (defined('WP_SITEURL'))
 		$blugurl=WP_SITEURL;
@@ -185,7 +195,7 @@ function backwpup_api($active=false) {
 function backwpup_plugin_options_link($links) {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return $links;
-	$settings_link='<a href="'.admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings','backwpup') . '</a>';
+	$settings_link='<a href="'.backwpup_admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings','backwpup') . '</a>';
 	array_unshift( $links, $settings_link );
 	return $links;
 }
@@ -195,9 +205,8 @@ function backwpup_plugin_links($links, $file) {
 	if (!current_user_can('install_plugins'))
 		return $links;
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
-		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
 		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
-		$links[] = '<a href="http://backwpup.com/manual/" target="_blank">' . __('Manual','backwpup') . '</a>';
+		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
 		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;
@@ -336,7 +345,7 @@ function backwpup_dashboard_logs() {
 			$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
 			echo '<li>';
 			echo '<span>'.date_i18n(get_option('date_format').' '.get_option('time_format'),$logdata['logtime']).'</span> ';
-			echo '<a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
+			echo '<a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
 			if ($logdata['errors']>0)
 				printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
 			if ($logdata['warnings']>0)
@@ -399,13 +408,13 @@ function backwpup_dashboard_activejobs() {
 			$runtime=time()-$jobvalue['starttime'];
 			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
 			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
-			echo " <a style=\"color:green;\" href=\"" . admin_url('admin.php').'?page=backwpupworking' . "\">" . __('View!','backwpup') . "</a>";
-			echo " <a style=\"color:red;\" href=\"" . wp_nonce_url(admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
+			echo " <a style=\"color:green;\" href=\"" . backwpup_admin_url('admin.php').'?page=backwpupworking' . "\">" . __('View!','backwpup') . "</a>";
+			echo " <a style=\"color:red;\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 			echo "</li>";
 			$count++;
 		} elseif ($jobvalue['activated']) {
 			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
-			echo ' <a href="'.wp_nonce_url(admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue['jobid'], 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
+			echo ' <a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue['jobid'], 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
 			echo "</li>";
 			$count++;
 		}
@@ -431,14 +440,14 @@ function backwpup_add_adminbar() {
 	if (!$cfg['showadminbar'] || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
 		return;
     /* Add the main siteadmin menu item */
-    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => admin_url('admin.php').'?page=backwpup'));
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	if (backwpup_get_working_file()) 
-		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupworking'));
-    $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpup'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => admin_url('admin.php').'?page=backwpuplogs'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupbackups'));
+		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
+    $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
+	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
+	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
 	
-	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => admin_url('admin.php').'?page=backwpupeditjob'));
+	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
 
@@ -451,10 +460,8 @@ function backwpup_send_no_cache_header() {
 }
 
 function backwpup_get_upload_dir() {
-	global $switched;
-	$upload_path = get_option( 'upload_path' );
+	$upload_path = get_option('upload_path');
 	$upload_path = trim($upload_path);
-	$main_override = defined( 'MULTISITE' ) && is_main_site();
 	if ( empty($upload_path) ) {
 		$dir = WP_CONTENT_DIR . '/uploads';
 	} else {
@@ -466,14 +473,11 @@ function backwpup_get_upload_dir() {
 			$dir = path_join( ABSPATH, $dir );
 		}
 	}
-	if ( defined('UPLOADS') && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
+	if ( defined('UPLOADS') && !is_multisite()) {
 		$dir = ABSPATH . UPLOADS;
 	}
-	if (function_exists('is_multisite')) {
-		if ( is_multisite() && !$main_override && ( !isset( $switched ) || $switched === false ) ) {
-			if ( defined( 'BLOGUPLOADDIR' ) )
-				$dir = untrailingslashit(BLOGUPLOADDIR);
-		}
+	if ( is_multisite() && is_multisite()) {
+			$dir = untrailingslashit(WP_CONTENT_DIR).'/blogs.dir';
 	}
 	return str_replace('\\','/',trailingslashit($dir));
 }
@@ -644,6 +648,15 @@ function backwpup_get_working_file() {
 	}
 }
 
+function backwpup_admin_url($url) {
+	if (is_multisite()) {
+		if  (WP_NETWORK_ADMIN)
+			return network_admin_url($url);
+	} else {
+		return admin_url($url);
+	}
+}
+
 function backwpup_env_checks() {
 	global $wp_version,$backwpup_admin_message;
 	$message='';
@@ -657,16 +670,12 @@ function backwpup_env_checks() {
 		$message.=__('- PHP 5.2.4 or higher needed!','backwpup') . '<br />';
 		$checks=false;
 	}
-	if (is_multisite()) {
-		$message.=__('- Multiseite Blogs not allowed!','backwpup') . '<br />';
-		$checks=false;
-	}
 	if (!function_exists('curl_init')) { // check curl
 		$message.=__('- curl is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (!is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
-		@mkdir($cfg['dirlogs'],0755,true);
+		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);
 	}
 	if (!is_dir($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Logs Folder not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';

@@ -10,7 +10,7 @@ screen_icon();
 echo "<h2>".esc_html( __('BackWPup Tools', 'backwpup'))."</h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
-echo "<form id=\"posts-filter\" enctype=\"multipart/form-data\" action=\"".admin_url('admin.php')."?page=backwpuptools\" method=\"post\">";
+echo "<form id=\"posts-filter\" enctype=\"multipart/form-data\" action=\"".backwpup_admin_url('admin.php')."?page=backwpuptools\" method=\"post\">";
 wp_nonce_field('backwpup-tools');
 ?>
 <input type="hidden" name="action" value="update" />

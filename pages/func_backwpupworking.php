@@ -4,17 +4,6 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
-
-//Prevent cache addons
-define('DONOTCACHEPAGE', true);
-define('DONOTCACHEDB', true);
-define('DONOTMINIFY', true);
-define('DONOTCDN', true);
-define('DONOTCACHCEOBJECT', true);
-define('QUICK_CACHE_ALLOWED', false);
-$_SERVER["QUICK_CACHE_ALLOWED"] = false;
-if (function_exists('w3tc_pgcache_flush'))
-	w3tc_pgcache_flush();
 	
 // Remove header and footer form logfile
 function backwpup_read_logfile($logfile) {
