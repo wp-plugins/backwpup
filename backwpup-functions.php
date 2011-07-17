@@ -95,8 +95,8 @@ function backwpup_contextual_help($help='') {
 			'<p><strong>'.__('For more information:','backwpup').'</strong></p>'.
 			'<p><a href="http://backwpup.com/forum/" target="_blank">'.__('Support','backwpup').'</a>'.
 			' | <a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>'.
+			' | <a href="http://backwpup.com/manual/" target="_blank">' . __('Manual','backwpup') . '</a>'.
 			' | <a href="http://backwpup.com/" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
-			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin on WordPress.org', 'backwpup') . '</a>'.
 			' | <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>'.
 			' | <a href="https://flattr.com/thing/345067/BackWPup" target="_blank">' . __('Flattr', 'backwpup') . '</a>'.
 			'<p>BackWPup version '.BACKWPUP_VERSION.', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a><br />'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
@@ -195,8 +195,9 @@ function backwpup_plugin_links($links, $file) {
 	if (!current_user_can('install_plugins'))
 		return $links;
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
-		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
 		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
+		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
+		$links[] = '<a href="http://backwpup.com/manual/" target="_blank">' . __('Manual','backwpup') . '</a>';
 		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;
