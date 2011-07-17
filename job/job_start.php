@@ -20,13 +20,49 @@ function backwpup_jobstart($jobid='') {
 		} else { //delete working file job thing it not works longer.
 			unlink(backwpup_get_temp().'.running');
 			unlink(backwpup_get_temp().'.static');
-			sleep(3);
 		}
 	}
+	
 	//Make config
 	//clean var
 	$backwpup_static = array();
-	//Set needed WP vars to Session
+	//get and create temp dir
+	$backwpup_static['TEMPDIR']=backwpup_get_temp();
+	if (!is_dir($backwpup_static['TEMPDIR'])) {
+		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
+			sprintf(__('Can not create temp folder: %1$s','backwpup'),$backwpup_static['TEMPDIR']);
+			return false;
+		}		
+	}
+	if (!is_writable($backwpup_static['TEMPDIR'])) {
+		_e("Temp dir not writeable","backwpup");
+		return false;
+	} else {  //clean up old temp files
+		if ($dir = opendir($backwpup_static['TEMPDIR'])) {
+			while (($file = readdir($dir)) !== false) {
+				if (is_readable($backwpup_static['TEMPDIR'].$file) and is_file($backwpup_static['TEMPDIR'].$file)) {
+					if ($file!='.' and $file!='..') {
+						unlink($backwpup_static['TEMPDIR'].$file);
+					}
+				}
+			}
+			closedir($dir);
+		}
+		//create .htaccess for apache and index.html for other
+		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+			if (!is_file($backwpup_static['TEMPDIR'].'.htaccess')) 
+				file_put_contents($backwpup_static['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
+		} else {
+			if (!is_file($backwpup_static['TEMPDIR'].'index.html')) 
+				file_put_contents($backwpup_static['TEMPDIR'].'index.html',"\n");
+			if (!is_file($backwpup_static['TEMPDIR'].'index.php'))
+				file_put_contents($backwpup_static['TEMPDIR'].'index.php',"\n");
+		}	
+	}	
+	//Write running file to prevent dobble runnging
+	file_put_contents(backwpup_get_temp().'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOG'=>'','LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
+
+	//Set needed WP vars
 	$backwpup_static['WP']['DB_NAME']=DB_NAME;
 	$backwpup_static['WP']['DB_USER']=DB_USER;
 	$backwpup_static['WP']['DB_PASSWORD']=DB_PASSWORD;
@@ -86,6 +122,9 @@ function backwpup_jobstart($jobid='') {
 	$backwpup_static['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']=BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY;
 	//Set config data
 	$backwpup_static['CFG']=get_option('backwpup');
+	//check exists gzip functions
+	if(!function_exists('gzopen'))
+		$backwpup_static['CFG']['gzlogs']=false;
 	//Check working times
 	if (empty($backwpup_static['CFG']['jobstepretry']) or !is_int($backwpup_static['CFG']['jobstepretry']) or $backwpup_static['CFG']['jobstepretry']>100)
 		$backwpup_static['CFG']['jobstepretry']=3;
@@ -99,39 +138,7 @@ function backwpup_jobstart($jobid='') {
 	$backwpup_static['JOB']=backwpup_get_job_vars($jobid);
 	//STATIC data
 	$backwpup_static['JOBRUNURL']=BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php';
-	//get and create temp dir
-	$backwpup_static['TEMPDIR']=backwpup_get_temp();
-	if (!is_dir($backwpup_static['TEMPDIR'])) {
-		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
-			sprintf(__('Can not create temp folder: %1$s','backwpup'),$backwpup_static['TEMPDIR']);
-			return false;
-		}		
-	}
-	if (!is_writable($backwpup_static['TEMPDIR'])) {
-		_e("Temp dir not writeable","backwpup");
-		return false;
-	} else {  //clean up old temp files
-		if ($dir = opendir($backwpup_static['TEMPDIR'])) {
-			while (($file = readdir($dir)) !== false) {
-				if (is_readable($backwpup_static['TEMPDIR'].$file) and is_file($backwpup_static['TEMPDIR'].$file)) {
-					if ($file!='.' and $file!='..') {
-						unlink($backwpup_static['TEMPDIR'].$file);
-					}
-				}
-			}
-			closedir($dir);
-		}
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_static['TEMPDIR'].'.htaccess')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpup_static['TEMPDIR'].'index.html')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'index.html',"\n");
-			if (!is_file($backwpup_static['TEMPDIR'].'index.php'))
-				file_put_contents($backwpup_static['TEMPDIR'].'index.php',"\n");
-		}	
-	}
+	//Setup Logs dir
 	$backwpup_static['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpup_static['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($backwpup_static['CFG']['dirlogs'])) {
 		if (!mkdir(rtrim($backwpup_static['CFG']['dirlogs'],'/'),0777,true)) {
@@ -153,9 +160,6 @@ function backwpup_jobstart($jobid='') {
 		_e("Log folder not writeable!","backwpup");
 		return false;
 	}
-	//check exists gzip functions
-	if(!function_exists('gzopen'))
-		$backwpup_static['CFG']['gzlogs']=false;
 	//set Logfile
 	$backwpup_static['LOGFILE']=$backwpup_static['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 	//create log file

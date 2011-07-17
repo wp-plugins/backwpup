@@ -1,6 +1,6 @@
 <?PHP
 function backwpup_get_temp() {
-	$tmpbackwpup='.backwpup_'.substr(md5(__FILE__),8,16).'/';
+	$tmpbackwpup='.backwpup_'.crc32(__FILE__).'/';
 	$tempdir=getenv('TMP');												//temp dirs form env
 	if (empty($tempdir) or !backwpup_get_temp_check_open_basedir($tempdir) or !is_writable($tempdir) or !is_dir($tempdir))
 		$tempdir=getenv('TEMP');

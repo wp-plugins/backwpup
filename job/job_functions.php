@@ -179,9 +179,11 @@ function curl_progresscallback($download_size, $downloaded, $upload_size, $uploa
 }
 
 function get_working_file() {
-	$tempdir=backwpup_get_temp();
-	if (is_file($tempdir.'.running')) {
-		if ($runningfile=file_get_contents($tempdir.'.running'))
+	global $STATIC;
+	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
+		$STATIC['TEMPDIR']=backwpup_get_temp();
+	if (is_file($STATIC['TEMPDIR'].'.running')) {
+		if ($runningfile=file_get_contents($STATIC['TEMPDIR'].'.running'))
 			return unserialize(trim($runningfile));
 		else
 			return false;
@@ -191,10 +193,12 @@ function get_working_file() {
 }
 
 function delete_working_file() {
-	$tempdir=backwpup_get_temp();
-	if (is_file($tempdir.'.running')) {
-		unlink($tempdir.'.running');
-		unlink($tempdir.'.static');
+	global $STATIC;
+	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
+		$STATIC['TEMPDIR']=backwpup_get_temp();
+	if (is_file($STATIC['TEMPDIR'].'.running')) {
+		unlink($STATIC['TEMPDIR'].'.running');
+		unlink($STATIC['TEMPDIR'].'.static');
 		return true;
 	} else {
 		return false;
@@ -203,6 +207,8 @@ function delete_working_file() {
 
 function update_working_file($mustwrite=false) {
 	global $WORKING,$STATIC,$runmicrotime;
+	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
+		$STATIC['TEMPDIR']=backwpup_get_temp();
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
 	if ($mustwrite or empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
