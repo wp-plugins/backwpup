@@ -2,17 +2,20 @@
 //Set a constance for not direkt loding in other files
 define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 // get needed functions for the jobrun
-require_once(BACKWPUP_JOBRUN_FOLDER.'/../libs/backwpup_get_temp.php');
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
+//get temp dir
+$STATIC['TEMPDIR']=trim($_COOKIE['BackWPupJobTemp']);
+if (!is_writable($STATIC['TEMPDIR'])) {
+	trigger_error('Temp dir not wrteable!!! Job aborted!',E_USER_ERROR);
+	die();
+}
 //read runningfile and config
 $runningfile=get_working_file();
 if ($runningfile['JOBID']>0) {
 	$WORKING=$runningfile['WORKING'];
-	if ($staticfile=file_get_contents(backwpup_get_temp().'.static')) {
+	if ($staticfile=file_get_contents($STATIC['TEMPDIR'].'.static')) {
 		$STATIC=unserialize(trim($staticfile));
-		$STATIC['TEMPDIR']=backwpup_get_temp();
-	}
-	else {
+	} else {
 		delete_working_file();
 		trigger_error('No config file found!!!',E_USER_ERROR);
 		die();
@@ -21,6 +24,12 @@ if ($runningfile['JOBID']>0) {
 	unset($staticfile);
 } else {
 	trigger_error('No running file found!!!',E_USER_ERROR);
+	die();
+}
+//check are temp dirs the same
+if ($STATIC['TEMPDIR']!=trim($_COOKIE['BackWPupJobTemp'])) {
+	delete_working_file();
+	trigger_error('Temp dir not correct!!!',E_USER_ERROR);
 	die();
 }
 ob_end_clean();

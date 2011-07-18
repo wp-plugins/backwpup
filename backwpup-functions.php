@@ -166,6 +166,47 @@ function backwpup_plugin_deactivate() {
 	backwpup_api(false);
 }
 
+//get temp dir
+function backwpup_get_temp() {
+	if (defined('WP_TEMP_DIR'))
+		$tempfolder=WP_TEMP_DIR;
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+		$tempfolder=getenv('TMP');
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+		$tempfolder=getenv('TEMP');
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+		$tempfolder=getenv('TMPDIR');
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
+		$tempfolder=sys_get_temp_dir();									//normal temp dir
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
+		$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
+		$tempfolder=ini_get('session.save_path');						//if sys_get_temp_dir not work
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) {
+		$openbasedir=ini_get('open_basedir');
+		if (!empty($openbasedir)) {
+			$openbasedir=explode(PATH_SEPARATOR,$openbasedir);
+			$tempfolder=$openbasedir[0];
+		}
+	}
+	return rtrim(str_replace('\\','/',realpath(trim($tempfolder))),'/').'/.backwpup_'.crc32(SECURE_AUTH_KEY).'/';
+}
+//checks the dir is in openbasedir
+function backwpup_check_open_basedir($dir) {
+	$openbasedir=ini_get('open_basedir');
+	$dir=rtrim(str_replace('\\','/',$dir),'/').'/';
+	if (!empty($openbasedir)) {
+		$openbasedirarray=explode(PATH_SEPARATOR,$openbasedir);
+		foreach ($openbasedirarray as $basedir) {
+			if (stripos($dir,rtrim(str_replace('\\','/',$basedir),'/').'/')==0)
+				return true;
+		}
+	} else {
+		return true;
+	}
+	return false;
+}
+
 //Backwpup API
 function backwpup_api($active=false) {
 	global $wp_version;
@@ -674,7 +715,7 @@ function backwpup_env_checks() {
 		$message.=__('- curl is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
-	if (!is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
+	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
 		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);
 	}
 	if (!is_dir($cfg['dirlogs'])) { // check logs folder
@@ -682,6 +723,9 @@ function backwpup_env_checks() {
 	}
 	if (!is_writable($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Logs Folder not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+	}
+	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
+		$message.=__('- Logs  Folder in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
 	$jobs=(array)get_option('backwpup_jobs'); 
 	foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling

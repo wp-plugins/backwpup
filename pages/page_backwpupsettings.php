@@ -102,7 +102,7 @@ echo '</select>';
 </table>
 <h3><?PHP _e('Jobs','backwpup'); ?></h3> 
 <p><?PHP _e('Here you can set Job related things.','backwpup'); ?></p>
-<table class="form-table"> 
+<table class="form-table">
 <tr valign="top"> 
 <th scope="row"><label for="jobstepretry"><?PHP _e('Max. retrys for job steps','backwpup'); ?></label></th> 
 <td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo $cfg['jobstepretry'];?>" class="small-text code" />

@@ -1,6 +1,4 @@
 <?PHP
-require_once(dirname(__FILE__).'/../libs/backwpup_get_temp.php');
-
 function backwpup_read_logfile($logfile) {
 	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')
 		$logfiledata=gzfile($logfile);
@@ -25,9 +23,8 @@ function backwpup_read_logfile($logfile) {
 }
 
 function backwpup_get_working_file() {
-	$tempdir=backwpup_get_temp();
-	if (is_file($tempdir.'.running')) {
-		if ($runningfile=file_get_contents($tempdir.'.running'))
+	if (is_file(trim($_POST['BackWPupJobTemp']).'.running')) {
+		if ($runningfile=file_get_contents(trim($_POST['BackWPupJobTemp']).'.running'))
 			return unserialize(trim($runningfile));
 		else
 			return false;
@@ -73,7 +70,7 @@ if (substr(trim($_POST['logfile']),-3)!='.gz' and substr(trim($_POST['logfile'])
 	
 $log='';
 if (is_file(trim($_POST['logfile']))) {
-	if (is_file(backwpup_get_temp().'.running')) {
+	if (is_file(trim($_POST['BackWPupJobTemp']).'.running')) {
 		if ($infile=backwpup_get_working_file()) {
 			$warnings=$infile['WORKING']['WARNING'];
 			$errors=$infile['WORKING']['ERROR'];

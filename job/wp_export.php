@@ -13,6 +13,8 @@ function wp_export() {
 	if (function_exists('curl_exec')) {
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, substr($STATIC['JOBRUNURL'],0,-11).'wp_export_generate.php');
+		curl_setopt($ch, CURLOPT_COOKIESESSION, true);
+		curl_setopt($ch, CURLOPT_COOKIE,'BackWPupJobTemp='.$STATIC['TEMPDIR'].'; path=/');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);

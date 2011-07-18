@@ -180,9 +180,7 @@ function curl_progresscallback($download_size, $downloaded, $upload_size, $uploa
 
 function get_working_file() {
 	global $STATIC;
-	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
-		$STATIC['TEMPDIR']=backwpup_get_temp();
-	if (is_file($STATIC['TEMPDIR'].'.running')) {
+	if (is_writable($STATIC['TEMPDIR'].'.running')) {
 		if ($runningfile=file_get_contents($STATIC['TEMPDIR'].'.running'))
 			return unserialize(trim($runningfile));
 		else
@@ -194,9 +192,7 @@ function get_working_file() {
 
 function delete_working_file() {
 	global $STATIC;
-	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
-		$STATIC['TEMPDIR']=backwpup_get_temp();
-	if (is_file($STATIC['TEMPDIR'].'.running')) {
+	if (is_writable($STATIC['TEMPDIR'].'.running')) {
 		unlink($STATIC['TEMPDIR'].'.running');
 		unlink($STATIC['TEMPDIR'].'.static');
 		return true;
@@ -207,8 +203,6 @@ function delete_working_file() {
 
 function update_working_file($mustwrite=false) {
 	global $WORKING,$STATIC,$runmicrotime;
-	if (empty($STATIC['TEMPDIR']) or !is_dir($STATIC['TEMPDIR']))
-		$STATIC['TEMPDIR']=backwpup_get_temp();
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
 	if ($mustwrite or empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
@@ -227,8 +221,10 @@ function update_working_file($mustwrite=false) {
 			$pid=posix_getpid();
 		$runningfile=file_get_contents($STATIC['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
-		file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>$pid,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
-		$runmicrotime=microtime();
+		if (is_writable($STATIC['TEMPDIR'].'.running')) {
+			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>$pid,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
+			$runmicrotime=microtime();
+		}
 	}
 	return true;
 }
@@ -304,31 +300,32 @@ function joberrorhandler() {
 	//genrate timestamp
 	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
 	//wirte log file
-	file_put_contents($STATIC['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
+	if (is_writable($STATIC['LOGFILE'])) {
+		file_put_contents($STATIC['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
 
-	//write new log header
-	if ($adderrorwarning) {
-		$found=0;
-		$fd=fopen($STATIC['LOGFILE'],'r+');
-		while (!feof($fd)) {
-			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
-				$found++;
+		//write new log header
+		if ($adderrorwarning) {
+			$found=0;
+			$fd=fopen($STATIC['LOGFILE'],'r+');
+			while (!feof($fd)) {
+				$line=fgets($fd);
+				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+					fseek($fd,$filepos);
+					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
+					$found++;
+				}
+				if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
+					fseek($fd,$filepos);
+					fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$WORKING['WARNING']."\" />",100)."\n");
+					$found++;
+				}
+				if ($found>=2)
+					break;
+				$filepos=ftell($fd);
 			}
-			if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$WORKING['WARNING']."\" />",100)."\n");
-				$found++;
-			}
-			if ($found>=2)
-				break;
-			$filepos=ftell($fd);
+			fclose($fd);
 		}
-		fclose($fd);
 	}
-
 	//write working file
 	if (is_file($STATIC['TEMPDIR'].'.running'))
 		update_working_file();
@@ -396,32 +393,34 @@ function job_end() {
 		$jobs[$STATIC['JOB']['jobid']]['lastbackupdownloadurl']='';
 	update_option('backwpup_jobs',$jobs); //Save Settings
 	
-	//write heder info
-	$fd=fopen($STATIC['LOGFILE'],'r+');
-	$found=0;
-	while (!feof($fd)) {
-		$line=fgets($fd);
-		if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
-			fseek($fd,$filepos);
-			fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$STATIC['JOB']['lastruntime']."\" />",100)."\n");
-			$found++;
+	//write header info
+	if (is_writable($STATIC['LOGFILE'])) {
+		$fd=fopen($STATIC['LOGFILE'],'r+');
+		$found=0;
+		while (!feof($fd)) {
+			$line=fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".$STATIC['JOB']['lastruntime']."\" />",100)."\n");
+				$found++;
+			}
+			if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100)."\n");
+				$found++;
+			}
+			if ($found>=2)
+				break;
+			$filepos=ftell($fd);
 		}
-		if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
-			fseek($fd,$filepos);
-			fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100)."\n");
-			$found++;
-		}
-		if ($found>=2)
-			break;
-		$filepos=ftell($fd);
+		fclose($fd);
 	}
-	fclose($fd);
 	//Restore error handler
 	restore_error_handler();
 	//logfile end
 	file_put_contents($STATIC['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
 	//gzip logfile
-	if ($STATIC['CFG']['gzlogs']) {
+	if ($STATIC['CFG']['gzlogs'] and is_writable($STATIC['LOGFILE'])) {
 		$fd=fopen($STATIC['LOGFILE'],'r');
 		$zd=gzopen($STATIC['LOGFILE'].'.gz','w9');
 		while (!feof($fd)) {
@@ -499,7 +498,7 @@ function job_shutdown() {
 	if (empty($STATIC['LOGFILE'])) //nothing on empty
 		return;
 	$WORKING['RESTART']++;
-	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running')) {  //only x restarts allowed
+	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running') and is_writable($STATIC['LOGFILE'])) {  //only x restarts allowed
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
 		$WORKING['ERROR']++;
 		$fd=fopen($STATIC['LOGFILE'],'r+');
@@ -520,7 +519,7 @@ function job_shutdown() {
 	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
-	if ($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) {
+	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) and is_writable($STATIC['LOGFILE'])) {
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$WORKING['ERROR']++;
@@ -539,17 +538,22 @@ function job_shutdown() {
 	//Excute jobrun again
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		return;
-	file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+	if (is_writable($STATIC['LOGFILE']))
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	update_working_file(true);
-	$ch=curl_init();
-	curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL']);
-	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-	curl_exec($ch);
-	curl_close($ch);
+	if (!empty($STATIC['JOBRUNURL'])) {
+		$ch=curl_init();
+		curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL']);
+		curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+		curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.$STATIC['TEMPDIR'].'; path=/');
+		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+		curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+		curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+		curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+		curl_exec($ch);
+		curl_close($ch);
+	}
 }
 ?>

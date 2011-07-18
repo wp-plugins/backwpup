@@ -12,22 +12,20 @@ function backwpup_jobstart($jobid='') {
 	if (empty($jobid) or !is_integer($jobid)) {
 		return false;
 	}
+	//clean var
+	$backwpup_static = array();
+	//get and create temp dir
+	$backwpup_static['TEMPDIR']=backwpup_get_temp();
 	//check if a job running
 	if ($infile=backwpup_get_working_file()) {
 		if ($infile['timestamp']<time()-1800) {
 			_e("A job already running!","backwpup");
 			return false;
 		} else { //delete working file job thing it not works longer.
-			unlink(backwpup_get_temp().'.running');
-			unlink(backwpup_get_temp().'.static');
+			unlink($backwpup_static['TEMPDIR'].'.running');
+			unlink($backwpup_static['TEMPDIR'].'.static');
 		}
 	}
-	
-	//Make config
-	//clean var
-	$backwpup_static = array();
-	//get and create temp dir
-	$backwpup_static['TEMPDIR']=backwpup_get_temp();
 	if (!is_dir($backwpup_static['TEMPDIR'])) {
 		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
 			sprintf(__('Can not create temp folder: %1$s','backwpup'),$backwpup_static['TEMPDIR']);
@@ -60,7 +58,7 @@ function backwpup_jobstart($jobid='') {
 		}	
 	}	
 	//Write running file to prevent dobble runnging
-	file_put_contents(backwpup_get_temp().'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOG'=>'','LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
+	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOG'=>'','LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
 
 	//Set needed WP vars
 	$backwpup_static['WP']['DB_NAME']=DB_NAME;
@@ -272,6 +270,8 @@ function backwpup_jobstart($jobid='') {
 	//Run job
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$backwpup_static['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
+	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.$backwpup_static['TEMPDIR'].'; path=/');
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);

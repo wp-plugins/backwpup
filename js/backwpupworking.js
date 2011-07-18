@@ -7,6 +7,7 @@ jQuery(document).ready( function($) {
 				url: backwpupajaxurl,
 				data: {
 					logfile: $('#logfile').val(),
+					BackWPupJobTemp: $('#backwpupjobtemp').val(),
 					logpos:  $('#logpos').val()
 				},
 				dataType: 'json',

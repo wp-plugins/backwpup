@@ -93,7 +93,7 @@ You should only send small archives via email.
 Please deactivate passive mode and try it again.
 
 = Change Temp Folder =
-Create in Plugins folder of wordpress a file named '.backwpuptempfolder' with the temp Folder name in it.
+define(‘WP_TEMP_DIR’, ABSPATH . ‘wp-content/tmp’); in wp-config.php
 
 = Multible backups on one sheduled job =
 You have installed the Plugin W3 Total Cache ?
@@ -132,6 +132,7 @@ Destinations are:
 * respect open_basdir for temp dir
 * dropbox changes fo better uploads but needs meny memory
 * Added Multiseite support (only for Network Admin)
+* uses now ‘WP_TEMP_DIR’ for getting temp folder
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder

@@ -1,6 +1,6 @@
 <?PHP
-require_once(dirname(__FILE__).'/../libs/backwpup_get_temp.php');
-$runningfile=file_get_contents(backwpup_get_temp().'.running');
+if (is_writable(trim($_COOKIE['BackWPupJobTemp']).'.running')) 
+	$runningfile=file_get_contents(trim($_COOKIE['BackWPupJobTemp']).'.running');
 $infile=array();
 if (!empty($runningfile)) 
 	$infile=unserialize(trim($runningfile));
