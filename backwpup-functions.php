@@ -113,14 +113,15 @@ function backwpup_plugin_activate() {
 			update_option('backwpup_last_activate',BACKWPUP_VERSION);
 		}
 	}
-	$jobsids=array_keys((array)get_option('backwpup_jobs'));
-	if (!empty($jobsids)) {
-		foreach ($jobsids as $jobid) {
-			//check jobvaules
-			$jobs[$jobid]=backwpup_get_job_vars($jobid);
+	$jobs=get_option('backwpup_jobs');
+	if (isset($jobs[0]))
+		unset($jobs[0]); //Delte old false job
+	if (!empty($jobs)) {
+		foreach ($jobs as $jobid => $jobvalue) {
+			$checktjobs[$jobid]=backwpup_get_job_vars($jobid); //check jobvaules
 		}
 		//save job values
-		update_option('backwpup_jobs',$jobs);
+		update_option('backwpup_jobs',$checktjobs);
 	}
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
@@ -189,7 +190,7 @@ function backwpup_get_temp() {
 			$tempfolder=$openbasedir[0];
 		}
 	}
-	return rtrim(str_replace('\\','/',realpath(trim($tempfolder))),'/').'/.backwpup_'.crc32(SECURE_AUTH_KEY).'/';
+	return rtrim(str_replace('\\','/',realpath(trim($tempfolder))),'/').'/.backwpup_'.crc32(ABSPATH).'/';
 }
 //checks the dir is in openbasedir
 function backwpup_check_open_basedir($dir) {
@@ -428,12 +429,8 @@ function backwpup_dashboard_logs_config() {
 
 //Dashboard widget for Jobs
 function backwpup_dashboard_activejobs() {
-	$jobsids=array_keys((array)get_option('backwpup_jobs'));
-	if (!empty($jobsids)) {
-		foreach ($jobsids as $jobid) {
-			$jobs[$jobid]=backwpup_get_job_vars($jobid);
-		}
-	} else {
+	$jobs=get_option('backwpup_jobs');
+	if (empty($jobs)) {
 		echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
 		return;
 	}
@@ -540,10 +537,12 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	if (false !== strpos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
 		$excludedir[]=backwpup_get_upload_dir();
 	//Exclude Backup dirs
-	$jobs=(array)get_option('backwpup_jobs');
-	foreach($jobs as $jobsvale) {
-		if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-			$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+	$jobs=get_option('backwpup_jobs');
+	if (!empty($jobs)) {
+		foreach($jobs as $jobsvale) {
+			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
+				$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+		}
 	}
 	return $excludedir;
 }
@@ -727,10 +726,12 @@ function backwpup_env_checks() {
 	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Logs  Folder in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
-	$jobs=(array)get_option('backwpup_jobs'); 
-	foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling
-		if (isset($jobvalue['scheduletime']) and empty($jobvalue['cron']))
-			$message.=__('- Please Check Scheduling time for Job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
+	$jobs=get_option('backwpup_jobs'); 
+	if (!empty($jobs)) {
+		foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling
+			if (empty($jobvalue['cron']))
+				$message.=__('- Please Check Scheduling time for Job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
+		}
 	}
 	$nextrun=wp_next_scheduled('backwpup_cron');
 	if (empty($nextrun) or $nextrun>(time()+3600)) {  //check cron jobs work

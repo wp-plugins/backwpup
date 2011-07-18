@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_msazure() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['msazureHost']) or empty($STATIC['JOB']['msazureAccName']) or empty($STATIC['JOB']['msazureKey']) or empty($STATIC['JOB']['msazureContainer'])) {
-		$WORKING['STEPSDONE'][]='DEST_MSAZURE'; //set done	
-		return;
-	}
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	trigger_error($WORKING['DEST_MSAZURE']['STEP_TRY'].'. '.__('Try to sending backup file to a Microsoft Azure (Blob)...','backwpup'),E_USER_NOTICE);
 

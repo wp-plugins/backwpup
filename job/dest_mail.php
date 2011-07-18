@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_mail() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['mailaddress'])) {
-		$WORKING['STEPSDONE'][]='DEST_MAIL'; //set done
-		return;
-	}
 	$WORKING['STEPTODO']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 	trigger_error($WORKING['DEST_MAIL']['STEP_TRY'].'. '.__('Try to sending backup file with mail...','backwpup'),E_USER_NOTICE);

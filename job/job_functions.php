@@ -214,15 +214,12 @@ function update_working_file($mustwrite=false) {
 			$stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
 		else
 			$stepspersent=1;
-		$pid=0;
 		@set_time_limit($STATIC['CFG']['jobscriptruntime']);
 		mysql_update();
-		if (function_exists('posix_getpid'))
-			$pid=posix_getpid();
 		$runningfile=file_get_contents($STATIC['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
 		if (is_writable($STATIC['TEMPDIR'].'.running')) {
-			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>$pid,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
+			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>getmypid(),'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
 			$runmicrotime=microtime();
 		}
 	}
@@ -297,8 +294,8 @@ function joberrorhandler() {
 		break;
 	}
 
-	//genrate timestamp
-	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> ";
+	//log line
+	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y-m-d H:i.s').":</span> ";
 	//wirte log file
 	if (is_writable($STATIC['LOGFILE'])) {
 		file_put_contents($STATIC['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
@@ -341,6 +338,13 @@ function joberrorhandler() {
 //job end function
 function job_end() {
 	global $WORKING,$STATIC,$mysqlconlink;
+	//check if job_end allredy runs
+	if (empty($WORKING['JOBENDINPROGRESS'])) {
+		$WORKING['JOBENDINPROGRESS']=true;
+		update_working_file(true);
+	} else
+		return;
+
 	$WORKING['STEPTODO']=1;
 	$WORKING['STEPDONE']=0;
 	//delete old logs

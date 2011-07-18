@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_dropbox() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['dropetoken']) or empty($STATIC['JOB']['dropesecret'])) {
-		$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done	
-		return;
-	}
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 	trigger_error($WORKING['DEST_DROPBOX']['STEP_TRY'].'. '.__('Try to sending backup file to DropBox...','backwpup'),E_USER_NOTICE);

@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_sugarsync() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['sugaruser']) or empty($STATIC['JOB']['sugarpass']) or empty($STATIC['JOB']['sugarroot'])) {
-		$WORKING['STEPSDONE'][]='DEST_SUGARSYNC'; //set done	
-		return;
-	}
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 	trigger_error($WORKING['DEST_SUGARSYNC']['STEP_TRY'].'. '.__('Try to sending backup file to sugarsync...','backwpup'),E_USER_NOTICE);

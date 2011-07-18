@@ -69,7 +69,6 @@ function backwpup_jobstart($jobid='') {
 	$backwpup_static['WP']['DB_COLLATE']=DB_COLLATE;
 	$backwpup_static['WP']['OPTIONS_TABLE']=$wpdb->options;
 	$backwpup_static['WP']['TABLE_PREFIX']=$wpdb->prefix;
-	$backwpup_static['WP']['WP_DEBUG']=WP_DEBUG;
 	$backwpup_static['WP']['BLOGNAME']=get_bloginfo('name');
 	if (defined('WP_SITEURL'))
 		$backwpup_static['WP']['SITEURL']=trailingslashit(WP_SITEURL);
@@ -249,11 +248,24 @@ function backwpup_jobstart($jobid='') {
 	if (in_array('DB',$backwpup_static['TODO']) or in_array('WPEXP',$backwpup_static['TODO']) or in_array('FILE',$backwpup_static['TODO'])) {
 		$backwpup_working['STEPS'][]='BACKUP_CREATE';		
 		//ADD Destinations
-		$backwpup_working['STEPS'][]='DEST_FOLDER';
-		$backwpup_working['STEPS'][]='DEST_MAIL';
-		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
-		foreach($dests as $dest)
-			$backwpup_working['STEPS'][]='DEST_'.strtoupper($dest);
+		if (!empty($backwpup_static['JOB']['backupdir']) and $backwpup_static['JOB']['backupdir']!='/' and $backwpup_static['JOB']['backupdir']!=$backwpup_static['TEMPDIR'])
+			$backwpup_working['STEPS'][]='DEST_FOLDER';
+		if (!empty($backwpup_static['JOB']['mailaddress']))
+			$backwpup_working['STEPS'][]='DEST_MAIL';	
+		if (!empty($backwpup_static['JOB']['ftphost']) and !empty($backwpup_static['JOB']['ftpuser']) and !empty($backwpup_static['JOB']['ftppass']) and in_array('FTP',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_FTP';
+		if (!empty($backwpup_static['JOB']['dropetoken']) and !empty($backwpup_static['JOB']['dropesecret']) and in_array('DROPBOX',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_DROPBOX';
+		if (!empty($backwpup_static['JOB']['sugaruser']) and !empty($backwpup_static['JOB']['sugarpass']) and !empty($backwpup_static['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))		
+			$backwpup_working['STEPS'][]='DEST_SUGARSYNC';
+		if (!empty($backwpup_static['JOB']['awsAccessKey']) and !empty($backwpup_static['JOB']['awsSecretKey']) and !empty($backwpup_static['JOB']['awsBucket']) and in_array('S3',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_S3';
+		if (!empty($backwpup_static['JOB']['GStorageAccessKey']) and !empty($backwpup_static['JOB']['GStorageSecret']) and !empty($backwpup_static['JOB']['GStorageBucket']) and in_array('GSTORAGE',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_GSTORAGE';
+		if (!empty($backwpup_static['JOB']['rscUsername']) and !empty($backwpup_static['JOB']['rscAPIKey']) and !empty($backwpup_static['JOB']['rscContainer']) and in_array('RSC',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_RSC';
+		if (!empty($backwpup_static['JOB']['msazureHost']) and !empty($backwpup_static['JOB']['msazureAccName']) and !empty($backwpup_static['JOB']['msazureKey']) and !empty($backwpup_static['JOB']['msazureContainer']) and in_array('MSAZURE',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpup_working['STEPS'][]='DEST_MSAZURE';
 	}
 	if (in_array('CHECK',$backwpup_static['TODO']))
 		$backwpup_working['STEPS'][]='DB_CHECK';

@@ -12,7 +12,6 @@ if (!is_writable($STATIC['TEMPDIR'])) {
 //read runningfile and config
 $runningfile=get_working_file();
 if ($runningfile['JOBID']>0) {
-	$WORKING=$runningfile['WORKING'];
 	if ($staticfile=file_get_contents($STATIC['TEMPDIR'].'.static')) {
 		$STATIC=unserialize(trim($staticfile));
 	} else {
@@ -20,6 +19,7 @@ if ($runningfile['JOBID']>0) {
 		trigger_error('No config file found!!!',E_USER_ERROR);
 		die();
 	}
+	$WORKING=$runningfile['WORKING'];
 	unset($runningfile);
 	unset($staticfile);
 } else {
@@ -49,10 +49,7 @@ date_default_timezone_set($STATIC['WP']['TIMEZONE']);
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
 //set function for PHP user defineid error handling
-if ($STATIC['WP']['WP_DEBUG'])
-	set_error_handler('joberrorhandler',E_ALL | E_STRICT);
-else
-	set_error_handler('joberrorhandler',E_ALL & ~E_NOTICE);
+set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 //disable safe mode
 @ini_set('safe_mode','0');
 //set execution time tom max on safe mode
@@ -96,6 +93,18 @@ foreach($WORKING['STEPS'] as $step) {
 		trigger_error(__('[INFO]: Temp folder is:','backwpup').' '.$STATIC['TEMPDIR'],E_USER_NOTICE);
 		if(!empty($STATIC['backupfile']))
 			trigger_error(__('[INFO]: Backup file is:','backwpup').' '.$STATIC['JOB']['backupdir'].$STATIC['backupfile'],E_USER_NOTICE);
+		//test for destinations
+		if (in_array('DB',$STATIC['TODO']) or in_array('WPEXP',$STATIC['TODO']) or in_array('FILE',$STATIC['TODO'])) {
+			$desttest=false;
+			foreach($WORKING['STEPS'] as $deststeptest) {
+				if (substr($deststeptest,0,5)=='DEST_') {
+					$desttest=true;
+					break;
+				}
+			}
+			if (!$desttest)
+				trigger_error(__('No Destination defineid for Backupfile!!! Please Correct Job settings','backwpup'),E_USER_ERROR);
+		}
 	}
 	//Set next step
 	if (!isset($WORKING[$step]['STEP_TRY']) or empty($WORKING[$step]['STEP_TRY'])) {

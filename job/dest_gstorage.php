@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_gstorage() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['GStorageAccessKey']) or empty($STATIC['JOB']['GStorageSecret']) or empty($STATIC['JOB']['GStorageBucket'])) {
-		$WORKING['STEPSDONE'][]='DEST_GSTORAGE'; //set done	
-		return;
-	}
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 	trigger_error($WORKING['DEST_GSTORAGE']['STEP_TRY'].'. '.__('Try to sending backup file to Google Storage...','backwpup'),E_USER_NOTICE);

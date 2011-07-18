@@ -124,9 +124,12 @@ function _get_exclude_dirs($folder) {
 	if (false !== strpos($STATIC['WP']['WP_UPLOAD_DIR'],$folder) and $STATIC['WP']['WP_UPLOAD_DIR']!=$folder)
 		$excludedir[]=$STATIC['WP']['WP_UPLOAD_DIR'];
 	//Exclude Backup dirs
-	foreach((array)get_option('backwpup_jobs') as $jobsvalue) {
-		if (!empty($jobsvalue['backupdir']) and $jobsvalue['backupdir']!='/')
-			$excludedir[]=$jobsvalue['backupdir'];
+	$jobs=get_option('backwpup_jobs');
+	if (!empty($jobs)) {
+		foreach($jobs as $jobsvalue) {
+			if (!empty($jobsvalue['backupdir']) and $jobsvalue['backupdir']!='/')
+				$excludedir[]=$jobsvalue['backupdir'];
+		}
 	}
 	return $excludedir;
 }

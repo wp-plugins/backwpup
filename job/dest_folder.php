@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_folder() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['backupdir']) or $STATIC['JOB']['backupdir']=='/' or $STATIC['JOB']['backupdir']==$STATIC['TEMPDIR']) {
-		$WORKING['STEPSDONE'][]='DEST_FOLDER'; //set done	
-		return;
-	}
 	$WORKING['STEPTODO']=1;
 	$WORKING['STEPDONE']=0;
 	$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=download&file='.$STATIC['JOB']['backupdir'].$STATIC['backupfile'];

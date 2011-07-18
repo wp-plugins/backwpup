@@ -7,10 +7,6 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_rsc() {
 	global $WORKING,$STATIC;
-	if (empty($STATIC['JOB']['rscUsername']) or empty($STATIC['JOB']['rscAPIKey']) or empty($STATIC['JOB']['rscContainer'])) {
-		$WORKING['STEPSDONE'][]='DEST_RSC'; //set done	
-		return;
-	}
 	trigger_error($WORKING['DEST_RSC']['STEP_TRY'].'. '.__('Try to sending backup file to Rackspace Cloud...','backwpup'),E_USER_NOTICE);
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
