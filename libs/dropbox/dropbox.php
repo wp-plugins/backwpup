@@ -220,7 +220,7 @@ class Dropbox {
 				$body.=file_get_contents($file);
 				$body.="\r\n";
 				$body.="--" . $boundary . "--";
-				curl_setopt($ch, CURLOPT_POSTFIELDS, &$body);
+				curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
 				$headers[]='Content-Length: ' .strlen($body);
 				$headers[]='Content-Type: multipart/form-data; boundary=' . $boundary;
 			} else {

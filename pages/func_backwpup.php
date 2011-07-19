@@ -133,7 +133,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$runtime=time()-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($jobvalue['activated']) {
-						$r .=  date_i18n(get_option('date_format'),$jobvalue['cronnextrun']).'<br />'. date_i18n(get_option('time_format'),$jobvalue['cronnextrun']);
+						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['cronnextrun']);
 					} else {
 						$r .= __('Inactive','backwpup');
 					}
@@ -145,7 +145,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'last':
 					$r .=  "<td $attributes>";
 					if (isset($jobvalue['lastrun']) && $jobvalue['lastrun']) {
-						$r .=  date_i18n(get_option('date_format'),$jobvalue['lastrun']).'<br />'. date_i18n(get_option('time_format'),$jobvalue['lastrun']); 
+						$r .=  backwpup_date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['lastrun']); 
 						if (isset($jobvalue['lastruntime']))
 							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
 					} else {

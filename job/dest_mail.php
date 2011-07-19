@@ -39,7 +39,7 @@ function dest_mail() {
 	$phpmailer->From     = $STATIC['CFG']['mailsndemail'];
 	$phpmailer->FromName = $STATIC['CFG']['mailsndname'];
 	$phpmailer->AddAddress($STATIC['JOB']['mailaddress']);
-	$phpmailer->Subject  =  __('BackWPup File from','backwpup').' '.date('Y-m-d H:i',$STATIC['JOB']['starttime']).': '.$STATIC['JOB']['name'];
+	$phpmailer->Subject  =  __('BackWPup File from','backwpup').' '.date('Y/m/d @ H:i',$STATIC['JOB']['starttime']+$STATIC['WP']['TIMEDIFF']).': '.$STATIC['JOB']['name'];
 	$phpmailer->IsHTML(false);
 	$phpmailer->Body  =  __('Backup File:','backwpup').$STATIC['backupfile'];
 

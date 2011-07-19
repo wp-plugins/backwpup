@@ -57,7 +57,7 @@ function backwpup_jobedit_metabox_backupfile($jobvalue) {
 	else
 		echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('Tar BZip2','backwpup').'<br />';	
 	_e('Preview:','backwpup'); 
-	echo '<br /><i><span id="backupfileprefix">'.$jobvalue['fileprefix'].'</span>'.date_i18n('Y-m-d_H-i-s').'<span id="backupfileformart">'.$jobvalue['fileformart'].'</span></i>';
+	echo '<br /><i><span id="backupfileprefix">'.$jobvalue['fileprefix'].'</span>'.backwpup_date_i18n('Y-m-d_H-i-s').'<span id="backupfileformart">'.$jobvalue['fileformart'].'</span></i>';
 }
 
 function backwpup_jobedit_metabox_sendlog($jobvalue) {

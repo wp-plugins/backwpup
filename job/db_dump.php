@@ -34,7 +34,7 @@ function db_dump() {
 			fwrite($file, "-- Blog ABSPATH: ".$STATIC['WP']['ABSPATH']."\n");
 			fwrite($file, "-- Table Prefix: ".$STATIC['WP']['TABLE_PREFIX']."\n");
 			fwrite($file, "-- Database Name: ".$STATIC['WP']['DB_NAME']."\n");
-			fwrite($file, "-- Dump on: ".date('Y-m-d H:i.s')."\n");
+			fwrite($file, "-- Dump on: ".date('Y-m-d H:i.s',time()+$STATIC['WP']['TIMEDIFF'])."\n");
 			fwrite($file, "-- ---------------------------------------------------------\n\n");
 			//for better import with mysql client
 			fwrite($file, "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n");

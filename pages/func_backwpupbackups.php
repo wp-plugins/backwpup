@@ -251,7 +251,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					break;
 				case 'time':
 					$r .= "<td $attributes>";
-					$r .= date_i18n(get_option('date_format'),$backup['time']).'<br />'. date_i18n(get_option('time_format'),$backup['time']); 
+					$r .= backwpup_date_i18n(get_option('date_format'),$backup['time']).'<br />'. backwpup_date_i18n(get_option('time_format'),$backup['time']); 
 					$r .= "</td>";
 					break;
 			}

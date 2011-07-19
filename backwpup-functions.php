@@ -260,15 +260,23 @@ function backwpup_intervals($schedules) {
 	$schedules=array_merge($intervals,$schedules);
 	return $schedules;
 }
-
+//
+function backwpup_date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
+	if ($unixtimestamp) 
+		$unixtimestamp=$unixtimestamp+get_option('gmt_offset')*3600;
+	return date_i18n( $dateformatstring, $unixtimestamp, $gmt);
+}
 //cron work
 function backwpup_cron() {
-	if ($infile=backwpup_get_working_file()) {
-		if ($infile['timestamp']>current_time('timestamp')-310) {
+	if (is_file(backwpup_get_temp().'.running')) {
+		$infile=backwpup_get_working_file();
+		if ($infile['timestamp']>time()-310) {
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
-			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($ch,CURLOPT_COOKIESESSION,true);
+			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.backwpup_get_temp().'; path=/');
+			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
+			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
@@ -283,7 +291,6 @@ function backwpup_cron() {
 				if (!isset($jobvalue['activated']) or !$jobvalue['activated'])
 					continue;
 				if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
-					//include jobstart function
 					require_once(dirname(__FILE__).'/job/job_start.php');
 					backwpup_jobstart($jobid);	
 				}
@@ -386,7 +393,7 @@ function backwpup_dashboard_logs() {
 		foreach ($logfiles as $logfile) {
 			$logdata=backwpup_read_logheader($cfg['dirlogs'].'/'.$logfile);
 			echo '<li>';
-			echo '<span>'.date_i18n(get_option('date_format').' '.get_option('time_format'),$logdata['logtime']).'</span> ';
+			echo '<span>'.backwpup_date_i18n(get_option('date_format').' @ '.get_option('time_format'),$logdata['logtime']).'</span> ';
 			echo '<a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$cfg['dirlogs'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
 			if ($logdata['errors']>0)
 				printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
@@ -451,7 +458,7 @@ function backwpup_dashboard_activejobs() {
 			echo "</li>";
 			$count++;
 		} elseif ($jobvalue['activated']) {
-			echo '<li><span>'.date(get_option('date_format'),$jobvalue['cronnextrun']).' '.date(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
+			echo '<li><span>'.date_i18n(get_option('date_format'),$jobvalue['cronnextrun']).' @ '.date_i18n(get_option('time_format'),$jobvalue['cronnextrun']).'</span>';
 			echo ' <a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue['jobid'], 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$jobvalue['name'].'</a><br />';
 			echo "</li>";
 			$count++;
@@ -524,7 +531,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	$cfg=get_option('backwpup'); //Load Settings
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
-	$excludedir[]=rtrim(str_replace('\\','/',backwpup_get_temp()),'/').'/'; //exclude temp
+	$excludedir[]=backwpup_get_temp(); //exclude temp
 	$excludedir[]=rtrim(str_replace('\\','/',$cfg['dirlogs']),'/').'/'; //exclude logfiles
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));

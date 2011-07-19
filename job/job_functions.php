@@ -295,7 +295,7 @@ function joberrorhandler() {
 	}
 
 	//log line
-	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y-m-d H:i.s').":</span> ";
+	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> ";
 	//wirte log file
 	if (is_writable($STATIC['LOGFILE'])) {
 		file_put_contents($STATIC['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
@@ -386,7 +386,7 @@ function job_end() {
 	}
 	
 	$jobs=get_option('backwpup_jobs');
-	$jobs[$STATIC['JOB']['jobid']]['lastrun']=$jobs[$STATIC['JOB']['jobid']]['starttime']+$STATIC['WP']['TIMEDIFF'];
+	$jobs[$STATIC['JOB']['jobid']]['lastrun']=$jobs[$STATIC['JOB']['jobid']]['starttime'];
 	$STATIC['JOB']['lastrun']=$jobs[$STATIC['JOB']['jobid']]['lastrun'];
 	$jobs[$STATIC['JOB']['jobid']]['lastruntime']=time()-$STATIC['JOB']['starttime'];
 	$STATIC['JOB']['lastruntime']=$jobs[$STATIC['JOB']['jobid']]['lastruntime'];
@@ -478,7 +478,7 @@ function job_end() {
 		$phpmailer->From     = $STATIC['CFG']['mailsndemail'];
 		$phpmailer->FromName = $STATIC['CFG']['mailsndname'];
 		$phpmailer->AddAddress($STATIC['JOB']['mailaddresslog']);
-		$phpmailer->Subject  =  __('BackWPup Log from','backwpup').' '.date('Y-m-d H:i',$STATIC['JOB']['starttime']).': '.$STATIC['JOB']['name'];
+		$phpmailer->Subject  =  __('BackWPup Log from','backwpup').' '.date('Y/m/d @ H:i',$STATIC['JOB']['starttime']+$STATIC['WP']['TIMEDIFF']).': '.$STATIC['JOB']['name'];
 		$phpmailer->IsHTML(false);
 		$phpmailer->Body  =  $mailbody;
 		$phpmailer->AddAttachment($STATIC['LOGFILE']);
@@ -503,7 +503,7 @@ function job_shutdown() {
 		return;
 	$WORKING['RESTART']++;
 	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running') and is_writable($STATIC['LOGFILE'])) {  //only x restarts allowed
-		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
 		$WORKING['ERROR']++;
 		$fd=fopen($STATIC['LOGFILE'],'r+');
 		while (!feof($fd)) {
@@ -524,7 +524,7 @@ function job_shutdown() {
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) and is_writable($STATIC['LOGFILE'])) {
-		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$WORKING['ERROR']++;
 		$fd=fopen($STATIC['LOGFILE'],'r+');
@@ -543,7 +543,7 @@ function job_shutdown() {
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		return;
 	if (is_writable($STATIC['LOGFILE']))
-		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y-m-d H:i.s').":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	update_working_file(true);
 	if (!empty($STATIC['JOBRUNURL'])) {
 		$ch=curl_init();

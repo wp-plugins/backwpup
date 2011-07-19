@@ -64,7 +64,7 @@ if (!empty($doaction)) {
 		$runningfile=backwpup_get_working_file();
 		unlink(backwpup_get_temp().'.running'); //delete runnig file
 		unlink(backwpup_get_temp().'.static'); //delete static file
-		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
+		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".backwpup_date_i18n('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$runningfile['WORKING']['ERROR']++;
 		$fd=fopen($runningfile['LOGFILE'],'r+');

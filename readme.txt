@@ -134,6 +134,7 @@ Destinations are:
 * Added Multiseite support (only for Network Admin)
 * uses now ‘WP_TEMP_DIR’ for getting temp folder
 * Updated AWS lib to 1.3.6
+* job runs now in UTC time. Time outputs will convertet.
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder

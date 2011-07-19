@@ -74,19 +74,8 @@ function backwpup_jobstart($jobid='') {
 		$backwpup_static['WP']['SITEURL']=trailingslashit(WP_SITEURL);
 	else
 		$backwpup_static['WP']['SITEURL']=trailingslashit(get_option('siteurl'));
-	$backwpup_static['WP']['TIMEDIFF']=current_time('timestamp')-time();
+	$backwpup_static['WP']['TIMEDIFF']=get_option('gmt_offset')*3600;
 	$backwpup_static['WP']['WPLANG']=WPLANG;
-	//timezone
-	$backwpup_static['WP']['GMTOFFSET']=get_option('gmt_offset');
-	$backwpup_static['WP']['TIMEZONE']=get_option('timezone_string');
-	if (empty($backwpup_static['WP']['TIMEZONE'])) { // Create a UTC+- zone if no timezone string exists
-		if ( 0 == $backwpup_static['WP']['GMTOFFSET'] )
-			$backwpup_static['WP']['TIMEZONE'] = 'UTC+0';
-		elseif ($backwpup_static['WP']['GMTOFFSET'] < 0)
-			$backwpup_static['WP']['TIMEZONE'] = 'UTC' . $backwpup_static['WP']['GMTOFFSET'];
-		else
-			$backwpup_static['WP']['TIMEZONE'] = 'UTC+' . $backwpup_static['WP']['GMTOFFSET'];
-	}
 	//WP folder
 	$backwpup_static['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
 	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
@@ -158,13 +147,13 @@ function backwpup_jobstart($jobid='') {
 		return false;
 	}
 	//set Logfile
-	$backwpup_static['LOGFILE']=$backwpup_static['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
+	$backwpup_static['LOGFILE']=$backwpup_static['CFG']['dirlogs'].'backwpup_log_'.backwpup_date_i18n('Y-m-d_H-i-s').'.html';
 	//create log file
 	$fd=fopen($backwpup_static['LOGFILE'],'w');
 	//Create log file header
 	fwrite($fd,"<html>\n<head>\n");
 	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
 	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpup_static['JOB']['jobid']."\" />\n");
@@ -178,7 +167,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,".error {background-color:red;}\n");
 	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
 	fwrite($fd,"</style>\n");
-	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$backwpup_static['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
+	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$backwpup_static['JOB']['name'],backwpup_date_i18n(get_option('date_format')),backwpup_date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
@@ -227,7 +216,7 @@ function backwpup_jobstart($jobid='') {
 			return false;
 		}
 		//set Backup file Name
-		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].date_i18n('Y-m-d_H-i-s').$backwpup_static['JOB']['fileformart'];
+		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].backwpup_date_i18n('Y-m-d_H-i-s').$backwpup_static['JOB']['fileformart'];
 	}
 	//set ERROR and WARNINGS counter
 	$backwpup_working['WARNING']=0;

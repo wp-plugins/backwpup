@@ -45,7 +45,7 @@ if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	die();
 }
 //set timezone
-date_default_timezone_set($STATIC['WP']['TIMEZONE']);
+date_default_timezone_set('UTC');
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
 //set function for PHP user defineid error handling
@@ -79,11 +79,11 @@ foreach($WORKING['STEPS'] as $step) {
 foreach($WORKING['STEPS'] as $step) {
 	//display some info massages bevor fist step
 	if (count($WORKING['STEPSDONE'])==0) {
-		trigger_error('[INFO]: BackWPup version '.$STATIC['BACKWPUP']['VERSION'].', Copyright &copy; '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',E_USER_NOTICE);
+		trigger_error('[INFO]: BackWPup version '.$STATIC['BACKWPUP']['VERSION'].', Copyright &copy; '.date('Y',time()+$STATIC['WP']['TIMEDIFF']).' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$STATIC['JOB']['jobid'].'. '.$STATIC['JOB']['name'].'; '.$STATIC['JOB']['type'],E_USER_NOTICE);
 		if ($STATIC['JOB']['activated'])
-			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$STATIC['JOB']['cron'].'; '.date('D, j M Y H:i',$STATIC['JOB']['cronnextrun']),E_USER_NOTICE);
+			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$STATIC['JOB']['cron'].'; '.date('D, j M Y @ H:i',$STATIC['JOB']['cronnextrun']),E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS,E_USER_NOTICE);
 		if (ini_get('safe_mode'))
 			trigger_error(__('[INFO]: PHP Safe mode is ON!','backwpup'),E_USER_NOTICE);		
