@@ -59,6 +59,18 @@ function get_option($option='backwpup_jobs') {
 	return unserialize(mysql_result($res,0));
 }
 
+function curPageURL() {
+	$pageURL = 'http';
+	if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+	$pageURL .= "://";
+	if ($_SERVER["SERVER_PORT"] != "80") {
+		$pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["SCRIPT_NAME"];
+	} else {
+		$pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["SCRIPT_NAME"];
+	}
+	return $pageURL;
+}
+
 function update_option($option='backwpup_jobs',$data) {
 	global $WORKING,$STATIC;
 	mysql_update();
@@ -551,11 +563,12 @@ function job_shutdown() {
 	if (!empty($STATIC['JOBRUNURL'])) {
 		$ch=curl_init();
 		curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL'].'?type=restart');
-		curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-		curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.$STATIC['TEMPDIR'].'; path=/');
+		curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode($STATIC['TEMPDIR']));
 		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+		curl_setopt($ch,CURLOPT_REFERER,$STATIC['JOBRUNURL']);
+		curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup');
 		curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 		curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
 		curl_setopt($ch,CURLOPT_TIMEOUT,0.01);

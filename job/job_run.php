@@ -3,11 +3,16 @@
 define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 // get needed functions for the jobrun
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
-//get temp dir
-$STATIC['TEMPDIR']=trim($_COOKIE['BackWPupJobTemp']);
-if (!is_writable($STATIC['TEMPDIR'])) {
-	trigger_error('Temp dir not wrteable!!! Job aborted!',E_USER_ERROR);
+//check referer
+if ($_SERVER['HTTP_REFERER']!=curPageURL() or $_SERVER["HTTP_USER_AGENT"]!='BackWPup') {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
+//get temp dir
+$STATIC['TEMPDIR']=trim(urldecode($_COOKIE['BackWPupJobTemp']));
+if (!is_writable($STATIC['TEMPDIR'])) {
+	die('Temp dir not writable!!! Job aborted!');
 }
 //read runningfile and config
 $runningfile=get_working_file();
@@ -16,21 +21,18 @@ if ($runningfile['JOBID']>0) {
 		$STATIC=unserialize(trim($staticfile));
 	} else {
 		delete_working_file();
-		trigger_error('No config file found!!!',E_USER_ERROR);
-		die();
+		die('No config file found');
 	}
 	$WORKING=$runningfile['WORKING'];
 	unset($runningfile);
 	unset($staticfile);
 } else {
-	trigger_error('No running file found!!!',E_USER_ERROR);
-	die();
+	die('No running file found!!!');
 }
 //check are temp dirs the same
 if ($STATIC['TEMPDIR']!=trim($_COOKIE['BackWPupJobTemp'])) {
 	delete_working_file();
-	trigger_error('Temp dir not correct!!!',E_USER_ERROR);
-	die();
+	die('Temp dir not correct!');
 }
 ob_end_clean();
 header("Connection: close");
@@ -41,8 +43,7 @@ flush();
 //check existing Logfile
 if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	delete_working_file();
-	trigger_error('No logfile found!!!',E_USER_ERROR);
-	die();
+	die('No logfile found!');
 }
 //set timezone
 date_default_timezone_set('UTC');

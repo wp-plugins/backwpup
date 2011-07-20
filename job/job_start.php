@@ -271,12 +271,13 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	//Run job
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,$backwpup_static['JOBRUNURL'].'?type=start');
-	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
-	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.$backwpup_static['TEMPDIR'].'; path=/');
+	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode($backwpup_static['TEMPDIR']));
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
 	curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+	curl_setopt($ch,CURLOPT_REFERER,$backwpup_static['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup');
 	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
 	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
 	curl_exec($ch);

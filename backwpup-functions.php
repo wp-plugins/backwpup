@@ -273,13 +273,17 @@ function backwpup_cron() {
 		$revtime=time()-$cfg['jobscriptruntimelong']-10;
 		$infile=backwpup_get_working_file();
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
+			$COOKIEPATH=ini_get('session.cookie_path');
+			if (empty($COOKIEPATH))
+				$COOKIEPATH='/';
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?type=restarttime');
-			curl_setopt($ch,CURLOPT_COOKIESESSION,true);
-			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.backwpup_get_temp().'; path=/');
+			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode(backwpup_get_temp()));
 			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
 			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
 			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+			curl_setopt($ch,CURLOPT_REFERER,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
+			curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup');
 			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
 			curl_setopt($ch,CURLOPT_TIMEOUT,0.01);

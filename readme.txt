@@ -46,81 +46,11 @@ Do backups and more.
 4. Activate Plugin
 
 == Frequently Asked Questions ==
-= Requires =
-* PHP 5.2.4
-* WordPress 3.2
-* curl 
-* gzip (for PCLZIP and gzip archives)
-* bzip2 (for bzip2 archives)
-
-= Where is the Database dump File? =
-in the root folder of the archive. <i>DBName</i>.sql
-
-= Where is the WordPress Export File? =
-in the root folder of the archive. <i>blogname</i>.wordpress.<i>jjjj-mm-dd</i>.xml
-
-= Zip File Support =
-Plugin uses zip extension if PHP, if not, uses PCLZIP lib extension
-
-= Maintenance Mode =
-Supported Plugins:
-
-* maintenance-mode
-* wp-maintenance-mode
-* WordPress .maintenance file
-
-If your site does not come back from Maintenance Mode, switch back from Maintenance Mode by changing the Plugin options or delete the <i>.maintenance</i> file in the install's root folder.
-
-= Restore a Blog Database =
-Copy the <i>DBName</i>.sql in the root folder of the site and go to the tools tab in the Plugin.
-You can also use PHPMyAdmin.
-
-= Abnormal Script Cancellations =
-Webserver normally aborts scripts that works longer then 300s.
-PHP normally aborts scripts that works longer then 30s but the plugin will try to keep this from happening.
-
-= Memory usage =
-* The plugin is coded to use low memory
-* The plugin will try to increase memory automatically if needed
-* PCLZIP lib needs 8MB free memory for zipping
-* Emailing an archive needs a lot of memory
-
-= Email archives =
-I have built in many options to optimize email archives, but the mailing library uses a lot of memory.
-You should only send small archives via email.
-
-= FTP Warnings =
-Please deactivate passive mode and try it again.
-
-= Change Temp Folder =
-define(‘WP_TEMP_DIR’, ABSPATH . ‘wp-content/tmp’); in wp-config.php
-
-= Multible backups on one sheduled job =
-You have installed the Plugin W3 Total Cache ?
-Too fix it:
-
-1. create a cron job on your hoster or on a free web crob service
-2. point to http://youblogurl/wp-cron.php
-3. Check the setting dectivate wp-cron in BackWPup
-
-= Disable some destinations for backups =
-You can set the following in wp-config.php:
-<i>define('BACKWPUP_DESTS','S3,RSC,FTP,DROPBOX,MSAZURE,SUGARSYNC');</i>
-all listed destinations are then disabled.
-Destinations are:
-
-* MAIL = mail (can't disable)
-* DIR = Directory (can't disable)
-* S3 = Amazon S3
-* GSTORAGE = Google Storage
-* RSC = RackSpaceCloud
-* FTP = FTP Server
-* DROPBOX = DropBox
-* MSAZURE = Microsoft Azure (Blob)
-* SUGARSYNC = SugarSync
+* FAQ: http://backwpup.com/faq
+* Manual:  http://backwpup.com/manual
+* Support: http://backwpup.com/forum
 
 == Screenshots ==
-
 1. Job Page
 2. Working Job
 3. Logs Page
@@ -128,13 +58,16 @@ Destinations are:
 
 == Changelog ==
 = 2.0.5 =
-* no more sessions needed
-* respect open_basdir for temp dir
-* dropbox changes fo better uploads but needs meny memory
+* No more sessions needed
+* Respect open_basdir for temp folder
+* Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)
-* uses now ‘WP_TEMP_DIR’ for getting temp folder
+* Uses now ‘WP_TEMP_DIR’ for getting temp folder
 * Updated AWS lib to 1.3.6
-* job runs now in UTC time. Time outputs will convertet.
+* Job runs now in UTC time. Time outputs will convert.
+* Many languge strings changed for better translation
+* Fixed double job run in same time
+* Removed cache prevention for cron to resolve problems with W3 Total Cache
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder
