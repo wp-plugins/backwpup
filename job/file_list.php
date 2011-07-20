@@ -9,7 +9,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 function file_list() {
 	global $WORKING,$STATIC,$tempfilelist;
 	//Make filelist
-	trigger_error(__($WORKING['FILE_LIST']['STEP_TRY'].'. '.'Try for make a list of files to Backup ....','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try for make list of files to backup....','backwpup'),$WORKING['FILE_LIST']['STEP_TRY']),E_USER_NOTICE);
 	$WORKING['STEPTODO']=2;
 	
 	//Check free memory for file list
@@ -66,10 +66,9 @@ function file_list() {
 	
 	$filelist=get_filelist(); //get files from list
 	if (!is_array($filelist[0])) {
-		trigger_error(__('No files to Backup','backwpup'),E_USER_ERROR);
+		trigger_error(__('No files to backup','backwpup'),E_USER_ERROR);
 	} else {
-		trigger_error(__('Files to Backup:','backwpup').' '.count($filelist),E_USER_NOTICE);
-		trigger_error(__('Size of all Files:','backwpup').' '.formatBytes($WORKING['ALLFILESIZE']),E_USER_NOTICE);
+		trigger_error(sprintf(__('%1$d files with %2$s to backup','backwpup'),count($filelist),formatBytes($WORKING['ALLFILESIZE'])),E_USER_NOTICE);
 	}
 }
 
@@ -92,15 +91,15 @@ function _file_list( $folder = '', $levels = 100, $excludedirs=array()) {
 			if (in_array(rtrim($folder.$file,'/').'/',$excludedirs) and is_dir( $folder.$file ))
 				continue;
 			if ( !is_readable($folder.$file)) {
-				trigger_error(__('File or folder is not readable:','backwpup').' '.$folder.$file,E_USER_WARNING);
+				trigger_error(sprintf(__('File or folder "%s" is not readable!','backwpup'),$folder.$file),E_USER_WARNING);
 			} elseif ( is_link($folder.$file) ) {
-				trigger_error(__('Links not followed:','backwpup').' '.$folder.$file,E_USER_WARNING);
+				trigger_error(sprintf(__('Link "%s" not followed','backwpup'),$folder.$file),E_USER_WARNING);
 			} elseif ( is_dir( $folder.$file )) {
 				_file_list( rtrim($folder.$file,'/'), $levels - 1,$excludedirs);
 			} elseif ( is_file( $folder.$file ) or is_executable($folder.$file)) { //add file to filelist
 				$tempfilelist[]=$folder.$file;
 			} else {
-				trigger_error(__('Is not a file or directory:','backwpup').' '.$folder.$file,E_USER_WARNING);
+				trigger_error(sprintf(__('"%s" is not a file or directory','backwpup'),$folder.$file),E_USER_WARNING);
 			}
 			
 		}

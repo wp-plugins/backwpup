@@ -7,7 +7,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function db_check() {
 	global $WORKING,$STATIC;
-	trigger_error($WORKING['DB_CHECK']['STEP_TRY'].'. '.__('Try to run Database check...','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try for database check...','backwpup'),$WORKING['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_CHECK']['DONETABLE']) or !is_array($WORKING['DB_CHECK']['DONETABLE']))
 		$WORKING['DB_CHECK']['DONETABLE']=array();
 	//Set num of todos
@@ -20,7 +20,7 @@ function db_check() {
 				continue;
 			$result=mysql_query('CHECK TABLE `'.$table.'` MEDIUM');
 			if (!$result) {
-				trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "CHECK TABLE `".$table."` MEDIUM"),E_USER_ERROR);
+				trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "CHECK TABLE `".$table."` MEDIUM"),E_USER_ERROR);
 				continue;
 			}
 			$check=mysql_fetch_assoc($result);
@@ -35,7 +35,7 @@ function db_check() {
 			if ($check['Msg_type']=='error' or $check['Msg_type']=='warning') {
 				$result=mysql_query('REPAIR TABLE `'.$table.'`');
 				if (!$result) {
-					trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "REPAIR TABLE `'.$table.'`"),E_USER_ERROR);
+					trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "REPAIR TABLE `'.$table.'`"),E_USER_ERROR);
 					continue;
 				}
 				$repair=mysql_fetch_assoc($result);
@@ -52,7 +52,7 @@ function db_check() {
 		maintenance_mode(false);
 		trigger_error(__('Database check done!','backwpup'),E_USER_NOTICE);
 	} else {
-		trigger_error(__('No Tables to check','backwpup'),E_USER_WARNING);
+		trigger_error(__('No tables to check','backwpup'),E_USER_WARNING);
 	}
 	$WORKING['STEPSDONE'][]='DB_CHECK'; //set done
 }

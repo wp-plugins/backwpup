@@ -28,7 +28,7 @@ function dest_folder() {
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
-				trigger_error($numdeltefiles.' '.__('old backup files deleted!','backwpup'),E_USER_NOTICE);
+				trigger_error(sprintf(_n('One backup file deleted','%d backup files deleted',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 		}
 	}
 	$WORKING['STEPDONE']++;

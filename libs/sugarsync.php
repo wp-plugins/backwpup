@@ -86,7 +86,7 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
 		curl_setopt($curl,CURLOPT_HEADER,true);
-		curl_setopt($curl,CURLOPT_HTTPHEADER,array('Expect:','Content-Type: application/xml; charset=UTF-8'));
+		curl_setopt($curl,CURLOPT_HTTPHEADER,array('Content-Type: application/xml; charset=UTF-8'));
 		curl_setopt($curl,CURLOPT_POSTFIELDS,$auth);
 		curl_setopt($curl,CURLOPT_POST,true);		
 		// execute
@@ -150,15 +150,14 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
 		
-		if ($method == 'POST') {		
-			$headers[] = 'Content-Type: application/xml; charset=UTF-8';
-			$data = (is_array($data)) ? http_build_query($data) : $data;
-			$headers[]='Content-Length: ' .strlen($data);
+		if ($method == 'POST') {	
+			$headers[]='Content-Type: application/xml; charset=UTF-8';
 			curl_setopt($curl,CURLOPT_POSTFIELDS,$data);
 			curl_setopt($curl,CURLOPT_POST,true);
+			$headers[]='Content-Length: '.strlen($data);	
 		} elseif ($method == 'PUT') {
 			if (is_file($data) and is_readable($data)) {
-				$headers[]='Content-Length: ' .filesize($data);
+				$headers[]='Content-Length: '.filesize($data);
 				$datafilefd=fopen($data,'r');
 				curl_setopt($curl,CURLOPT_PUT,true);
 				curl_setopt($curl,CURLOPT_INFILE,$datafilefd);

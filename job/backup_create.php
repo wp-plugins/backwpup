@@ -16,12 +16,12 @@ function backup_create() {
 	
 	if (strtolower($STATIC['JOB']['fileformart'])==".zip") { //Zip files
 		if (class_exists('ZipArchive')) {  //use php zip lib
-			trigger_error($WORKING['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip file...','backwpup'),E_USER_NOTICE);
+			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
 			if ($res=$zip->open($STATIC['JOB']['backupdir'].$STATIC['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
 				for ($i=$WORKING['STEPDONE'];$i<$WORKING['STEPTODO'];$i++) {
 					if (!$zip->addFile($filelist[$i]['FILE'], $filelist[$i]['OUTFILE'])) 
-						trigger_error(__('Can not add File to ZIP file:','backwpup').' '.$filelist[$i]['OUTFILE'],E_USER_ERROR);
+						trigger_error(sprintf(__('Can not add "%s" to zip archive!','backwpup'),$filelist[$i]['OUTFILE']),E_USER_ERROR);
 					$WORKING['STEPDONE']++;
 					update_working_file();
 				}
@@ -45,21 +45,21 @@ function backup_create() {
 						$ziperror=__('(19) ER_NOZIP','backwpup');
 					if ($zip->status==21)
 						$ziperror=__('(21) ER_INCONS','backwpup');
-					trigger_error(__('Zip Status:','backwpup').' '.$zip->status ,E_USER_ERROR);
+					trigger_error(sprintf(__('Zip returns status: %s','backwpup'),$zip->status),E_USER_ERROR);
 				}
 				@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 				$res2=$zip->close();
-				trigger_error(__('Backup zip file create done!','backwpup'),E_USER_NOTICE);
+				trigger_error(__('Backup zip archive create done!','backwpup'),E_USER_NOTICE);
 				$WORKING['STEPSDONE'][]='BACKUP_CREATE'; //set done
 			} else {
-				trigger_error(__('Can not create backup zip file:','backwpup').' '.$res,E_USER_ERROR);
+				trigger_error(sprintf(__('Can not create backup zip archive $s!','backwpup'),$res),E_USER_ERROR);
 			}
 		} else { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $STATIC['TEMPDIR']);
 			require_once($STATIC['WP']['ABSPATH'].'wp-admin/includes/class-pclzip.php');
 			//Create Zip File
 			if (is_array($filelist[0])) {
-				trigger_error($WORKING['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup zip (PclZip) file...','backwpup'),E_USER_NOTICE);
+				trigger_error(sprintf(__('%d. try to create backup zip (PclZip) archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 				$zipbackupfile = new PclZip($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 				need_free_memory(2097152); //free memory for file list
 				for ($i=$WORKING['STEPDONE'];$i<$WORKING['STEPTODO'];$i++) {
@@ -68,11 +68,11 @@ function backup_create() {
 				}
 				need_free_memory(11534336); //11MB free memory for zip
 				if (0==$zipbackupfile->create($files,PCLZIP_CB_POST_ADD, '_pclzipPostAddCallBack',PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-					trigger_error(__('Zip file create:','backwpup').' '.$zipbackupfile->errorInfo(true),E_USER_ERROR);
+					trigger_error(sprint(__('Zip archive create error: %s','backwpup'),$zipbackupfile->errorInfo(true)),E_USER_ERROR);
 				} else {
 					$WORKING['STEPDONE']=count($filelist);
 					unset($files);
-					trigger_error(__('Backup Zip file create done!','backwpup'),E_USER_NOTICE);
+					trigger_error(__('Backup zip archive create done','backwpup'),E_USER_NOTICE);
 				}
 			}
 		}
@@ -87,10 +87,10 @@ function backup_create() {
 		}
 
 		if (!$tarbackup) {
-			trigger_error(__('Can not create tar backup file','backwpup'),E_USER_ERROR);
+			trigger_error(__('Can not create tar arcive file!','backwpup'),E_USER_ERROR);
 			return;
 		} else {
-			trigger_error($WORKING['BACKUP_CREATE']['STEP_TRY'].'. '.__('Try to create backup archive file...','backwpup'),E_USER_NOTICE);
+			trigger_error(sprintf(__('%1$d. try to create %2$s archive file...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY'],substr($STATIC['JOB']['fileformart'],1)),E_USER_NOTICE);
 		}
 
 		for ($index=$WORKING['STEPDONE'];$index<$WORKING['STEPTODO'];$index++) {
@@ -98,7 +98,7 @@ function backup_create() {
 			$files=$filelist[$index];
 			//check file readable
 			if (!is_readable($files['FILE']) or empty($files['FILE'])) {
-				trigger_error(__('File not readable:','backwpup').' '.$files['FILE'],E_USER_WARNING);
+				trigger_error(sprintf(__('File "%s" not readable!','backwpup'),$files['FILE']),E_USER_WARNING);
 				$WORKING['STEPDONE']++;
 				continue;
 			}
@@ -113,9 +113,9 @@ function backup_create() {
 				$filename=substr($files['OUTFILE'],$dividor+1);
 				$filenameprefix=substr($files['OUTFILE'],0,$dividor);
 				if (strlen($filename)>100)
-					trigger_error(__('File name to long to save corectly in tar backup archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
+					trigger_error(sprintf(__('File name "%1$s" to long to save corectly in %2$s archive!','backwpup'),$files['OUTFILE'],substr($STATIC['JOB']['fileformart'],1)),E_USER_WARNING);
 				if (strlen($filenameprefix)>155)
-					trigger_error(__('File path to long to save corectly in tar backup archive:','backwpup').' '.$files['OUTFILE'],E_USER_WARNING);
+					trigger_error(sprintf(__('File path "%1$s" to long to save corectly in %2$s archive!','backwpup'),$files['OUTFILE'],substr($STATIC['JOB']['fileformart'],1)),E_USER_WARNING);
 			}
 			//Set file user/group name if linux
 			$fileowner="Unknown";
@@ -192,19 +192,18 @@ function backup_create() {
 			fwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
 			fclose($tarbackup);
 		}
-		trigger_error(__('Backup Archive file create done!','backwpup'),E_USER_NOTICE);
+		trigger_error(sprintf(__('%s archive creation done','backwpup'),substr($STATIC['JOB']['fileformart'],1)),E_USER_NOTICE);
 	}
 	$WORKING['STEPSDONE'][]='BACKUP_CREATE'; //set done
 	if ($filesize=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']))
-		trigger_error(sprintf(__('Backup archive file size is %1s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
+		trigger_error(sprintf(__('Archive size is %s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
 }
 
 
 function _pclzipPostAddCallBack($p_event, &$p_header) {
 	global $WORKING,$STATIC;
-	if ($p_header['status'] != 'ok') {
-		trigger_error(str_replace('%d',$p_header['status'],__('PCL ZIP Error %d on file:','backwpup')).' '.$p_header['filename'],E_USER_ERROR);
-	} 
+	if ($p_header['status'] != 'ok') 
+		trigger_error(sprintf(__('PCL ZIP Error "%1$s" on file %2$s!','backwpup'),$p_header['status'],$p_header['filename']),E_USER_ERROR);
 	$WORKING['STEPDONE']++;
 	update_working_file();
 }

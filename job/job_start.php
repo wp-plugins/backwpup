@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 	die();
 }
 	
-function backwpup_jobstart($jobid='') {
+function backwpup_jobstart($jobid='',$cronstart=false) {
 	global $wpdb;
 	$jobid=(int)trim($jobid);
 	if (empty($jobid) or !is_integer($jobid)) {
@@ -28,7 +28,7 @@ function backwpup_jobstart($jobid='') {
 	}
 	if (!is_dir($backwpup_static['TEMPDIR'])) {
 		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
-			sprintf(__('Can not create temp folder: %1$s','backwpup'),$backwpup_static['TEMPDIR']);
+			printf(__('Can not create temp folder: %s','backwpup'),$backwpup_static['TEMPDIR']);
 			return false;
 		}		
 	}
@@ -58,7 +58,7 @@ function backwpup_jobstart($jobid='') {
 		}	
 	}	
 	//Write running file to prevent dobble runnging
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOG'=>'','LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
+	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOGFILE'=>'','PID'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
 
 	//Set needed WP vars
 	$backwpup_static['WP']['DB_NAME']=DB_NAME;
@@ -128,7 +128,7 @@ function backwpup_jobstart($jobid='') {
 	$backwpup_static['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpup_static['CFG']['dirlogs']),'/').'/'; 
 	if (!is_dir($backwpup_static['CFG']['dirlogs'])) {
 		if (!mkdir(rtrim($backwpup_static['CFG']['dirlogs'],'/'),0777,true)) {
-			sprintf(__('Can not create folder for log files: %1$s','backwpup'),$backwpup_static['CFG']['dirlogs']);
+			printf(__('Can not create folder for log files: %s','backwpup'),$backwpup_static['CFG']['dirlogs']);
 			return false;
 		}
 		//create .htaccess for apache and index.html for other
@@ -167,7 +167,7 @@ function backwpup_jobstart($jobid='') {
 	fwrite($fd,".error {background-color:red;}\n");
 	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
 	fwrite($fd,"</style>\n");
-	fwrite($fd,"<title>".sprintf(__('BackWPup Log for %1$s from %2$s at %3$s','backwpup'),$backwpup_static['JOB']['name'],backwpup_date_i18n(get_option('date_format')),backwpup_date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
+	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpup_static['JOB']['name'],backwpup_date_i18n(get_option('date_format')),backwpup_date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
@@ -195,7 +195,7 @@ function backwpup_jobstart($jobid='') {
 			//create backup dir if it not exists
 			if (!is_dir($backwpup_static['JOB']['backupdir'])) {
 				if (!mkdir(rtrim($backwpup_static['JOB']['backupdir'],'/'),0777,true)) {
-					sprintf(__('Can not create folder for backup files: %1$s','backwpup'),$backwpup_static['JOB']['backupdir']);
+					sprintf(__('Can not create folder for backups: %1$s','backwpup'),$backwpup_static['JOB']['backupdir']);
 					return false;
 				}
 				//create .htaccess for apache and index.html for other
@@ -218,7 +218,7 @@ function backwpup_jobstart($jobid='') {
 		//set Backup file Name
 		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].backwpup_date_i18n('Y-m-d_H-i-s').$backwpup_static['JOB']['fileformart'];
 	}
-	//set ERROR and WARNINGS counter
+	$backwpup_static['CRONSTART']=$cronstart;
 	$backwpup_working['WARNING']=0;
 	$backwpup_working['ERROR']=0;
 	$backwpup_working['RESTART']=0;
@@ -265,12 +265,12 @@ function backwpup_jobstart($jobid='') {
 	foreach($backwpup_working['STEPS'] as $step) 
 		$backwpup_working[$step]['DONE']=false;
 	//write working file
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$backwpup_static['JOB']['jobid'],'LOG'=>'','LOGFILE'=>$backwpup_static['LOGFILE'],'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>$backwpup_working)));
+	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$backwpup_static['JOB']['jobid'],'LOGFILE'=>$backwpup_static['LOGFILE'],'PID'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>$backwpup_working)));
 	//write static file
 	file_put_contents($backwpup_static['TEMPDIR'].'.static',serialize($backwpup_static));
 	//Run job
 	$ch=curl_init();
-	curl_setopt($ch,CURLOPT_URL,$backwpup_static['JOBRUNURL']);
+	curl_setopt($ch,CURLOPT_URL,$backwpup_static['JOBRUNURL'].'?type=start');
 	curl_setopt($ch,CURLOPT_COOKIESESSION, true);
 	curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.$backwpup_static['TEMPDIR'].'; path=/');
 	curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);

@@ -8,7 +8,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function db_dump() {
 	global $WORKING,$STATIC;
-	trigger_error($WORKING['DB_DUMP']['STEP_TRY'].'. '.__('Try for dump database to file...','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try for database dump...','backwpup'),$WORKING['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_DUMP']['DONETABLE']) or !is_array($WORKING['DB_DUMP']['DONETABLE']))
 		$WORKING['DB_DUMP']['DONETABLE']=array();
 	$WORKING['STEPTODO']=count($STATIC['JOB']['dbtables']);
@@ -18,7 +18,7 @@ function db_dump() {
 	if (count($STATIC['JOB']['dbtables'])>0) {
 		$result=mysql_query("SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
 		if (!$result)
-			trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+			trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
 
 		while ($data = mysql_fetch_assoc($result)) {
 			$status[$data['Name']]=$data;
@@ -51,7 +51,7 @@ function db_dump() {
 			foreach($STATIC['JOB']['dbtables'] as $table) {
 				if (in_array($table, $WORKING['DB_DUMP']['DONETABLE']))
 					continue;
-				trigger_error(__('Dump Database table: ','backwpup').' '.$table,E_USER_NOTICE);
+				trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);
 				need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get more memory if needed
 				_db_dump_table($table,$status[$table],$file);
 				$WORKING['DB_DUMP']['DONETABLE'][]=$table;
@@ -68,18 +68,18 @@ function db_dump() {
 			fwrite($file, "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n");
 			fwrite($file, "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n");
 			fclose($file);
-			trigger_error(__('Database Dump done!','backwpup'),E_USER_NOTICE);
+			trigger_error(__('Database dump done!','backwpup'),E_USER_NOTICE);
 		} else {
-			trigger_error(__('Can not create Database Dump file','backwpup'),E_USER_ERROR);
+			trigger_error(__('Can not create database dump!','backwpup'),E_USER_ERROR);
 		}
 	} else {
-		trigger_error(__('No Tables to Dump','backwpup'),E_USER_WARNING);
+		trigger_error(__('No tables to dump','backwpup'),E_USER_WARNING);
 	}
 
 	//add database file to backupfiles
 	if (is_readable($STATIC['TEMPDIR'].$STATIC['WP']['DB_NAME'].'.sql')) {
 		$filestat=stat($STATIC['TEMPDIR'].$STATIC['WP']['DB_NAME'].'.sql');
-		trigger_error(__('Add Database Dump to Backup list:','backwpup').' '.$STATIC['WP']['DB_NAME'].'.sql '.formatbytes($filestat['size']),E_USER_NOTICE);
+		trigger_error(sprintf(__('Add database dump "%1$s" with %2$s to backup file list','backwpup'),$STATIC['WP']['DB_NAME'].'.sql',formatbytes($filestat['size'])),E_USER_NOTICE);
 		$WORKING['ALLFILESIZE']+=$filestat['size'];
 		add_file(array(array('FILE'=>$STATIC['TEMPDIR'].$STATIC['WP']['DB_NAME'].'.sql','OUTFILE'=>$STATIC['WP']['DB_NAME'].'.sql','SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'])));
 	}
@@ -102,7 +102,7 @@ function _db_dump_table($table,$status,$file) {
 	//Dump the table structure
 	$result=mysql_query("SHOW CREATE TABLE `".$table."`");
 	if (!$result) {
-		trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
 		return false;
 	}
 	$tablestruc=mysql_fetch_assoc($result);
@@ -112,7 +112,7 @@ function _db_dump_table($table,$status,$file) {
 	//take data of table
 	$result=mysql_query("SELECT * FROM `".$table."`");
 	if (!$result) {
-		trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
 		return false;
 	}
 

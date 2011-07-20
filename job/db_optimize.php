@@ -7,7 +7,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function db_optimize() {
 	global $WORKING,$STATIC;
-	trigger_error($WORKING['DB_OPTIMIZE']['STEP_TRY'].'. '.__('Try to run database optimize...','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try for database optimize...','backwpup'),$WORKING['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_OPTIMIZE']['DONETABLE']) or !is_array($WORKING['DB_OPTIMIZE']['DONETABLE']))
 		$WORKING['DB_OPTIMIZE']['DONETABLE']=array();
 	$WORKING['STEPTODO']=sizeof($STATIC['JOB']['dbtables']);
@@ -18,7 +18,7 @@ function db_optimize() {
 				continue;
 			$result=mysql_query('OPTIMIZE TABLE `'.$table.'`');
 			if (!$result) {
-				trigger_error(sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), mysql_error(), "OPTIMIZE TABLE `".$table."`"),E_USER_ERROR);
+				trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "OPTIMIZE TABLE `".$table."`"),E_USER_ERROR);
 				continue;
 			}
 			$optimize=mysql_fetch_assoc($result);
@@ -34,7 +34,7 @@ function db_optimize() {
 		trigger_error(__('Database optimize done!','backwpup'),E_USER_NOTICE);
 		maintenance_mode(false);
 	} else {
-		trigger_error(__('No Tables to optimize','backwpup'),E_USER_WARNING);
+		trigger_error(__('No tables to optimize','backwpup'),E_USER_WARNING);
 	}
 	$WORKING['STEPSDONE'][]='DB_OPTIMIZE'; //set done
 }

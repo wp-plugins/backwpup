@@ -65,7 +65,10 @@ function dest_rsc() {
 		} else {
 			trigger_error(__('Can not transfer backup to RSC.','backwpup'),E_USER_ERROR);
 		}
-		
+	} catch (Exception $e) {
+		trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+	}
+	try {	
 		if ($STATIC['JOB']['rscmaxbackups']>0) { //Delete old backups
 			$backupfilelist=array();
 			$contents = $backwpupcontainer->list_objects(0,NULL,NULL,$STATIC['JOB']['rscdir']);
@@ -88,7 +91,7 @@ function dest_rsc() {
 						trigger_error(__('Can not delete file on RSC://','backwpup').$STATIC['JOB']['rscContainer'].$STATIC['JOB']['rscdir'].$backupfilelist[$i],E_USER_ERROR);
 				}
 				if ($numdeltefiles>0)
-					trigger_error($numdeltefiles.' '.__('files deleted on Racspase Cloud Container!','backwpup'),E_USER_NOTICE);
+					trigger_error(sprintf(_n('One file deleted on RSC container','%d files deleted on RSC container',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 			}
 		}	
 	} catch (Exception $e) {

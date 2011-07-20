@@ -7,7 +7,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 
 function dest_s3() {
 	global $WORKING,$STATIC;
-	trigger_error($WORKING['DEST_S3']['STEP_TRY'].'. '.__('Try to sending backup file to Amazon S3...','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try sending backup file to Amazon S3...','backwpup'),$WORKING['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 
@@ -17,7 +17,7 @@ function dest_s3() {
 	try {
 		$s3 = new AmazonS3($STATIC['JOB']['awsAccessKey'], $STATIC['JOB']['awsSecretKey']);
 		if ($s3->if_bucket_exists($STATIC['JOB']['awsBucket'])) {
-			trigger_error(__('Connected to S3 Bucket:','backwpup').' '.$STATIC['JOB']['awsBucket'],E_USER_NOTICE);
+			trigger_error(sprintf(__('Connected to S3 Bucket: %s','backwpup'),$STATIC['JOB']['awsBucket']),E_USER_NOTICE);
 			//Transfer Backup to S3
 			if ($STATIC['JOB']['awsrrs']) //set reduced redundancy or not
 				$storage=AmazonS3::STORAGE_REDUCED;
@@ -29,15 +29,23 @@ function dest_s3() {
 				$curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
 			else 
 				@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
-			trigger_error(__('Upload to Amazon S3 now started ... ','backwpup'),E_USER_NOTICE);	
+			trigger_error(__('Upload to Amazon S3 now started... ','backwpup'),E_USER_NOTICE);	
 			if ($s3->create_mpu_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops)))  {//transfere file to S3
 				$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-				trigger_error(__('Backup File transferred to S3://','backwpup').$STATIC['JOB']['awsBucket'].'/'.$STATIC['JOB']['awsdir'].$STATIC['backupfile'],E_USER_NOTICE);
+				trigger_error(sprintf(__('Backup transferred to S3://%s','backwpup'),$STATIC['JOB']['awsBucket'].'/'.$STATIC['JOB']['awsdir'].$STATIC['backupfile']),E_USER_NOTICE);
 				$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloads3&file='.$STATIC['JOB']['awsdir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			} else {
-				trigger_error(__('Can not transfer backup to S3.','backwpup'),E_USER_ERROR);
+				trigger_error(__('Can not transfer backup to S3!','backwpup'),E_USER_ERROR);
 			}
-			
+		} else {
+			trigger_error(sprintf(__('S3 Bucket "%s" not exists!','backwpup'),$STATIC['JOB']['awsBucket']),E_USER_ERROR);
+		}
+	} catch (Exception $e) {
+		trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+		return;
+	}
+	try {	
+		if ($s3->if_bucket_exists($STATIC['JOB']['awsBucket'])) {
 			if ($STATIC['JOB']['awsmaxbackups']>0) { //Delete old backups
 				$backupfilelist=array();
 				if (($contents = $s3->list_objects($STATIC['JOB']['awsBucket'],array('prefix'=>$STATIC['JOB']['awsdir']))) !== false) {
@@ -54,17 +62,15 @@ function dest_s3() {
 						if ($s3->delete_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$backupfilelist[$i])) //delte files on S3
 							$numdeltefiles++;
 						else
-							trigger_error(__('Can not delete file on S3://','backwpup').$STATIC['JOB']['awsBucket'].'/'.$STATIC['JOB']['awsdir'].$backupfilelist[$i],E_USER_ERROR);
+							trigger_error(sprintf(__('Can not delete backup on S3://%s','backwpup'),$STATIC['JOB']['awsBucket'].'/'.$STATIC['JOB']['awsdir'].$backupfilelist[$i]),E_USER_ERROR);
 					}
 					if ($numdeltefiles>0)
-						trigger_error($numdeltefiles.' '.__('files deleted on S3 Bucket!','backwpup'),E_USER_NOTICE);
+						trigger_error(sprintf(_n('One file deleted on S3 Bucket','%d files deleted on S3 Bucket',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 				}
 			}					
-		} else {
-			trigger_error(__('S3 Bucket not exists:','backwpup').' '.$STATIC['JOB']['awsBucket'],E_USER_ERROR);
 		}
 	} catch (Exception $e) {
-		trigger_error(__('Amazon S3 API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+		trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		return;
 	}
 	

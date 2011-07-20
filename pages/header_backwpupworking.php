@@ -16,7 +16,7 @@ if (isset($_GET['action']) and $_GET['action']=='runnow' and !empty($_GET['jobid
 	} else {
 		//include jobstart function
 		require_once(dirname(__FILE__).'/../job/job_start.php');
-		$_GET['logfile']=backwpup_jobstart($jobid);
+		$_GET['logfile']=backwpup_jobstart($jobid,false);
 	}
 }
 elseif (!empty($_GET['logfile'])) {

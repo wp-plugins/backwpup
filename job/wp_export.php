@@ -8,7 +8,7 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 function wp_export() {
 	global $WORKING,$STATIC;
 	$WORKING['STEPTODO']=1;
-	trigger_error($WORKING['WP_EXPORT']['STEP_TRY'].'. '.__('Try for wordpress export to XML file...','backwpup'),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. try for wordpress export to XML file...','backwpup'),$WORKING['WP_EXPORT']['STEP_TRY']),E_USER_NOTICE);
 	need_free_memory(10485760); //10MB free memory
 	if (function_exists('curl_exec')) {
 		$ch = curl_init();
@@ -41,7 +41,7 @@ function wp_export() {
 	//add XML file to backupfiles
 	if (is_readable($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
 		$filestat=stat($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');
-		trigger_error(__('Add XML export to backup list:','backwpup').' '.preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml '.formatbytes($filestat['size']),E_USER_NOTICE);
+		trigger_error(sprintf(__('Add XML export "%1$s" to backup list with %2$s','backwpup'),preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml',formatbytes($filestat['size'])),E_USER_NOTICE);
 		$WORKING['ALLFILESIZE']+=$filestat['size'];
 		add_file(array(array('FILE'=>$STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','OUTFILE'=>preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml','SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'])));
 	}

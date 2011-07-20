@@ -256,7 +256,7 @@ function backwpup_plugin_links($links, $file) {
 
 //Add cron interval
 function backwpup_intervals($schedules) {
-	$intervals['backwpup_int']=array('interval' => '120', 'display' => __('BackWPup', 'backwpup'));
+	$intervals['backwpup_int']=array('interval' => '300', 'display' => __('BackWPup', 'backwpup'));
 	$schedules=array_merge($intervals,$schedules);
 	return $schedules;
 }
@@ -269,10 +269,12 @@ function backwpup_date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = f
 //cron work
 function backwpup_cron() {
 	if (is_file(backwpup_get_temp().'.running')) {
+		$cfg=get_option('backwpup');
+		$revtime=time()-$cfg['jobscriptruntimelong']-10;
 		$infile=backwpup_get_working_file();
-		if ($infile['timestamp']>time()-310) {
+		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
 			$ch=curl_init();
-			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
+			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?type=restarttime');
 			curl_setopt($ch,CURLOPT_COOKIESESSION,true);
 			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.backwpup_get_temp().'; path=/');
 			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
@@ -292,7 +294,7 @@ function backwpup_cron() {
 					continue;
 				if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
 					require_once(dirname(__FILE__).'/job/job_start.php');
-					backwpup_jobstart($jobid);	
+					backwpup_jobstart($jobid,true);	
 				}
 			}
 		}
