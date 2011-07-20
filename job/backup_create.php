@@ -15,7 +15,7 @@ function backup_create() {
 		$WORKING['STEPDONE']=0;
 	
 	if (strtolower($STATIC['JOB']['fileformart'])==".zip") { //Zip files
-		if (class_exists('ZipArchive')) {  //use php zip lib
+		if ($STATIC['CFG']['phpzip']) {  //use php zip lib
 			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
 			if ($res=$zip->open($STATIC['JOB']['backupdir'].$STATIC['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {

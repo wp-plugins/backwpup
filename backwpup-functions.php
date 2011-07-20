@@ -147,6 +147,7 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 1000<$cfg['jobscriptruntimelong'] or empty($cfg['jobscriptruntimelong'])) $cfg['jobscriptruntimelong']=300;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
+	if (!class_exists('ZipArchive') or !isset($cfg['phpzip'])) $cfg['phpzip']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';

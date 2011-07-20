@@ -133,6 +133,13 @@ if (ini_get('safe_mode')) {
 <td><input name="jobscriptruntimelong" type="text" id="jobscriptruntimelong" value="<?PHP echo $cfg['jobscriptruntimelong'];?>" class="small-text code" <?PHP echo $disabled;?>/> <?PHP _e('sec.','backwpup');?>&nbsp;
 <span class="description"><?PHP _e('Script runtime for loong operations withaut responce to script. You can only set it if safemode off. Default runtime is 300 sec.(Max. on most webservers.)','backwpup');?></span></td> 
 </tr>
+<tr valign="top"> 
+<th scope="row"><?PHP _e('PHP zip class','backwpup'); ?></th> 
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('PHP zip','backwpup'); ?></span></legend><label for="phpzip"> 
+<input name="phpzip" type="checkbox" id="phpzip" value="1" <?php checked($cfg['phpzip'],true); ?><?php if (!class_exists('ZipArchive')) echo " disabled=\"disabled\""; ?> /> 
+<?PHP _e('Use PHP zip class if available! Normaly PCL Zip class will used.','backwpup'); ?></label> 
+</fieldset></td>
+</tr>
 </table>
 
 <h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3>

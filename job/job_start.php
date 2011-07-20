@@ -111,6 +111,8 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	//check exists gzip functions
 	if(!function_exists('gzopen'))
 		$backwpup_static['CFG']['gzlogs']=false;
+	if(!class_exists('ZipArchive'))
+		$backwpup_static['CFG']['phpzip']=false;
 	//Check working times
 	if (empty($backwpup_static['CFG']['jobstepretry']) or !is_int($backwpup_static['CFG']['jobstepretry']) or $backwpup_static['CFG']['jobstepretry']>100)
 		$backwpup_static['CFG']['jobstepretry']=3;
