@@ -59,18 +59,6 @@ function get_option($option='backwpup_jobs') {
 	return unserialize(mysql_result($res,0));
 }
 
-function curPageURL() {
-	$pageURL = 'http';
-	if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
-	$pageURL .= "://";
-	if ($_SERVER["SERVER_PORT"] != "80") {
-		$pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["SCRIPT_NAME"];
-	} else {
-		$pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["SCRIPT_NAME"];
-	}
-	return $pageURL;
-}
-
 function update_option($option='backwpup_jobs',$data) {
 	global $WORKING,$STATIC;
 	mysql_update();
@@ -561,19 +549,14 @@ function job_shutdown() {
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	update_working_file(true,false);
 	if (!empty($STATIC['JOBRUNURL'])) {
-		$ch=curl_init();
-		curl_setopt($ch,CURLOPT_URL,$STATIC['JOBRUNURL'].'?type=restart');
-		curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode($STATIC['TEMPDIR']));
-		curl_setopt($ch,CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch,CURLOPT_SSL_VERIFYHOST, false);
-		curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-		curl_setopt($ch,CURLOPT_REFERER,$STATIC['JOBRUNURL']);
-		curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup');
-		curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-		curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-		curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-		curl_exec($ch);
-		curl_close($ch);
+		include_once(dirname(__FILE__).'/../libs/class.http.php');
+		$http = new Http();
+		$http->setMethod('POST');
+		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
+		$http->addParam('type', 'restart');
+		$http->setUseragent('BackWPup');
+		$http->setTimeout(0.01);
+		$http->execute($STATIC['JOBRUNURL']);
 	}
 }
 ?>

@@ -4,13 +4,13 @@ define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 // get needed functions for the jobrun
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 //check referer
-if ($_SERVER['HTTP_REFERER']!=curPageURL() or $_SERVER["HTTP_USER_AGENT"]!='BackWPup') {
+if ($_SERVER["HTTP_USER_AGENT"]!='BackWPup') {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
 	die();
 }
 //get temp dir
-$STATIC['TEMPDIR']=trim(urldecode($_COOKIE['BackWPupJobTemp']));
+$STATIC['TEMPDIR']=trim(urldecode($_POST['BackWPupJobTemp']));
 if (!is_writable($STATIC['TEMPDIR'])) {
 	die('Temp dir not writable!!! Job aborted!');
 }
@@ -30,7 +30,7 @@ if ($runningfile['JOBID']>0) {
 	die('No running file found!!!');
 }
 //check are temp dirs the same
-if ($STATIC['TEMPDIR']!=trim($_COOKIE['BackWPupJobTemp'])) {
+if ($STATIC['TEMPDIR']!=trim($_POST['BackWPupJobTemp'])) {
 	delete_working_file();
 	die('Temp dir not correct!');
 }
@@ -52,13 +52,13 @@ set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 //Get type and check job runs
 $runningfile=get_working_file();
 $revtime=time()-$STATIC['CFG']['jobscriptruntimelong']-10;
-if ($runningfile['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_GET['type']=='restarttime') {
+if ($runningfile['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_POST['type']=='restarttime') {
 	trigger_error(__('Job restart terminated, bcause old job runs again!','backwpup'),E_USER_ERROR);
 	die();
-} elseif($_GET['type']=='restarttime') {
+} elseif($_POST['type']=='restarttime') {
 	trigger_error(__('Job restarted, bcause inactivity!','backwpup'),E_USER_ERROR);
 } elseif ($runningfile['PID']!=getmypid() and $runningfile['PID']!=0 and $runningfile['timestamp']>$revtime) {
-	trigger_error(sprintf(__('Second Prozess is running, bcause old job runs! Start type is %s','backwpup'),$_GET['type']),E_USER_ERROR);
+	trigger_error(sprintf(__('Second Prozess is running, bcause old job runs! Start type is %s','backwpup'),$_POST['type']),E_USER_ERROR);
 	die();
 } 
 unset($runningfile);

@@ -18,7 +18,7 @@ function dest_folder() {
 				if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
 					$backupfilelist[]=$file;
 			}
-			@closedir( $dir );
+			@closedir($dir);
 		}
 		if (sizeof($backupfilelist)>0) {
 			rsort($backupfilelist);

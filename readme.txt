@@ -58,7 +58,7 @@ Do backups and more.
 
 == Changelog ==
 = 2.0.5 =
-* No more sessions needed
+* No more sessions and curl needed
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)

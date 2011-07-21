@@ -171,27 +171,17 @@ function backwpup_plugin_deactivate() {
 
 //get temp dir
 function backwpup_get_temp() {
+	//get temp dirs like wordpress get_temp_dir()
 	if (defined('WP_TEMP_DIR'))
 		$tempfolder=WP_TEMP_DIR;
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
-		$tempfolder=getenv('TMP');
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
-		$tempfolder=getenv('TEMP');
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
-		$tempfolder=getenv('TMPDIR');
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
 		$tempfolder=sys_get_temp_dir();									//normal temp dir
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
-		$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
+		$tempfolder=get_temp_dir();							//if sys_get_temp_dir not work
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
-		$tempfolder=ini_get('session.save_path');						//if sys_get_temp_dir not work
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) {
-		$openbasedir=ini_get('open_basedir');
-		if (!empty($openbasedir)) {
-			$openbasedir=explode(PATH_SEPARATOR,$openbasedir);
-			$tempfolder=$openbasedir[0];
-		}
-	}
+		$tempfolder=WP_CONTENT_DIR.'/';
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 		
+		$tempfolder=get_temp_dir();
 	return rtrim(str_replace('\\','/',realpath(trim($tempfolder))),'/').'/.backwpup_'.crc32(ABSPATH).'/';
 }
 //checks the dir is in openbasedir
@@ -213,8 +203,6 @@ function backwpup_check_open_basedir($dir) {
 //Backwpup API
 function backwpup_api($active=false) {
 	global $wp_version;
-	if (!function_exists('curl_exec'))
-		return;
 	if ($active)
 		$active='Y';
 	else
@@ -242,18 +230,7 @@ function backwpup_api($active=false) {
 			}
 		}
 	}
-	
-	$ch=curl_init();
-	curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
-	curl_setopt($ch,CURLOPT_POST,true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS,$post);
-	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
-	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	curl_setopt($ch,CURLOPT_TIMEOUT,5);
-	curl_exec($ch);
-	curl_close($ch);
+	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 10, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 }
 
 //add edit setting to plugins page
@@ -296,9 +273,7 @@ function backwpup_cron() {
 		$revtime=time()-$cfg['jobscriptruntimelong']-10;
 		$infile=backwpup_get_working_file();
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
-			$COOKIEPATH=ini_get('session.cookie_path');
-			if (empty($COOKIEPATH))
-				$COOKIEPATH='/';
+			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 			$ch=curl_init();
 			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?type=restarttime');
 			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode(backwpup_get_temp()));
@@ -744,10 +719,6 @@ function backwpup_env_checks() {
 	}
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 
 		$message.=__('- PHP 5.2.4 or higher needed!','backwpup') . '<br />';
-		$checks=false;
-	}
-	if (!function_exists('curl_init')) { // check curl
-		$message.=__('- curl is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
