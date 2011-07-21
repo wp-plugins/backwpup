@@ -125,8 +125,8 @@ function backwpup_plugin_activate() {
 	}
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
-	//make new schedule
-	wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
+	//make new schedule round
+	wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
 	//Set settings defaults
 	$cfg=get_option('backwpup'); //Load Settings
 	if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
@@ -212,6 +212,8 @@ function backwpup_check_open_basedir($dir) {
 //Backwpup API
 function backwpup_api($active=false) {
 	global $wp_version;
+	if (!function_exists('curl_exec'))
+		return;
 	if ($active)
 		$active='Y';
 	else
@@ -221,17 +223,17 @@ function backwpup_api($active=false) {
 	$blugurl=get_option('siteurl');
 	if (defined('WP_SITEURL'))
 		$blugurl=WP_SITEURL;
-	$ch=@curl_init();
-	@curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
-	@curl_setopt($ch,CURLOPT_POST,true);
-	@curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>$blugurl,'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
-	@curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
-	@curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-	@curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-	@curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	@curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-	@curl_exec($ch);
-	@curl_close($ch);
+	$ch=curl_init();
+	curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
+	curl_setopt($ch,CURLOPT_POST,true);
+	curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>$blugurl,'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
+	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
+	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
+	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
+	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
+	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+	curl_exec($ch);
+	curl_close($ch);
 }
 
 //add edit setting to plugins page
@@ -257,7 +259,7 @@ function backwpup_plugin_links($links, $file) {
 
 //Add cron interval
 function backwpup_intervals($schedules) {
-	$intervals['backwpup_int']=array('interval' => '300', 'display' => __('BackWPup', 'backwpup'));
+	$intervals['backwpup_int']=array('interval' => '60', 'display' => __('BackWPup', 'backwpup'));
 	$schedules=array_merge($intervals,$schedules);
 	return $schedules;
 }

@@ -94,6 +94,6 @@ if (backwpup_env_checks()) {
 		define('DISABLE_WP_CRON',true);
 	//test if cron active
 	if (!(wp_next_scheduled('backwpup_cron')))
-		wp_schedule_event(0, 'backwpup_int', 'backwpup_cron');
+		wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
 }
 ?>
