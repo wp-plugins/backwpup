@@ -169,14 +169,10 @@ if (ini_get('safe_mode')) {
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use corn service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
 <input name="apicronservice" type="checkbox" id="apicronservice" value="1" <?php checked($cfg['apicronservice'],true); ?> />
 <?PHP _e('If you check this than the job Schedule will submited too backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that have less visits.</em> Pelase make a littel donaten for the plugin if you use this servcie. The service can every time removed by me without a massage.','backwpup'); ?><br />
-<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="hosted_button_id" value="Q3QSVRSFXBLSE">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/de_DE/i/scr/pixel.gif" width="1" height="1">
-</form>
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
 </label> 
-</fieldset></td>
+</fieldset>
+</td>
 </tr>
 </table>
 <p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
