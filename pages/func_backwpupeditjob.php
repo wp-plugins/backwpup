@@ -18,7 +18,9 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 	<?php 
 	foreach (backwpup_backup_types() as $type) {
 		echo "<input class=\"jobtype-select checkbox\" id=\"jobtype-select-".$type."\" type=\"checkbox\"".checked(true,in_array($type,explode('+',$jobvalue['type'])),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
-	} 
+	}
+	if (!function_exists('curl_init'))
+		echo '<br /><strong style="color:red;">'.__( 'PHP curl functions not available! Most backup destinations deaktivated!', 'backwpup' ).'</strong>';
 	?>
 	</div>
 	<div class="clear"></div>

@@ -45,8 +45,12 @@ define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
 //Set User Capability
 define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
-if (!defined('BACKWPUP_DESTS'))
-	define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
+if (!defined('BACKWPUP_DESTS')) {
+	if (!function_exists('curl_init'))
+		define('BACKWPUP_DESTS', 'FTP,MSAZURE');
+	else 
+		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
+}
 //Set Dropbox Aplication Keys
 define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
 define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');

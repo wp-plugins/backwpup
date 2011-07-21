@@ -105,8 +105,10 @@ foreach($WORKING['STEPS'] as $step) {
 		if (ini_get('safe_mode'))
 			trigger_error(sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
-		$curlversion=curl_version();
-		trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);
+		if (function_exists('curl_init')) {
+			$curlversion=curl_version();
+			trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);
+		}
 		trigger_error(__('[INFO]: Temp folder is:','backwpup').' '.$STATIC['TEMPDIR'],E_USER_NOTICE);
 		if(!empty($STATIC['backupfile']))
 			trigger_error(__('[INFO]: Backup file is:','backwpup').' '.$STATIC['JOB']['backupdir'].$STATIC['backupfile'],E_USER_NOTICE);
