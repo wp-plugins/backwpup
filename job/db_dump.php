@@ -91,6 +91,7 @@ function db_dump() {
 
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
+
 	// create dump
 	fwrite($file, "\n");
 	fwrite($file, "--\n");
@@ -122,14 +123,9 @@ function _db_dump_table($table,$status,$file) {
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 
-	$i=0;
 	while ($data = mysql_fetch_assoc($result)) {
 		$keys = array();
 		$values = array();
-		if ($WORKING['DB_DUMP']['DONETABLEROW']>$i) {
-			$i++;
-			continue;
-		}
 		foreach($data as $key => $value) {
 			if (!$STATIC['JOB']['dbshortinsert'])
 				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
@@ -146,11 +142,8 @@ function _db_dump_table($table,$status,$file) {
 			fwrite($file, "INSERT INTO `".$table."` VALUES ( ".implode(", ",$values)." );\n");
 		else
 			fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
-		$WORKING['DB_DUMP']['DONETABLEROW']=$i;
-		$i++;
 	}
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
-	$WORKING['DB_DUMP']['DONETABLEROW']=0;
 }
 ?>

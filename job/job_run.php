@@ -68,7 +68,6 @@ register_shutdown_function('job_shutdown');
 @ini_set('safe_mode','0');
 //set execution time tom max on safe mode
 if (ini_get('safe_mode')) {
-	trigger_error(sprintf(__('PHP Safe Mode is on!!! Max exec time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
 	$STATIC['CFG']['jobscriptruntime']=ini_get('max_execution_time');
 	$STATIC['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
 } 
@@ -104,7 +103,7 @@ foreach($WORKING['STEPS'] as $step) {
 			trigger_error(__('[INFO]: BackWPup job strated manualy','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS,E_USER_NOTICE);
 		if (ini_get('safe_mode'))
-			trigger_error(__('[INFO]: PHP Safe mode is ON!','backwpup'),E_USER_NOTICE);		
+			trigger_error(sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
 		$curlversion=curl_version();
 		trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);
