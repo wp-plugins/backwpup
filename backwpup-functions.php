@@ -148,6 +148,7 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!class_exists('ZipArchive') or !isset($cfg['phpzip'])) $cfg['phpzip']=false;
+	if (!isset($cfg['apicronservice']) or !is_bool($cfg['apicronservice'])) $cfg['apicronservice']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
@@ -223,15 +224,34 @@ function backwpup_api($active=false) {
 	$blugurl=get_option('siteurl');
 	if (defined('WP_SITEURL'))
 		$blugurl=WP_SITEURL;
+
+	$post=array('URL'=>$blugurl,
+				'EMAIL'=>get_option('admin_email'),
+				'WP_VER'=>$wp_version,
+				'BACKWPUP_VER'=>BACKWPUP_VERSION,
+				'ACTIVE'=>$active,
+				'OFFSET'=>get_option('gmt_offset'));
+		
+	$cfg=get_option('backwpup'); //Load Settings
+	if ($cfg['apicronservice']) {
+		$jobs=get_option('backwpup_jobs');
+		if (!empty($jobs)) {
+			foreach ($jobs as $jobid => $jobvalue) {
+				if ($jobvalue['activated'] and !empty($jobvalue['cron']))
+					$post["JOBCRON[".$jobid."]"]=$jobvalue['cron'];
+			}
+		}
+	}
+	
 	$ch=curl_init();
 	curl_setopt($ch,CURLOPT_URL,BACKWPUP_API_URL);
 	curl_setopt($ch,CURLOPT_POST,true);
-	curl_setopt($ch,CURLOPT_POSTFIELDS,array('URL'=>$blugurl,'EMAIL'=>get_option('admin_email'),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION,'ACTIVE'=>$active));
+	curl_setopt($ch,CURLOPT_POSTFIELDS,$post);
 	curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup '.BACKWPUP_VERSION);
 	curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
 	curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
 	curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-	curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
+	curl_setopt($ch,CURLOPT_TIMEOUT,5);
 	curl_exec($ch);
 	curl_close($ch);
 }

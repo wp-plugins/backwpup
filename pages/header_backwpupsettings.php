@@ -38,6 +38,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['gzlogs']=isset($_POST['gzlogs']) ? true : false;
 	$cfg['phpzip']=isset($_POST['phpzip']) ? true : false;
+	$cfg['apicronservice']=isset($_POST['apicronservice']) ? true : false;
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
 	//set def. folders
 	if (!isset($cfg['dirlogs']) or $cfg['dirlogs']=='/' or empty($cfg['dirlogs'])) {
