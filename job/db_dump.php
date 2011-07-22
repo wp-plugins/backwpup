@@ -27,7 +27,7 @@ function db_dump() {
 		if ($file = fopen($STATIC['TEMPDIR'].$STATIC['WP']['DB_NAME'].'.sql', 'wb')) {
 			fwrite($file, "-- ---------------------------------------------------------\n");
 			fwrite($file, "-- Dump with BackWPup ver.: ".$STATIC['BACKWPUP']['VERSION']."\n");
-			fwrite($file, "-- Plugin for WordPress by Daniel Huesken\n");
+			fwrite($file, "-- Plugin for WordPress ".$STATIC['WP']['VERSION']." by Daniel Huesken\n");
 			fwrite($file, "-- http://danielhuesken.de/portfolio/backwpup/\n");
 			fwrite($file, "-- Blog Name: ".$STATIC['WP']['BLOGNAME']."\n");
 			fwrite($file, "-- Blog URL: ".$STATIC['WP']['SITEURL']."\n");

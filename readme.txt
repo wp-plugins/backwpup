@@ -2,7 +2,7 @@
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
-Requires at least: 3.2
+Requires at least: 3.1
 Tested up to: 3.2.1
 Stable tag: 2.0.3
 
@@ -29,7 +29,7 @@ Do backups and more.
 * Send Log/Backup by Email
 * Multisite Support only as Network Admin
 
-** WP 3.2 Required!! **
+** WP 3.1 and PHP 5.2.5 Required!! **
 
 ** NO WARRANTY SUPPLIED! **
 ** Test your Backups! **
@@ -38,12 +38,6 @@ Do backups and more.
 1. Download BackWPup Plugin.
 2. Decompress and upload the contents of the archive into /wp-content/plugins/.
 3. Activate the Plugin through the 'Plugins' menu in WordPress
-
-== Upgrade Notice ==
-1. Deactivate Plugin
-2. Update Plugin 
-3. Update Wordpress to 3.2
-4. Activate Plugin
 
 == Frequently Asked Questions ==
 * FAQ: http://backwpup.com/faq
@@ -57,7 +51,7 @@ Do backups and more.
 4. Backups Manage Page
 
 == Changelog ==
-= 2.0.5 =
+= 2.1.0 =
 * No more sessions and curl needed
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
@@ -68,6 +62,7 @@ Do backups and more.
 * Many languge strings changed for better translation
 * Fixed double job run in same time
 * Removed cache prevention for cron to resolve problems with W3 Total Cache
+* Readded Support for WordPress 3.1
 
 = 2.0.3 =
 * Reimplemt deletion of backups in a folder

@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 }
 	
 function backwpup_jobstart($jobid='',$cronstart=false) {
-	global $wpdb;
+	global $wpdb,$wp_version;
 	$jobid=(int)trim($jobid);
 	if (empty($jobid) or !is_integer($jobid)) {
 		return false;
@@ -76,6 +76,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 		$backwpup_static['WP']['SITEURL']=trailingslashit(get_option('siteurl'));
 	$backwpup_static['WP']['TIMEDIFF']=get_option('gmt_offset')*3600;
 	$backwpup_static['WP']['WPLANG']=WPLANG;
+	$backwpup_static['WP']['VERSION']=$wp_version;
 	//WP folder
 	$backwpup_static['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
 	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';

@@ -41,7 +41,7 @@ function backwpup_menu_page() {
 }
 
 function backwpup_menu_page_header() {
-	global $backwpup_message,$backwpup_listtable,$current_screen;
+	global $wp_version,$backwpup_message,$backwpup_listtable,$current_screen;
 	//check user premessions
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
@@ -60,7 +60,12 @@ function backwpup_menu_page_header() {
 					wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',BACKWPUP_VERSION,'screen');
 			}
 			//add java
-			if (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
+			if (is_file(dirname(__FILE__).'/js/31'.$page.'.js') and version_compare($wp_version, '3.2', '<')) {
+				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
+					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',time(),true);
+				else
+					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',BACKWPUP_VERSION,true);
+			} elseif (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
 				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
 					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',time(),true);
 				else
