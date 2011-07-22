@@ -81,7 +81,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
 	$backwpup_static['WP']['WP_PLUGIN_DIR']=rtrim(str_replace('\\','/',WP_PLUGIN_DIR),'/').'/';
 	$backwpup_static['WP']['WP_THEMES_DIR']=rtrim(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),'/').'/';
-	$backwpup_static['WP']['WP_UPLOAD_DIR']=rtrim(str_replace('\\','/',backwpup_get_upload_dir()),'/').'/';
+	$backwpup_static['WP']['WP_UPLOAD_DIR']=backwpup_get_upload_dir();
 	$backwpup_static['WP']['WPINC']=WPINC;
 	$backwpup_static['WP']['MULTISITE']=is_multisite();
 	$backwpup_static['WP']['ADMINURL']=backwpup_admin_url('admin.php');
@@ -221,6 +221,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].backwpup_date_i18n('Y-m-d_H-i-s').$backwpup_static['JOB']['fileformart'];
 	}
 	$backwpup_static['CRONSTART']=$cronstart;
+	$backwpup_working['NONCE']=wp_create_nonce('BackWPupJob');
 	$backwpup_working['WARNING']=0;
 	$backwpup_working['ERROR']=0;
 	$backwpup_working['RESTART']=0;
@@ -271,7 +272,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	//write static file
 	file_put_contents($backwpup_static['TEMPDIR'].'.static',serialize($backwpup_static));
 	//Run job
-	wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
+	wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
 	return $backwpup_static['LOGFILE'];
 }
 ?>

@@ -553,6 +553,7 @@ function job_shutdown() {
 		$http = new Http();
 		$http->setMethod('POST');
 		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
+		$http->addParam('nonce',$WORKING['NONCE']);
 		$http->addParam('type', 'restart');
 		$http->setUseragent('BackWPup');
 		$http->setTimeout(0.01);

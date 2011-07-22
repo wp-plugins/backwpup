@@ -45,6 +45,8 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
+	if (substr($cfg['dirlogs'],0,1)!='/' and substr($cfg['dirlogs'],1,1)!=':') //add abspath if not absolute
+		$cfg['dirlogs']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$cfg['dirlogs'];
 	if (!isset($cfg['mailsendmail']) or empty($cfg['mailsendmail'])) {
 		$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 	}

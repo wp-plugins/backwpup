@@ -273,20 +273,7 @@ function backwpup_cron() {
 		$revtime=time()-$cfg['jobscriptruntimelong']-10;
 		$infile=backwpup_get_working_file();
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
-			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
-			$ch=curl_init();
-			curl_setopt($ch,CURLOPT_URL,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?type=restarttime');
-			curl_setopt($ch,CURLOPT_COOKIE,'BackWPupJobTemp='.urlencode(backwpup_get_temp()));
-			curl_setopt($ch,CURLOPT_SSL_VERIFYPEER,false);
-			curl_setopt($ch,CURLOPT_SSL_VERIFYHOST,false);
-			curl_setopt($ch,CURLOPT_RETURNTRANSFER,false);
-			curl_setopt($ch,CURLOPT_REFERER,BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php');
-			curl_setopt($ch,CURLOPT_USERAGENT,'BackWPup');
-			curl_setopt($ch,CURLOPT_FORBID_REUSE,true);
-			curl_setopt($ch,CURLOPT_FRESH_CONNECT,true);
-			curl_setopt($ch,CURLOPT_TIMEOUT,0.01);
-			curl_exec($ch);
-			curl_close($ch);
+			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
 	} else {
 		$jobs=get_option('backwpup_jobs');
@@ -552,7 +539,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	if (!empty($jobs)) {
 		foreach($jobs as $jobsvale) {
 			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-				$excludedir[]=trailingslashit(str_replace('\\','/',$jobsvale['backupdir']));
+				$excludedir[]=$jobsvale['backupdir'];
 		}
 	}
 	return $excludedir;
@@ -943,6 +930,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['backupdir']))
 		$jobsettings['backupdir']='';
+	if (substr($jobsettings['backupdir'],0,1)!='/' and substr($jobsettings['backupdir'],1,1)!=':' and !empty($jobsettings['backupdir'])) //add abspath if not absolute
+		$jobsettings['backupdir']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$jobsettings['backupdir'];
 	$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
 	if ($jobsettings['backupdir']=='/')
 		$jobsettings['backupdir']='';

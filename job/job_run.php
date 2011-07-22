@@ -16,7 +16,7 @@ if (!is_writable($STATIC['TEMPDIR'])) {
 }
 //read runningfile and config
 $runningfile=get_working_file();
-if ($runningfile['JOBID']>0) {
+if ($runningfile['JOBID']>0 and $runningfile['WORKING']['NONCE']==$_POST['nonce']) {
 	if ($staticfile=file_get_contents($STATIC['TEMPDIR'].'.static')) {
 		$STATIC=unserialize(trim($staticfile));
 	} else {
@@ -27,7 +27,7 @@ if ($runningfile['JOBID']>0) {
 	unset($runningfile);
 	unset($staticfile);
 } else {
-	die('No running file found!!!');
+	die('Hack ?');
 }
 //check are temp dirs the same
 if ($STATIC['TEMPDIR']!=trim($_POST['BackWPupJobTemp'])) {
