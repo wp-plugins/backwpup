@@ -57,7 +57,10 @@ function file_list() {
 	for ($i=0; $i<count($tempfilelist); $i++) {
 		$filestat=stat($tempfilelist[$i]);
 		$WORKING['ALLFILESIZE']+=$filestat['size'];
-		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>str_replace($removepath,'',$tempfilelist[$i]),'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
+		$outfile=str_replace($removepath,'',$tempfilelist[$i]);
+		if (substr($outfile,0,1)=='/') //remove first /
+			$outfile=substr($outfile,1);
+		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
 	}
 	add_file($filelist); //add files to list
 	$WORKING['STEPDONE']=2;
