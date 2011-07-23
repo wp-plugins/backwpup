@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BackWPup 2.0 Branch\n"
 "Report-Msgid-Bugs-To: http://backwpup.com/forum/\n"
 "POT-Creation-Date: 2010-06-23 17:08+0000\n"
-"PO-Revision-Date: 2011-07-23 19:20+0100\n"
+"PO-Revision-Date: 2011-07-23 21:12+0100\n"
 "Last-Translator: David Decker <deckerweb.mobil@googlemail.com>\n"
 "Language-Team: DECKERWEB <deckerweb.mobil@googlemail.com>\n"
 "MIME-Version: 1.0\n"
@@ -2014,12 +2014,6 @@ msgid "- Logs  Folder in open_basedir path:"
 msgstr "- Protokolldateien-Ordner in open_basedir path:"
 
 #@ backwpup
-#. translators: plugin header field 'Version'
-#: backwpup.php:0
-msgid "2.0.5"
-msgstr "2.0.5"
-
-#@ backwpup
 #: job/backup_create.php:19
 #, php-format
 msgid "%d. try to create backup zip archive..."
@@ -2888,4 +2882,10 @@ msgstr "Wenn Sie diese Einstellung setzen, wird Ihre Auftragsplanung an BackWPup
 #, php-format
 msgid "[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s"
 msgstr "[INFO]: BackWPup Version %1$s, WordPress Version %4$s Urheberrecht &copy; %2$s %3$s"
+
+#@ backwpup
+#. translators: plugin header field 'Version'
+#: backwpup.php:0
+msgid "2.1.0"
+msgstr "2.1.0"
 
