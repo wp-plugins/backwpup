@@ -51,6 +51,9 @@ Do backups and more.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.1 =
+*
+
 = 2.1.0 =
 * No more sessions and curl needed
 * Respect open_basdir for temp folder
