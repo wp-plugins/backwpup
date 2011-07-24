@@ -184,7 +184,7 @@ function backwpup_get_temp() {
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
 		$tempfolder=sys_get_temp_dir();									//normal temp dir
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
-		$tempfolder=get_temp_dir();							//if sys_get_temp_dir not work
+		$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 
 		$tempfolder=WP_CONTENT_DIR.'/';
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder)) 		
