@@ -74,10 +74,8 @@ else
 if (backwpup_env_checks()) {
 	//add Menu
 	if (is_multisite()) {
-		if  (is_network_admin()) {
-			add_action('plugins_loaded','backwpup_plugin_activate'); //Activation for mu
-			add_action('network_admin_menu','backwpup_admin_menu');
-		}
+		add_action('network_admin_menu','backwpup_admin_menu');
+		add_action('plugins_loaded','backwpup_plugin_activate');
 	} else {
 		add_action('admin_menu', 'backwpup_admin_menu');
 	}
@@ -99,7 +97,7 @@ if (backwpup_env_checks()) {
 	if (isset($cfg['disablewpcron']) && $cfg['disablewpcron'])
 		define('DISABLE_WP_CRON',true);
 	//test if cron active
-	if (!(wp_next_scheduled('backwpup_cron')))
+	if (!(wp_next_scheduled('backwpup_cron')) and is_network_admin())
 		wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
 }
 ?>

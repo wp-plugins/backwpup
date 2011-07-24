@@ -111,6 +111,8 @@ function backwpup_contextual_help($help='') {
 //On Plugin activate
 function backwpup_plugin_activate() {
 	//Check multiseit only run once
+	if (!is_network_admin())
+		return;
 	if (is_multisite()) {
 		if (get_option('backwpup_last_activate')==BACKWPUP_VERSION) {
 			return;
