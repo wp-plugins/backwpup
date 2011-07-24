@@ -30,8 +30,7 @@ Domain Path: /lang/
 
 // don't load directly
 if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+	status_header(404);
 	die();
 }
 
@@ -68,11 +67,14 @@ register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Admin message
-add_action('admin_notices', 'backwpup_admin_notice'); 
+if (is_multisite()) 
+	add_action('network_admin_notices', 'backwpup_admin_notice'); 
+else
+	add_action('admin_notices', 'backwpup_admin_notice');
 if (backwpup_env_checks()) {
 	//add Menu
 	if (is_multisite()) {
-		if  (WP_NETWORK_ADMIN) {
+		if  (is_network_admin()) {
 			add_action('plugins_loaded','backwpup_plugin_activate'); //Activation for mu
 			add_action('network_admin_menu','backwpup_admin_menu');
 		}

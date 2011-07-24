@@ -239,7 +239,7 @@ function backwpup_api($active=false) {
 
 //add edit setting to plugins page
 function backwpup_plugin_options_link($links) {
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY) or is_multisite())
 		return $links;
 	$settings_link='<a href="'.backwpup_admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings','backwpup') . '</a>';
 	array_unshift( $links, $settings_link );
@@ -489,15 +489,6 @@ function backwpup_add_adminbar() {
 	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
-
-//turn cache off
-function backwpup_send_no_cache_header() {
-	header("Expires: 0");
-	header("Cache-Control: no-cache, must-revalidate");
-	header("Pragma: no-cache");
-	header("Cache-Control: post-check=0, pre-check=0");
-}
-
 function backwpup_get_upload_dir() {
 	$upload_path = get_option('upload_path');
 	$upload_path = trim($upload_path);
@@ -512,10 +503,10 @@ function backwpup_get_upload_dir() {
 			$dir = path_join( ABSPATH, $dir );
 		}
 	}
-	if ( defined('UPLOADS') && !is_multisite()) {
+	if (defined('UPLOADS') && !is_multisite()) {
 		$dir = ABSPATH . UPLOADS;
 	}
-	if ( is_multisite() && is_multisite()) {
+	if (is_multisite()) {
 			$dir = untrailingslashit(WP_CONTENT_DIR).'/blogs.dir';
 	}
 	return str_replace('\\','/',trailingslashit($dir));
@@ -691,7 +682,7 @@ function backwpup_get_working_file() {
 
 function backwpup_admin_url($url) {
 	if (is_multisite()) {
-		if  (WP_NETWORK_ADMIN)
+		if  (is_super_admin())
 			return network_admin_url($url);
 	} else {
 		return admin_url($url);

@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
-Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
+Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.1
 Tested up to: 3.2.1
 Stable tag: 2.1.0
@@ -54,6 +54,7 @@ Do backups and more.
 = 2.1.1 =
 * Fiexd problem with translation
 * Don't display dashboard Wigets on Mulitsite for not super amdins
+* Some improvements for Multisite
 
 = 2.1.0 =
 * No more sessions and curl needed
