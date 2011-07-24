@@ -52,7 +52,8 @@ Do backups and more.
 
 == Changelog ==
 = 2.1.1 =
-*
+* Fiexd problem with translation
+* Don't display dashboard Wigets on Mulitsite for not super amdins
 
 = 2.1.0 =
 * No more sessions and curl needed

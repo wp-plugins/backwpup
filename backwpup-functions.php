@@ -219,7 +219,6 @@ function backwpup_api($active=false) {
 		$blugurl=WP_SITEURL;
 
 	$post=array('URL'=>$blugurl,
-				'EMAIL'=>get_option('admin_email'),
 				'WP_VER'=>$wp_version,
 				'BACKWPUP_VER'=>BACKWPUP_VERSION,
 				'ACTIVE'=>$active,
@@ -468,7 +467,7 @@ function backwpup_dashboard_activejobs() {
 
 //add dashboard widget
 function backwpup_add_dashboard() {
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY) or !is_super_admin())
 		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
@@ -487,7 +486,6 @@ function backwpup_add_adminbar() {
     $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
-	
 	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
 }
 

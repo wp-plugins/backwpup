@@ -73,8 +73,8 @@ if (backwpup_env_checks()) {
 	//add Menu
 	if (is_multisite()) {
 		if  (WP_NETWORK_ADMIN) {
-			add_action('plugins_loaded' , 'backwpup_plugin_activate'); //Activation for mu
-			add_action('network_admin_menu', 'backwpup_admin_menu');
+			add_action('plugins_loaded','backwpup_plugin_activate'); //Activation for mu
+			add_action('network_admin_menu','backwpup_admin_menu');
 		}
 	} else {
 		add_action('admin_menu', 'backwpup_admin_menu');

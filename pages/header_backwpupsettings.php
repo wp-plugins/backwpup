@@ -50,6 +50,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	if (!isset($cfg['mailsendmail']) or empty($cfg['mailsendmail'])) {
 		$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 	}
+	backwpup_api(true);
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 }

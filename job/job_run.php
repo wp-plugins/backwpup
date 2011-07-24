@@ -45,6 +45,15 @@ if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	delete_working_file();
 	die('No logfile found!');
 }
+//load translation
+if (is_file(dirname(__FILE__).'/../lang/backwpup-'.$STATIC['WP']['WPLANG'].'.mo')) {
+	require($STATIC['WP']['ABSPATH'].$STATIC['WP']['WPINC'].'/pomo/mo.php');
+	$TRANSLATE = &new MO();
+	$TRANSLATE->import_from_file(dirname(__FILE__).'/../lang/backwpup-'.$STATIC['WP']['WPLANG'].'.mo');
+} else {
+	require($STATIC['WP']['ABSPATH'].$STATIC['WP']['WPINC'].'/pomo/translations.php');
+	$TRANSLATE = &new NOOP_Translations;
+}
 //set timezone
 date_default_timezone_set('UTC');
 //set function for PHP user defineid error handling

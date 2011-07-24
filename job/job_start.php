@@ -86,19 +86,6 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$backwpup_static['WP']['WPINC']=WPINC;
 	$backwpup_static['WP']['MULTISITE']=is_multisite();
 	$backwpup_static['WP']['ADMINURL']=backwpup_admin_url('admin.php');
-	//Load Translation
-	if (!empty($backwpup_static['WP']['WPLANG']) and is_file(dirname(__FILE__).'/../lang/backwpup-'.$backwpup_static['WP']['WPLANG'].'.po')) {
-		$file = fopen (dirname(__FILE__).'/../lang/backwpup-'.$backwpup_static['WP']['WPLANG'].'.po', "r");
-		while (!feof($file)){
-			$line = trim(fgets($file));
-			if (substr($line,0,7)=='msgid "') {
-				$msgid=md5(substr($line,7,-1));
-				$msgstr=substr(trim(fgets($file)),8,-1);
-				$backwpup_static['TRANSLATE'][$msgid]=$msgstr;
-			}
-		}
-		fclose($file);
-	}
 	//Set plugin data
 	$backwpup_static['BACKWPUP']['PLUGIN_BASEDIR']=BACKWPUP_PLUGIN_BASEDIR;
 	$backwpup_static['BACKWPUP']['VERSION']=BACKWPUP_VERSION;

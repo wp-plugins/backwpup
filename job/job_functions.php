@@ -7,33 +7,18 @@ if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
 }
 
 function __($message,$domain='backwpup') {
-	global $STATIC;
-	$msgid=md5($message);
-	if (!empty($STATIC['TRANSLATE'][$msgid]))
-		$message=$STATIC['TRANSLATE'][$msgid];
-	return $message;
+	global $TRANSLATE;
+	return $TRANSLATE->translate($message);
 }
 
 function _e($message,$domain='backwpup') {
-	global $STATIC;
-	$msgid=md5($message);
-	if (!empty($STATIC['TRANSLATE'][$msgid]))
-		$message=$STATIC['TRANSLATE'][$msgid];
-	echo $message;
+	global $TRANSLATE;
+	echo $TRANSLATE->translate($message);
 }
 
-function _n($singular,$plural,$count,$domain='backwpup') {
-	global $STATIC;
-	if ($count<=1) {
-		$msgid=md5($singular);
-		$message=$singular;
-	} else {
-		$msgid=md5($plural);
-		$message=$plural;
-	}
-	if (!empty($STATIC['TRANSLATE'][$msgid]))
-		$message=$STATIC['TRANSLATE'][$msgid];
-	return $message;
+function _n($single, $plural, $number,$domain='backwpup') {
+	global $TRANSLATE;
+	return $TRANSLATE->translate_plural($single,$plural,$number);
 }
 
 function exists_option($option='backwpup_jobs') {
