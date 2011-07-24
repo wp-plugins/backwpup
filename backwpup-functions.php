@@ -111,10 +111,8 @@ function backwpup_contextual_help($help='') {
 //On Plugin activate
 function backwpup_plugin_activate() {
 	//Check multiseit only run once
-	if (!is_network_admin())
-		return;
 	if (is_multisite()) {
-		if (get_option('backwpup_last_activate')==BACKWPUP_VERSION) {
+		if (get_option('backwpup_last_activate')==BACKWPUP_VERSION or !is_main_site()) {
 			return;
 		} else {
 			update_option('backwpup_last_activate',BACKWPUP_VERSION);
@@ -241,7 +239,7 @@ function backwpup_api($active=false) {
 
 //add edit setting to plugins page
 function backwpup_plugin_options_link($links) {
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY) or is_multisite())
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return $links;
 	$settings_link='<a href="'.backwpup_admin_url('admin.php').'?page=backwpup" title="' . __('Go to Settings Page','backwpup') . '" class="edit">' . __('Settings','backwpup') . '</a>';
 	array_unshift( $links, $settings_link );
@@ -469,7 +467,7 @@ function backwpup_dashboard_activejobs() {
 
 //add dashboard widget
 function backwpup_add_dashboard() {
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY) or !is_super_admin())
+	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );

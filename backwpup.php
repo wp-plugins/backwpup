@@ -75,16 +75,24 @@ if (backwpup_env_checks()) {
 	//add Menu
 	if (is_multisite()) {
 		add_action('network_admin_menu','backwpup_admin_menu');
-		add_action('plugins_loaded','backwpup_plugin_activate');
+		//add Dashboard widget
+		add_action('wp_network_dashboard_setup', 'backwpup_add_dashboard');
+		if (is_main_site())
+			add_action('plugins_loaded','backwpup_plugin_activate');
+		//Additional links on the plugin page
+		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 	} else {
 		add_action('admin_menu', 'backwpup_admin_menu');
+		//add Dashboard widget
+		add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
+		//Additional links on the plugin page
+		add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
+		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 	}
 	//add cron intervals
 	add_filter('cron_schedules', 'backwpup_intervals');
 	//Actions for Cron job
 	add_action('backwpup_cron', 'backwpup_cron',1);
-	//add Dashboard widget
-	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 	//add Admin Bar menu
 	add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
 	//Additional links on the plugin page
