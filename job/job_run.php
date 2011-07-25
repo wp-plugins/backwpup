@@ -57,7 +57,7 @@ if (is_file(dirname(__FILE__).'/../lang/backwpup-'.$STATIC['WP']['WPLANG'].'.mo'
 //set timezone
 date_default_timezone_set('UTC');
 // set charakter encoding
-if (!@mb_internal_encoding($STATIC[['WP']['CHARSET']))
+if (!@mb_internal_encoding($STATIC['WP']['CHARSET']))
 	mb_internal_encoding('UTF-8');
 //set function for PHP user defineid error handling
 set_error_handler('joberrorhandler',E_ALL | E_STRICT);
