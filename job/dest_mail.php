@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function dest_mail() {
 	global $WORKING,$STATIC;
 	$WORKING['STEPTODO']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
@@ -55,7 +49,7 @@ function dest_mail() {
 	}
 
 	trigger_error(__('Adding backup archive to mail','backwpup'),E_USER_NOTICE);
-	need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*5);
+	need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*4);
 	$phpmailer->AddAttachment($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 
 	trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);

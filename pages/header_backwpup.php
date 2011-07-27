@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 //Create Table
 $backwpup_listtable = new BackWPup_Jobs_Table;
@@ -62,50 +60,52 @@ if (!empty($doaction)) {
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
 		$runningfile=backwpup_get_working_file();
-		unlink(backwpup_get_temp().'.running'); //delete runnig file
-		unlink(backwpup_get_temp().'.static'); //delete static file
-		file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".backwpup_date_i18n('Y-m-d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
-		//write new log header
-		$runningfile['WORKING']['ERROR']++;
-		$fd=fopen($runningfile['LOGFILE'],'r+');
-		while (!feof($fd)) {
-			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$runningfile['WORKING']['ERROR']."\" />",100)."\n");
-				break;
+		$tempdir=backwpup_get_temp();
+		//clean up temp
+		if (is_dir($tempdir)) {
+			if ($dir = opendir($tempdir)) {
+				while (($file = readdir($dir)) !== false) {
+					if (is_readable($tempdir.$file) and is_file($tempdir.$file)) {
+						if ($file!='.' and $file!='..') {
+							unlink($tempdir.$file);
+						}
+					}
+				}
+				closedir($dir);
 			}
-			$filepos=ftell($fd);
 		}
-		fclose($fd);
+		if (!empty($runningfile['LOGFILE'])) {
+			file_put_contents($runningfile['LOGFILE'], "<span class=\"timestamp\">".backwpup_date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
+			//write new log header
+			$runningfile['WORKING']['ERROR']++;
+			$fd=fopen($runningfile['LOGFILE'],'r+');
+			while (!feof($fd)) {
+				$line=fgets($fd);
+				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+					fseek($fd,$filepos);
+					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$runningfile['WORKING']['ERROR']."\" />",100)."\n");
+					break;
+				}
+				$filepos=ftell($fd);
+			}
+			fclose($fd);
+		}
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
 		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
-			if (posix_kill($runningfile['PID'],9)) {
+			if (posix_kill($runningfile['PID'],9))
 				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$runningfile['PID'];
-				//gzip logfile
-				file_put_contents($runningfile['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
-				$cfg=get_option('backwpup');
-				if ($cfg['gzlogs']) {
-					$fd=fopen($runningfile['LOGFILE'],'r');
-					$zd=gzopen($runningfile['LOGFILE'].'.gz','w9');
-					while (!feof($fd)) 
-						gzwrite($zd,fread($fd,4096));
-					gzclose($zd);
-					fclose($fd);
-					unlink($runningfile['LOGFILE']);
-					$newlogfile=$runningfile['LOGFILE'].'.gz';
-				}
-			} else {
+			else 
 				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['PID'];
-			}
 		}
 		//update job settings
-		$jobs=get_option('backwpup_jobs');
-		if (isset($newlogfile) and !empty($newlogfile))
-			$jobs[$runningfile['JOBID']]['logfile']=$newlogfile;
-		$jobs[$runningfile['JOBID']]['lastrun']=$jobs[$runningfile['JOBID']]['starttime'];
-		$jobs[$runningfile['JOBID']]['lastruntime']=$runningfile['timestamp']-$jobs[$runningfile['JOBID']]['starttime'];
-		update_option('backwpup_jobs',$jobs); //Save Settings
+		if (!empty($runningfile['JOBID'])) {
+			$jobs=get_option('backwpup_jobs');
+			if (isset($newlogfile) and !empty($newlogfile))
+				$jobs[$runningfile['JOBID']]['logfile']=$newlogfile;
+			$jobs[$runningfile['JOBID']]['lastrun']=$jobs[$runningfile['JOBID']]['starttime'];
+			$jobs[$runningfile['JOBID']]['lastruntime']=$runningfile['timestamp']-$jobs[$runningfile['JOBID']]['starttime'];
+			update_option('backwpup_jobs',$jobs); //Save Settings
+		}
 		break;
 	}
 }

@@ -1,11 +1,4 @@
 <?PHP
-// don't load directly
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function __($message,$domain='backwpup') {
 	global $TRANSLATE;
 	return $TRANSLATE->translate($message);

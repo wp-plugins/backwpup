@@ -5,8 +5,7 @@ define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 //check referer
 if ($_SERVER["HTTP_USER_AGENT"]!='BackWPup') {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found",true,404);
 	die();
 }
 //get temp dir

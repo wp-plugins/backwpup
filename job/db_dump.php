@@ -1,11 +1,4 @@
 <?PHP
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
-
 function db_dump() {
 	global $WORKING,$STATIC;
 	trigger_error(sprintf(__('%d. try for database dump...','backwpup'),$WORKING['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);

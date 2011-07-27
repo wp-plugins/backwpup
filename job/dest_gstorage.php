@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function dest_gstorage() {
 	global $WORKING,$STATIC;
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
@@ -44,7 +38,8 @@ function dest_gstorage() {
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('Google Storage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		return;
-	}		
+	}
+	try {	
 		if (is_object($bucket)) {
 			if ($STATIC['JOB']['GStoragemaxbackups']>0) { //Delete old backups
 				$backupfilelist=array();

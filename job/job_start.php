@@ -1,11 +1,4 @@
-<?PHP
-// don't load directly
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-	
+<?PHP	
 function backwpup_jobstart($jobid='',$cronstart=false) {
 	global $wpdb,$wp_version;
 	$jobid=(int)trim($jobid);

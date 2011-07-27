@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 //Save Dropbox  settings
 if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  { 
@@ -25,10 +23,10 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 			update_option('backwpup_jobs',$jobs);
 			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
 		} else {
-			$backwpup_message.=__('Wrong Token for Dropbox authentication reseved!','backwpup').'<br />';
+			$backwpup_message.=__('Wrong Token for Dropbox authentication received!','backwpup').'<br />';
 		}
 	} else {
-		$backwpup_message.=__('No Dropbox authentication reseved!','backwpup').'<br />';	
+		$backwpup_message.=__('No Dropbox authentication received!','backwpup').'<br />';	
 	}
 	delete_transient('backwpup_dropboxrequest');
 	$_POST['jobid']=$jobid;
@@ -165,7 +163,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		}
 	}
 	
-	if (!empty($_POST['GStorageAccessKey']) and !empty($_POST['GStorageSecret']) and !empty($_POST['newGStorageBucket'])) { //create new google strage bucket if needed
+	if (!empty($_POST['GStorageAccessKey']) and !empty($_POST['GStorageSecret']) and !empty($_POST['newGStorageBucket'])) { //create new google storage bucket if needed
 		if (!class_exists('Tws_Service_Google_Storage'))
 			require_once(dirname(__FILE__).'/../libs/googlestorage.php');
 		try {

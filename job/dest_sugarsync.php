@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function dest_sugarsync() {
 	global $WORKING,$STATIC;
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);

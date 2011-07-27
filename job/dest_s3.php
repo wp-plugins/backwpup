@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('BACKWPUP_JOBRUN_FOLDER')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function dest_s3() {
 	global $WORKING,$STATIC;
 	trigger_error(sprintf(__('%d. try sending backup file to Amazon S3...','backwpup'),$WORKING['DEST_S3']['STEP_TRY']),E_USER_NOTICE);

@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 $cfg=get_option('backwpup');	
 	
@@ -17,7 +15,7 @@ wp_nonce_field('backwpup-cfg');
 ?>
 <input type="hidden" name="action" value="update" />
 <h3><?PHP _e('Send Mail','backwpup'); ?></h3> 
-<p><?PHP _e('Here you can set special things for Mail sending. The settings will be used in jobs for sending backups via email or for sending log files.','backwpup'); ?></p>
+<p><?PHP _e('Here you can set the options for email sending. The settings will be used in jobs for sending backups via email or for sending log files.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="mailsndemail"><?PHP _e('Sender email','backwpup'); ?></label></th> 
@@ -79,7 +77,7 @@ echo '</select>';
 </table> 
 
 <h3><?PHP _e('Logs','backwpup'); ?></h3> 
-<p><?PHP _e('Here you can set Logfile related things.','backwpup'); ?></p>
+<p><?PHP _e('Here you can set Logfile related options.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="dirlogs"><?PHP _e('Log file Folder','backwpup'); ?></label></th> 
@@ -101,7 +99,7 @@ echo '</select>';
 </tr>
 </table>
 <h3><?PHP _e('Jobs','backwpup'); ?></h3> 
-<p><?PHP _e('Here you can set Job related things.','backwpup'); ?></p>
+<p><?PHP _e('Here you can set Job related options.','backwpup'); ?></p>
 <table class="form-table">
 <tr valign="top"> 
 <th scope="row"><label for="jobstepretry"><?PHP _e('Max. retrys for job steps','backwpup'); ?></label></th> 
@@ -109,7 +107,7 @@ echo '</select>';
 </td> 
 </tr>
 <tr valign="top"> 
-<th scope="row"><label for="jobscriptretry"><?PHP _e('Max. retrys for job script restarts','backwpup'); ?></label></th> 
+<th scope="row"><label for="jobscriptretry"><?PHP _e('Max. retrys for job script retries','backwpup'); ?></label></th> 
 <td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo $cfg['jobscriptretry'];?>" class="small-text code" />
 </td> 
 </tr>
@@ -131,7 +129,7 @@ if (ini_get('safe_mode')) {
 <tr valign="top"> 
 <th scope="row"><label for="jobscriptruntimelong"><?PHP _e('Max. long script runtime:','backwpup'); ?></label></th>
 <td><input name="jobscriptruntimelong" type="text" id="jobscriptruntimelong" value="<?PHP echo $cfg['jobscriptruntimelong'];?>" class="small-text code" <?PHP echo $disabled;?>/> <?PHP _e('sec.','backwpup');?>&nbsp;
-<span class="description"><?PHP _e('Script runtime for loong operations withaut responce to script. You can only set it if safemode off. Default runtime is 300 sec.(Max. on most webservers.)','backwpup');?></span></td> 
+<span class="description"><?PHP _e('Script runtime for long operations withaut responce to script. You can only set it if safemode off. Default runtime is 300 sec.(Max. on most webservers.)','backwpup');?></span></td> 
 </tr>
 <tr valign="top"> 
 <th scope="row"><?PHP _e('PHP zip class','backwpup'); ?></th> 
@@ -165,10 +163,10 @@ if (ini_get('safe_mode')) {
 </fieldset></td>
 </tr>
 <tr valign="top"> 
-<th scope="row"><?PHP _e('Use corn service of backwpup.com','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use corn service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
+<th scope="row"><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></th> 
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
 <input name="apicronservice" type="checkbox" id="apicronservice" value="1" <?php checked($cfg['apicronservice'],true); ?> />
-<?PHP _e('If you check this than the job Schedule will submited too backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that have less visits.</em> Pelase make a littel donaten for the plugin if you use this servcie. The service can every time removed by me without a massage.','backwpup'); ?><br />
+<?PHP _e('If you check this, the job schedule will submited to backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> Please make a little donation for the plugin if you use this servcie. The service can be removed by me without a massage.','backwpup'); ?><br />
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
 </label> 
 </fieldset>

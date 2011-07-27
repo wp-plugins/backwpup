@@ -1,9 +1,6 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
 
 //add Help
 backwpup_contextual_help();

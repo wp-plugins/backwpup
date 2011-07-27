@@ -1,7 +1,5 @@
 <?PHP
 if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
 	die();
 }
 
@@ -91,7 +89,8 @@ if (!empty($oldblogabspath) and $oldblogabspath!=$blogabspath) {
 	if ($sqlerr=mysql_error())
 		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');")."<br />\n";
 }
-echo __('Restore Done. Please delete the SQL file after Restore.','backwpup')."<br />";
+echo __('Restore Done. Please delete the SQL file after restoring.','backwpup')."<br />";
+
 
 
 

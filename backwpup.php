@@ -28,12 +28,6 @@ Domain Path: /lang/
 	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
-// don't load directly
-if (!defined('ABSPATH')) {
-	status_header(404);
-	die();
-}
-
 //Set plugin dirname
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
@@ -71,13 +65,19 @@ if (is_multisite())
 	add_action('network_admin_notices', 'backwpup_admin_notice'); 
 else
 	add_action('admin_notices', 'backwpup_admin_notice');
+//test if cron active
+if (!(wp_next_scheduled('backwpup_cron')) and is_network_admin())
+	wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
+//add cron intervals
+add_filter('cron_schedules', 'backwpup_intervals');	
+//Check if plugin can activated
 if (backwpup_env_checks()) {
 	if (is_multisite()) {  //For multisite
 		//add Menu
 		add_action('network_admin_menu','backwpup_admin_menu');
 		//add Dashboard widget
 		add_action('wp_network_dashboard_setup', 'backwpup_add_dashboard');
-		if (is_main_site())
+		if (is_main_site()) 
 			add_action('plugins_loaded','backwpup_plugin_activate');
 		//Additional links on the plugin page
 		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
@@ -90,8 +90,6 @@ if (backwpup_env_checks()) {
 		add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 	}
-	//add cron intervals
-	add_filter('cron_schedules', 'backwpup_intervals');
 	//Actions for Cron job
 	add_action('backwpup_cron', 'backwpup_cron',1);
 	//add Admin Bar menu

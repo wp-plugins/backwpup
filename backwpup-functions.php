@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 //Thems Option menu entry
 function backwpup_admin_menu() {
 	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', BACKWPUP_PLUGIN_BASEURL.'/css/backup-icon20.gif');
@@ -559,7 +553,7 @@ function backwpup_cron_next($cronstring) {
 			$step=1;
 			if (strstr($value,'/'))
 				list($value,$step)=explode('/',$value,2);
-			//replase weekeday 7 with 0 for sundays
+			//replase weekday 7 with 0 for sundays
 			if ($cronarraykey=='wday')
 				$value=str_replace('7','0',$value);
 			//ranges
@@ -567,7 +561,7 @@ function backwpup_cron_next($cronstring) {
 				list($first,$last)=explode('-',$value,2);
 				if (!is_numeric($first) or !is_numeric($last) or $last>60 or $first>60) //check
 					return 2147483647;
-				if ($cronarraykey=='minutes' and $step<5)  //set step ninmum to 5 min.
+				if ($cronarraykey=='minutes' and $step<5)  //set step ninimum to 5 min.
 					$step=5;
 				$range=array();
 				for ($i=$first;$i<=$last;$i=$i+$step)
@@ -576,7 +570,7 @@ function backwpup_cron_next($cronstring) {
 			} elseif ($value=='*') {
 				$range=array();
 				if ($cronarraykey=='minutes') {
-					if ($step<5) //set step ninmum to 5 min.
+					if ($step<5) //set step ninimum to 5 min.
 						$step=5;
 					for ($i=0;$i<=59;$i=$i+$step)
 						$range[]=$i;
@@ -695,35 +689,35 @@ function backwpup_env_checks() {
 	$checks=true;
 	$cfg=get_option('backwpup');
 	if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
-		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or heiger needed!','backwpup')) . '<br />';
+		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or heiger is needed!','backwpup')) . '<br />';
 		$checks=false;
 	}
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 
-		$message.=__('- PHP 5.2.4 or higher needed!','backwpup') . '<br />';
+		$message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
 	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
 		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);
 	}
 	if (!is_dir($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Logs Folder not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=__('- Log folder does not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
 	if (!is_writable($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Logs Folder not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=__('- Log folder is not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
 	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Logs  Folder in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=__('- Log folder is not in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
 	$jobs=get_option('backwpup_jobs'); 
 	if (!empty($jobs)) {
 		foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling
 			if (empty($jobvalue['cron']))
-				$message.=__('- Please Check Scheduling time for Job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
+				$message.=__('- Please check the scheduled time for the job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
 		}
 	}
 	$nextrun=wp_next_scheduled('backwpup_cron');
 	if (empty($nextrun) or $nextrun>(time()+3600)) {  //check cron jobs work
-		$message.=__("- WP Cron not working, please check it!","backwpup") .'<br />';
+		$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 	}
 	//put massage if one
 	if (!empty($message))

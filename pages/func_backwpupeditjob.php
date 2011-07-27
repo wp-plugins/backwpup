@@ -1,10 +1,4 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
-	die();
-}
-
 function backwpup_jobedit_metabox_save($jobvalue) {
 	?>
 	<div class="submitbox" id="submitlink">

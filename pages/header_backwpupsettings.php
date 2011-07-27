@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='update') {
 	check_admin_referer('backwpup-cfg');
@@ -23,7 +21,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$cfg['jobstepretry']=(int)$_POST['jobstepretry'];
 	if (100>$_POST['jobscriptretry'] and 0<$_POST['jobscriptretry']) 
 		$cfg['jobscriptretry']=(int)$_POST['jobscriptretry'];
-	if (100>$_POST['jobscriptruntime'] and 0<$_POST['jobscriptruntime']) 
+	if (300>$_POST['jobscriptruntime'] and 0<$_POST['jobscriptruntime']) 
 		$cfg['jobscriptruntime']=(int)$_POST['jobscriptruntime'];
 	if (1000>$_POST['jobscriptruntimelong'] and 0<$_POST['jobscriptruntimelong']) 
 		$cfg['jobscriptruntimelong']=(int)$_POST['jobscriptruntimelong'];

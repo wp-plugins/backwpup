@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 echo "<div class=\"wrap\">";
 screen_icon();
@@ -42,7 +40,7 @@ if (isset($_POST['dbrestore']) and $_POST['dbrestore']==__('Restore', 'backwpup'
 		<input type="submit" name="dbrestore" class="button-primary" value="<?php _e('Restore', 'backwpup'); ?>" />
 		<?PHP
 	} else {
-		echo __('Copy SQL file to blog root folder to use for a restoration.', 'backwpup')."<br />";
+		echo __('Copy SQL file to blog root folder to use for a restoring.', 'backwpup')."<br />";
 	}
 }
 ?>

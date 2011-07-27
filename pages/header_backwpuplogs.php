@@ -1,9 +1,7 @@
 <?PHP
-if (!defined('ABSPATH')) {
-	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
-	header("Status: 404 Not Found");
+if (!defined('ABSPATH')) 
 	die();
-}
+
 
 //Create Table
 $backwpup_listtable = new BackWPup_Logs_Table;
@@ -58,7 +56,7 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 }
 
 //add Help
-backwpup_contextual_help(__('Here you can mange the log files of the jobs. You can download, view or delete them.','backwpup'));
+backwpup_contextual_help(__('Here you can manage the log files of the jobs. You can download, view, or delete them.','backwpup'));
 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpuplogs_per_page') );
 

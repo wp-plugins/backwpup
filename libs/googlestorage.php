@@ -262,11 +262,9 @@ class GoogleStorage {
                 }
 				if (false !== stripos(curl_getinfo($ch, CURLINFO_CONTENT_TYPE),'xml'))
 					$ret=simplexml_load_string($ret);
-				//var_dump($ret);
                 if ($code >= 200 and $code<300) {
 					return $ret;
-                }
-                else {	
+                } else {	
                     return $code.' '.$ret->Message;
                 }
         }
