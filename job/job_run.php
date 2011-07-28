@@ -81,6 +81,7 @@ $WORKING['PID']=getmypid();
 register_shutdown_function('job_shutdown');
 if (function_exists('pcntl_signal')) {
 	pcntl_signal(SIGTERM, 'job_shutdown');
+	pcntl_signal(SIGKILL, 'job_shutdown');
 }
 //disable safe mode
 @ini_set('safe_mode','0');
