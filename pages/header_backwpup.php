@@ -91,11 +91,11 @@ if (!empty($doaction)) {
 			fclose($fd);
 		}
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
-		if (!empty($runningfile['PID']) and function_exists('posix_kill')) {
-			if (posix_kill($runningfile['PID'],9))
-				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$runningfile['PID'];
+		if (!empty($runningfile['WORKING']['PID']) and function_exists('posix_kill')) {
+			if (posix_kill($runningfile['WORKING']['PID'],9))
+				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$runningfile['WORKING']['PID'];
 			else 
-				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['PID'];
+				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['WORKING']['PID'];
 		}
 		//update job settings
 		if (!empty($runningfile['JOBID'])) {

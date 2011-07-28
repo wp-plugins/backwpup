@@ -182,7 +182,7 @@ function delete_working_file() {
 	}
 }
 
-function update_working_file($mustwrite=false,$setpid=true) {
+function update_working_file($mustwrite=false) {
 	global $WORKING,$STATIC,$runmicrotime;
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
@@ -200,10 +200,7 @@ function update_working_file($mustwrite=false,$setpid=true) {
 		$runningfile=file_get_contents($STATIC['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
 		if (is_writable($STATIC['TEMPDIR'].'.running')) {
-			$PID=0;
-			if ($setpid)
-				$PID=getmypid();
-			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'PID'=>getmypid(),'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
+			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
 			$runmicrotime=microtime();
 		}
 	}
@@ -481,7 +478,7 @@ function job_end() {
 }
 
 // execute on script job shutdown
-function job_shutdown() {
+function job_shutdown($signal='') {
 	global $WORKING,$STATIC;
 	if (empty($STATIC['LOGFILE'])) //nothing on empty
 		return;
@@ -504,7 +501,9 @@ function job_shutdown() {
 	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
-	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR) and is_writable($STATIC['LOGFILE'])) {
+	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR or !empty($signal)) and is_writable($STATIC['LOGFILE'])) {
+		if (!empty($signal))
+			file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".sprintf(__('Signal $d send to script!','backwpup'),$signal)."</span><br />\n", FILE_APPEND);
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
 		//write new log header
 		$WORKING['ERROR']++;
@@ -520,16 +519,20 @@ function job_shutdown() {
 		}
 		fclose($fd);
 	}
+	//set PID to 0
+	$WORKING['PID']=0;
 	//Excute jobrun again
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
-		return;
+		exit;
 	if (is_writable($STATIC['LOGFILE']))
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
-	update_working_file(true,false);
+	update_working_file(true);
 	if (!empty($STATIC['JOBRUNURL'])) {
 		include_once(dirname(__FILE__).'/../libs/class.http.php');
 		$http = new Http();
 		$http->setMethod('POST');
+		$http->setCookiepath($STATIC['TEMPDIR']);
+		$http->followRedirects(false);
 		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
 		$http->addParam('nonce',$WORKING['NONCE']);
 		$http->addParam('type', 'restart');
@@ -537,5 +540,6 @@ function job_shutdown() {
 		$http->setTimeout(0.01);
 		$http->execute($STATIC['JOBRUNURL']);
 	}
+	exit;
 }
 ?>

@@ -49,7 +49,7 @@ function dest_mail() {
 	}
 
 	trigger_error(__('Adding backup archive to mail','backwpup'),E_USER_NOTICE);
-	need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*4);
+	need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*5);
 	$phpmailer->AddAttachment($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 
 	trigger_error(__('Send mail....','backwpup'),E_USER_NOTICE);

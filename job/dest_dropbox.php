@@ -39,7 +39,7 @@ function dest_dropbox() {
 		$dropbox->setProgressFunction('curl_progresscallback');
 		// put the file 
 		trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
-		need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*2); //free memory to transfer to dropbox
+		need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*2.2); //free memory to transfer to dropbox
 		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 		$response = $dropbox->upload($STATIC['JOB']['backupdir'].$STATIC['backupfile'],$STATIC['JOB']['dropedir']); 
 		if ($response['result']=="winner!") {

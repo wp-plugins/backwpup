@@ -53,6 +53,8 @@ if (is_file(dirname(__FILE__).'/../lang/backwpup-'.$STATIC['WP']['WPLANG'].'.mo'
 	require($STATIC['WP']['ABSPATH'].$STATIC['WP']['WPINC'].'/pomo/translations.php');
 	$TRANSLATE = &new NOOP_Translations;
 }
+//set ticks
+declare(ticks=1);
 //set timezone
 date_default_timezone_set('UTC');
 // set charakter encoding
@@ -63,18 +65,23 @@ set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 //Get type and check job runs
 $runningfile=get_working_file();
 $revtime=time()-$STATIC['CFG']['jobscriptruntimelong']-10;
-if ($runningfile['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_POST['type']=='restarttime') {
+if ($WORKING['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_POST['type']=='restarttime') {
 	trigger_error(__('Job restart terminated, bcause old job runs again!','backwpup'),E_USER_ERROR);
 	die();
 } elseif($_POST['type']=='restarttime') {
 	trigger_error(__('Job restarted, bcause inactivity!','backwpup'),E_USER_ERROR);
-} elseif ($runningfile['PID']!=getmypid() and $runningfile['PID']!=0 and $runningfile['timestamp']>$revtime) {
+} elseif ($WORKING['PID']!=getmypid() and $WORKING['PID']!=0 and $runningfile['timestamp']>$revtime) {
 	trigger_error(sprintf(__('Second Prozess is running, bcause old job runs! Start type is %s','backwpup'),$_POST['type']),E_USER_ERROR);
 	die();
 } 
 unset($runningfile);
+//set Pid
+$WORKING['PID']=getmypid();
 // execute function on job shutdown
 register_shutdown_function('job_shutdown');
+if (function_exists('pcntl_signal')) {
+	pcntl_signal(SIGTERM, 'job_shutdown');
+}
 //disable safe mode
 @ini_set('safe_mode','0');
 //set execution time tom max on safe mode

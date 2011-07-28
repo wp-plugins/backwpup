@@ -51,7 +51,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 		}	
 	}	
 	//Write running file to prevent dobble runnging
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOGFILE'=>'','PID'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>'')));
+	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>array('PID'=>0))));
 
 	//Set needed WP vars
 	$backwpup_static['WP']['DB_NAME']=DB_NAME;
@@ -204,6 +204,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	}
 	$backwpup_static['CRONSTART']=$cronstart;
 	$backwpup_working['NONCE']=wp_create_nonce('BackWPupJob');
+	$backwpup_working['PID']=0;
 	$backwpup_working['WARNING']=0;
 	$backwpup_working['ERROR']=0;
 	$backwpup_working['RESTART']=0;
@@ -250,7 +251,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	foreach($backwpup_working['STEPS'] as $step) 
 		$backwpup_working[$step]['DONE']=false;
 	//write working file
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$backwpup_static['JOB']['jobid'],'LOGFILE'=>$backwpup_static['LOGFILE'],'PID'=>0,'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>$backwpup_working)));
+	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$backwpup_static['JOB']['jobid'],'LOGFILE'=>$backwpup_static['LOGFILE'],'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>$backwpup_working)));
 	//write static file
 	file_put_contents($backwpup_static['TEMPDIR'].'.static',serialize($backwpup_static));
 	//Run job
