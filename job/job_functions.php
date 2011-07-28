@@ -61,7 +61,7 @@ function add_file($files) {
 	file_put_contents($STATIC['TEMPDIR'].'.filelist',serialize($filelist));
 }
 
-// add to file list
+// get file list
 function get_filelist() {
 	global $STATIC;
 	if (file_exists($STATIC['TEMPDIR'].'.filelist') and $filelistfile=file_get_contents($STATIC['TEMPDIR'].'.filelist'))

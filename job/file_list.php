@@ -11,6 +11,7 @@ function file_list() {
 	$tempfilelist=array();
 	//exlude of job
 	$WORKING['FILEEXCLUDES']=explode(',',trim($STATIC['JOB']['fileexclude']));
+	$WORKING['FILEEXCLUDES'][]='.tmp';  //do not backup .tmp files
 	$WORKING['FILEEXCLUDES']=array_unique($WORKING['FILEEXCLUDES']);
 
 	//File list for blog folders

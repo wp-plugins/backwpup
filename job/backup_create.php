@@ -54,15 +54,15 @@ function backup_create() {
 			//Create Zip File
 			if (is_array($filelist[0])) {
 				trigger_error(sprintf(__('%d. try to create backup zip (PclZip) archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
-				$zipbackupfile = new PclZip($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-				need_free_memory(2097152); //free memory for file list
 				for ($i=$WORKING['STEPDONE'];$i<$WORKING['STEPTODO'];$i++) {
 					$files[$i][79001]=$filelist[$i]['FILE'];
 					$files[$i][79003]=$filelist[$i]['OUTFILE'];
+					$files[$i][79004]=$filelist[$i]['MTIME'];
 				}
-				need_free_memory(11534336); //11MB free memory for zip
-				if (0==$zipbackupfile->create($files,PCLZIP_CB_POST_ADD, '_pclzipPostAddCallBack',PCLZIP_OPT_ADD_TEMP_FILE_ON)) {
-					trigger_error(sprint(__('Zip archive create error: %s','backwpup'),$zipbackupfile->errorInfo(true)),E_USER_ERROR);
+				need_free_memory(20971520); //20MB free memory for zip
+				$zipbackupfile = new PclZip($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
+				if (0==$zipbackupfile->create($files,PCLZIP_CB_POST_ADD,'_pclzipPostAddCallBack',PCLZIP_OPT_TEMP_FILE_THRESHOLD, 10)) {
+					trigger_error(sprintf(__('Zip archive create error: %s','backwpup'),$zipbackupfile->errorInfo(true)),E_USER_ERROR);
 				} else {
 					$WORKING['STEPDONE']=count($filelist);
 					unset($files);
@@ -195,7 +195,7 @@ function backup_create() {
 
 
 function _pclzipPostAddCallBack($p_event, &$p_header) {
-	global $WORKING,$STATIC;
+	global $WORKING;
 	if ($p_header['status'] != 'ok') 
 		trigger_error(sprintf(__('PCL ZIP Error "%1$s" on file %2$s!','backwpup'),$p_header['status'],$p_header['filename']),E_USER_ERROR);
 	$WORKING['STEPDONE']++;

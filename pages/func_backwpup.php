@@ -189,6 +189,7 @@ function backwpup_calc_file_size($jobvalues) {
 	$backwpup_temp_files=array('size'=>0,'num'=>0);
 	//Exclude Files
 	$backwpup_exclude=explode(',',trim($jobvalues['fileexclude']));
+	$backwpup_exclude[]='.tmp';  //do not backup .tmp files
 	$backwpup_exclude=array_unique($backwpup_exclude);
 
 	//File list for blog folders
