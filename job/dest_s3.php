@@ -24,12 +24,15 @@ function dest_s3() {
 			else 
 				@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 			trigger_error(__('Upload to Amazon S3 now started... ','backwpup'),E_USER_NOTICE);	
-			if ($s3->create_mpu_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops)))  {//transfere file to S3
+			//transfere file to S3
+			$result=$s3->create_mpu_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops));
+			$result=(array)$result;
+			if ($result["status"]=200 and $result["status"]<300)  {
 				$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-				trigger_error(sprintf(__('Backup transferred to S3://%s','backwpup'),$STATIC['JOB']['awsBucket'].'/'.$STATIC['JOB']['awsdir'].$STATIC['backupfile']),E_USER_NOTICE);
+				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
 				$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloads3&file='.$STATIC['JOB']['awsdir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			} else {
-				trigger_error(__('Can not transfer backup to S3!','backwpup'),E_USER_ERROR);
+				trigger_error(sprintf(__('Can not transfer backup to S3! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
 			}
 		} else {
 			trigger_error(sprintf(__('S3 Bucket "%s" not exists!','backwpup'),$STATIC['JOB']['awsBucket']),E_USER_ERROR);

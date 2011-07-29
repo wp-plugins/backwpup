@@ -45,7 +45,7 @@ function dest_dropbox() {
 		if ($response['result']=="winner!") {
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$STATIC['JOB']['dropedir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			$WORKING['STEPDONE']++;
-			trigger_error(sprintf(__('Backup transferred to DropBox://%s','backwpup'),$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
+			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/0/files/'.$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
 		} else {
 			trigger_error(sprintf(__('Error on transfere backup to DropBox: %s','backwpup'),$response['error']),E_USER_ERROR);
 			return;

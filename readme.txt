@@ -55,6 +55,8 @@ Do backups and more.
 * Fiexd problem with translation
 * Don't display dashboard Wigets on Mulitsite for not super amdins
 * Some improvements for Multisite
+* Updated AWS lib to 1.3.7
+* Google Storage uses now AWS lib
 
 = 2.1.0 =
 * No more sessions and curl needed

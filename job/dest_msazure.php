@@ -23,7 +23,7 @@ function dest_msazure() {
 		
 		if ($result->Name==$STATIC['JOB']['msazuredir'].$STATIC['backupfile']) {
 			$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-			trigger_error(sprintf(__('Backup transferred to azure://%s','backwpup'),$STATIC['JOB']['msazuredir'].$STATIC['backupfile']),E_USER_NOTICE);
+			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.$STATIC['JOB']['msazureAccName'].'.'.$STATIC['JOB']['msazureHost'].'/'.$STATIC['JOB']['msazuredir'].$STATIC['backupfile']),E_USER_NOTICE);
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadmsazure&file='.$STATIC['JOB']['msazuredir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 		} else {
 			trigger_error(__('Can not transfer backup to Microsoft Azure!','backwpup'),E_USER_ERROR);

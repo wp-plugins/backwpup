@@ -894,7 +894,7 @@ class Http
         if($this->status == 0)
         {
             // Oooops !
-            if(!eregi($match = "^http/[0-9]+\\.[0-9]+[ \t]+([0-9]+)[ \t]*(.*)\$", $headers[0], $matches))
+            if(!preg_match($match = "/^http/[0-9]+\\.[0-9]+[ \t]+([0-9]+)[ \t]*(.*)\$/i", $headers[0], $matches))
             {
                 $this->_setError('Unexpected HTTP response status');
                 return FALSE;

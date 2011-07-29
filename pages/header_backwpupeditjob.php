@@ -164,12 +164,15 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}
 	
 	if (!empty($_POST['GStorageAccessKey']) and !empty($_POST['GStorageSecret']) and !empty($_POST['newGStorageBucket'])) { //create new google storage bucket if needed
-		if (!class_exists('Tws_Service_Google_Storage'))
-			require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			$googlestorage = new GoogleStorage($_POST['GStorageAccessKey'], $_POST['GStorageSecret']);
-			$googlestorage->createBucket($_POST['newGStorageBucket'],'private');
+			$gstorage = new AmazonS3($_POST['GStorageAccessKey'], $_POST['GStorageSecret']);
+			$gstorage->set_hostname('commondatastorage.googleapis.com');
+			$gstorage->allow_hostname_override(false);
+			$gstorage->create_bucket($_POST['newGStorageBucket'],'');
 			$jobvalues['GStorageBucket']=$_POST['newGStorageBucket'];
+			sleep(1); //creation take a moment
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}

@@ -34,16 +34,18 @@ if (!empty($doaction)) {
 					}
 				}
 			}  elseif ($dest=='GSTORAGE') {
-				if (!class_exists('GoogleStorage'))
-					require_once(dirname(__FILE__).'/../libs/googlestorage.php');
-				if (class_exists('GoogleStorage')) {
+				if (!class_exists('AmazonS3'))
+					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
+				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket'])) {
 						try {
-							$googlestorage = new GoogleStorage($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
-							$googlestorage->deleteObject($jobvalue['GStorageBucket'],$backupfile);
-							unset($googlestorage);
+							$gstorage = new AmazonS3($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
+							$gstorage->set_hostname('commondatastorage.googleapis.com');
+							$gstorage->allow_hostname_override(false);
+							$gstorage->delete_object($jobvalue['GStorageBucket'],$backupfile);
+							unset($gstorage);
 						} catch (Exception $e) {
-							$backwpup_message.='Google Storage: '.$e->getMessage().'<br />';
+							$backwpup_message.=sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()).'<br />';
 						}
 					}
 				}
@@ -118,15 +120,10 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='FTP') {
 				if (!empty($jobvalue['ftphost']) and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and function_exists('ftp_connect')) {
-					$ftpport=21;
-					$ftphost=$jobvalue['ftphost'];
-					if (false !== strpos($jobvalue['ftphost'],':')) //look for port
-						list($ftphost,$ftpport)=explode(':',$jobvalue,2);
-
 					if (function_exists('ftp_ssl_connect') and $jobvalue['ftpssl']) { //make SSL FTP connection
-						$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
+						$ftp_conn_id = ftp_ssl_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
 					} elseif (!$jobvalue['ftpssl']) { //make normal FTP conection if SSL not work
-						$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
+						$ftp_conn_id = ftp_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
 					}
 					$loginok=false;
 					if ($ftp_conn_id) {
@@ -141,7 +138,7 @@ if (!empty($doaction)) {
 						}
 					}
 					if ($loginok) {
-						ftp_pasv($ftp_conn_id, true);
+						ftp_pasv($ftp_conn_id, $jobvalue['ftppasv']);
 						ftp_delete($ftp_conn_id, $backupfile);
 					} else {
 						$backwpup_message.='FTP: '.__('Login failure!','backwpup').'<br />';
@@ -199,32 +196,6 @@ if (!empty($doaction)) {
 			header('HTTP/1.0 '.$s3file->status.' Not Found');
 			die();
 		}
-		break;
-	case 'downloadgstorage': //Download Google Storage Backup
-		check_admin_referer('download-backup');
-		require_once(dirname(__FILE__).'/../libs/googlestorage.php');
-		$jobs=get_option('backwpup_jobs');
-		$jobid=$_GET['jobid'];
-		try {
-			$googlestorage = new GoogleStorage($jobs[$jobid]['GStorageAccessKey'], $jobs[$jobid]['GStorageSecret']);
-			$gstoragefile=$googlestorage->getObject($jobs[$jobid]['GStorageBucket'], $_GET['file']);
-		} catch (Exception $e) {
-			die($e->getMessage());
-		}
-		if ($gstoragefile) {
-			header("Pragma: public");
-			header("Expires: 0");
-			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-			//header("Content-Type: ".$gstoragefile->header->_info->content_type);
-			header("Content-Type: application/force-download");
-			header("Content-Type: application/octet-stream");
-			header("Content-Type: application/download");
-			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
-			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".strlen($gstoragefile));
-			echo $gstoragefile;
-			die();
-		} 
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');

@@ -286,7 +286,7 @@ function backwpup_jobedit_metabox_destgstorage($jobvalue) {
 	</div>
 	<div class="destlinks">
 		<a href="http://code.google.com/apis/storage/docs/signup.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-		<a href="https://code.google.com/apis/console/?pli=1#storage:legacy" target="_blank"><?PHP _e('Find Keys','backwpup'); ?></a><br />
+		<a href="https://code.google.com/apis/console/" target="_blank"><?PHP _e('Find Keys','backwpup'); ?></a><br />
 		<a href="https://sandbox.google.com/storage/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />
@@ -491,14 +491,14 @@ function backwpup_get_aws_buckets($args='') {
 	if (!class_exists('CFRuntime'))
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 	if (empty($awsAccessKey)) {
-		echo '<span id="awsBucket" style="color:red;">'.__('Missing Access Key ID!','backwpup').'</span>';
+		echo '<span id="awsBucket" style="color:red;">'.__('Missing access key!','backwpup').'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
 	}
 	if (empty($awsSecretKey)) {
-		echo '<span id="awsBucket" style="color:red;">'.__('Missing Secret Access Key!','backwpup').'</span>';
+		echo '<span id="awsBucket" style="color:red;">'.__('Missing secret access key!','backwpup').'</span>';
 		if ($ajax)
 			die();
 		else
@@ -520,7 +520,14 @@ function backwpup_get_aws_buckets($args='') {
 			die();
 		else
 			return;
-	} 
+	}
+	if (count($buckets->body->Buckets->Bucket)<1) {
+		echo '<span id="awsBucket" style="color:red;">'.__('No bucket fount!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	} 	
 	echo '<select name="awsBucket" id="awsBucket">';
 	foreach ($buckets->body->Buckets->Bucket as $bucket) {
 		echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
@@ -546,25 +553,27 @@ function backwpup_get_gstorage_buckets($args='') {
 		$GStorageselected=$_POST['GStorageselected'];
 		$ajax=true;
 	}
-	if (!class_exists('Tws_Service_Google_Storage'))
-		require_once(dirname(__FILE__).'/../libs/googlestorage.php');
+	if (!class_exists('CFRuntime'))
+		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 	if (empty($GStorageAccessKey)) {
-		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing Access Key!','backwpup').'</span>';
+		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing access key!','backwpup').'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
 	}
 	if (empty($GStorageSecret)) {
-		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing Secret!','backwpup').'</span>';
+		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing secret access key!','backwpup').'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
 	}
 	try {
-		$googlestorage = new GoogleStorage($GStorageAccessKey, $GStorageSecret);
-		$gbuckets=$googlestorage->listBuckets();
+		$gstorage = new AmazonS3($GStorageAccessKey, $GStorageSecret);
+		$gstorage->set_hostname('commondatastorage.googleapis.com');
+		$gstorage->allow_hostname_override(false);
+		$buckets=$gstorage->list_buckets();
 	} catch (Exception $e) {
 		echo '<span id="GStorageBucket" style="color:red;">'.$e->getMessage().'</span>';
 		if ($ajax)
@@ -572,15 +581,22 @@ function backwpup_get_gstorage_buckets($args='') {
 		else
 			return;
 	}
-	if (!is_object($gbuckets)) {
-		echo '<span id="GStorageBucket" style="color:red;">'.$gbuckets.'</span>';
+	if ($buckets->status<200 or $buckets->status>=300) {
+		echo '<span id="GStorageBucket" style="color:red;">'.$buckets->status.': '.$buckets->body->Message.'</span>';
 		if ($ajax)
 			die();
 		else
 			return;
 	} 
+	if (count($buckets->body->Buckets->Bucket)<1) {
+		echo '<span id="GStorageBucket" style="color:red;">'.__('No bucket fount!','backwpup').'</span>';
+		if ($ajax)
+			die();
+		else
+			return;
+	} 	
 	echo '<select name="GStorageBucket" id="GStorageBucket">';
-	foreach ($gbuckets as $bucket) {
+	foreach ($buckets->body->Buckets->Bucket as $bucket) {
 		echo "<option ".selected(strtolower($GStorageselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
 	}
 	echo '</select>';

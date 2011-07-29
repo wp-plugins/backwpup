@@ -304,7 +304,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 						if ($object['is_dir']!=true) {
 							$files[$filecounter]['JOBID']=$jobid;
 							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="DROPBOX:/".dirname($object['path']).'/';
+							$files[$filecounter]['folder']="https://api-content.dropbox.com/0/files/".$jobvalue['droperoot']."/".dirname($object['path'])."/";
 							$files[$filecounter]['file']=$object['path'];
 							$files[$filecounter]['filename']=basename($object['path']);
 							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;
@@ -327,13 +327,14 @@ function backwpup_get_backup_files($jobid,$dest) {
 			try {
 				$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
 				$dirid=$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
+				$user=$sugarsync->user();
 				$dir=$sugarsync->showdir($dirid);
 				$getfiles=$sugarsync->getcontents('file');
 				if (is_object($getfiles)) {
 					foreach ($getfiles->file as $getfile) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;					
-						$files[$filecounter]['folder']="SUGARSYNC://".$dir;
+						$files[$filecounter]['folder']='https://'.$user->nickname.'.sugarsync.com/'.$dir;
 						$files[$filecounter]['file']=(string)$getfile->ref;
 						$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
 						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
@@ -358,7 +359,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 					foreach ($contents->body->Contents as $object) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']="S3://".$jobvalue['awsBucket']."/".dirname((string)$object->Key).'/';
+						$files[$filecounter]['folder']="https://".$jobvalue['awsBucket'].".s3.amazonaws.com/".dirname((string)$object->Key).'/';
 						$files[$filecounter]['file']=(string)$object->Key;
 						$files[$filecounter]['filename']=basename($object->Key);
 						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
@@ -374,27 +375,28 @@ function backwpup_get_backup_files($jobid,$dest) {
 	}
 	//Get files/filinfo from Google Storage
 	if ($dest=='GSTORAGE' and !empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket']))	{
-		if (!class_exists('GoogleStorage'))
-			require_once(dirname(__FILE__).'/../libs/googlestorage.php');
-		if (class_exists('GoogleStorage')) {
+		if (!class_exists('AmazonS3'))
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
+		if (class_exists('AmazonS3')) {
 			try {
-				$googlestorage = new GoogleStorage($jobvalue['GStorageAccessKey'],$jobvalue['GStorageSecret']);
-				$contents = $googlestorage->getBucket($jobvalue['GStorageBucket'],$jobvalue['GStoragedir']);
-				if (is_object($contents)) {
-					foreach ($contents as $object) {
+				$gstorage = new AmazonS3($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
+				$gstorage->set_hostname('commondatastorage.googleapis.com');
+				$gstorage->allow_hostname_override(false);
+				if (($contents = $gstorage->list_objects($jobvalue['GStorageBucket'],array('prefix'=>$jobvalue['GStoragedir']))) !== false) {
+					foreach ($contents->body->Contents as $object) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']="GSTORAGE://".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';
+						$files[$filecounter]['folder']="https://sandbox.google.com/storage/".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';	
 						$files[$filecounter]['file']=(string)$object->Key;
 						$files[$filecounter]['filename']=basename($object->Key);
-						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadgstorage&file='.$object->Key.'&jobid='.$jobid;
+						$files[$filecounter]['downloadurl']="https://sandbox.google.com/storage/".$jobvalue['GStorageBucket']."/".(string)$object->Key;
 						$files[$filecounter]['filesize']=(string)$object->Size;
 						$files[$filecounter]['time']=strtotime($object->LastModified);
 						$filecounter++;							
 					}
 				}
 			} catch (Exception $e) {
-				$backwpup_message.='Google Sorage: '.$e->getMessage().'<br />';
+				$backwpup_message.=sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()).'<br />';
 			}
 		}
 	}
@@ -410,7 +412,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 					foreach ($blobs as $blob) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']="MSAZURE://".$jobvalue['msazureContainer']."/".dirname($blob->Name)."/";
+						$files[$filecounter]['folder']="https://".$jobvalue['msazureAccName'].'.'.$jobvalue['msazureHost']."/".$jobvalue['msazureContainer']."/".dirname($blob->Name)."/";
 						$files[$filecounter]['file']=$blob->Name;
 						$files[$filecounter]['filename']=basename($blob->Name);
 						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
@@ -456,15 +458,11 @@ function backwpup_get_backup_files($jobid,$dest) {
 	}
 	//Get files/filinfo from FTP
 	if ($dest=='FTP' and !empty($jobvalue['ftphost']) and function_exists('ftp_connect') and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass'])) {
-		$ftpport=21;
-		$ftphost=$jobvalue['ftphost'];
-		if (false !== strpos($jobvalue['ftphost'],':')) //look for port
-			list($ftphost,$ftpport)=explode(':',$jobvalue,2);
 
 		if (function_exists('ftp_ssl_connect') and $jobvalue['ftpssl']) { //make SSL FTP connection
-			$ftp_conn_id = ftp_ssl_connect($ftphost,$ftpport,10);
+			$ftp_conn_id = ftp_ssl_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
 		} elseif (!$jobvalue['ftpssl']) { //make normal FTP conection if SSL not work
-			$ftp_conn_id = ftp_connect($ftphost,$ftpport,10);
+			$ftp_conn_id = ftp_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
 		}
 		$loginok=false;
 		if ($ftp_conn_id) {
@@ -486,10 +484,10 @@ function backwpup_get_backup_files($jobid,$dest) {
 						continue;
 					$files[$filecounter]['JOBID']=$jobid;
 					$files[$filecounter]['DEST']=$dest;
-					$files[$filecounter]['folder']="FTP://".$jobvalue['ftphost'].dirname($ftpfiles)."/";
+					$files[$filecounter]['folder']="ftp://".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].dirname($ftpfiles)."/";
 					$files[$filecounter]['file']=$ftpfiles;
 					$files[$filecounter]['filename']=basename($ftpfiles);
-					$files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].rawurlencode($ftpfiles);
+					$files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].rawurlencode($ftpfiles);
 					$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
 					$files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
 					$filecounter++;
