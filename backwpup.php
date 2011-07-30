@@ -83,7 +83,7 @@ if (backwpup_env_checks()) {
 		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 	} else {
 		//add Menu
-		add_action('admin_menu', 'backwpup_admin_menu');
+		add_action('admin_menu', 'backwpup_admin_menu',97);
 		//add Dashboard widget
 		add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
 		//Additional links on the plugin page

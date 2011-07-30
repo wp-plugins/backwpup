@@ -212,6 +212,8 @@ class Http
      * @todo will keep debug messages
      */
     var $debugMsg;
+	
+	protected $ProgressFunction = false;
     
     /**
      * Constructor for initializing the class with default values.
@@ -563,6 +565,13 @@ class Http
     {
         return $this->error;
     }
+	
+	public function setProgressFunction($function) {
+		if (function_exists($function))
+			$this->ProgressFunction = $function;
+		else
+			$this->ProgressFunction = false;
+	}
 
     /**
      * Execute a HTTP request
@@ -698,6 +707,12 @@ class Http
                 curl_setopt ($ch, CURLOPT_COOKIE, $cookieString);
             }
             
+			if (defined('CURLOPT_PROGRESSFUNCTION') and !empty($this->ProgressFunction)) {
+				curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+				curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+				curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+			}
+			
             curl_setopt($ch, CURLOPT_HEADER,         TRUE);                 // No need of headers
             curl_setopt($ch, CURLOPT_NOBODY,         FALSE);                // Return body
                 
@@ -895,14 +910,14 @@ class Http
         if($this->status == 0)
         {
             // Oooops !
-            if(!preg_match($match = "/^http/[0-9]+\\.[0-9]+[ \t]+([0-9]+)[ \t]*(.*)\$/i", $headers[0], $matches))
+            if(!preg_match('~^HTTP/1\.\d (?P<status>\d+)~', $headers[0], $matches))
             {
                 $this->_setError('Unexpected HTTP response status');
                 return FALSE;
             }
             
             // Gotcha!
-            $this->status = $matches[1];
+            $this->status = $matches['status'];
             array_shift($headers);
         }
         

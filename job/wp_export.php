@@ -4,36 +4,30 @@ function wp_export() {
 	$WORKING['STEPTODO']=1;
 	trigger_error(sprintf(__('%d. try for wordpress export to XML file...','backwpup'),$WORKING['WP_EXPORT']['STEP_TRY']),E_USER_NOTICE);
 	need_free_memory(10485760); //10MB free memory
-	if (function_exists('curl_exec')) {
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, substr($STATIC['JOBRUNURL'],0,-11).'wp_export_generate.php');
-		curl_setopt($ch, CURLOPT_COOKIESESSION, true);
-		curl_setopt($ch, CURLOPT_COOKIE,'BackWPupJobTemp='.$STATIC['TEMPDIR'].'; path=/');
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
-		curl_setopt($ch, CURLOPT_HTTPAUTH,CURLAUTH_ANY);
-		curl_setopt($ch, CURLOPT_USERPWD,$STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-		if (defined('CURLOPT_PROGRESSFUNCTION')) {
-			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
-			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-		}
-		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
-		$return=curl_exec($ch);
-		$status=curl_getinfo($ch);
-		if ($status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
-			if (0!=curl_errno($ch)) 
-				trigger_error(__('cURL:','backwpup').' ('.curl_errno($ch).') '.curl_error($ch),E_USER_ERROR);
-			else 
-				trigger_error(__('cURL:','backwpup').' ('.$status['http_code'].')  Invalid response.',E_USER_ERROR);	
-		} else {
-			file_put_contents($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
-		}
-		curl_close($ch);
-	} 
+	
+	require_once(dirname(__FILE__).'/../libs/class.http.php');
+	$http = new Http();
+	$http->setMethod('POST');
+	$http->setCookiepath($STATIC['TEMPDIR']);
+	$http->followRedirects(false);
+	if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword']))
+		$http->setAuth($STATIC['CFG']['httpauthuser'], base64_decode($STATIC['CFG']['httpauthpassword']));
+	$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
+	$http->addParam('nonce',$WORKING['NONCE']);
+	$http->addParam('type', 'getxmlexport');
+	$http->setUseragent('BackWPup');
+	$http->setTimeout(300);
+	$http->setProgressFunction('curl_progresscallback');
+	$return=$http->execute(substr($STATIC['JOBRUNURL'],0,-11).'wp_export_generate.php');
+	$status=$http->getStatus();
+	$error=$http->getError();
+	
+	if ($status>=300 or $status<200 or !empty($error)) {
+		trigger_error(sprintf(__('XML Export (%1$d) %2$d:','backwpup'),$status,$error),E_USER_ERROR);	
+	} else {
+		file_put_contents($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
+	}
+	
 	//add XML file to backupfiles
 	if (is_readable($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml')) {
 		$filestat=stat($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml');

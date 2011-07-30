@@ -528,12 +528,13 @@ function job_shutdown($signal='') {
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	update_working_file(true);
 	if (!empty($STATIC['JOBRUNURL'])) {
-		include_once(dirname(__FILE__).'/../libs/class.http.php');
+		require_once(dirname(__FILE__).'/../libs/class.http.php');
 		$http = new Http();
 		$http->setMethod('POST');
 		$http->setCookiepath($STATIC['TEMPDIR']);
 		$http->followRedirects(false);
-		$http->setAuth($STATIC['CFG']['httpauthuser'], base64_decode($STATIC['CFG']['httpauthpassword']));
+		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword']))
+			$http->setAuth($STATIC['CFG']['httpauthuser'], base64_decode($STATIC['CFG']['httpauthpassword']));
 		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
 		$http->addParam('nonce',$WORKING['NONCE']);
 		$http->addParam('type', 'restart');
