@@ -231,7 +231,7 @@ function backwpup_show_info_td() {
 		$dbsize=array('size'=>0,'num'=>0,'rows'=>0);
 		$status=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A);
 		foreach($status as $tablekey => $tablevalue) {
-			if (in_array($tablevalue['Name'],$jobvalue['dbtables'])) {
+			if (!in_array($tablevalue['Name'],$jobvalue['dbexclude'])) {
 				$dbsize['size']=$dbsize['size']+$tablevalue["Data_length"]+$tablevalue["Index_length"];
 				$dbsize['num']++;
 				$dbsize['rows']=$dbsize['rows']+$tablevalue["Rows"];

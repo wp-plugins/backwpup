@@ -18,12 +18,13 @@ function wp_export() {
 	$http->setUseragent('BackWPup');
 	$http->setTimeout(300);
 	$http->setProgressFunction('curl_progresscallback');
+	@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 	$return=$http->execute(substr($STATIC['JOBRUNURL'],0,-11).'wp_export_generate.php');
 	$status=$http->getStatus();
 	$error=$http->getError();
 	
 	if ($status>=300 or $status<200 or !empty($error)) {
-		trigger_error(sprintf(__('XML Export (%1$d) %2$d:','backwpup'),$status,$error),E_USER_ERROR);	
+		trigger_error(sprintf(__('XML Export (%1$d) %2$s:','backwpup'),$status,$error),E_USER_ERROR);	
 	} else {
 		file_put_contents($STATIC['TEMPDIR'].preg_replace( '/[^a-z0-9_\-]/', '', strtolower($STATIC['WP']['BLOGNAME'])).'.wordpress.'.date( 'Y-m-d' ).'.xml', $return);
 	}
