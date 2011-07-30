@@ -4,10 +4,22 @@ function db_optimize() {
 	trigger_error(sprintf(__('%d. try for database optimize...','backwpup'),$WORKING['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_OPTIMIZE']['DONETABLE']) or !is_array($WORKING['DB_OPTIMIZE']['DONETABLE']))
 		$WORKING['DB_OPTIMIZE']['DONETABLE']=array();
-	$WORKING['STEPTODO']=sizeof($STATIC['JOB']['dbtables']);
-	if (sizeof($STATIC['JOB']['dbtables'])>0) {
+	
+	//to backup
+	$tabelstobackup=array();
+	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
+	if (!$result)
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+	while ($data = mysql_fetch_row($result)) {
+		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
+			$tabelstobackup[]=$data[0];
+	}	
+	//Set num of todos
+	$WORKING['STEPTODO']=count($tabelstobackup);
+	
+	if (count($tabelstobackup)>0) {
 		maintenance_mode(true);
-		foreach ($STATIC['JOB']['dbtables'] as $table) {
+		foreach ($tabelstobackup as $table) {
 			if (in_array($table, $WORKING['DB_OPTIMIZE']['DONETABLE']))
 				continue;
 			$result=mysql_query('OPTIMIZE TABLE `'.$table.'`');
@@ -17,7 +29,7 @@ function db_optimize() {
 			}
 			$optimize=mysql_fetch_assoc($result);
 			$WORKING['DB_OPTIMIZE']['DONETABLE'][]=$table;
-			$WORKING['STEPDONE']=sizeof($WORKING['DB_OPTIMIZE']['DONETABLE']);
+			$WORKING['STEPDONE']=count($WORKING['DB_OPTIMIZE']['DONETABLE']);
 			if ($optimize['Msg_type']=='error')
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_ERROR);
 			elseif ($optimize['Msg_type']=='warning')

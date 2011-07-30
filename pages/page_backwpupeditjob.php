@@ -23,8 +23,10 @@ $todo=explode('+',$jobvalue['type']);
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
 <div class="wrap">
-<?php screen_icon(); ?>
-<h2><?php echo esc_html( __('BackWPup Job Settings', 'backwpup') ); ?></h2>
+<?php 
+screen_icon(); 
+echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
+?>
 
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 <div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
@@ -62,7 +64,7 @@ $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 						<?php
 						$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 						foreach ($tables as $table) {
-							echo '	<input class="checkbox" type="checkbox"'.checked(in_array($table,(array)$jobvalue['dbtables']),true,false).' name="dbtables[]" value="'.$table.'"/> '.$table.'<br />';
+							echo '	<input class="checkbox" type="checkbox"'.checked(!in_array($table,$jobvalue['dbexclude']),true,false).' name="jobtabs[]" value="'.base64_encode($table).'"/> '.$table.'<br />';
 						}
 						?>
 						</div>

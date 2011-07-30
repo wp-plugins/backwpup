@@ -805,29 +805,26 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['mailerroronly']) or !is_bool($jobsettings['mailerroronly']))
 		$jobsettings['mailerroronly']=true;
-	
-	//old tables for backup (exclude)
-	if (isset($jobsettings['dbexclude'])) {
-		if (is_array($jobsettings['dbexclude'])) {
-			$jobsettings['dbtables']=array();
-			$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-			foreach ($tables as $table) {
-				if (!in_array($table,$jobsettings['dbexclude']))
-					$jobsettings['dbtables'][]=$table;
-			}
-		}
-	}
-	
-	//Tables to backup
-	if (!isset($jobsettings['dbtables']) or !is_array($jobsettings['dbtables'])) {
-		$jobsettings['dbtables']=array();
+
+		
+	//Tables to backup (old)
+	if (isset($jobsettings['dbtables']) and is_array($jobsettings['dbtables'])) {
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 		foreach ($tables as $table) {
-			if (substr($table,0,strlen($wpdb->prefix))==$wpdb->prefix)
-				$jobsettings['dbtables'][]=$table;
+			if (!in_array($table,$jobsettings['dbtables']))
+				$jobsettings['dbexclude'][]=$table;
 		}
 	}
-	sort($jobsettings['dbtables']);
+	
+	//don not backup tables
+	if (!isset($jobsettings['dbexclude']) or !is_array($jobsettings['dbexclude'])) {
+		$jobsettings['dbexclude']=array();
+		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+		foreach ($tables as $table) {
+			if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
+				$jobsettings['dbexclude'][]=$table;
+		}
+	}	
 	
 	if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 		$jobsettings['dbshortinsert']=false;
@@ -1095,7 +1092,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['scheduleinterval']);
 	unset($jobsettings['dropemail']);
 	unset($jobsettings['dropepass']);	
-	unset($jobsettings['dbexclude']);
+	unset($jobsettings['dbtables']);
 		
 	return $jobsettings;
 }	

@@ -89,7 +89,18 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['cronnextrun']=backwpup_cron_next($jobvalues['cron']);
 	$jobvalues['mailaddresslog']= isset($_POST['mailaddresslog']) ? sanitize_email($_POST['mailaddresslog']) : '';
 	$jobvalues['mailerroronly']= (isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false;
-	$jobvalues['dbtables']=!empty($_POST['dbtables']) ? (array)$_POST['dbtables'] : array();
+	$checedtables=array();
+	if (isset($_POST['jobtabs'])) {
+		foreach ($_POST['jobtabs'] as $dbtable) {
+			$checedtables[]=base64_decode($dbtable);
+		}
+	}
+	global $wpdb;
+	$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+	foreach ($tables as $dbtable) {
+		if (!in_array($dbtable,$checedtables))
+			$jobvalues['dbexclude'][]=$dbtable;
+	}	
 	$jobvalues['dbshortinsert']= (isset($_POST['dbshortinsert']) && $_POST['dbshortinsert']==1) ? true : false;
 	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
 	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';

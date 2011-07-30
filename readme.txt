@@ -58,6 +58,7 @@ Do backups and more.
 * Updated AWS lib to 1.3.7
 * Google Storage uses now AWS lib
 * Added http basic autentication support
+* now DB jobs uses new not selected tabels too
 * bug fixes
 
 = 2.1.0 =

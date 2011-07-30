@@ -4,15 +4,25 @@ function db_dump() {
 	trigger_error(sprintf(__('%d. try for database dump...','backwpup'),$WORKING['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_DUMP']['DONETABLE']) or !is_array($WORKING['DB_DUMP']['DONETABLE']))
 		$WORKING['DB_DUMP']['DONETABLE']=array();
-	$WORKING['STEPTODO']=count($STATIC['JOB']['dbtables']);
+	
+	//to backup
+	$tabelstobackup=array();
+	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
+	if (!$result)
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+	while ($data = mysql_fetch_row($result)) {
+		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
+			$tabelstobackup[]=$data[0];
+	}	
+	$WORKING['STEPTODO']=count($tabelstobackup);
+	
 	//Set maintenance
 	maintenance_mode(true);
 
-	if (count($STATIC['JOB']['dbtables'])>0) {
+	if (count($tabelstobackup)>0) {
 		$result=mysql_query("SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
 		if (!$result)
 			trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
-
 		while ($data = mysql_fetch_assoc($result)) {
 			$status[$data['Name']]=$data;
 		}
@@ -41,7 +51,7 @@ function db_dump() {
 			fwrite($file, "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n");
 			fwrite($file, "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n");
 			//make table dumps
-			foreach($STATIC['JOB']['dbtables'] as $table) {
+			foreach($tabelstobackup as $table) {
 				if (in_array($table, $WORKING['DB_DUMP']['DONETABLE']))
 					continue;
 				trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);

@@ -4,12 +4,23 @@ function db_check() {
 	trigger_error(sprintf(__('%d. try for database check...','backwpup'),$WORKING['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_CHECK']['DONETABLE']) or !is_array($WORKING['DB_CHECK']['DONETABLE']))
 		$WORKING['DB_CHECK']['DONETABLE']=array();
+	
+	//to backup
+	$tabelstobackup=array();
+	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
+	if (!$result)
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+	while ($data = mysql_fetch_row($result)) {
+		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
+			$tabelstobackup[]=$data[0];
+	}	
 	//Set num of todos
-	$WORKING['STEPTODO']=sizeof($STATIC['JOB']['dbtables']);
+	$WORKING['STEPTODO']=sizeof($tabelstobackup);
+	
 	//check tables
-	if (sizeof($STATIC['JOB']['dbtables'])>0) {
+	if (count($tabelstobackup)>0) {
 		maintenance_mode(true);
-		foreach ($STATIC['JOB']['dbtables'] as $table) {
+		foreach ($tabelstobackup as $table) {
 			if (in_array($table, $WORKING['DB_CHECK']['DONETABLE']))
 				continue;
 			$result=mysql_query('CHECK TABLE `'.$table.'` MEDIUM');
