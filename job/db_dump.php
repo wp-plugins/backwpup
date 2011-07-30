@@ -94,7 +94,6 @@ function db_dump() {
 
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
-
 	// create dump
 	fwrite($file, "\n");
 	fwrite($file, "--\n");
@@ -127,6 +126,7 @@ function _db_dump_table($table,$status,$file) {
 		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 
 	while ($data = mysql_fetch_assoc($result)) {
+		update_working_file();
 		$keys = array();
 		$values = array();
 		foreach($data as $key => $value) {
