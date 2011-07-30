@@ -152,16 +152,16 @@ if (ini_get('safe_mode')) {
 </tr>
 </table>
 
-<h3><?PHP _e('Http BASIC autentication','backwpup'); ?></h3>
-<p><?PHP _e('Is you blog behind a http auth (.htaccess)?','backwpup'); ?></p>
+<h3><?PHP _e('Http basic authentication','backwpup'); ?></h3>
+<p><?PHP _e('Is your blog behind a http basic authentication (.htaccess)? Then you must set the username and password four authentication.','backwpup'); ?></p>
 <table class="form-table"> 
 </tr>
-<th scope="row"><label for="httpauthuser"><?PHP _e('Http auth username:','backwpup'); ?></label></th> 
+<th scope="row"><label for="httpauthuser"><?PHP _e('Username:','backwpup'); ?></label></th> 
 <td><input name="httpauthuser" type="text" id="httpauthuser" value="<?PHP echo $cfg['httpauthuser'];?>" class="regular-text" />
 </td> 
 </tr>
 <tr valign="top"> 
-<th scope="row"><label for="httpauthpassword"><?PHP _e('Http auth password:','backwpup'); ?></label></th>
+<th scope="row"><label for="httpauthpassword"><?PHP _e('Password:','backwpup'); ?></label></th>
 <td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo base64_decode($cfg['httpauthpassword']);?>" class="regular-text" />
 </tr>
 </table>

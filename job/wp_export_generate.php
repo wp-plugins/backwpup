@@ -1,4 +1,11 @@
 <?PHP
+define('DONOTCACHEPAGE', true);
+define('DONOTCACHEDB', true);
+define('DONOTMINIFY', true);
+define('DONOTCDN', true);
+define('DONOTCACHCEOBJECT', true);
+define('W3TC_IN_MINIFY',false); //W3TC will not loaded
+
 if (is_writable(trim($_POST['BackWPupJobTemp']).'.running')) 
 	$runningfile=file_get_contents(trim($_POST['BackWPupJobTemp']).'.running');
 $infile=array();

@@ -912,7 +912,7 @@ class Http
             // Oooops !
             if(!preg_match('~^HTTP/1\.\d (?P<status>\d+)~', $headers[0], $matches))
             {
-                $this->_setError('Unexpected HTTP response status');
+                $this->_setError('Unexpected HTTP response status: '.$headers[0]);
                 return FALSE;
             }
             
