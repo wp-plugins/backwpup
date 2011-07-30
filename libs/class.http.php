@@ -688,6 +688,7 @@ class Http
             // Basic Authentication configuration
             if ($this->username && $this->password)
             {
+				curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
                 curl_setopt($ch, CURLOPT_USERPWD, $this->username . ':' . $this->password);
             }
             

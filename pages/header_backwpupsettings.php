@@ -37,6 +37,8 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['gzlogs']=isset($_POST['gzlogs']) ? true : false;
 	$cfg['phpzip']=isset($_POST['phpzip']) ? true : false;
 	$cfg['apicronservice']=isset($_POST['apicronservice']) ? true : false;
+	$cfg['httpauthuser']=$_POST['httpauthuser'];
+	$cfg['httpauthpassword']=base64_encode($_POST['httpauthpassword']);
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
 	//set def. folders
 	if (!isset($cfg['dirlogs']) or $cfg['dirlogs']=='/' or empty($cfg['dirlogs'])) {
@@ -48,9 +50,9 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	if (!isset($cfg['mailsendmail']) or empty($cfg['mailsendmail'])) {
 		$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
 	}
-	backwpup_api(true);
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
+	backwpup_api(true);
 }
 
 //add Help

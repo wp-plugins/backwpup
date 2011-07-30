@@ -533,6 +533,7 @@ function job_shutdown($signal='') {
 		$http->setMethod('POST');
 		$http->setCookiepath($STATIC['TEMPDIR']);
 		$http->followRedirects(false);
+		$http->setAuth($STATIC['CFG']['httpauthuser'], base64_decode($STATIC['CFG']['httpauthpassword']));
 		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
 		$http->addParam('nonce',$WORKING['NONCE']);
 		$http->addParam('type', 'restart');

@@ -57,6 +57,7 @@ Do backups and more.
 * Some improvements for Multisite
 * Updated AWS lib to 1.3.7
 * Google Storage uses now AWS lib
+* Added http basic autentication support
 
 = 2.1.0 =
 * No more sessions and curl needed

@@ -153,6 +153,8 @@ function backwpup_plugin_activate() {
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
 	if (!isset($cfg['disablewpcron']) or !is_bool($cfg['disablewpcron'])) $cfg['disablewpcron']=false;
+	if (!isset($cfg['httpauthuser'])) $cfg['httpauthuser']='';
+	if (!isset($cfg['httpauthpassword'])) $cfg['httpauthpassword']='';
 	//remove old option
 	unset($cfg['dirtemp']);
 	unset($cfg['logfilelist']);
@@ -202,22 +204,28 @@ function backwpup_check_open_basedir($dir) {
 //Backwpup API
 function backwpup_api($active=false) {
 	global $wp_version;
+	$cfg=get_option('backwpup');
 	if ($active)
-		$active='Y';
+		$post['ACTIVE']='Y';
 	else
-		$active='N';
+		$post['ACTIVE']='N';
 	if (is_multisite())
-		$active='M';
+		$post['ACTIVE']='M';
 	$blugurl=get_option('siteurl');
 	if (defined('WP_SITEURL'))
 		$blugurl=WP_SITEURL;
 
-	$post=array('URL'=>$blugurl,
-				'WP_VER'=>$wp_version,
-				'BACKWPUP_VER'=>BACKWPUP_VERSION,
-				'ACTIVE'=>$active,
-				'OFFSET'=>get_option('gmt_offset'));
-		
+	$post['URL']=$blugurl;
+	$post['WP_VER']=$wp_version;
+	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
+	
+	if (!empty($cfg['apicronservice'])) {
+		$post['OFFSET']=get_option('gmt_offset');
+		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) {
+			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
+		}
+	}
+	
 	$cfg=get_option('backwpup'); //Load Settings
 	if ($cfg['apicronservice']) {
 		$jobs=get_option('backwpup_jobs');
@@ -270,8 +278,11 @@ function backwpup_cron() {
 		$cfg=get_option('backwpup');
 		$revtime=time()-$cfg['jobscriptruntimelong']-10;
 		$infile=backwpup_get_working_file();
+		$httpauthheader='';
+		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
+			$httpauthheader='Authorization: BASIC '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
-			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
+			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
 	} else {
 		$jobs=get_option('backwpup_jobs');

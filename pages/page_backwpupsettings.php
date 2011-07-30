@@ -152,6 +152,20 @@ if (ini_get('safe_mode')) {
 </tr>
 </table>
 
+<h3><?PHP _e('Http BASIC autentication','backwpup'); ?></h3>
+<p><?PHP _e('Is you blog behind a http auth (.htaccess)?','backwpup'); ?></p>
+<table class="form-table"> 
+</tr>
+<th scope="row"><label for="httpauthuser"><?PHP _e('Http auth username:','backwpup'); ?></label></th> 
+<td><input name="httpauthuser" type="text" id="httpauthuser" value="<?PHP echo $cfg['httpauthuser'];?>" class="regular-text" />
+</td> 
+</tr>
+<tr valign="top"> 
+<th scope="row"><label for="httpauthpassword"><?PHP _e('Http auth password:','backwpup'); ?></label></th>
+<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo base64_decode($cfg['httpauthpassword']);?>" class="regular-text" />
+</tr>
+</table>
+
 <h3><?PHP _e('WP-Cron','backwpup'); ?></h3>
 <p><?PHP _e('If you would use the cron job of your hoster you must point it to the url:','backwpup'); echo ' <i>'.get_option('siteurl').'/wp-cron.php</i>'; ?></p>
 <table class="form-table"> 
@@ -166,12 +180,11 @@ if (ini_get('safe_mode')) {
 <th scope="row"><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></th> 
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
 <input name="apicronservice" type="checkbox" id="apicronservice" value="1" <?php checked($cfg['apicronservice'],true); ?> />
-<?PHP _e('If you check this, the job schedule will submited to backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> Please make a little donation for the plugin if you use this servcie. The service can be removed by me without a massage.','backwpup'); ?><br />
+<?PHP _e('If you check this, the job schedule will submited to backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start cron behind a basic authentication, on that the http authentication data will transferd too! Please make a little donation for the plugin if you use this servcie. The service can be removed by me without a massage.','backwpup'); ?><br />
 <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
 </label> 
 </fieldset>
 </td>
-</tr>
 </table>
 <p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
 </form>

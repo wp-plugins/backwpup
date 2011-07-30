@@ -12,6 +12,8 @@ function wp_export() {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, 1);
+		curl_setopt($ch, CURLOPT_HTTPAUTH,CURLAUTH_ANY);
+		curl_setopt($ch, CURLOPT_USERPWD,$STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		if (defined('CURLOPT_PROGRESSFUNCTION')) {
