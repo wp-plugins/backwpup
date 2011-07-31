@@ -51,6 +51,9 @@ Do backups and more.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.2 =
+* removed http class, makes to many problems
+
 = 2.1.1 =
 * Fiexd problem with translation
 * Don't display dashboard Wigets on Mulitsite for not super amdins

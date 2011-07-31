@@ -528,19 +528,47 @@ function job_shutdown($signal='') {
 		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span>".$WORKING['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
 	update_working_file(true);
 	if (!empty($STATIC['JOBRUNURL'])) {
-		require_once(dirname(__FILE__).'/../libs/class.http.php');
-		$http = new Http();
-		$http->setMethod('POST');
-		$http->setCookiepath($STATIC['TEMPDIR']);
-		$http->followRedirects(false);
-		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword']))
-			$http->setAuth($STATIC['CFG']['httpauthuser'], base64_decode($STATIC['CFG']['httpauthpassword']));
-		$http->addParam('BackWPupJobTemp', $STATIC['TEMPDIR']);
-		$http->addParam('nonce',$WORKING['NONCE']);
-		$http->addParam('type', 'restart');
-		$http->setUseragent('BackWPup');
-		$http->setTimeout(0.01);
-		$http->execute($STATIC['JOBRUNURL']);
+		if (function_exists('curl_exec')) {
+			$ch = curl_init();
+			curl_setopt($ch, CURLOPT_URL, $STATIC['JOBRUNURL']);
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+			curl_setopt($ch, CURLOPT_POST, true);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, array('BackWPupJobTemp'=>$STATIC['TEMPDIR'],'nonce'=>$WORKING['NONCE'],'type'=>'restart'));
+			curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+			curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+			curl_setopt($ch, CURLOPT_USERAGENT, 'BackWPup');
+			if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) {
+				curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+				curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
+			}
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0.01);
+			curl_exec($ch);
+		} else {
+			//use fopen if no curl
+			$urlParsed=parse_url($STATIC['JOBRUNURL']);
+			if ($urlParsed['scheme'] == 'https') {
+				$host = 'ssl://' . $urlParsed['host'];
+				$port = (!empty($urlParsed['port'])) ? $urlParsed['port'] : 443;
+			} else {
+				$host = $urlParsed['host'];
+				$port = (!empty($urlParsed['port'])) ? $urlParsed['port'] : 80;
+			}
+			$query=http_build_query(array('BackWPupJobTemp'=>$STATIC['TEMPDIR'],'nonce'=>$WORKING['NONCE'],'type'=>'restart'));
+			$path=(isset($urlParsed['path']) ? $urlParsed['path'] : '/').(isset($urlParsed['query']) ? '?' . $urlParsed['query'] : '');
+			$header = "POST ".$path." HTTP/1.1\r\n";
+			$header.= "Host: ".$urlParsed['host']."\r\n";
+			$header.= "User-Agent: BackWPup\r\n";
+			$header.= "Content-Type: application/x-www-form-urlencoded\r\n";
+			$header.= "Content-Length: ".strlen($query)."\r\n";
+			if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) 
+				$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']))."\r\n";
+			$header.= "Connection: Close\r\n\r\n";
+			$header.=$query;
+			$fp=fsockopen($host, $port, $errno, $errstr, 0.01);
+			fwrite($fp,$header);
+			fclose($fp);
+		}
 	}
 	exit;
 }

@@ -15,7 +15,6 @@ function db_dump() {
 			$tabelstobackup[]=$data[0];
 	}	
 	$WORKING['STEPTODO']=count($tabelstobackup);
-	
 	//Set maintenance
 	maintenance_mode(true);
 
