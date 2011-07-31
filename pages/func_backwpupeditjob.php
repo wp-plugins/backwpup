@@ -5,7 +5,7 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 	<div id="minor-publishing">
 	<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
 	<div style="display:none;">
-	<?php submit_button( __( 'Save Changes', 'backwpup' ), 'button', 'save', false ); ?>
+	<?php submit_button( __( 'Save Changes', 'backwpup' ), 'button', 'submit', false ); ?>
 	</div>
 	<div id="misc-publishing-actions">
 	<div id="preview-action">
