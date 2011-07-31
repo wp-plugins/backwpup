@@ -6,11 +6,11 @@ Requires at least: 3.1
 Tested up to: 3.2.1
 Stable tag: 2.1.2
 
-Backup your WordPress Database and Files, and more!
+WordPress Backup and more…
 
 == Description ==
 
-Do backups and more.
+Do backups and more for your WordPress Blog.
 
 * Database Backup
 * WordPress XML Export
