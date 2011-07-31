@@ -97,6 +97,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}
 	global $wpdb;
 	$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+	$jobvalues['dbexclude']=array();
 	foreach ($tables as $dbtable) {
 		if (!in_array($dbtable,$checedtables))
 			$jobvalues['dbexclude'][]=$dbtable;
