@@ -351,7 +351,7 @@ function job_end() {
 	//Display job working time	
 	trigger_error(sprintf(__('Job done in %s sec.','backwpup'),time()-$STATIC['JOB']['starttime']),E_USER_NOTICE);	
 	
-	if (!is_file($STATIC['JOB']['backupdir'].$STATIC['backupfile']) or !($filesize=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']))) //Set the filezie corectly
+	if (empty($STATIC['backupfile']) or !is_file($STATIC['JOB']['backupdir'].$STATIC['backupfile']) or !($filesize=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']))) //Set the filezie corectly
 		$filesize=0;
 
 	//clean up temp
