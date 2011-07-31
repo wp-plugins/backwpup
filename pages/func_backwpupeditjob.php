@@ -1,14 +1,15 @@
 <?PHP
 function backwpup_jobedit_metabox_save($jobvalue) {
 	?>
-	<div class="submitbox" id="submitlink">
+	<div class="submitbox" id="submitjobedit">
 	<div id="minor-publishing">
-	<?php // Hidden submit button early on so that the browser chooses the right button when form is submitted with Return key ?>
-	<div style="display:none;">
-	<?php submit_button( __( 'Save Changes', 'backwpup' ), 'button', 'submit', false ); ?>
+	<div id="minor-publishing-actions"> 
+	<div id="preview-action"> 
+	</div> 
+	<div class="clear"></div> 
 	</div>
 	<div id="misc-publishing-actions">
-	<div id="preview-action">
+	<div class="misc-pub-section misc-pub-section-last"> 
 	<?php 
 	foreach (backwpup_backup_types() as $type) {
 		echo "<input class=\"jobtype-select checkbox\" id=\"jobtype-select-".$type."\" type=\"checkbox\"".checked(true,in_array($type,explode('+',$jobvalue['type'])),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
@@ -17,15 +18,14 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 		echo '<br /><strong style="color:red;">'.__( 'PHP curl functions not available! Most backup destinations deaktivated!', 'backwpup' ).'</strong>';
 	?>
 	</div>
-	<div class="clear"></div>
 	</div>
 	</div>
 	<div id="major-publishing-actions">
 	<div id="delete-action">
-	<a class="submitdelete deletion" href="<?PHP echo wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
+		<a class="submitdelete deletion" href="<?PHP echo wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
 	</div>
 	<div id="publishing-action">
-		<input type="submit" name="submit" class="button-primary" id="publish" tabindex="1" accesskey="p" value="<?php _e('Save Changes', 'backwpup'); ?>" />
+		<input type="submit" name="submit" class="button-primary" id="submit" tabindex="1" accesskey="p" value="<?php _e('Save Changes', 'backwpup'); ?>" />
 	</div>
 	<div class="clear"></div>
 	</div>
