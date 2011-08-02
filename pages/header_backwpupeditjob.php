@@ -10,16 +10,17 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 	$backwpup_message='';
 	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
 		$reqtoken=get_transient('backwpup_dropboxrequest');
-		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
+		if ($reqtoken['token']==$_GET['oauth_token']) {
 			//Get Access Tokens
-			if (!class_exists('Dropbox'))
-				require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
-			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
+			if (!class_exists('Dropbox_API'))
+				require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+			$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$oauth->setToken($reqtoken);
+			$tokens = $oauth->getAccessToken();
 			//Save Tokens
 			$jobs=get_option('backwpup_jobs');
-			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
-			$jobs[$jobid]['dropesecret']=$oAuthStuff['oauth_token_secret'];
+			$jobs[$jobid]['dropetoken']=$tokens['token'];
+			$jobs[$jobid]['dropesecret']=$tokens['token_secret'];
 			update_option('backwpup_jobs',$jobs);
 			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
 		} else {
@@ -131,7 +132,6 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
 	$jobvalues['droperoot']=isset($_POST['droperoot']) ? $_POST['droperoot'] : 'dropbox';
-	$jobvalues['dropesignmethod']=isset($_POST['dropesignmethod']) ? $_POST['dropesignmethod'] : 'SHA1';
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
@@ -231,15 +231,14 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	update_option('backwpup_jobs',$jobs);
 	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
-		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
-		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
+		if (!class_exists('Dropbox_API'))
+			require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+		$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+		$tokens = $oauth->getRequestToken();
 		// save oauth_token_secret 
-		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),600);
+		set_transient('backwpup_dropboxrequest',$tokens,600);
 		//forward to auth page
-		wp_redirect($response['authurl']);
+		wp_redirect($oauth->getAuthorizeUrl(urlencode(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'))));
 	}	
 	
 	//make api call to backwpup.com

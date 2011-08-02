@@ -64,24 +64,19 @@ if (!empty($doaction)) {
 					}
 				}
 			} elseif ($dest=='DROPBOX') {
-				if (!class_exists('Dropbox'))
-					require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
-				if (class_exists('Dropbox')) {
-					if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
-						try {
-							$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-							$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
-							if ($jobvalue['droperoot']=='sandbox')
-								$dropbox->setSandbox();
-							else
-								$dropbox->setDropbox();
-							$dropbox->fileopsDelete($backupfile);
-							unset($dropbox);
-						} catch (Exception $e) {
-							$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
-						}
+				if (!class_exists('Dropbox_API'))
+					require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+				if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
+					try {
+						$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+						$dropbox = new Dropbox_API($oauth,$jobvalue['droperoot']);
+						$oauth->setToken($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+						$dropbox->delete($backupfile);
+						unset($dropbox);
+					} catch (Exception $e) {
+						$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
 					}
-				}
+				}	
 			} elseif ($dest=='SUGARSYNC') {
 				if (!class_exists('SugarSync'))
 					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
@@ -170,7 +165,8 @@ if (!empty($doaction)) {
 		break;
 	case 'downloads3': //Download S3 Backup
 		check_admin_referer('download-backup');
-		require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
+		if (!class_exists('AmazonS3'))
+			require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
@@ -199,16 +195,14 @@ if (!empty($doaction)) {
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
+		if (!class_exists('Dropbox_API'))
+			require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
-			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
-			if ($jobs[$jobid]['droperoot']=='sandbox')
-				$dropbox->setSandbox();
-			else
-				$dropbox->setDropbox();
+			$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox = new Dropbox_API($oauth,$jobs[$jobid]['droperoot']);
+			$oauth->setToken($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -219,7 +213,7 @@ if (!empty($doaction)) {
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
 			//header("Content-Length: ".$dropfile['bytes']);
-			echo $dropbox->download($_GET['file']);
+			echo $dropbox->getFile($_GET['file']);
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -227,7 +221,8 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadsugarsync': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+		if (!class_exists('SugarSync'))
+			require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
@@ -275,7 +270,8 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadrsc': //Download RSC Backup
 		check_admin_referer('download-backup');
-		require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
+		if (!class_exists('CF_Authentication'))
+			require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {

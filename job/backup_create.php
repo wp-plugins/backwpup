@@ -59,7 +59,7 @@ function backup_create() {
 					$files[$i][79003]=$filelist[$i]['OUTFILE'];
 					$files[$i][79004]=$filelist[$i]['MTIME'];
 				}
-				need_free_memory(20971520); //20MB free memory for zip
+				need_free_memory(26214400); //25MB free memory for zip
 				$zipbackupfile = new PclZip($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 				if (0==$zipbackupfile->create($files,PCLZIP_CB_POST_ADD,'_pclzipPostAddCallBack',PCLZIP_OPT_TEMP_FILE_THRESHOLD, 10)) {
 					trigger_error(sprintf(__('Zip archive create error: %s','backwpup'),$zipbackupfile->errorInfo(true)),E_USER_ERROR);

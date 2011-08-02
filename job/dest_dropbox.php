@@ -4,25 +4,26 @@ function dest_dropbox() {
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;
 	trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$WORKING['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
-	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
+	
+	require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
 	try {
-		$dropbox = new Dropbox($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
-		// set the tokens 
-		$dropbox->setOAuthTokens($STATIC['JOB']['dropetoken'],$STATIC['JOB']['dropesecret']);
-		//set oAuth Sign method
-		if ($STATIC['JOB']['dropesignmethod']=='PLAIN') {
-			$dropbox->setoAuthSignMethodPlain();
-			trigger_error(sprintf(__('oAuth sign method for DropBox is %s','backwpup'),__('PLAINTEXT', 'backwpup')),E_USER_NOTICE);
-		} else {
-			$dropbox->setoAuthSignMethodSHA1();
-			trigger_error(sprintf(__('oAuth sign method for DropBox is %s','backwpup'),__('HMAC-SHA1', 'backwpup')),E_USER_NOTICE);
+		if (class_exists('OAuth')) 
+			$oauth = new Dropbox_OAuth_PHP($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
+		elseif (class_exists('HTTP_OAuth_Consumer'))
+			$oauth = new Dropbox_OAuth_PEAR($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
+		elseif (class_exists('Zend_Oauth_Consumer'))
+			$oauth = new Dropbox_OAuth_Zend($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
+		elseif (function_exists('curl_exec'))
+			$oauth = new Dropbox_OAuth_Curl($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET']);
+		else {
+			trigger_error(sprintf(__('No supported DropDox oauth class found!','backwpup'),$info['display_name']),E_USER_ERROR);
+			return;
 		}
-		//set boxtype
-		if ($STATIC['JOB']['droperoot']=='sandbox')
-			$dropbox->setSandbox();
-		else
-			$dropbox->setDropbox();
-		$info=$dropbox->accountInfo();
+		
+		$dropbox = new Dropbox_API($oauth,$STATIC['JOB']['droperoot']);
+		// set the tokens 
+		$oauth->setToken($STATIC['JOB']['dropetoken'],$STATIC['JOB']['dropesecret']);
+		$info=$dropbox->getAccountInfo();
 		if (!empty($info['uid'])) {
 			trigger_error(sprintf(__('Authed with DropBox from %s','backwpup'),$info['display_name']),E_USER_NOTICE);
 		}
@@ -36,29 +37,26 @@ function dest_dropbox() {
 			trigger_error(sprintf(__('%s free on DropBox','backwpup'),formatBytes($dropboxfreespase)),E_USER_NOTICE);
 		}
 		//set calback function
-		$dropbox->setProgressFunction('curl_progresscallback');
+		$oauth->ProgressFunction='curl_progresscallback';
 		// put the file 
 		trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
-		need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*2.2); //free memory to transfer to dropbox
+		need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*2.1); //free memory to transfer to dropbox
 		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
-		$response = $dropbox->upload($STATIC['JOB']['backupdir'].$STATIC['backupfile'],$STATIC['JOB']['dropedir']); 
-		if ($response['result']=="winner!") {
+		$response = $dropbox->putFile($STATIC['JOB']['dropedir'].$STATIC['backupfile'],$STATIC['JOB']['backupdir'].$STATIC['backupfile']); 
+		if ($response) {
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$STATIC['JOB']['dropedir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			$WORKING['STEPDONE']++;
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/0/files/'.$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
-		} else {
-			trigger_error(sprintf(__('Error on transfere backup to DropBox: %s','backwpup'),$response['error']),E_USER_ERROR);
-			return;
 		}
 		//unset calback function
-		$dropbox->setProgressFunction('');
+		$oauth->ProgressFunction='';
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 	}
 	try {	
 		if ($STATIC['JOB']['dropemaxbackups']>0 and is_object($dropbox)) { //Delete old backups
 			$backupfilelist=array();
-			$metadata = $dropbox->metadata($STATIC['JOB']['dropedir']);
+			$metadata = $dropbox->getMetaData($STATIC['JOB']['dropedir']);
 			if (is_array($metadata)) {
 				foreach ($metadata['contents'] as $data) {
 					$file=basename($data['path']);
@@ -70,7 +68,7 @@ function dest_dropbox() {
 				rsort($backupfilelist);
 				$numdeltefiles=0;
 				for ($i=$STATIC['JOB']['dropemaxbackups'];$i<count($backupfilelist);$i++) {
-					$dropbox->fileopsDelete($STATIC['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
+					$dropbox->delete($STATIC['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
 					$numdeltefiles++;
 				}
 				if ($numdeltefiles>0)

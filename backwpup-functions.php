@@ -1054,9 +1054,6 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	
 	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
 		$jobsettings['droperoot']='dropbox';	
-
-	if (!isset($jobsettings['dropesignmethod']) or ($jobsettings['dropesignmethod']!='PLAIN' and $jobsettings['dropesignmethod']!='SHA1'))
-		$jobsettings['dropesignmethod']='SHA1';
 		
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;	
@@ -1090,6 +1087,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['dropemail']);
 	unset($jobsettings['dropepass']);	
 	unset($jobsettings['dbtables']);
+	unset($jobsettings['dropesignmethod']);
 		
 	return $jobsettings;
 }	

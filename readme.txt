@@ -51,6 +51,10 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.3 =
+* Preformance improvment
+* Uses now dropbox-php.com lib (ver. 0.4.2)
+
 = 2.1.2 =
 * removed http class, makes to many problems
 

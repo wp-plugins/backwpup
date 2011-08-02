@@ -40,7 +40,7 @@ define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
-		define('BACKWPUP_DESTS', 'FTP,MSAZURE');
+		define('BACKWPUP_DESTS', 'FTP,DROPBOX,MSAZURE');
 	else 
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }

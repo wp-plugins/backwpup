@@ -186,7 +186,7 @@ function update_working_file($mustwrite=false) {
 	global $WORKING,$STATIC,$runmicrotime;
 	if (!file_exists($STATIC['TEMPDIR'].'.running'))
 		job_end();
-	if ($mustwrite or empty($runmicrotime) or $runmicrotime>(microtime()-500)) { //only update all 500 ms
+	if ($mustwrite or empty($runmicrotime) or $runmicrotime<(microtime()-1000)) { //only update all 1 sec.
 		if ($WORKING['STEPTODO']>0 and $WORKING['STEPDONE']>0)
 			$steppersent=round($WORKING['STEPDONE']/$WORKING['STEPTODO']*100);
 		else
