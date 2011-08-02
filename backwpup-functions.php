@@ -102,19 +102,19 @@ function backwpup_contextual_help($help='') {
 			'</p>');
 }
 
-//On Plugin activate
+//On activate function
 function backwpup_plugin_activate() {
-	//Check multiseit only run once
-	if (is_multisite()) {
-		if (get_option('backwpup_last_activate')==BACKWPUP_VERSION or !is_main_site()) {
-			return;
-		} else {
-			update_option('backwpup_last_activate',BACKWPUP_VERSION);
-		}
-	}
+	//Load Settings
+	$cfg=get_option('backwpup'); 
+	//Check only run once on update
+	if ($cfg['last_activate']==BACKWPUP_VERSION or !is_main_site()) 
+		return;
+	else 
+		$cfg['last_activate']=BACKWPUP_VERSION;
+	//check jobs
 	$jobs=get_option('backwpup_jobs');
 	if (isset($jobs[0]))
-		unset($jobs[0]); //Delte old false job
+		unset($jobs[0]); //Delete old false job
 	if (!empty($jobs)) {
 		foreach ($jobs as $jobid => $jobvalue) {
 			$checktjobs[$jobid]=backwpup_get_job_vars($jobid); //check jobvaules
@@ -125,9 +125,8 @@ function backwpup_plugin_activate() {
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
 	//make new schedule round
-	wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
+	wp_schedule_event(mktime(date("H"),date("i")), 'backwpup_int', 'backwpup_cron');
 	//Set settings defaults
-	$cfg=get_option('backwpup'); //Load Settings
 	if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
@@ -166,7 +165,10 @@ function backwpup_plugin_activate() {
 
 //on Plugin deaktivate
 function backwpup_plugin_deactivate() {
-	wp_clear_scheduled_hook('backwpup_cron');
+	wp_clear_scheduled_hook('backwpup_cron'); //delete cron
+	$cfg=get_option('backwpup'); 
+	$cfg['last_activate']=''; //set to not activated
+	update_option('backwpup',$cfg);
 	backwpup_api(false);
 }
 

@@ -56,8 +56,6 @@ define('BACKWPUP_API_URL', 'http://api.backwpup.com');
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
 require_once(dirname(__FILE__).'/backwpup-functions.php');
-//Plugin activate
-register_activation_hook(__FILE__, 'backwpup_plugin_activate');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Admin message
@@ -65,11 +63,10 @@ if (is_multisite())
 	add_action('network_admin_notices', 'backwpup_admin_notice'); 
 else
 	add_action('admin_notices', 'backwpup_admin_notice');
-//test if cron active
-if (!(wp_next_scheduled('backwpup_cron')) and is_network_admin())
-	wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
 //add cron intervals
-add_filter('cron_schedules', 'backwpup_intervals');	
+add_filter('cron_schedules', 'backwpup_intervals');
+//call activation settings
+backwpup_plugin_activate(); 	
 //Check if plugin can activated
 if (backwpup_env_checks()) {
 	if (is_multisite()) {  //For multisite
