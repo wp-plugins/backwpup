@@ -52,6 +52,8 @@ define('BACKWPUP_SUGARSYNC_ACCESSKEY', 'OTcwNjc5MTI5OTQxMzY1Njc5OA');
 define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5YWVkMjFmYmI');
 //BackWPup API url
 define('BACKWPUP_API_URL', 'http://api.backwpup.com');
+//use Cert in AWS dir
+define('AWS_CERTIFICATE_AUTHORITY', true);
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file

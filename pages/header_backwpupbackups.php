@@ -26,6 +26,7 @@ if (!empty($doaction)) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						try {
 							$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+							$s3->ssl_verification=false;
 							$s3->delete_object($jobvalue['awsBucket'],$backupfile);
 							unset($s3);
 						} catch (Exception $e) {
@@ -40,6 +41,7 @@ if (!empty($doaction)) {
 					if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket'])) {
 						try {
 							$gstorage = new AmazonS3($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
+							$gstorage->ssl_verification=false;
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
 							$gstorage->delete_object($jobvalue['GStorageBucket'],$backupfile);

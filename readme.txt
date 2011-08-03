@@ -55,6 +55,7 @@ Do backups and more for your WordPress Blog.
 * Preformance improvment
 * Uses now dropbox-php.com lib (ver. 0.4.2)
 * changed Plugin activation function, because on update or upload activate is not called
+* bug fixes
 
 = 2.1.2 =
 * removed http class, makes to many problems

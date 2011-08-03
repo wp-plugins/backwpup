@@ -71,6 +71,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$backwpup_static['WP']['WPLANG']=WPLANG;
 	$backwpup_static['WP']['VERSION']=$wp_version;
 	$backwpup_static['WP']['CHARSET']=get_option('blog_charset');
+	$backwpup_static['WP']['MEMORY_LIMIT']=WP_MEMORY_LIMIT;
 	//WP folder
 	$backwpup_static['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
 	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';

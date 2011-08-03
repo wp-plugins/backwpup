@@ -4,8 +4,8 @@
  * Dropbox OAuth
  * 
  * @package Dropbox 
- * @copyright Copyright (C) 2011 Daniel Hüsken
- * @author Stefan Motz (http://www.danielhuesken.de/)
+ * @copyright Copyright (C) 2011 Daniel Huesken
+ * @author Daniel Huesken (http://www.danielhuesken.de/)
  * @license MIT
  */
 

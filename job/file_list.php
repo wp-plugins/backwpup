@@ -75,6 +75,8 @@ function _file_list( $folder = '', $levels = 100, $excludedirs=array()) {
 		return false;
 	if( ! $levels )
 		return false;
+	if ($levels == 100 or $levels == 95)
+		update_working_file();
 	$folder=rtrim($folder,'/').'/';
 	if ( $dir = @opendir( $folder ) ) {
 		while (($file = readdir( $dir ) ) !== false ) {

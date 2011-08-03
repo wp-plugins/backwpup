@@ -1,6 +1,7 @@
 <?PHP
 function dest_gstorage() {
 	global $WORKING,$STATIC;
+	define('AWS_CERTIFICATE_AUTHORITY', true);
 	trigger_error(sprintf(__('%d. try sending backup to Google Storage...','backwpup'),$WORKING['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;

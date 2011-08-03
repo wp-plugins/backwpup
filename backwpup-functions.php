@@ -160,6 +160,7 @@ function backwpup_plugin_activate() {
 	update_option('backwpup',$cfg);
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
+	delete_option('backwpup_last_activate');
 	backwpup_api(true);
 }
 
@@ -737,7 +738,9 @@ function backwpup_env_checks() {
 
 function backwpup_admin_notice() {
 	global $backwpup_admin_message;
-	echo $backwpup_admin_message;
+	if (current_user_can(BACKWPUP_USER_CAPABILITY))
+		echo $backwpup_admin_message;
+	return;
 }
 
 //Checking,upgrade and default job setting

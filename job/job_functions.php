@@ -72,7 +72,7 @@ function get_filelist() {
 
 //file size
 function formatbytes($bytes, $precision = 2) {
-	$units = array('B', 'KB', 'MB', 'GB', 'TB');
+	$units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
 	$bytes = max($bytes, 0);
 	$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
 	$pow = min($pow, count($units) - 1);
@@ -80,40 +80,34 @@ function formatbytes($bytes, $precision = 2) {
 	return round($bytes, $precision) . ' ' . $units[$pow];
 }
 
+
+function inbytes($value) {
+	$multi=strtoupper(substr(trim($value),-1));
+	$bytes=abs(intval(trim($value)));
+	if ($multi=='G')
+		$bytes=$bytes*1024*1024*1024;
+	if ($multi=='M')
+		$bytes=$bytes*1024*1024;
+	if ($multi=='K')
+		$bytes=$bytes*1024;
+	return $bytes;
+}
+
 function need_free_memory($memneed) {
-	if (ini_get('safe_mode') or strtolower(ini_get('safe_mode'))=='on' or ini_get('safe_mode')=='1') {
-		trigger_error(sprintf(__('PHP Safe mode is on!!! Can not increase memory limit is %s','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
-		return false;
-	}
-
-	//calc mem to bytes
-	if (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='K')
-		$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024;
-	elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='M')
-		$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024;
-	elseif (strtoupper(substr(trim(ini_get('memory_limit')),-1))=='G')
-		$memory=trim(substr(ini_get('memory_limit'),0,-1))*1024*1024*1024;
-	else
-		$memory=trim(ini_get('memory_limit'));
-
-	//use real memory at php version 5.2.0
-	if (version_compare(phpversion(), '5.2.0', '<'))
-		$memnow=memory_get_usage();
-	else
-		$memnow=memory_get_usage(true);
-
+	if (!function_exists('memory_get_usage')) 
+		return;
 	//need memory
-	$needmemory=$memnow+$memneed;
-
+	$needmemory=@memory_get_usage(true)+inbytes($memneed);
 	// increase Memory
-	if ($needmemory>$memory) {
-		$newmemory=round($needmemory/1024/1024)+1;
-		if ($oldmem=ini_set('memory_limit', $newmemory.'M'))
-			trigger_error(sprintf(__('Memory increased from %1$s to %2$s','backwpup'),$oldmem,ini_get('memory_limit')),E_USER_NOTICE);
+	if ($needmemory>inbytes(ini_get('memory_limit'))) {
+		$newmemory=round($needmemory/1024/1024)+1 .'M';
+		if ($needmemory>=1073741824)
+			$newmemory=round($needmemory/1024/1024/1024) .'G';
+		if ($oldmem=@ini_set('memory_limit', $newmemory))
+			trigger_error(sprintf(__('Memory increased from %1$s to %2$s','backwpup'),$oldmem,@ini_get('memory_limit')),E_USER_NOTICE);
 		else
-			trigger_error(sprintf(__('Can not increase memory limit is %1$s','backwpup'),ini_get('memory_limit')),E_USER_WARNING);
+			trigger_error(sprintf(__('Can not increase memory limit is %1$s','backwpup'),@ini_get('memory_limit')),E_USER_WARNING);
 	}
-	return true;
 }
 
 function maintenance_mode($enable = false) {

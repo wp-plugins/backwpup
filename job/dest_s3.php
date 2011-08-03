@@ -1,6 +1,7 @@
 <?PHP
 function dest_s3() {
 	global $WORKING,$STATIC;
+	define('AWS_CERTIFICATE_AUTHORITY', true);
 	trigger_error(sprintf(__('%d. try sending backup file to Amazon S3...','backwpup'),$WORKING['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 	$WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	$WORKING['STEPDONE']=0;

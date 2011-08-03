@@ -39,6 +39,9 @@ ob_start();
 header("Content-Length: 0");
 ob_end_flush();
 flush();
+// set memory limit to the same as WP.
+if (function_exists('memory_get_usage') && ((int)@ini_get('memory_limit') < abs(intval($STATIC['WP']['MEMORY_LIMIT']))))
+	@ini_set('memory_limit',$STATIC['WP']['MEMORY_LIMIT']);
 //check existing Logfile
 if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {
 	delete_working_file();
