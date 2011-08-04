@@ -727,7 +727,7 @@ function backwpup_env_checks() {
 		}
 	}
 	$nextrun=wp_next_scheduled('backwpup_cron');
-	if (empty($nextrun) or $nextrun>(time()+3600)) {  //check cron jobs work
+	if (empty($nextrun) or $nextrun<(time()-(3600*6))) {  //check cron jobs work
 		$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 	}
 	//put massage if one
