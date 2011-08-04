@@ -54,6 +54,7 @@ Do backups and more for your WordPress Blog.
 = 2.1.3 =
 * Preformance improvment
 * Uses now dropbox-php.com lib (ver. 0.4.2)
+* Updated AWS lib to 1.4.0
 * changed Plugin activation function, because on update or upload activate is not called
 * bug fixes
 

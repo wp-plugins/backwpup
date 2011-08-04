@@ -125,7 +125,7 @@ function backwpup_plugin_activate() {
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
 	//make new schedule round
-	wp_schedule_event(mktime(date("H"),date("i")), 'backwpup_int', 'backwpup_cron');
+	wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
 	//Set settings defaults
 	if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
@@ -236,7 +236,7 @@ function backwpup_api($active=false) {
 			}
 		}
 	}
-	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 10, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
+	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 15, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 }
 
 //add edit setting to plugins page
@@ -282,7 +282,7 @@ function backwpup_cron() {
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
 			$httpauthheader='Authorization: BASIC '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
-			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 0.01, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
+			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 3, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
 	} else {
 		$jobs=get_option('backwpup_jobs');

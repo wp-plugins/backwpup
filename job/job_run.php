@@ -1,6 +1,8 @@
 <?PHP
 //Set a constance for not direkt loding in other files
 define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
+//for S3 and Gstorage
+define('AWS_CERTIFICATE_AUTHORITY', true);
 // get needed functions for the jobrun
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
 //check referer
@@ -40,7 +42,7 @@ header("Content-Length: 0");
 ob_end_flush();
 flush();
 // set memory limit to the same as WP.
-if (function_exists('memory_get_usage') && ((int)@ini_get('memory_limit') < abs(intval($STATIC['WP']['MEMORY_LIMIT']))))
+if (function_exists('memory_get_usage') && (inbytes(@ini_get('memory_limit')) < inbytes($STATIC['WP']['MEMORY_LIMIT'])))
 	@ini_set('memory_limit',$STATIC['WP']['MEMORY_LIMIT']);
 //check existing Logfile
 if (empty($STATIC) or !file_exists($STATIC['LOGFILE'])) {

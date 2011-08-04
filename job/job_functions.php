@@ -536,7 +536,7 @@ function job_shutdown($signal='') {
 				curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 				curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
 			}
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 0.01);
+			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 			curl_exec($ch);
 		} else {
 			//use fopen if no curl
@@ -559,7 +559,7 @@ function job_shutdown($signal='') {
 				$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']))."\r\n";
 			$header.= "Connection: Close\r\n\r\n";
 			$header.=$query;
-			$fp=fsockopen($host, $port, $errno, $errstr, 0.01);
+			$fp=fsockopen($host, $port, $errno, $errstr, 3);
 			fwrite($fp,$header);
 			fclose($fp);
 		}

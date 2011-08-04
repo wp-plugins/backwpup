@@ -2,7 +2,7 @@
 /*
 Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
-Description: Wordpress Backup and more...
+Description: WordPress Backup and more…
 Author: Daniel H&uuml;sken
 Version: 2.1.3
 Author URI: http://danielhuesken.de
@@ -97,10 +97,7 @@ if (backwpup_env_checks()) {
 	backwpup_load_ajax();
 	//Disabele WP_Corn
 	$cfg=get_option('backwpup');
-	if (isset($cfg['disablewpcron']) && $cfg['disablewpcron'])
+	if (!empty($cfg['disablewpcron']))
 		define('DISABLE_WP_CRON',true);
-	//test if cron active
-	if (!(wp_next_scheduled('backwpup_cron')) and is_network_admin())
-		wp_schedule_event(mktime(date("H")), 'backwpup_int', 'backwpup_cron');
 }
 ?>
