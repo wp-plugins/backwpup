@@ -5,6 +5,7 @@ function db_dump() {
 	if (!isset($WORKING['DB_DUMP']['DONETABLE']) or !is_array($WORKING['DB_DUMP']['DONETABLE']))
 		$WORKING['DB_DUMP']['DONETABLE']=array();
 	
+	mysql_update();
 	//to backup
 	$tabelstobackup=array();
 	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
@@ -93,6 +94,7 @@ function db_dump() {
 
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
+	@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 	// create dump
 	fwrite($file, "\n");
 	fwrite($file, "--\n");
@@ -125,7 +127,6 @@ function _db_dump_table($table,$status,$file) {
 		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
 
 	while ($data = mysql_fetch_assoc($result)) {
-		update_working_file();
 		$keys = array();
 		$values = array();
 		foreach($data as $key => $value) {

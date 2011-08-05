@@ -95,9 +95,9 @@ class Dropbox_OAuth_Curl extends Dropbox_OAuth {
 		if (!ini_get('safe_mode') && !ini_get('open_basedir'))
 			curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true );
 		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
-			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
-			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-			curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
+			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
 		}
 		$response=curl_exec($ch);
 		$errorno=curl_errno($ch);

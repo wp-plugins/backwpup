@@ -5,6 +5,7 @@ function db_optimize() {
 	if (!isset($WORKING['DB_OPTIMIZE']['DONETABLE']) or !is_array($WORKING['DB_OPTIMIZE']['DONETABLE']))
 		$WORKING['DB_OPTIMIZE']['DONETABLE']=array();
 	
+	mysql_update();
 	//to backup
 	$tabelstobackup=array();
 	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status

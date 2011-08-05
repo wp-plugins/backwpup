@@ -34,6 +34,12 @@ if (!empty($doaction)) {
 		$jobs[$newjobid]=$jobs[$jobid];
 		$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
 		$jobs[$newjobid]['activated']=false;
+		$jobs[$newjobid]['fileprefix']=str_replace($jobid,$newjobid,$jobs[$jobid]['fileprefix']);
+		unset($jobs[$newjobid]['logfile']);
+		unset($jobs[$newjobid]['starttime']);
+		unset($jobs[$newjobid]['lastbackupdownloadurl']);
+		unset($jobs[$newjobid]['lastruntime']);
+		unset($jobs[$newjobid]['lastrun']);
 		update_option('backwpup_jobs',$jobs);
 		break;
 	case 'export': //Copy Job
@@ -41,6 +47,12 @@ if (!empty($doaction)) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
 				$jobsexport[$jobid]=backwpup_get_job_vars($jobid);
+				$jobsexport[$jobid]['activated']=false;
+				unset($jobsexport[$jobid]['logfile']);
+				unset($jobsexport[$jobid]['starttime']);
+				unset($jobsexport[$jobid]['lastbackupdownloadurl']);
+				unset($jobsexport[$jobid]['lastruntime']);
+				unset($jobsexport[$jobid]['lastrun']);
 			}
 		}
 		$export=serialize($jobsexport);

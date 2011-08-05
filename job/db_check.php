@@ -5,6 +5,7 @@ function db_check() {
 	if (!isset($WORKING['DB_CHECK']['DONETABLE']) or !is_array($WORKING['DB_CHECK']['DONETABLE']))
 		$WORKING['DB_CHECK']['DONETABLE']=array();
 	
+	mysql_update();
 	//to backup
 	$tabelstobackup=array();
 	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status

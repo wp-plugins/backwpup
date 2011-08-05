@@ -52,7 +52,8 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.1.4 =
-*
+* correct some values on job copy/export
+* fixed warning on dropbox upload.
 
 = 2.1.3 =
 * Preformance improvment

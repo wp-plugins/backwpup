@@ -280,7 +280,7 @@ function backwpup_cron() {
 		$infile=backwpup_get_working_file();
 		$httpauthheader='';
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
-			$httpauthheader='Authorization: BASIC '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
+			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword'])));
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
 			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 3, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
