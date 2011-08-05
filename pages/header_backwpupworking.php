@@ -2,7 +2,6 @@
 if (!defined('ABSPATH')) 
 	die();
 
-
 nocache_headers(); //no chache
 
 if (isset($_GET['action']) and $_GET['action']=='runnow' and !empty($_GET['jobid'])) {

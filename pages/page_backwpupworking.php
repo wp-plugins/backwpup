@@ -14,6 +14,11 @@ if (!defined('ABSPATH'))
 	if ($infile=backwpup_get_working_file()) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile(trim($_GET['logfile']));
+		if (isset($_GET['action']) and defined('ALTERNATE_WP_CRON') and ALTERNATE_WP_CRON and $_GET['action']=='runnow') {
+			echo "<input type=\"hidden\" name=\"backwpupworkingajaxurl\" id=\"backwpuprunurl\" value=\"".BACKWPUP_PLUGIN_BASEURL."/job/job_run.php\">";
+			echo "<input type=\"hidden\" name=\"alternate_wp_cron\" id=\"alternate_wp_cron\" value=\"1\">";
+			echo "<input type=\"hidden\" name=\"alternate_wp_cron_nonce\" id=\"alternate_wp_cron_nonce\" value=\"".$infile['WORKING']['NONCE']."\">";
+		}
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".trim($_GET['logfile'])."\">";
 		echo "<input type=\"hidden\" name=\"backwpupjobtemp\" id=\"backwpupjobtemp\" value=\"".backwpup_get_temp()."\">";
 		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";

@@ -475,23 +475,6 @@ function job_shutdown($signal='') {
 	global $WORKING,$STATIC;
 	if (empty($STATIC['LOGFILE'])) //nothing on empty
 		return;
-	$WORKING['RESTART']++;
-	if ($WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry'] and file_exists($STATIC['TEMPDIR'].'.running') and is_writable($STATIC['LOGFILE'])) {  //only x restarts allowed
-		file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\"|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]>".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
-		$WORKING['ERROR']++;
-		$fd=fopen($STATIC['LOGFILE'],'r+');
-		while (!feof($fd)) {
-			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
-				break;
-			}
-			$filepos=ftell($fd);
-		}
-		fclose($fd);
-		job_end();
-	}
 	//Put last error to log if one
 	$lasterror=error_get_last();
 	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR or !empty($signal)) and is_writable($STATIC['LOGFILE'])) {
@@ -511,6 +494,27 @@ function job_shutdown($signal='') {
 			$filepos=ftell($fd);
 		}
 		fclose($fd);
+	}
+	//no more restarts
+	$WORKING['RESTART']++;
+	if ((!empty($STATIC['WP']['ALTERNATE_CRON']) or $WORKING['RESTART']>=$STATIC['CFG']['jobscriptretry']) and file_exists($STATIC['TEMPDIR'].'.running') and is_writable($STATIC['LOGFILE'])) {  //only x restarts allowed
+		if (!empty($STATIC['WP']['ALTERNATE_CRON']))
+			file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\"|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]>".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".__('Can not restart on alternate cron....','backwpup')."</span><br />\n", FILE_APPEND);
+		else
+			file_put_contents($STATIC['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\"|Mem: ".formatbytes(@memory_get_usage(true))."|Mem Max: ".formatbytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]>".date('Y/m/d H:i.s',time()+$STATIC['WP']['TIMEDIFF']).":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
+		$WORKING['ERROR']++;
+		$fd=fopen($STATIC['LOGFILE'],'r+');
+		while (!feof($fd)) {
+			$line=fgets($fd);
+			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
+				fseek($fd,$filepos);
+				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$WORKING['ERROR']."\" />",100)."\n");
+				break;
+			}
+			$filepos=ftell($fd);
+		}
+		fclose($fd);
+		job_end();
 	}
 	//set PID to 0
 	$WORKING['PID']=0;

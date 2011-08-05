@@ -72,6 +72,10 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$backwpup_static['WP']['VERSION']=$wp_version;
 	$backwpup_static['WP']['CHARSET']=get_option('blog_charset');
 	$backwpup_static['WP']['MEMORY_LIMIT']=WP_MEMORY_LIMIT;
+	if (defined('ALTERNATE_WP_CRON'))
+		$backwpup_static['WP']['ALTERNATE_CRON']=ALTERNATE_WP_CRON;
+	else
+		$backwpup_static['WP']['ALTERNATE_CRON']=false;
 	//WP folder
 	$backwpup_static['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
 	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
@@ -259,7 +263,9 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$httpauthheader='';
 	if (!empty($backwpup_static['CFG']['httpauthuser']) and !empty($backwpup_static['CFG']['httpauthpassword']))
 		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.base64_decode($backwpup_static['CFG']['httpauthpassword'])));
-	wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
+	if (!$backwpup_static['WP']['ALTERNATE_CRON'])
+		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
+	
 	return $backwpup_static['LOGFILE'];
 }
 ?>

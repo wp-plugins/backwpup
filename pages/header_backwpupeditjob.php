@@ -2,7 +2,6 @@
 if (!defined('ABSPATH')) 
 	die();
 
-
 //Save Dropbox  settings
 if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  { 
 	$jobid = (int) $_GET['jobid'];

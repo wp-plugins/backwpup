@@ -1,10 +1,26 @@
 jQuery(document).ready( function($) {
-	var backwpupajaxurl = $('#backwpupworkingajaxurl').val();
+	if ($('#alternate_wp_cron').val()=='1') {
+			$.ajax({
+				headers: {'User-Agent': 'BackWPup'},
+				type: 'POST',
+				url: $('#backwpuprunurl').val(),
+				cache: false,
+				timeout: 3000,
+				async: false,
+				data: {
+					nonce: $('#alternate_wp_cron_nonce').val(),
+					BackWPupJobTemp: $('#backwpupjobtemp').val(),
+					type:  'javastart'
+				}
+			});
+	};
 	if ($('#logfile').length>0) {
-		$.ajaxSetup({ cache: false });
 		var refreshId = setInterval(function() {
-			$.ajax({type: 'POST',
-				url: backwpupajaxurl,
+			$.ajax({
+				headers: {'User-Agent': 'BackWPup'},
+				type: 'POST',
+				url: $('#backwpupworkingajaxurl').val(),
+				cache: false,
 				data: {
 					logfile: $('#logfile').val(),
 					BackWPupJobTemp: $('#backwpupjobtemp').val(),
@@ -38,7 +54,7 @@ jQuery(document).ready( function($) {
 						$('#progresssteps').css('width', parseFloat(rundata.STEPPERSENT)+'%');
 						$('.progressbar').show();
 					}						
-				},
+				}
 			});
 			$("#stopworking").each(function(index) {
 				$("#message").remove();
