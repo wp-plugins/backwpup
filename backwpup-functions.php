@@ -223,7 +223,7 @@ function backwpup_api($active=false) {
 	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
 	if (!empty($cfg['apicronservice'])) 
 		$post['OFFSET']=get_option('gmt_offset');
-	if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
+	if (!empty($cfg['apicronservice']) and !empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
 		$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
 	
 	$cfg=get_option('backwpup'); //Load Settings
