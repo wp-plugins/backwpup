@@ -54,6 +54,7 @@ Do backups and more for your WordPress Blog.
 = 2.1.4 =
 * correct some values on job copy/export
 * fixed warning on dropbox upload.
+* WP cron Job only set if a job activated
 
 = 2.1.3 =
 * Preformance improvment

@@ -19,6 +19,15 @@ if (!empty($doaction)) {
 				unset($jobs[$jobid]);
 			}
 		}
+		//activate/deactivate seduling if not needed
+		$activejobs=false;
+		foreach ($jobs as $jobid => $jobvalue) {
+			if (!empty($jobvalue['activated'])) 
+				$activejobs=true;
+		}
+		if (!$activejobs and false !== wp_next_scheduled('backwpup_cron')) {
+			wp_clear_scheduled_hook('backwpup_cron');
+		}	
 		update_option('backwpup_jobs',$jobs);
 		break;
 	case 'copy': //Copy Job

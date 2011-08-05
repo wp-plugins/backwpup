@@ -115,9 +115,12 @@ function backwpup_plugin_activate() {
 	$jobs=get_option('backwpup_jobs');
 	if (isset($jobs[0]))
 		unset($jobs[0]); //Delete old false job
+	$activejobs=false;
 	if (!empty($jobs)) {
 		foreach ($jobs as $jobid => $jobvalue) {
 			$checktjobs[$jobid]=backwpup_get_job_vars($jobid); //check jobvaules
+			if (!empty($checktjobs[$jobid]['activated']))
+				$activejobs=true;
 		}
 		//save job values
 		update_option('backwpup_jobs',$checktjobs);
@@ -125,7 +128,8 @@ function backwpup_plugin_activate() {
 	//remove old cron jobs
 	wp_clear_scheduled_hook('backwpup_cron');
 	//make new schedule round
-	wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
+	if ($activejobs)
+		wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
 	//Set settings defaults
 	if (empty($cfg['mailsndemail'])) $cfg['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
@@ -719,17 +723,11 @@ function backwpup_env_checks() {
 	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
 		$message.=__('- Log folder is not in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
 	}
-	$jobs=get_option('backwpup_jobs'); 
-	if (!empty($jobs)) {
-		foreach ($jobs as $jobid => $jobvalue) { //check for old cheduling
-			if (empty($jobvalue['cron']))
-				$message.=__('- Please check the scheduled time for the job:','backwpup') . ' '.$jobid.'. '.$jobvalue['name'].'<br />';
+	if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
+		if (empty($nextrun) or $nextrun<(time()-(3600*6))) {  //check cron jobs work
+			$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 		}
-	}
-	$nextrun=wp_next_scheduled('backwpup_cron');
-	if (empty($nextrun) or $nextrun<(time()-(3600*6))) {  //check cron jobs work
-		$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
-	}
+	} 
 	//put massage if one
 	if (!empty($message))
 		$backwpup_admin_message = '<div id="message" class="error fade"><strong>BackWPup:</strong><br />'.$message.'</div>';

@@ -230,6 +230,20 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobs[$jobvalues['jobid']]=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	update_option('backwpup_jobs',$jobs);
 	
+	//activate/deactivate seduling if not needed
+	$activejobs=false;
+	foreach ($jobs as $jobid => $jobvalue) {
+		if (!empty($jobvalue['activated'])) 
+			$activejobs=true;
+	}
+	if ($activejobs and false === wp_next_scheduled('backwpup_cron')) {
+		wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
+	}
+	if (!$activejobs and false !== wp_next_scheduled('backwpup_cron')) {
+		wp_clear_scheduled_hook('backwpup_cron');
+	}
+
+	//get dropbox auth
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
 		if (!class_exists('Dropbox_API'))
 			require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
