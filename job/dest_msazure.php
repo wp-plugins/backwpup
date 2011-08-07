@@ -18,7 +18,6 @@ function dest_msazure() {
 		}
 		
 		trigger_error(__('Upload to MS Azure now started... ','backwpup'),E_USER_NOTICE);
-		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 		$result = $storageClient->putBlob($STATIC['JOB']['msazureContainer'], $STATIC['JOB']['msazuredir'].$STATIC['backupfile'], $STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 		
 		if ($result->Name==$STATIC['JOB']['msazuredir'].$STATIC['backupfile']) {

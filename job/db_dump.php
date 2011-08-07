@@ -94,7 +94,6 @@ function db_dump() {
 
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
-	@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 	// create dump
 	fwrite($file, "\n");
 	fwrite($file, "--\n");

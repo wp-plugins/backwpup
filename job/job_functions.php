@@ -189,7 +189,7 @@ function update_working_file($mustwrite=false) {
 			$stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
 		else
 			$stepspersent=1;
-		@set_time_limit($STATIC['CFG']['jobscriptruntime']);
+		@set_time_limit(0);
 		$runningfile=file_get_contents($STATIC['TEMPDIR'].'.running');
 		$infile=unserialize(trim($runningfile));		
 		if (is_writable($STATIC['TEMPDIR'].'.running')) {

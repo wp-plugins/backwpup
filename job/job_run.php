@@ -87,13 +87,8 @@ register_shutdown_function('job_shutdown');
 if (function_exists('pcntl_signal')) {
 	pcntl_signal(SIGTERM, 'job_shutdown');
 }
-//disable safe mode
+//try to disable safe mode
 @ini_set('safe_mode','0');
-//set execution time tom max on safe mode
-if (ini_get('safe_mode')) {
-	$STATIC['CFG']['jobscriptruntime']=ini_get('max_execution_time');
-	$STATIC['CFG']['jobscriptruntimelong']=ini_get('max_execution_time');
-} 
 // Now user abrot allowed
 @ini_set('ignore_user_abort','0');
 //disable user abort
@@ -115,7 +110,7 @@ foreach($WORKING['STEPS'] as $step) {
 foreach($WORKING['STEPS'] as $step) {
 	//display some info massages bevor fist step
 	if (count($WORKING['STEPSDONE'])==0) {
-		trigger_error(sprintf($_SERVER["HTTP_USER_AGENT"].__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),$STATIC['BACKWPUP']['VERSION'],date('Y',time()+$STATIC['WP']['TIMEDIFF']),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$STATIC['WP']['VERSION']),E_USER_NOTICE);
+		trigger_error(sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),$STATIC['BACKWPUP']['VERSION'],date('Y',time()+$STATIC['WP']['TIMEDIFF']),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$STATIC['WP']['VERSION']),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$STATIC['JOB']['jobid'].'. '.$STATIC['JOB']['name'].'; '.$STATIC['JOB']['type'],E_USER_NOTICE);
 		if ($STATIC['JOB']['activated'])

@@ -29,7 +29,6 @@ function dest_sugarsync() {
 		//Upload to Sugarsync
 		$sugarsync->setProgressFunction('curl_progresscallback');
 		trigger_error(__('Upload to SugarSync now started... ','backwpup'),E_USER_NOTICE);
-		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 		$reponse=$sugarsync->upload($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 		if (is_object($reponse)) {
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$STATIC['JOB']['jobid'];

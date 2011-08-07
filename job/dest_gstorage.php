@@ -18,8 +18,6 @@ function dest_gstorage() {
 			$curlops=array();
 			if (defined('CURLOPT_PROGRESSFUNCTION'))
 				$curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
-			else 
-				@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 			trigger_error(__('Upload to GStorage now started... ','backwpup'),E_USER_NOTICE);	
 			//transfere file to GStorage
 			$result=$gstorage->create_mpu_object($STATIC['JOB']['GStorageBucket'], $STATIC['JOB']['GStoragedir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => 'private','partSize'=>26214400,'curlopts'=>$curlops));

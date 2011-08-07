@@ -25,9 +25,7 @@ function wp_export() {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-		} else {
-			@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
-		}
+		} 
 		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) {
 			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
 			curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));

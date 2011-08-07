@@ -91,7 +91,6 @@ function dest_ftp() {
 			}
 		}
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
-		@set_time_limit($STATIC['CFG']['jobscriptruntimelong']);
 		if (ftp_put($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile'], $STATIC['JOB']['backupdir'].$STATIC['backupfile'], FTP_BINARY)) { //transfere file
 			$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);

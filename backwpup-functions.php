@@ -145,8 +145,6 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['showadminbar'])) $cfg['showadminbar']=true;
 	if (!isset($cfg['jobstepretry']) or !is_int($cfg['jobstepretry']) or 100<$cfg['jobstepretry'] or empty($cfg['jobstepretry'])) $cfg['jobstepretry']=3;
 	if (!isset($cfg['jobscriptretry']) or !is_int($cfg['jobscriptretry']) or 100<$cfg['jobscriptretry'] or empty($cfg['jobscriptretry'])) $cfg['jobscriptretry']=5;
-	if (!isset($cfg['jobscriptruntime']) or !is_int($cfg['jobscriptruntime']) or 100<$cfg['jobscriptruntime'] or empty($cfg['jobscriptruntime'])) $cfg['jobscriptruntime']=30;
-	if (!isset($cfg['jobscriptruntimelong']) or !is_int($cfg['jobscriptruntimelong']) or 1000<$cfg['jobscriptruntimelong'] or empty($cfg['jobscriptruntimelong'])) $cfg['jobscriptruntimelong']=300;
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!class_exists('ZipArchive') or !isset($cfg['phpzip'])) $cfg['phpzip']=false;
@@ -161,6 +159,8 @@ function backwpup_plugin_activate() {
 	//remove old option
 	unset($cfg['dirtemp']);
 	unset($cfg['logfilelist']);
+	unset($cfg['jobscriptruntime']);
+	unset($cfg['jobscriptruntimelong']);
 	update_option('backwpup',$cfg);
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
