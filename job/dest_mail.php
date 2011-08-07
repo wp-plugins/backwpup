@@ -39,8 +39,7 @@ function dest_mail() {
 
 	//check file Size
 	if (!empty($STATIC['JOB']['mailefilesize'])) {
-		$maxfilezise=abs($STATIC['JOB']['mailefilesize']*1024*1024);
-		if (filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])>$maxfilezise) {
+		if (filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])>abs($STATIC['JOB']['mailefilesize']*1024*1024)) {
 			trigger_error(__('Backup archive too big for sending by mail!','backwpup'),E_USER_ERROR);
 			$WORKING['STEPDONE']=1;
 			$WORKING['STEPSDONE'][]='DEST_MAIL'; //set done

@@ -5,20 +5,17 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	if (empty($jobid) or !is_integer($jobid)) {
 		return false;
 	}
-	//clean var
-	$backwpup_static = array();
-	//get and create temp dir
-	$backwpup_static['TEMPDIR']=backwpup_get_temp();
 	//check if a job running
 	if ($infile=backwpup_get_working_file()) {
-		if ($infile['timestamp']<time()-1800) {
-			_e("A job already running!","backwpup");
-			return false;
-		} else { //delete working file job thing it not works longer.
-			unlink($backwpup_static['TEMPDIR'].'.running');
-			unlink($backwpup_static['TEMPDIR'].'.static');
-		}
+		_e("A job already running!","backwpup");
+		return false;
 	}
+
+	//clean var
+	$backwpup_static = array();
+	$backwpup_working = array();
+	//get and create temp dir
+	$backwpup_static['TEMPDIR']=backwpup_get_temp();
 	if (!is_dir($backwpup_static['TEMPDIR'])) {
 		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
 			printf(__('Can not create temp folder: %s','backwpup'),$backwpup_static['TEMPDIR']);

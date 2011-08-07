@@ -441,21 +441,24 @@ function job_end() {
 		} else {
 			$phpmailer->IsMail();
 		}
-		
-		$mailbody=sprintf(__("Jobname: %s","backwpup"),$STATIC['JOB']['name'])."\n";
-		$mailbody.=sprintf(__("Jobtype: %s","backwpup"),$STATIC['JOB']['type'])."\n";
-		if (!empty($WORKING['ERROR']))
-			$mailbody.=sprintf(__("Errors: %d","backwpup"),$WORKING['ERROR'])."\n";
-		if (!empty($WORKING['WARNINGS']))
-			$mailbody.=sprintf(__("Warnings: %d","backwpup"),$WORKING['WARNINGS'])."\n";
+		//read log file
+		$mailbody='';
+		if (substr($STATIC['LOGFILE'],-3)=='.gz') {
+			$lines=gzfile($STATIC['LOGFILE']);
+			foreach ($lines as $line) {
+				$mailbody.=$line;
+			}
+		} else {
+			$mailbody=gzfile($STATIC['LOGFILE']);
+		}
 		
 		$phpmailer->From     = $STATIC['CFG']['mailsndemail'];
 		$phpmailer->FromName = $STATIC['CFG']['mailsndname'];
 		$phpmailer->AddAddress($STATIC['JOB']['mailaddresslog']);
 		$phpmailer->Subject  =  sprintf(__('BackWPup log from %1$s: %2$s','backwpup'),date('Y/m/d @ H:i',$STATIC['JOB']['starttime']+$STATIC['WP']['TIMEDIFF']),$STATIC['JOB']['name']);
-		$phpmailer->IsHTML(false);
-		$phpmailer->Body  =  $mailbody;
-		$phpmailer->AddAttachment($STATIC['LOGFILE']);
+		$phpmailer->IsHTML(true);
+		$phpmailer->Body=$mailbody;
+		$phpmailer->AltBody=strip_tags($mailbody);
 		$phpmailer->Send();
 	}
 

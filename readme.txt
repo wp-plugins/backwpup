@@ -57,6 +57,7 @@ Do backups and more for your WordPress Blog.
 * WP cron Job only set if a job activated
 * now starts job with java is set define('ALTERNATE_WP_CRON', true); 
 * removed runtime settings
+* send log mails with full log text
 
 = 2.1.3 =
 * Preformance improvment
