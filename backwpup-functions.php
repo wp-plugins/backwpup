@@ -270,17 +270,19 @@ function backwpup_intervals($schedules) {
 	$schedules=array_merge($intervals,$schedules);
 	return $schedules;
 }
+
 //
 function backwpup_date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 	if ($unixtimestamp) 
 		$unixtimestamp=$unixtimestamp+get_option('gmt_offset')*3600;
 	return date_i18n( $dateformatstring, $unixtimestamp, $gmt);
 }
+
 //cron work
 function backwpup_cron() {
 	if (is_file(backwpup_get_temp().'.running')) {
 		$cfg=get_option('backwpup');
-		$revtime=time()-$cfg['jobscriptruntimelong']-10;
+		$revtime=time()-600; //10 min no progress.
 		$infile=backwpup_get_working_file();
 		$httpauthheader='';
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
@@ -715,13 +717,26 @@ function backwpup_env_checks() {
 		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);
 	}
 	if (!is_dir($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Log folder does not exists:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=sprintf(__("- Log folder '%s' does not exists!",'backwpup'),$cfg['dirlogs']).'<br />';
 	}
 	if (!is_writable($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Log folder is not writeable:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$cfg['dirlogs']).'<br />';
 	}
 	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
-		$message.=__('- Log folder is not in open_basedir path:','backwpup') . ' '.$cfg['dirlogs'].'<br />';
+		$message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$cfg['dirlogs']).'<br />';
+	}
+	$httpauth='';
+	if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
+		$httpauth="Authorization: Basic ".base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']))."\r\n";
+	$context = stream_context_create(array('http'=>array('method'=>"POST",'header'=>"Accept-language: en\r\nUser-Agent: BackWPup\r\n".$httpauth)));
+	if (!file_get_contents(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', false, $context)) { // check connection on self host
+		$message.=sprintf(__("- Can not connect with '%s' but is needed for jobstarts!",'backwpup'),BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php').'<br />';
+	}
+	if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') { // check logs folder
+		$message.=sprintf(__("- WP_CONTENT_URL '%s' must set as a full URL!",'backwpup'),WP_CONTENT_URL).'<br />';
+	}
+	if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') { // check logs folder
+		$message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
 	}
 	if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
 		if (empty($nextrun) or $nextrun<(time()-(3600*6))) {  //check cron jobs work

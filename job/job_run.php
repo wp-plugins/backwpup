@@ -95,6 +95,8 @@ if (function_exists('pcntl_signal')) {
 ignore_user_abort(true);
 //update running file
 update_working_file(true);
+//mysql connect
+mysql_update();
 //Load needed files
 foreach($WORKING['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
