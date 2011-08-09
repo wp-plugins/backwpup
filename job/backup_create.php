@@ -53,7 +53,7 @@ function backup_create() {
 			//Create Zip File
 			if (is_array($filelist[0])) {
 				trigger_error(sprintf(__('%d. try to create backup zip (PclZip) archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
-				for ($i=$WORKING['STEPDONE'];$i<$WORKING['STEPTODO'];$i++) {
+				for ($i=0;$i<$WORKING['STEPTODO'];$i++) { //must begin at 0 for PCLzip
 					$files[$i][79001]=$filelist[$i]['FILE'];
 					$files[$i][79003]=$filelist[$i]['OUTFILE'];
 					$files[$i][79004]=$filelist[$i]['MTIME'];

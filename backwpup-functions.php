@@ -729,7 +729,7 @@ function backwpup_env_checks() {
 	if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
 		$httpauth="Authorization: Basic ".base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']))."\r\n";
 	$context = stream_context_create(array('http'=>array('method'=>"POST",'header'=>"User-Agent: BackWPup\r\n".$httpauth)));
-	if (!file_get_contents(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', false, $context) and !defined('ALTERNATE_WP_CRON')) { // check connection on self host
+	if ((bool)ini_get('allow_url_fopen') and !file_get_contents(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', false, $context) and !defined('ALTERNATE_WP_CRON')) { // check connection on self host
 		$message.=sprintf(__("- Can not connect with '%s' but is needed for jobstarts!",'backwpup'),BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php').'<br />';
 	}
 	if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') { // check logs folder

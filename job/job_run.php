@@ -122,7 +122,7 @@ foreach($WORKING['STEPS'] as $step) {
 		else
 			trigger_error(__('[INFO]: BackWPup job strated manualy','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS,E_USER_NOTICE);
-		if (ini_get('safe_mode'))
+		if ((bool)ini_get('safe_mode'))
 			trigger_error(sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
 		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
 		if (function_exists('curl_init')) {
