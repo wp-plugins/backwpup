@@ -59,6 +59,7 @@ Do backups and more for your WordPress Blog.
 * removed runtime settings
 * send log mails with full log text
 * added aditional checks for job running
+* Updated AWS lib to 1.4.0.1
 
 = 2.1.3 =
 * Preformance improvment
