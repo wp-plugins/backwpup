@@ -9,6 +9,7 @@ Stable tag: 2.1.4
 WordPress Backup and more…
 
 == Description ==
+
 Do backups and more for your WordPress Blog.
 
 * Database Backup
@@ -34,6 +35,7 @@ Do backups and more for your WordPress Blog.
 ** Test your Backups! **
 
 == Installation ==
+
 1. Download BackWPup Plugin.
 2. Decompress and upload the contents of the archive into /wp-content/plugins/.
 3. Activate the Plugin through the 'Plugins' menu in WordPress
@@ -51,7 +53,7 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.1.5 =
-* 
+*
 
 = 2.1.4 =
 * correct some values on job copy/export
