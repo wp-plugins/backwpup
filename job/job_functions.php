@@ -449,7 +449,7 @@ function job_end() {
 				$mailbody.=$line;
 			}
 		} else {
-			$mailbody=gzfile($STATIC['LOGFILE']);
+			$mailbody=file_get_contents($STATIC['LOGFILE']);
 		}
 		
 		$phpmailer->From     = $STATIC['CFG']['mailsndemail'];
