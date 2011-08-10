@@ -706,7 +706,7 @@ function backwpup_env_checks() {
 	$checks=true;
 	$cfg=get_option('backwpup');
 	if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
-		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or heiger is needed!','backwpup')) . '<br />';
+		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
 		$checks=false;
 	}
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 

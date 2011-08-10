@@ -9,7 +9,6 @@ Stable tag: 2.1.3
 WordPress Backup and more…
 
 == Description ==
-
 Do backups and more for your WordPress Blog.
 
 * Database Backup
