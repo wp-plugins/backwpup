@@ -45,6 +45,7 @@ function dest_dropbox() {
 		if ($response) {
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloaddropbox&file='.$STATIC['JOB']['dropedir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
 			$WORKING['STEPDONE']++;
+			$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/0/files/'.$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
 		}
 		//unset calback function
@@ -79,6 +80,5 @@ function dest_dropbox() {
 	} 
 
 	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_DROPBOX'; //set done
 }
 ?>

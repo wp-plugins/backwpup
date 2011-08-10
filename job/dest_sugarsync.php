@@ -33,6 +33,7 @@ function dest_sugarsync() {
 		if (is_object($reponse)) {
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$STATIC['JOB']['jobid'];
 			$WORKING['STEPDONE']++;
+			$WORKING['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.$user->nickname.'.sugarsync.com/'.$sugarsync->showdir($dirid).$STATIC['backupfile']),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfer backup to SugarSync!','backwpup'),E_USER_ERROR);
@@ -66,6 +67,5 @@ function dest_sugarsync() {
 	} 
 
 	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 }
 ?>

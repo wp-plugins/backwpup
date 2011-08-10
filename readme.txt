@@ -54,10 +54,10 @@ Do backups and more for your WordPress Blog.
 = 2.1.4 =
 * correct some values on job copy/export
 * fixed warning on dropbox upload.
-* WP cron Job only set if a job activated
-* now starts manualy job with ajax is 'define('ALTERNATE_WP_CRON', true);'
+* WP cron Job only set is a job activated
+* now a manualy job starts with ajax is 'define('ALTERNATE_WP_CRON', true);'
 * removed runtime settings
-* send log mails with full log text
+* send log mails with full text
 * added aditional checks for job running
 * Updated AWS lib to 1.4.0.1
 

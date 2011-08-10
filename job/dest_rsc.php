@@ -55,6 +55,7 @@ function dest_rsc() {
 			$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(__('Backup File transferred to RSC://','backwpup').$STATIC['JOB']['rscContainer'].'/'.$STATIC['JOB']['rscdir'].$STATIC['backupfile'],E_USER_NOTICE);
 			$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloadrsc&file='.$STATIC['JOB']['rscdir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
+			$WORKING['STEPSDONE'][]='DEST_RSC'; //set done
 		} else {
 			trigger_error(__('Can not transfer backup to RSC.','backwpup'),E_USER_ERROR);
 		}
@@ -92,6 +93,5 @@ function dest_rsc() {
 	} 
 
 	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_RSC'; //set done
 }
 ?>

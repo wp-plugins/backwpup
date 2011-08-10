@@ -29,6 +29,7 @@ function dest_s3() {
 				$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
 				$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloads3&file='.$STATIC['JOB']['awsdir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
+				$WORKING['STEPSDONE'][]='DEST_S3'; //set done
 			} else {
 				trigger_error(sprintf(__('Can not transfer backup to S3! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
 			}
@@ -70,6 +71,5 @@ function dest_s3() {
 	}
 	
 	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_S3'; //set done
 }
 ?>
