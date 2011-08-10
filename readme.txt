@@ -6,7 +6,7 @@ Requires at least: 3.1
 Tested up to: 3.2.1
 Stable tag: 2.1.4
 
-WordPress Backup and more…
+WordPress Backup and more...
 
 == Description ==
 
