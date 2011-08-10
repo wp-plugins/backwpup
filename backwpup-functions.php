@@ -739,7 +739,7 @@ function backwpup_env_checks() {
 		$message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
 	}
 	if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
-		if (empty($nextrun) or $nextrun<(time()-(3600*6))) {  //check cron jobs work
+		if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
 			$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 		}
 	} 

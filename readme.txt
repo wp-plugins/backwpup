@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.1
 Tested up to: 3.2.1
-Stable tag: 2.1.3
+Stable tag: 2.1.4
 
 WordPress Backup and more…
 
@@ -50,6 +50,9 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.5 =
+* 
+
 = 2.1.4 =
 * correct some values on job copy/export
 * fixed warning on dropbox upload.
