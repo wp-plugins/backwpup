@@ -95,6 +95,7 @@ function dest_ftp() {
 			$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);
 			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".base64_decode($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
+			$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
 		} else
 			trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
 	}
@@ -123,6 +124,6 @@ function dest_ftp() {
 
 	ftp_close($ftp_conn_id);
 	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
+
 }
 ?>
