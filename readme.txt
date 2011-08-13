@@ -53,7 +53,8 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.1.5 =
-*
+* Improved mysql dump
+* mysql dump restore improvements
 
 = 2.1.4 =
 * correct some values on job copy/export

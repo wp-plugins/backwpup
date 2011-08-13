@@ -49,7 +49,7 @@ function dest_dropbox() {
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/0/files/'.$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
 		}
 		//unset calback function
-		$oauth->ProgressFunction='';
+		$oauth->ProgressFunction=false;
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 	}

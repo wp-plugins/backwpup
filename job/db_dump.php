@@ -95,11 +95,8 @@ function db_dump() {
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
 	// create dump
-	fwrite($file, "\n");
-	fwrite($file, "--\n");
-	fwrite($file, "-- Table structure for table $table\n");
-	fwrite($file, "--\n\n");
-	fwrite($file, "DROP TABLE IF EXISTS `" . $table .  "`;\n");
+	fwrite($file, "\n--\n-- Table structure for table $table\n--\n\n");
+	fwrite($file, "DROP TABLE IF EXISTS `".$table."`;\n");
 	fwrite($file, "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n");
 	fwrite($file, "/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n");
 	//Dump the table structure
@@ -118,34 +115,52 @@ function _db_dump_table($table,$status,$file) {
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
 		return false;
 	}
+	//get key information
+	$i = 0;
+	$keys = array();
+	while ($i < mysql_num_fields($result)) {
+		$meta = mysql_fetch_field($result, $i);
+		$keymeta[$i]=$meta;
+		$keys[] = "`".$meta->name."`";
+		$i++;
+	}
+	
+	//build key string
+	$keystring='';
+	if (!$STATIC['JOB']['dbshortinsert'])
+		$keystring=" (".implode(", ",$keys).")";
+		
+	fwrite($file, "\n--\n-- Dumping data for table $table\n--\n\n");
 
-	fwrite($file, "--\n");
-	fwrite($file, "-- Dumping data for table $table\n");
-	fwrite($file, "--\n\n");
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n");
-
-	while ($data = mysql_fetch_assoc($result)) {
-		$keys = array();
+	$querystring='';
+	while ($data = mysql_fetch_array($result, MYSQL_NUM)) {
 		$values = array();
 		foreach($data as $key => $value) {
-			if (!$STATIC['JOB']['dbshortinsert'])
-				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
-			if($value === NULL) // Make Value NULL to string NULL
+			if(is_null($value) or !isset($value)) // Make Value NULL to string NULL
 				$value = "NULL";
-			elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
-				$value = "''";
-			elseif(!is_numeric($value)) //is value not numeric esc
+			elseif($keymeta[$key]->numeric and $keymeta[$key]->type!='timestamp' and !$keymeta[$key]->blob)//is value numeric no esc
+				$value = empty($value) ? 0 : $value;
+			else
 				$value = "'".mysql_real_escape_string($value)."'";
 			$values[] = $value;
 		}
-		// make data dump
-		if ($STATIC['JOB']['dbshortinsert'])
-			fwrite($file, "INSERT INTO `".$table."` VALUES ( ".implode(", ",$values)." );\n");
-		else
-			fwrite($file, "INSERT INTO `".$table."` ( ".implode(", ",$keys)." )\n\tVALUES ( ".implode(", ",$values)." );\n");
+		if (empty($querystring))
+			$querystring="INSERT IGNORE INTO `".$table."`".$keystring." VALUES\n";
+		if (strlen($querystring)<50000) { //write dump on more than 50000 chars.
+			$querystring.="(".implode(", ",$values)."),\n";
+		} else { 
+			$querystring.="(".implode(", ",$values).");\n";
+			fwrite($file, $querystring);
+			$querystring='';
+		}	
 	}
+	if (!empty($querystring)) //dump rest
+		fwrite($file, substr($querystring,0,-2).";\n");
+	
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
+	mysql_free_result($result);
 }
 ?>
