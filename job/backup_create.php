@@ -72,11 +72,11 @@ function backup_create() {
 	} elseif (strtolower($STATIC['JOB']['fileformart'])==".tar.gz" or strtolower($STATIC['JOB']['fileformart'])==".tar.bz2" or strtolower($STATIC['JOB']['fileformart'])==".tar") { //tar files
 		
 		if (strtolower($STATIC['JOB']['fileformart'])=='.tar.gz') {
-			$tarbackup=gzopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'w9');
+			$tarbackup=gzopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'wb9');
 		} elseif (strtolower($STATIC['JOB']['fileformart'])=='.tar.bz2') {
 			$tarbackup=bzopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'w');
 		} else {
-			$tarbackup=fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'w');
+			$tarbackup=fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'wb');
 		}
 
 		if (!$tarbackup) {
@@ -131,8 +131,8 @@ function backup_create() {
 					  "        ",									//checksum for header  8
 					  0,											//type of file  0 or null = File, 5=Dir
 					  "",											//name of linked file  100
-					  "ustar",										//USTAR indicator  6
-					  "00",											//USTAR version  2
+					  "ustar ",										//USTAR indicator  6
+					  " ",											//USTAR version  2
 					  $fileowner,									//owner user name 32
 					  $filegroup,									//owner group name 32
 					  "",											//device major number 8

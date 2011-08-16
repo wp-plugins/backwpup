@@ -55,6 +55,7 @@ Do backups and more for your WordPress Blog.
 = 2.1.5 =
 * Improved mysql dump
 * mysql dump restore improvements
+* don't look for file ending on deletion and use file time not name
 
 = 2.1.4 =
 * correct some values on job copy/export

@@ -201,8 +201,8 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 			_e("Backup folder not writeable!","backwpup");
 			return false;
 		}
-		//set Backup file Name
-		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].backwpup_date_i18n('Y-m-d_H-i-s').$backwpup_static['JOB']['fileformart'];
+		$backwpup_static['JOB']['fileprefix']=str_replace($datevars,$datevalues,$backwpup_static['JOB']['fileprefix']);
+		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].$backwpup_static['JOB']['fileformart'];
 	}
 	$backwpup_static['CRONSTART']=$cronstart;
 	$backwpup_working['NONCE']=wp_create_nonce('BackWPupJob');

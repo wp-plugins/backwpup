@@ -60,15 +60,16 @@ function dest_dropbox() {
 			if (is_array($metadata)) {
 				foreach ($metadata['contents'] as $data) {
 					$file=basename($data['path']);
-					if ($data['is_dir']!=true and $STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
-						$backupfilelist[]=$file;
+					if ($data['is_dir']!=true and $STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])))
+						$backupfilelist[strtotime($data['modified'])]=$file;
 				}
 			}
-			if (sizeof($backupfilelist)>0) {
-				rsort($backupfilelist);
+			if (count($backupfilelist)>$STATIC['JOB']['dropemaxbackups']) {
 				$numdeltefiles=0;
-				for ($i=$STATIC['JOB']['dropemaxbackups'];$i<count($backupfilelist);$i++) {
-					$dropbox->delete($STATIC['JOB']['dropedir'].$backupfilelist[$i]); //delete files on Cloud
+				while ($file=array_shift($backupfilelist)) {
+					if (count($backupfilelist)<$STATIC['JOB']['dropemaxbackups'])
+						break;
+					$dropbox->delete($STATIC['JOB']['dropedir'].$file); //delete files on Cloud
 					$numdeltefiles++;
 				}
 				if ($numdeltefiles>0)

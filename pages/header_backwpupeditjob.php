@@ -102,6 +102,8 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		if (!in_array($dbtable,$checedtables))
 			$jobvalues['dbexclude'][]=$dbtable;
 	}	
+	$jobvalues['dbdumpfile']=$_POST['dbdumpfile'];
+	$jobvalues['dbdumpfilecompression']=$_POST['dbdumpfilecompression'];
 	$jobvalues['dbshortinsert']= (isset($_POST['dbshortinsert']) && $_POST['dbshortinsert']==1) ? true : false;
 	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
 	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';

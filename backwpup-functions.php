@@ -836,6 +836,13 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	
 	if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 		$jobsettings['dbshortinsert']=false;
+		
+	
+	if (!isset($jobsettings['dbdumpfile']) or !empty($jobsettings['dbdumpfile']) or !is_string($jobsettings['dbdumpfile']))
+		$jobsettings['dbdumpfile']=DB_NAME;
+	
+	if (!isset($jobsettings['dbdumpfilecompression']) or ($jobsettings['dbdumpfilecompression']!='gz' and $jobsettings['dbdumpfilecompression']!='bz2' and $jobsettings['dbdumpfilecompression']!=''))
+		$jobsettings['dbdumpfilecompression']='';
 
 	if (!isset($jobsettings['maintenance']) or !is_bool($jobsettings['maintenance']))
 		$jobsettings['maintenance']=false;

@@ -9,16 +9,17 @@ function dest_folder() {
 	if ($STATIC['JOB']['maxbackups']>0) {
 		if ( $dir = @opendir($STATIC['JOB']['backupdir']) ) { //make file list
 			while (($file = readdir($dir)) !== false ) {
-				if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr($file,-strlen($STATIC['JOB']['fileformart'])))
-					$backupfilelist[]=$file;
+				if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])))
+					$backupfilelist[filemtime($STATIC['JOB']['backupdir'].$file)]=$file;
 			}
 			@closedir($dir);
 		}
-		if (sizeof($backupfilelist)>0) {
-			rsort($backupfilelist);
+		if (count($backupfilelist)>$STATIC['JOB']['maxbackups']) {
 			$numdeltefiles=0;
-			for ($i=$STATIC['JOB']['maxbackups'];$i<sizeof($backupfilelist);$i++) {
-				unlink($STATIC['JOB']['backupdir'].$backupfilelist[$i]);
+			while ($file=array_shift($backupfilelist)) {
+				if (count($backupfilelist)<$STATIC['JOB']['maxbackups'])
+					break;
+				unlink($STATIC['JOB']['backupdir'].$file);
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
