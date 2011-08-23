@@ -384,7 +384,7 @@ function backwpup_jobedit_metabox_destsugarsync($jobvalue) {
 		<?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
 	</div>
 	<div class="destlinks">
-		<a href="https://www.sugarsync.com/referral?rf=cajw0b09tbw6k" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
 		<a href="https://sugarsync.com" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />
