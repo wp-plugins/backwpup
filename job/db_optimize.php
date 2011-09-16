@@ -1,27 +1,27 @@
 <?PHP
-function db_optimize() {
-	global $WORKING,$STATIC;
-	trigger_error(sprintf(__('%d. try for database optimize...','backwpup'),$WORKING['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
-	if (!isset($WORKING['DB_OPTIMIZE']['DONETABLE']) or !is_array($WORKING['DB_OPTIMIZE']['DONETABLE']))
-		$WORKING['DB_OPTIMIZE']['DONETABLE']=array();
+function backwpup_job_db_optimize() {
+	global $backwpupjobrun;
+	trigger_error(sprintf(__('%d. try for database optimize...','backwpup'),$backwpupjobrun['WORKING']['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
+	if (!isset($backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']))
+		$backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']=array();
 	
-	mysql_update();
+	mysql_update_i18n();
 	//to backup
 	$tabelstobackup=array();
-	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
+	$result=mysql_query("SHOW TABLES FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`"); //get table status
 	if (!$result)
-		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`;"),E_USER_ERROR);
 	while ($data = mysql_fetch_row($result)) {
-		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
+		if (!in_array($data[0],$backwpupjobrun['STATIC']['JOB']['dbexclude']))
 			$tabelstobackup[]=$data[0];
 	}	
 	//Set num of todos
-	$WORKING['STEPTODO']=count($tabelstobackup);
+	$backwpupjobrun['WORKING']['STEPTODO']=count($tabelstobackup);
 	
 	if (count($tabelstobackup)>0) {
 		maintenance_mode(true);
 		foreach ($tabelstobackup as $table) {
-			if (in_array($table, $WORKING['DB_OPTIMIZE']['DONETABLE']))
+			if (in_array($table, $backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']))
 				continue;
 			$result=mysql_query('OPTIMIZE TABLE `'.$table.'`');
 			if (!$result) {
@@ -29,8 +29,8 @@ function db_optimize() {
 				continue;
 			}
 			$optimize=mysql_fetch_assoc($result);
-			$WORKING['DB_OPTIMIZE']['DONETABLE'][]=$table;
-			$WORKING['STEPDONE']=count($WORKING['DB_OPTIMIZE']['DONETABLE']);
+			$backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE'][]=$table;
+			$backwpupjobrun['WORKING']['STEPDONE']=count($backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']);
 			if ($optimize['Msg_type']=='error')
 				trigger_error(sprintf(__('Result of table optimize for %1$s is: %2$s','backwpup'), $table, $optimize['Msg_text']),E_USER_ERROR);
 			elseif ($optimize['Msg_type']=='warning')
@@ -43,7 +43,7 @@ function db_optimize() {
 	} else {
 		trigger_error(__('No tables to optimize','backwpup'),E_USER_WARNING);
 	}
-	$WORKING['STEPSDONE'][]='DB_OPTIMIZE'; //set done
+	$backwpupjobrun['WORKING']['STEPSDONE'][]='DB_OPTIMIZE'; //set done
 }
 
 ?>

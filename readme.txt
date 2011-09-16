@@ -55,7 +55,11 @@ Do backups and more for your WordPress Blog.
 = 2.1.5 =
 * Improved mysql dump
 * mysql dump restore improvements
+* Improved XML export
+* removed mail send options, please use a plugin like 'WP Mail SMTP'
+* now manaly job starts wor with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
 * don't look for file ending on deletion and use file time not name
+* the job working is back in the WordPress envoerment
 
 = 2.1.4 =
 * correct some values on job copy/export

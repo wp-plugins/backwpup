@@ -1,28 +1,28 @@
 <?PHP
-function db_check() {
-	global $WORKING,$STATIC;
-	trigger_error(sprintf(__('%d. try for database check...','backwpup'),$WORKING['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
-	if (!isset($WORKING['DB_CHECK']['DONETABLE']) or !is_array($WORKING['DB_CHECK']['DONETABLE']))
-		$WORKING['DB_CHECK']['DONETABLE']=array();
+function backwpup_job_db_check() {
+	global $backwpupjobrun;
+	trigger_error(sprintf(__('%d. try for database check...','backwpup'),$backwpupjobrun['WORKING']['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
+	if (!isset($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']))
+		$backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']=array();
 	
-	mysql_update();
+	mysql_update_i18n();
 	//to backup
 	$tabelstobackup=array();
-	$result=mysql_query("SHOW TABLES FROM `".$STATIC['WP']['DB_NAME']."`"); //get table status
+	$result=mysql_query("SHOW TABLES FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`"); //get table status
 	if (!$result)
-		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$STATIC['WP']['DB_NAME']."`;"),E_USER_ERROR);
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`;"),E_USER_ERROR);
 	while ($data = mysql_fetch_row($result)) {
-		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
+		if (!in_array($data[0],$backwpupjobrun['STATIC']['JOB']['dbexclude']))
 			$tabelstobackup[]=$data[0];
 	}	
 	//Set num of todos
-	$WORKING['STEPTODO']=sizeof($tabelstobackup);
+	$backwpupjobrun['WORKING']['STEPTODO']=sizeof($tabelstobackup);
 	
 	//check tables
 	if (count($tabelstobackup)>0) {
 		maintenance_mode(true);
 		foreach ($tabelstobackup as $table) {
-			if (in_array($table, $WORKING['DB_CHECK']['DONETABLE']))
+			if (in_array($table, $backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']))
 				continue;
 			$result=mysql_query('CHECK TABLE `'.$table.'` MEDIUM');
 			if (!$result) {
@@ -52,14 +52,14 @@ function db_check() {
 				else
 					trigger_error(sprintf(__('Result of table repair for %1$s is: %2$s','backwpup'), $table, $repair['Msg_text']),E_USER_NOTICE);
 			}
-			$WORKING['DB_CHECK']['DONETABLE'][]=$table;
-			$WORKING['STEPDONE']=sizeof($WORKING['DB_CHECK']['DONETABLE']);
+			$backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE'][]=$table;
+			$backwpupjobrun['WORKING']['STEPDONE']=sizeof($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']);
 		}
 		maintenance_mode(false);
 		trigger_error(__('Database check done!','backwpup'),E_USER_NOTICE);
 	} else {
 		trigger_error(__('No tables to check','backwpup'),E_USER_WARNING);
 	}
-	$WORKING['STEPSDONE'][]='DB_CHECK'; //set done
+	$backwpupjobrun['WORKING']['STEPSDONE'][]='DB_CHECK'; //set done
 }
 ?>

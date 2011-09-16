@@ -2,7 +2,7 @@
 include_once( trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php');
 
 class BackWPup_Jobs_Table extends WP_List_Table {
-	
+
 	function __construct() {
 		parent::__construct( array(
 			'plural' => 'jobs',
@@ -10,11 +10,11 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 			'ajax' => true
 		) );
 	}
-	
+
 	function ajax_user_can() {
 		return current_user_can(BACKWPUP_USER_CAPABILITY);
 	}
-	
+
 	function prepare_items() {
 		global $mode;
 		$jobs=get_option('backwpup_jobs');
@@ -27,7 +27,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 		}
 		$mode = empty( $_GET['mode'] ) ? 'list' : $_GET['mode'];
 	}
-	
+
 	function pagination( $which ) {
 		global $mode;
 
@@ -36,7 +36,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 		if ( 'top' == $which )
 			$this->view_switcher( $mode );
 	}
-	
+
 	function no_items() {
 		_e( 'No Jobs.','backwpup');
 	}
@@ -48,7 +48,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 		return $actions;
 	}
-		
+
 	function get_columns() {
 		$jobs_columns = array();
 		$jobs_columns['cb'] = '<input type="checkbox" />';
@@ -60,21 +60,21 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 		$jobs_columns['last'] = __('Last Run','backwpup');
 		return $jobs_columns;
 	}
-	
+
 	function display_rows() {
 		//check for running job
-		$runningfile['JOBID']='';
-		$runningfile=backwpup_get_working_file();
+		$backupdata['JOBID']='';
+		$backupdata=get_option('backwpup_job_working');
 		$style = '';
 		foreach ( $this->items as $jobvalue ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
-			echo "\n\t", $this->single_row( $jobvalue, $runningfile, $style );
+			echo "\n\t", $this->single_row( $jobvalue, $backupdata, $style );
 		}
 	}
-	
-	function single_row($jobvalue, $runningfile, $style = '' ) {
+
+	function single_row($jobvalue, $backupdata, $style = '' ) {
 		global $mode;
-				
+
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id=\"jodid-".$jobvalue["jobid"]."\"".$style.">";
 		foreach ( $columns as $column_name => $column_display_name ) {
@@ -85,32 +85,32 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				$style = ' style="display:none;"';
 
 			$attributes = "$class$style";
-			
+
 			switch( $column_name ) {
 				case 'cb':
 					$r .=  '<th scope="row" class="check-column"><input type="checkbox" name="jobs[]" value="'. esc_attr($jobvalue["jobid"]) .'" /></th>';
 					break;
 				case 'id':
-					$r .=  "<td $attributes>".$jobvalue["jobid"]."</td>"; 
+					$r .=  "<td $attributes>".$jobvalue["jobid"]."</td>";
 					break;
 				case 'jobname':
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job')."\" title=\"".__('Edit:','backwpup').esc_html($jobvalue['name'])."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
-					if ($runningfile==false) {
+					if ($backupdata==false) {
 						$actions['edit'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=copy&jobid='.$jobvalue["jobid"], 'copy-job_'.$jobvalue["jobid"]) . "\">" . __('Copy','backwpup') . "</a>";
 						$actions['export'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
-						$actions['runnow'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&action=runnow&jobid='.$jobvalue["jobid"], 'runnow-job_'.$jobvalue["jobid"]) . "\">" . __('Run Now','backwpup') . "</a>";
+						$actions['runnow'] = "<a href=\"" . wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?ABSPATH='.urlencode(ABSPATH).'&starttype=runnow&jobid='.(int)$jobvalue["jobid"], 'backwpup-job-running') . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
-						if ($runningfile['JOBID']==$jobvalue["jobid"]) {
+						if ($backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 							$actions['working'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
 							$actions['abort'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 						}
 					}
 					$r .= $this->row_actions($actions);
 					$r .=  '</td>';
-					break;	
+					break;
 				case 'type':
 					$r .=  "<td $attributes>";
 					$r .=  backwpup_backup_types($jobvalue['type'],false);
@@ -123,7 +123,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					break;
 				case 'next':
 					$r .= "<td $attributes>";
-					if ($runningfile['JOBID']==$jobvalue["jobid"] and $runningfile!=false) {
+					if ($backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"] and $backupdata!=false) {
 						$runtime=time()-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($jobvalue['activated']) {
@@ -139,7 +139,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'last':
 					$r .=  "<td $attributes>";
 					if (isset($jobvalue['lastrun']) && $jobvalue['lastrun']) {
-						$r .=  backwpup_date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['lastrun']); 
+						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['lastrun']);
 						if (isset($jobvalue['lastruntime']))
 							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
 					} else {
@@ -177,7 +177,7 @@ function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100,
 			} elseif ((@is_file( $folder.$file ) or @is_executable($folder.$file)) and @is_readable($folder.$file)) {
 				$backwpup_temp_files['num']++;
 				$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize($folder.$file);
-			} 
+			}
 		}
 		@closedir( $dir );
 	}
@@ -214,9 +214,9 @@ function backwpup_calc_file_size($jobvalues) {
 				_backwpup_calc_file_size_file_list_folder(trailingslashit($dirincludevalue),100,$backwpup_exclude);
 		}
 	}
-	
+
 	return $backwpup_temp_files;
-	
+
 }
 
 //ajax show info div for jobs
@@ -249,9 +249,9 @@ function backwpup_show_info_td() {
 		if ( 'excerpt' == $mode ) {
 			echo __("Files count:","backwpup")." ".$files['num']."<br />";
 		}
-	}	
+	}
 	die();
 }
 //add ajax function
-add_action('wp_ajax_backwpup_show_info_td', 'backwpup_show_info_td');	
+add_action('wp_ajax_backwpup_show_info_td', 'backwpup_show_info_td');
 ?>

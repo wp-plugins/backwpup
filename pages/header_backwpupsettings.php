@@ -8,13 +8,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg=get_option('backwpup'); //Load Settings
 	$cfg['mailsndemail']=sanitize_email($_POST['mailsndemail']);
 	$cfg['mailsndname']=$_POST['mailsndname'];
-	$cfg['mailmethod']=$_POST['mailmethod'];
-	$cfg['mailsendmail']=untrailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes($_POST['mailsendmail']))));
-	$cfg['mailsecure']=$_POST['mailsecure'];
-	$cfg['mailhost']=$_POST['mailhost'];
-	$cfg['mailhostport']=empty($_POST['mailhostport']) ? 25 : (int)$_POST['mailhostport'];
-	$cfg['mailuser']=$_POST['mailuser'];
-	$cfg['mailpass']=base64_encode($_POST['mailpass']);
 	$cfg['disablewpcron']=isset($_POST['disablewpcron']) ? true : false;
 	$cfg['showadminbar']=isset($_POST['showadminbar']) ? true : false;
     if (100>$_POST['jobstepretry'] and 0<$_POST['jobstepretry']) 
@@ -39,9 +32,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	}
 	if (substr($cfg['dirlogs'],0,1)!='/' and substr($cfg['dirlogs'],1,1)!=':') //add abspath if not absolute
 		$cfg['dirlogs']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$cfg['dirlogs'];
-	if (!isset($cfg['mailsendmail']) or empty($cfg['mailsendmail'])) {
-		$cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-	}
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
 	backwpup_api(true);

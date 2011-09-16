@@ -25,54 +25,6 @@ wp_nonce_field('backwpup-cfg');
 <tr valign="top"> 
 <th scope="row"><label for="mailsndname"><?PHP _e('Sender name','backwpup'); ?></label></th> 
 <td><input name="mailsndname" type="text" id="mailsndname" value="<?PHP echo $cfg['mailsndname'];?>" class="regular-text" /></td> 
-</tr> 
-<tr valign="top"> 
-<th scope="row"><label for="mailmethod"><?PHP _e('Send mail method','backwpup'); ?></label></th> 
-<td> 
-<?PHP 
-echo '<select id="mailmethod" name="mailmethod">';
-echo '<option class="level-0" value="mail"'.selected('mail',$cfg['mailmethod'],false).'>'.__('PHP: mail()','backwpup').'</option>';
-echo '<option class="level-0" value="Sendmail"'.selected('Sendmail',$cfg['mailmethod'],false).'>'.__('Sendmail','backwpup').'</option>';
-echo '<option class="level-0" value="SMTP"'.selected('SMTP',$cfg['mailmethod'],false).'>'.__('SMTP','backwpup').'</option>';
-echo '</select>';
-?>
-</td> 
-</tr> 
-<tr valign="top" id="mailsendmail" <?PHP if ($cfg['mailmethod']!='Sendmail') echo 'style="display:none;"';?>> 
-<th scope="row"><label for="mailsendmail"><?PHP _e('Sendmail path','backwpup'); ?></label></th> 
-<td> 
-<input name="mailsendmail" id="sendmail" type="text" value="<?PHP echo $cfg['mailsendmail'];?>" class="regular-text code" />
-</select> 
-</td> 
-</tr> 
-<tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
-<th scope="row"><label for="mailhost"><?PHP _e('SMTP hostname','backwpup'); ?></label></th> 
-<td> 
-<input name="mailhost" id="mailhost" type="text" value="<?PHP echo $cfg['mailhost'];?>" class="regular-text code" />&nbsp;
-<?PHP _e('Port:','backwpup'); ?><input name="mailhostport" id="mailhostport" type="text" value="<?PHP echo $cfg['mailhostport'];?>" class="small-text code" />
-</td> 
-</tr>
-<tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
-<th scope="row"><label for="mailsecure"><?PHP _e('SMTP secure connection','backwpup'); ?></label></th> 
-<td> 
-<select name="mailsecure">
-<option class="level-0" value=""<?PHP selected('',$cfg['mailsecure'],true); ?>><?PHP _e('none','backwpup'); ?></option>
-<option class="level-0" value="ssl"<?PHP selected('ssl',$cfg['mailsecure'],true); ?>>SSL</option>
-<option class="level-0" value="tls"<?PHP selected('tls',$cfg['mailsecure'],true); ?>>TLS</option>
-</select>
-</td> 
-</tr>
-<tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
-<th scope="row"><label for="mailuser"><?PHP _e('SMTP username','backwpup'); ?></label></th> 
-<td> 
-<input name="mailuser" id="mailuser" type="text" value="<?PHP echo $cfg['mailuser'];?>" class="regular-text" />
-</td> 
-</tr>
-<tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
-<th scope="row"><label for="mailpass"><?PHP _e('SMTP password','backwpup'); ?></label></th> 
-<td> 
-<input name="mailpass" id="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="regular-text" />
-</td> 
 </tr>
 </table> 
 

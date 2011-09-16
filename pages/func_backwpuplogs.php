@@ -121,7 +121,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					$r .= "</td>"; 
 					break;
 				case 'log':				
-					$r .= "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$logfile, 'view-log_'.basename($logfile))."\" title=\"".__('View log','backwpup')."\">".backwpup_date_i18n(get_option('date_format')." @ ".get_option('time_format'),$logdata['logtime']).": <i>".$logdata['name']."</i></a></strong>";
+					$r .= "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$logfile, 'view-log_'.basename($logfile))."\" title=\"".__('View log','backwpup')."\">".date_i18n(get_option('date_format')." @ ".get_option('time_format'),$logdata['logtime']).": <i>".$logdata['name']."</i></a></strong>";
 					$actions = array();
 					$actions['view'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$logfile, 'view-log_'.basename($logfile)) . "\">" . __('View','backwpup') . "</a>";
 					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpuplogs&action=delete&paged='.$this->get_pagenum().'&logfiles[]='.basename($logfile), 'bulk-logs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";

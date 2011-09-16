@@ -1,30 +1,16 @@
 jQuery(document).ready( function($) {
-	if ($('#alternate_wp_cron').val()=='1') {
-			$.ajax({
-				headers: {'User-Agent': 'BackWPup'},
-				type: 'POST',
-				url: $('#backwpuprunurl').val(),
-				cache: false,
-				timeout: 3000,
-				async: false,
-				data: {
-					nonce: $('#alternate_wp_cron_nonce').val(),
-					BackWPupJobTemp: $('#backwpupjobtemp').val(),
-					type:  'javastart'
-				}
-			});
-	};
 	if ($('#logfile').length>0) {
 		var refreshId = setInterval(function() {
 			$.ajax({
-				headers: {'User-Agent': 'BackWPup'},
 				type: 'POST',
-				url: $('#backwpupworkingajaxurl').val(),
+				url: ajaxurl,
 				cache: false,
 				data: {
+                    action: 'backwpup_get_logfile_ajax',
+                    backwpupajaxpage: 'backwpupworking',
 					logfile: $('#logfile').val(),
-					BackWPupJobTemp: $('#backwpupjobtemp').val(),
-					logpos:  $('#logpos').val()
+					logpos:  $('#logpos').val(),
+                    _ajax_nonce: $('#backwpupworkingajaxnonce').val()
 				},
 				dataType: 'json',
 				success: function(rundata) {
@@ -53,7 +39,7 @@ jQuery(document).ready( function($) {
 						$('#progresssteps').replaceWith('<div id="progresssteps">'+rundata.STEPPERSENT+'%</div>');
 						$('#progresssteps').css('width', parseFloat(rundata.STEPPERSENT)+'%');
 						$('.progressbar').show();
-					}						
+					}
 				}
 			});
 			$("#stopworking").each(function(index) {

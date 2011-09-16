@@ -11,7 +11,7 @@ Domain Path: /lang/
 */
 
 /*
-	Copyright (C) 2011  Daniel Hüsken  (email: mail@backwpup.com)
+	Copyright (C) 2011  Daniel Hï¿½sken  (email: mail@backwpup.com)
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@ define('BACKWPUP_USER_CAPABILITY', 'export');
 if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,MSAZURE');
-	else 
+	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
 //Set Dropbox Aplication Keys
@@ -53,7 +53,8 @@ define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5Y
 //BackWPup API url
 define('BACKWPUP_API_URL', 'http://api.backwpup.com');
 //use Cert in AWS dir
-define('AWS_CERTIFICATE_AUTHORITY', true);
+if (!defined('AWS_CERTIFICATE_AUTHORITY'))
+    define('AWS_CERTIFICATE_AUTHORITY', true);
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
@@ -61,14 +62,14 @@ require_once(dirname(__FILE__).'/backwpup-functions.php');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //Admin message
-if (is_multisite()) 
-	add_action('network_admin_notices', 'backwpup_admin_notice'); 
+if (is_multisite())
+	add_action('network_admin_notices', 'backwpup_admin_notice');
 else
 	add_action('admin_notices', 'backwpup_admin_notice');
 //add cron intervals
 add_filter('cron_schedules', 'backwpup_intervals');
 //call activation settings
-backwpup_plugin_activate(); 	
+backwpup_plugin_activate();
 //Check if plugin can activated
 if (backwpup_env_checks()) {
 	if (is_multisite()) {  //For multisite
@@ -76,7 +77,7 @@ if (backwpup_env_checks()) {
 		add_action('network_admin_menu','backwpup_admin_menu');
 		//add Dashboard widget
 		add_action('wp_network_dashboard_setup', 'backwpup_add_dashboard');
-		if (is_main_site()) 
+		if (is_main_site())
 			add_action('plugins_loaded','backwpup_plugin_activate');
 		//Additional links on the plugin page
 		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);

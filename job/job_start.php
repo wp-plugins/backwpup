@@ -1,36 +1,26 @@
-<?PHP	
-function backwpup_jobstart($jobid='',$cronstart=false) {
-	global $wpdb,$wp_version;
-	$jobid=(int)trim($jobid);
-	if (empty($jobid) or !is_integer($jobid)) {
-		return false;
-	}
-	//check if a job running
-	if ($infile=backwpup_get_working_file()) {
-		_e("A job already running!","backwpup");
-		return false;
-	}
+<?PHP
+function backwpup_job_start($jobid='') {
+	global $wpdb,$wp_version,$backwpupjobrun;
 
 	//clean var
-	$backwpup_static = array();
-	$backwpup_working = array();
+	$backwpupjobrun = array();
 	//get and create temp dir
-	$backwpup_static['TEMPDIR']=backwpup_get_temp();
-	if (!is_dir($backwpup_static['TEMPDIR'])) {
-		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
-			printf(__('Can not create temp folder: %s','backwpup'),$backwpup_static['TEMPDIR']);
+	$backwpupjobrun['STATIC']['TEMPDIR']=backwpup_get_temp();
+	if (!is_dir($backwpupjobrun['STATIC']['TEMPDIR'])) {
+		if (!mkdir(rtrim($backwpupjobrun['STATIC']['TEMPDIR'],'/'),0777,true)) {
+			printf(__('Can not create temp folder: %s','backwpup'),$backwpupjobrun['STATIC']['TEMPDIR']);
 			return false;
-		}		
+		}
 	}
-	if (!is_writable($backwpup_static['TEMPDIR'])) {
+	if (!is_writable($backwpupjobrun['STATIC']['TEMPDIR'])) {
 		_e("Temp dir not writeable","backwpup");
 		return false;
 	} else {  //clean up old temp files
-		if ($dir = opendir($backwpup_static['TEMPDIR'])) {
+		if ($dir = opendir($backwpupjobrun['STATIC']['TEMPDIR'])) {
 			while (($file = readdir($dir)) !== false) {
-				if (is_readable($backwpup_static['TEMPDIR'].$file) and is_file($backwpup_static['TEMPDIR'].$file)) {
+				if (is_readable($backwpupjobrun['STATIC']['TEMPDIR'].$file) and is_file($backwpupjobrun['STATIC']['TEMPDIR'].$file)) {
 					if ($file!='.' and $file!='..') {
-						unlink($backwpup_static['TEMPDIR'].$file);
+						unlink($backwpupjobrun['STATIC']['TEMPDIR'].$file);
 					}
 				}
 			}
@@ -38,113 +28,60 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 		}
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_static['TEMPDIR'].'.htaccess')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
+			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'.htaccess'))
+				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($backwpup_static['TEMPDIR'].'index.html')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'index.html',"\n");
-			if (!is_file($backwpup_static['TEMPDIR'].'index.php'))
-				file_put_contents($backwpup_static['TEMPDIR'].'index.php',"\n");
-		}	
-	}	
-	//Write running file to prevent dobble runnging
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>array('PID'=>0))));
+			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'index.html'))
+				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'index.html',"\n");
+			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'index.php'))
+				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'index.php',"\n");
+		}
+	}
 
-	//Set needed WP vars
-	$backwpup_static['WP']['DB_NAME']=DB_NAME;
-	$backwpup_static['WP']['DB_USER']=DB_USER;
-	$backwpup_static['WP']['DB_PASSWORD']=DB_PASSWORD;
-	$backwpup_static['WP']['DB_HOST']=DB_HOST;
-	$backwpup_static['WP']['DB_CHARSET']=DB_CHARSET;
-	$backwpup_static['WP']['DB_COLLATE']=DB_COLLATE;
-	$backwpup_static['WP']['OPTIONS_TABLE']=$wpdb->options;
-	$backwpup_static['WP']['TABLE_PREFIX']=$wpdb->prefix;
-	$backwpup_static['WP']['BLOGNAME']=get_bloginfo('name');
-	if (defined('WP_SITEURL'))
-		$backwpup_static['WP']['SITEURL']=trailingslashit(WP_SITEURL);
-	else
-		$backwpup_static['WP']['SITEURL']=trailingslashit(get_option('siteurl'));
-	$backwpup_static['WP']['TIMEDIFF']=get_option('gmt_offset')*3600;
-	$backwpup_static['WP']['WPLANG']=WPLANG;
-	$backwpup_static['WP']['VERSION']=$wp_version;
-	$backwpup_static['WP']['CHARSET']=get_option('blog_charset');
-	$backwpup_static['WP']['MEMORY_LIMIT']=WP_MEMORY_LIMIT;
-	if (defined('ALTERNATE_WP_CRON'))
-		$backwpup_static['WP']['ALTERNATE_CRON']=ALTERNATE_WP_CRON;
-	else
-		$backwpup_static['WP']['ALTERNATE_CRON']=false;
-	//WP folder
-	$backwpup_static['WP']['ABSPATH']=rtrim(str_replace('\\','/',ABSPATH),'/').'/';
-	$backwpup_static['WP']['WP_CONTENT_DIR']=rtrim(str_replace('\\','/',WP_CONTENT_DIR),'/').'/';
-	$backwpup_static['WP']['WP_PLUGIN_DIR']=rtrim(str_replace('\\','/',WP_PLUGIN_DIR),'/').'/';
-	$backwpup_static['WP']['WP_THEMES_DIR']=rtrim(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),'/').'/';
-	$backwpup_static['WP']['WP_UPLOAD_DIR']=backwpup_get_upload_dir();
-	$backwpup_static['WP']['WPINC']=WPINC;
-	$backwpup_static['WP']['MULTISITE']=is_multisite();
-	$backwpup_static['WP']['ADMINURL']=backwpup_admin_url('admin.php');
-	//Set plugin data
-	$backwpup_static['BACKWPUP']['PLUGIN_BASEDIR']=BACKWPUP_PLUGIN_BASEDIR;
-	$backwpup_static['BACKWPUP']['VERSION']=BACKWPUP_VERSION;
-	$backwpup_static['BACKWPUP']['BACKWPUP_DESTS']=BACKWPUP_DESTS;
-	$backwpup_static['BACKWPUP']['DROPBOX_APP_KEY']=BACKWPUP_DROPBOX_APP_KEY;
-	$backwpup_static['BACKWPUP']['DROPBOX_APP_SECRET']=BACKWPUP_DROPBOX_APP_SECRET;
-	$backwpup_static['BACKWPUP']['SUGARSYNC_ACCESSKEY']=BACKWPUP_SUGARSYNC_ACCESSKEY;
-	$backwpup_static['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']=BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY;
 	//Set config data
-	$backwpup_static['CFG']=get_option('backwpup');
+	$backwpupjobrun['STATIC']['CFG']=get_option('backwpup');
 	//check exists gzip functions
 	if(!function_exists('gzopen'))
-		$backwpup_static['CFG']['gzlogs']=false;
+		$backwpupjobrun['STATIC']['CFG']['gzlogs']=false;
 	if(!class_exists('ZipArchive'))
-		$backwpup_static['CFG']['phpzip']=false;
-	//Check working times
-	if (empty($backwpup_static['CFG']['jobstepretry']) or !is_int($backwpup_static['CFG']['jobstepretry']) or $backwpup_static['CFG']['jobstepretry']>100)
-		$backwpup_static['CFG']['jobstepretry']=3;
-	if (empty($backwpup_static['CFG']['jobscriptretry']) or !is_int($backwpup_static['CFG']['jobscriptretry']) or $backwpup_static['CFG']['jobscriptretry']>100)
-		$backwpup_static['CFG']['jobscriptretry']=5;
-	if (empty($backwpup_static['CFG']['jobscriptruntime']) or !is_int($backwpup_static['CFG']['jobscriptruntime']) or $backwpup_static['CFG']['jobscriptruntime']>100)
-		$backwpup_static['CFG']['jobscriptruntime']=ini_get('max_execution_time');
-	if (empty($backwpup_static['CFG']['jobscriptruntimelong']) or !is_int($backwpup_static['CFG']['jobscriptruntimelong']) or $backwpup_static['CFG']['jobscriptruntimelong']>1000)
-		$backwpup_static['CFG']['jobscriptruntimelong']=300;
+		$backwpupjobrun['STATIC']['CFG']['phpzip']=false;
 	//Set job data
-	$backwpup_static['JOB']=backwpup_get_job_vars($jobid);
-	//STATIC data
-	$backwpup_static['JOBRUNURL']=BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php';
+	$backwpupjobrun['STATIC']['JOB']=backwpup_get_job_vars($jobid);
 	//Setup Logs dir
-	$backwpup_static['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpup_static['CFG']['dirlogs']),'/').'/'; 
-	if (!is_dir($backwpup_static['CFG']['dirlogs'])) {
-		if (!mkdir(rtrim($backwpup_static['CFG']['dirlogs'],'/'),0777,true)) {
-			printf(__('Can not create folder for log files: %s','backwpup'),$backwpup_static['CFG']['dirlogs']);
+	$backwpupjobrun['STATIC']['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpupjobrun['STATIC']['CFG']['dirlogs']),'/').'/';
+	if (!is_dir($backwpupjobrun['STATIC']['CFG']['dirlogs'])) {
+		if (!mkdir(rtrim($backwpupjobrun['STATIC']['CFG']['dirlogs'],'/'),0777,true)) {
+			printf(__('Can not create folder for log files: %s','backwpup'),$backwpupjobrun['STATIC']['CFG']['dirlogs']);
 			return false;
 		}
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'.htaccess')) 
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
+			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'.htaccess'))
+				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'index.html')) 
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'index.html',"\n");
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'index.php'))
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'index.php',"\n");
-		}			
+			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.html'))
+				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.html',"\n");
+			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.php'))
+				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.php',"\n");
+		}
 	}
-	if (!is_writable($backwpup_static['CFG']['dirlogs'])) {
+	if (!is_writable($backwpupjobrun['STATIC']['CFG']['dirlogs'])) {
 		_e("Log folder not writeable!","backwpup");
 		return false;
 	}
 	//set Logfile
-	$backwpup_static['LOGFILE']=$backwpup_static['CFG']['dirlogs'].'backwpup_log_'.backwpup_date_i18n('Y-m-d_H-i-s').'.html';
+	$backwpupjobrun['LOGFILE']=$backwpupjobrun['STATIC']['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 	//create log file
-	$fd=fopen($backwpup_static['LOGFILE'],'w');
+	$fd=fopen($backwpupjobrun['LOGFILE'],'w');
 	//Create log file header
 	fwrite($fd,"<html>\n<head>\n");
 	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".time()."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
-	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpup_static['JOB']['jobid']."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$backwpup_static['JOB']['name']."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$backwpup_static['JOB']['type']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpupjobrun['STATIC']['JOB']['jobid']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$backwpupjobrun['STATIC']['JOB']['name']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$backwpupjobrun['STATIC']['JOB']['type']."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
 	fwrite($fd,"<style type=\"text/css\">\n");
@@ -153,116 +90,107 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	fwrite($fd,".error {background-color:red;}\n");
 	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
 	fwrite($fd,"</style>\n");
-	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpup_static['JOB']['name'],backwpup_date_i18n(get_option('date_format')),backwpup_date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
+	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
-	$jobs[$backwpup_static['JOB']['jobid']]['starttime']=time(); //set start time for job
-	$backwpup_static['JOB']['starttime']=$jobs[$backwpup_static['JOB']['jobid']]['starttime'];
-	$jobs[$backwpup_static['JOB']['jobid']]['logfile']=$backwpup_static['LOGFILE'];	   //Set current logfile
-	$jobs[$backwpup_static['JOB']['jobid']]['cronnextrun']=backwpup_cron_next($jobs[$backwpup_static['JOB']['jobid']]['cron']);  //set next run
-	$backwpup_static['JOB']['cronnextrun']=$jobs[$backwpup_static['JOB']['jobid']]['cronnextrun'];
-	$jobs[$backwpup_static['JOB']['jobid']]['lastbackupdownloadurl']='';
-	$backwpup_static['JOB']['lastbackupdownloadurl']='';
-	update_option('backwpup_jobs',$jobs); //Save job Settings	
+	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime']=current_time('timestamp'); //set start time for job
+	$backwpupjobrun['STATIC']['JOB']['starttime']=$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime'];
+	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['logfile']=$backwpupjobrun['LOGFILE'];	   //Set current logfile
+	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cronnextrun']=backwpup_cron_next($jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cron']);  //set next run
+	$backwpupjobrun['STATIC']['JOB']['cronnextrun']=$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cronnextrun'];
+	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['lastbackupdownloadurl']='';
+	$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']='';
+	update_option('backwpup_jobs',$jobs); //Save job Settings
 	//Set todo
-	$backwpup_static['TODO']=explode('+',$backwpup_static['JOB']['type']);
+	$backwpupjobrun['STATIC']['TODO']=explode('+',$backwpupjobrun['STATIC']['JOB']['type']);
 	//only for jos that makes backups
-	if (in_array('FILE',$backwpup_static['TODO']) or in_array('DB',$backwpup_static['TODO']) or in_array('WPEXP',$backwpup_static['TODO'])) {
+	if (in_array('FILE',$backwpupjobrun['STATIC']['TODO']) or in_array('DB',$backwpupjobrun['STATIC']['TODO']) or in_array('WPEXP',$backwpupjobrun['STATIC']['TODO'])) {
 		//make emty file list
-		$backwpup_working['FILELIST']=array();
-		$backwpup_working['ALLFILESIZE']=0;
+		$backwpupjobrun['WORKING']['ALLFILESIZE']=0;
+        $backwpupjobrun['WORKING']['backupfilesize']=0;
 		//set Backup Dir if not set
-		if (empty($backwpup_static['JOB']['backupdir'])) {
-			$backwpup_static['JOB']['backupdir']=$backwpup_static['TEMPDIR'];
+		if (empty($backwpupjobrun['STATIC']['JOB']['backupdir']) or $backwpupjobrun['STATIC']['JOB']['backupdir']=='/') {
+			$backwpupjobrun['STATIC']['JOB']['backupdir']=$backwpupjobrun['STATIC']['TEMPDIR'];
 		} else {
 			//clear path
-			$backwpup_static['JOB']['backupdir']=rtrim(str_replace('\\','/',$backwpup_static['JOB']['backupdir']),'/').'/'; 
+			$backwpupjobrun['STATIC']['JOB']['backupdir']=rtrim(str_replace('\\','/',$backwpupjobrun['STATIC']['JOB']['backupdir']),'/').'/';
 			//create backup dir if it not exists
-			if (!is_dir($backwpup_static['JOB']['backupdir'])) {
-				if (!mkdir(rtrim($backwpup_static['JOB']['backupdir'],'/'),0777,true)) {
-					sprintf(__('Can not create folder for backups: %1$s','backwpup'),$backwpup_static['JOB']['backupdir']);
+			if (!is_dir($backwpupjobrun['STATIC']['JOB']['backupdir'])) {
+				if (!mkdir(rtrim($backwpupjobrun['STATIC']['JOB']['backupdir'],'/'),0777,true)) {
+					sprintf(__('Can not create folder for backups: %1$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['backupdir']);
 					return false;
 				}
 				//create .htaccess for apache and index.html for other
 				if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-					if (!is_file($backwpup_static['JOB']['backupdir'].'.htaccess')) 
-						file_put_contents($backwpup_static['JOB']['backupdir'].'.htaccess',"Order allow,deny\ndeny from all");
+					if (!is_file($backwpupjobrun['STATIC']['JOB']['backupdir'].'.htaccess'))
+						file_put_contents($backwpupjobrun['STATIC']['JOB']['backupdir'].'.htaccess',"Order allow,deny\ndeny from all");
 				} else {
-					if (!is_file($backwpup_static['JOB']['backupdir'].'index.html')) 
-						file_put_contents($backwpup_static['JOB']['backupdir'].'index.html',"\n");
-					if (!is_file($backwpup_static['JOB']['backupdir'].'index.php'))
-						file_put_contents($backwpup_static['JOB']['backupdir'].'index.php',"\n");
-				}			
+					if (!is_file($backwpupjobrun['STATIC']['JOB']['backupdir'].'index.html'))
+						file_put_contents($backwpupjobrun['STATIC']['JOB']['backupdir'].'index.html',"\n");
+					if (!is_file($backwpupjobrun['STATIC']['JOB']['backupdir'].'index.php'))
+						file_put_contents($backwpupjobrun['STATIC']['JOB']['backupdir'].'index.php',"\n");
+				}
 			}
 		}
-		//check backup dir				
-		if (!is_writable($backwpup_static['JOB']['backupdir'])) {
+		//check backup dir
+		if (!is_writable($backwpupjobrun['STATIC']['JOB']['backupdir'])) {
 			_e("Backup folder not writeable!","backwpup");
 			return false;
 		}
-		$backwpup_static['JOB']['fileprefix']=str_replace($datevars,$datevalues,$backwpup_static['JOB']['fileprefix']);
-		$backwpup_static['backupfile']=$backwpup_static['JOB']['fileprefix'].$backwpup_static['JOB']['fileformart'];
+		$backwpupjobrun['STATIC']['backupfile']=$backwpupjobrun['STATIC']['JOB']['fileprefix'].date_i18n('Y-m-d_H-i-s').$backwpupjobrun['STATIC']['JOB']['fileformart'];
 	}
-	$backwpup_static['CRONSTART']=$cronstart;
-	$backwpup_working['NONCE']=wp_create_nonce('BackWPupJob');
-	$backwpup_working['PID']=0;
-	$backwpup_working['WARNING']=0;
-	$backwpup_working['ERROR']=0;
-	$backwpup_working['RESTART']=0;
-	$backwpup_working['STEPSDONE']=array();
-	$backwpup_working['STEPTODO']=0;
-	$backwpup_working['STEPDONE']=0;
+	$backwpupjobrun['WORKING']['PID']=0;
+	$backwpupjobrun['WORKING']['WARNING']=0;
+	$backwpupjobrun['WORKING']['ERROR']=0;
+	$backwpupjobrun['WORKING']['RESTART']=0;
+	$backwpupjobrun['WORKING']['STEPSDONE']=array();
+	$backwpupjobrun['WORKING']['STEPTODO']=0;
+	$backwpupjobrun['WORKING']['STEPDONE']=0;
+	$backwpupjobrun['WORKING']['STEPSPERSENT']=0;
+	$backwpupjobrun['WORKING']['STEPPERSENT']=0;
+	$backwpupjobrun['WORKING']['TIMESTAMP']=current_time('timestamp');
 	//build working steps
-	$backwpup_working['STEPS']=array();
+	$backwpupjobrun['WORKING']['STEPS']=array();
 	//setup job steps
-	if (in_array('DB',$backwpup_static['TODO']))
-		$backwpup_working['STEPS'][]='DB_DUMP';
-	if (in_array('WPEXP',$backwpup_static['TODO']))
-		$backwpup_working['STEPS'][]='WP_EXPORT';
-	if (in_array('FILE',$backwpup_static['TODO']))
-		$backwpup_working['STEPS'][]='FILE_LIST';
-	if (in_array('DB',$backwpup_static['TODO']) or in_array('WPEXP',$backwpup_static['TODO']) or in_array('FILE',$backwpup_static['TODO'])) {
-		$backwpup_working['STEPS'][]='BACKUP_CREATE';		
+	if (in_array('DB',$backwpupjobrun['STATIC']['TODO']))
+		$backwpupjobrun['WORKING']['STEPS'][]='DB_DUMP';
+	if (in_array('WPEXP',$backwpupjobrun['STATIC']['TODO']))
+		$backwpupjobrun['WORKING']['STEPS'][]='WP_EXPORT';
+	if (in_array('FILE',$backwpupjobrun['STATIC']['TODO']))
+		$backwpupjobrun['WORKING']['STEPS'][]='FILE_LIST';
+	if (in_array('DB',$backwpupjobrun['STATIC']['TODO']) or in_array('WPEXP',$backwpupjobrun['STATIC']['TODO']) or in_array('FILE',$backwpupjobrun['STATIC']['TODO'])) {
+		$backwpupjobrun['WORKING']['STEPS'][]='BACKUP_CREATE';
 		//ADD Destinations
-		if (!empty($backwpup_static['JOB']['backupdir']) and $backwpup_static['JOB']['backupdir']!='/' and $backwpup_static['JOB']['backupdir']!=$backwpup_static['TEMPDIR'])
-			$backwpup_working['STEPS'][]='DEST_FOLDER';
-		if (!empty($backwpup_static['JOB']['mailaddress']))
-			$backwpup_working['STEPS'][]='DEST_MAIL';	
-		if (!empty($backwpup_static['JOB']['ftphost']) and !empty($backwpup_static['JOB']['ftpuser']) and !empty($backwpup_static['JOB']['ftppass']) and in_array('FTP',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_FTP';
-		if (!empty($backwpup_static['JOB']['dropetoken']) and !empty($backwpup_static['JOB']['dropesecret']) and in_array('DROPBOX',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_DROPBOX';
-		if (!empty($backwpup_static['JOB']['sugaruser']) and !empty($backwpup_static['JOB']['sugarpass']) and !empty($backwpup_static['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))		
-			$backwpup_working['STEPS'][]='DEST_SUGARSYNC';
-		if (!empty($backwpup_static['JOB']['awsAccessKey']) and !empty($backwpup_static['JOB']['awsSecretKey']) and !empty($backwpup_static['JOB']['awsBucket']) and in_array('S3',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_S3';
-		if (!empty($backwpup_static['JOB']['GStorageAccessKey']) and !empty($backwpup_static['JOB']['GStorageSecret']) and !empty($backwpup_static['JOB']['GStorageBucket']) and in_array('GSTORAGE',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_GSTORAGE';
-		if (!empty($backwpup_static['JOB']['rscUsername']) and !empty($backwpup_static['JOB']['rscAPIKey']) and !empty($backwpup_static['JOB']['rscContainer']) and in_array('RSC',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_RSC';
-		if (!empty($backwpup_static['JOB']['msazureHost']) and !empty($backwpup_static['JOB']['msazureAccName']) and !empty($backwpup_static['JOB']['msazureKey']) and !empty($backwpup_static['JOB']['msazureContainer']) and in_array('MSAZURE',explode(',',strtoupper(BACKWPUP_DESTS))))
-			$backwpup_working['STEPS'][]='DEST_MSAZURE';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['backupdir']) and $backwpupjobrun['STATIC']['JOB']['backupdir']!='/' and $backwpupjobrun['STATIC']['JOB']['backupdir']!=$backwpupjobrun['STATIC']['TEMPDIR'])
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_FOLDER';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['mailaddress']))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_MAIL';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['ftphost']) and !empty($backwpupjobrun['STATIC']['JOB']['ftpuser']) and !empty($backwpupjobrun['STATIC']['JOB']['ftppass']) and in_array('FTP',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_FTP';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['dropetoken']) and !empty($backwpupjobrun['STATIC']['JOB']['dropesecret']) and in_array('DROPBOX',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_DROPBOX';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['sugaruser']) and !empty($backwpupjobrun['STATIC']['JOB']['sugarpass']) and !empty($backwpupjobrun['STATIC']['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_SUGARSYNC';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['awsAccessKey']) and !empty($backwpupjobrun['STATIC']['JOB']['awsSecretKey']) and !empty($backwpupjobrun['STATIC']['JOB']['awsBucket']) and in_array('S3',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_S3';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['GStorageAccessKey']) and !empty($backwpupjobrun['STATIC']['JOB']['GStorageSecret']) and !empty($backwpupjobrun['STATIC']['JOB']['GStorageBucket']) and in_array('GSTORAGE',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_GSTORAGE';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['rscUsername']) and !empty($backwpupjobrun['STATIC']['JOB']['rscAPIKey']) and !empty($backwpupjobrun['STATIC']['JOB']['rscContainer']) and in_array('RSC',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_RSC';
+		if (!empty($backwpupjobrun['STATIC']['JOB']['msazureHost']) and !empty($backwpupjobrun['STATIC']['JOB']['msazureAccName']) and !empty($backwpupjobrun['STATIC']['JOB']['msazureKey']) and !empty($backwpupjobrun['STATIC']['JOB']['msazureContainer']) and in_array('MSAZURE',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_MSAZURE';
 	}
-	if (in_array('CHECK',$backwpup_static['TODO']))
-		$backwpup_working['STEPS'][]='DB_CHECK';
-	if (in_array('OPTIMIZE',$backwpup_static['TODO']))
-		$backwpup_working['STEPS'][]='DB_OPTIMIZE';	
-	$backwpup_working['STEPS'][]='JOB_END';
+	if (in_array('CHECK',$backwpupjobrun['STATIC']['TODO']))
+		$backwpupjobrun['WORKING']['STEPS'][]='DB_CHECK';
+	if (in_array('OPTIMIZE',$backwpupjobrun['STATIC']['TODO']))
+		$backwpupjobrun['WORKING']['STEPS'][]='DB_OPTIMIZE';
+	$backwpupjobrun['WORKING']['STEPS'][]='JOB_END';
 	//mark all as not done
-	foreach($backwpup_working['STEPS'] as $step) 
-		$backwpup_working[$step]['DONE']=false;
+	foreach($backwpupjobrun['WORKING']['STEPS'] as $step)
+		$backwpupjobrun['WORKING'][$step]['DONE']=false;
 	//write working file
-	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$backwpup_static['JOB']['jobid'],'LOGFILE'=>$backwpup_static['LOGFILE'],'STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>$backwpup_working)));
-	//write static file
-	file_put_contents($backwpup_static['TEMPDIR'].'.static',serialize($backwpup_static));
-	//Run job
-	$httpauthheader='';
-	if (!empty($backwpup_static['CFG']['httpauthuser']) and !empty($backwpup_static['CFG']['httpauthpassword']))
-		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.base64_decode($backwpup_static['CFG']['httpauthpassword'])));
-	if (!$backwpup_static['WP']['ALTERNATE_CRON'])
-		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
-	
-	return $backwpup_static['LOGFILE'];
+	update_option('backwpup_job_working',$backwpupjobrun);
+
 }
 ?>

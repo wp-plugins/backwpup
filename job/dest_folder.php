@@ -1,33 +1,33 @@
 <?PHP
-function dest_folder() {
-	global $WORKING,$STATIC;
-	$WORKING['STEPTODO']=1;
-	$WORKING['STEPDONE']=0;
-	$STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=download&file='.$STATIC['JOB']['backupdir'].$STATIC['backupfile'];
+function backwpup_job_dest_folder() {
+	global $backwpupjobrun;
+	$backwpupjobrun['WORKING']['STEPTODO']=1;
+	$backwpupjobrun['WORKING']['STEPDONE']=0;
+	$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'];
 	//Delete old Backupfiles
 	$backupfilelist=array();
-	if ($STATIC['JOB']['maxbackups']>0) {
-		if ( $dir = @opendir($STATIC['JOB']['backupdir']) ) { //make file list
+	if ($backwpupjobrun['STATIC']['JOB']['maxbackups']>0) {
+		if ( $dir = @opendir($backwpupjobrun['STATIC']['JOB']['backupdir']) ) { //make file list
 			while (($file = readdir($dir)) !== false ) {
-				if ($STATIC['JOB']['fileprefix'] == substr($file,0,strlen($STATIC['JOB']['fileprefix'])))
-					$backupfilelist[filemtime($STATIC['JOB']['backupdir'].$file)]=$file;
+				if ($backwpupjobrun['STATIC']['JOB']['fileprefix'] == substr($file,0,strlen($backwpupjobrun['STATIC']['JOB']['fileprefix'])))
+					$backupfilelist[filemtime($backwpupjobrun['STATIC']['JOB']['backupdir'].$file)]=$file;
 			}
 			@closedir($dir);
 		}
-		if (count($backupfilelist)>$STATIC['JOB']['maxbackups']) {
+		if (count($backupfilelist)>$backwpupjobrun['STATIC']['JOB']['maxbackups']) {
 			$numdeltefiles=0;
 			while ($file=array_shift($backupfilelist)) {
-				if (count($backupfilelist)<$STATIC['JOB']['maxbackups'])
+				if (count($backupfilelist)<$backwpupjobrun['STATIC']['JOB']['maxbackups'])
 					break;
-				unlink($STATIC['JOB']['backupdir'].$file);
+				unlink($backwpupjobrun['STATIC']['JOB']['backupdir'].$file);
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
 				trigger_error(sprintf(_n('One backup file deleted','%d backup files deleted',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 		}
 	}
-	$WORKING['STEPDONE']++;
-	$WORKING['STEPSDONE'][]='DEST_FOLDER'; //set done
+	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FOLDER'; //set done
 }
 
 ?>
