@@ -72,7 +72,7 @@ function backwpup_job_db_dump() {
 	$dbdumpheader.= "-- Blog ABSPATH: ".trailingslashit(str_replace('\\','/',ABSPATH))."\n";
 	$dbdumpheader.= "-- Table Prefix: ".$wpdb->prefix."\n";
 	$dbdumpheader.= "-- Database Name: ".DB_NAME."\n";
-	$dbdumpheader.= "-- Dump on: ".date_i18n('Y-m-d H:i.s',time())."\n";
+	$dbdumpheader.= "-- Dump on: ".date_i18n('Y-m-d H:i.s')."\n";
 	$dbdumpheader.= "-- ---------------------------------------------------------\n\n";
 	//for better import with mysql client
 	$dbdumpheader.= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";

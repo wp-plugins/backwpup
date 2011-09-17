@@ -437,7 +437,7 @@ function backwpup_dashboard_activejobs() {
 	echo '<ul>';
 	foreach ($jobs as $jobid => $jobvalue) {
 		if (!empty($backupdata['JOBID']) and $backupdata['JOBID']==$jobvalue['jobid']) {
-			$runtime=time()-$jobvalue['starttime'];
+			$runtime=current_time('timestamp')-$jobvalue['starttime'];
 			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
 			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
 			echo " <a style=\"color:green;\" href=\"" . backwpup_admin_url('admin.php').'?page=backwpupworking' . "\">" . __('View!','backwpup') . "</a>";

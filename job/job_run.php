@@ -126,7 +126,7 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 	//display some info massages bevor fist step
 	if (count($backwpupjobrun['WORKING']['STEPSDONE'])==0) {
-		trigger_error(sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),BACKWPUP_VERSION,date_i18n('Y',time()),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$wp_version),E_USER_NOTICE);
+		trigger_error(sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),BACKWPUP_VERSION,date_i18n('Y'),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$wp_version),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
 		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['jobid'].'. '.$backwpupjobrun['STATIC']['JOB']['name'].'; '.$backwpupjobrun['STATIC']['JOB']['type'],E_USER_NOTICE);
 		if ($backwpupjobrun['STATIC']['JOB']['activated'])

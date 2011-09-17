@@ -124,7 +124,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'next':
 					$r .= "<td $attributes>";
 					if ($backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"] and $backupdata!=false) {
-						$runtime=time()-$jobvalue['starttime'];
+						$runtime=current_time('timestamp')-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif ($jobvalue['activated']) {
 						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['cronnextrun']);
