@@ -5,12 +5,11 @@ function backwpup_job_db_check() {
 	if (!isset($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']))
 		$backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']=array();
 	
-	mysql_update_i18n();
 	//to backup
 	$tabelstobackup=array();
-	$result=mysql_query("SHOW TABLES FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`"); //get table status
+	$result=mysql_query("SHOW TABLES FROM `".DB_NAME."`"); //get table status
 	if (!$result)
-		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".$backwpupjobrun['STATIC']['WP']['DB_NAME']."`;"),E_USER_ERROR);
+		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".DB_NAME."`;"),E_USER_ERROR);
 	while ($data = mysql_fetch_row($result)) {
 		if (!in_array($data[0],$backwpupjobrun['STATIC']['JOB']['dbexclude']))
 			$tabelstobackup[]=$data[0];
@@ -20,7 +19,7 @@ function backwpup_job_db_check() {
 	
 	//check tables
 	if (count($tabelstobackup)>0) {
-		maintenance_mode(true);
+		backwpup_job_maintenance_mode(true);
 		foreach ($tabelstobackup as $table) {
 			if (in_array($table, $backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']))
 				continue;
@@ -55,7 +54,7 @@ function backwpup_job_db_check() {
 			$backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE'][]=$table;
 			$backwpupjobrun['WORKING']['STEPDONE']=sizeof($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']);
 		}
-		maintenance_mode(false);
+		backwpup_job_maintenance_mode(false);
 		trigger_error(__('Database check done!','backwpup'),E_USER_NOTICE);
 	} else {
 		trigger_error(__('No tables to check','backwpup'),E_USER_WARNING);

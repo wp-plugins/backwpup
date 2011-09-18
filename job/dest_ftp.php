@@ -8,7 +8,7 @@ function backwpup_job_dest_ftp() {
 	$backwpupjobrun['WORKING']['STEPTODO']=2;
 	trigger_error(sprintf(__('%d. try to sending backup file to a FTP Server...','backwpup'),$backwpupjobrun['WORKING']['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
 
-	need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
+	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
 
 	if ($backwpupjobrun['STATIC']['JOB']['ftpssl']) { //make SSL FTP connection
 		if (function_exists('ftp_ssl_connect')) {
@@ -21,7 +21,8 @@ function backwpup_job_dest_ftp() {
 			}
 		} else {
 			trigger_error(__('PHP function to connect with SSL-FTP to server not exists!','backwpup'),E_USER_ERROR);
-			return false;
+			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done
+			return;
 		}
 	} else { //make normal FTP conection if SSL not work
 		$ftp_conn_id = ftp_connect($backwpupjobrun['STATIC']['JOB']['ftphost'],$backwpupjobrun['STATIC']['JOB']['ftphostport'],10);
@@ -105,17 +106,19 @@ function backwpup_job_dest_ftp() {
 		if ($filelist=ftp_nlist($ftp_conn_id, $backwpupjobrun['STATIC']['JOB']['ftpdir'])) {
 			foreach($filelist as $files) {
 				if ($backwpupjobrun['STATIC']['JOB']['fileprefix'] == substr(basename($files),0,strlen($backwpupjobrun['STATIC']['JOB']['fileprefix'])) and $backwpupjobrun['STATIC']['JOB']['fileformart'] == substr(basename($files),-strlen($backwpupjobrun['STATIC']['JOB']['fileformart'])))
-					$backupfilelist[]=basename($files);
+					$backupfilelist[ftp_mdtm($ftp_conn_id,$ftpfiles)]=basename($files);
 			}
-			if (sizeof($backupfilelist)>0) {
-				rsort($backupfilelist);
+			if (count($backupfilelist)>$backwpupjobrun['STATIC']['JOB']['ftpmaxbackups']) {
 				$numdeltefiles=0;
-				for ($i=$backwpupjobrun['STATIC']['JOB']['ftpmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-					if (ftp_delete($ftp_conn_id, $backwpupjobrun['STATIC']['JOB']['ftpdir'].$backupfilelist[$i])) //delte files on ftp
-					$numdeltefiles++;
+				while ($file=array_shift($backupfilelist)) {
+					if (count($backupfilelist)<$backwpupjobrun['STATIC']['JOB']['ftpmaxbackups'])
+						break;
+					if (ftp_delete($ftp_conn_id, $backwpupjobrun['STATIC']['JOB']['ftpdir'].$file)) //delte files on ftp
+						$numdeltefiles++;
 					else
-						trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),$backwpupjobrun['STATIC']['JOB']['ftpdir'].$backupfilelist[$i]),E_USER_ERROR);
-				}
+						trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),$backwpupjobrun['STATIC']['JOB']['ftpdir'].$file),E_USER_ERROR);
+
+				}				
 				if ($numdeltefiles>0)
 					trigger_error(sprintf(_n('One file deleted on FTP Server','%d files deleted on FTP Server',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 			}

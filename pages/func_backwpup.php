@@ -143,7 +143,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						if (isset($jobvalue['lastruntime']))
 							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
 					} else {
-						$r .= __('None','backwpup');
+						$r .= __('None','backwpup').'<br />';
 					}
 					if (!empty($jobvalue['lastbackupdownloadurl']))
 						$r .="<a href=\"" . wp_nonce_url($jobvalue['lastbackupdownloadurl'], 'download-backup') . "\" title=\"".__('Download last Backup','backwpup')."\">" . __('Download','backwpup') . "</a> | ";

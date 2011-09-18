@@ -947,7 +947,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['ftppasv']) or !is_bool($jobsettings['ftppasv']))
 		$jobsettings['ftppasv']=true;
 
-	if (!isset($jobsettings['ftpssl']) or !is_bool($jobsettings['ftpssl']))
+	if (!isset($jobsettings['ftpssl']) or !is_bool($jobsettings['ftpssl']) or !function_exists('ftp_ssl_connect'))
 		$jobsettings['ftpssl']=false;
 
 	if (!isset($jobsettings['awsAccessKey']) or !is_string($jobsettings['awsAccessKey']))

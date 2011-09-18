@@ -51,7 +51,7 @@ define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
 define('BACKWPUP_SUGARSYNC_ACCESSKEY', 'OTcwNjc5MTI5OTQxMzY1Njc5OA');
 define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5YWVkMjFmYmI');
 //BackWPup API url
-define('BACKWPUP_API_URL', 'http://api.backwpup.com');
+define('BACKWPUP_API_URL', 'https://api.backwpup.com');
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
     define('AWS_CERTIFICATE_AUTHORITY', true);

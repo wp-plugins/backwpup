@@ -2,7 +2,6 @@
 if (!defined('ABSPATH')) 
 	die();
 
-
 $cfg=get_option('backwpup');	
 	
 echo "<div class=\"wrap\">";
