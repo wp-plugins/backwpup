@@ -89,6 +89,8 @@ if (backwpup_env_checks()) {
 		//Additional links on the plugin page
 		add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
+		//Add filter for Plugin Updates from backwpup.com
+		add_filter('pre_set_site_transient_update_plugins', 'backwpup_plugin_update_check');
 	}
 	//Actions for Cron job
 	add_action('backwpup_cron', 'backwpup_cron',1);

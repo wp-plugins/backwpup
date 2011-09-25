@@ -231,6 +231,20 @@ function backwpup_api($active=false) {
 	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 15, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 }
 
+//check for Plugin Updates
+function backwpup_plugin_update_check($value) {
+	if (!isset($value->response))
+		return $value;
+	 $new_update = new stdClass;
+	 $new_update->id =12345;
+	 $new_update->slug ='backwpup';
+	 $new_update->new_version ='2.5-beta';
+	 $new_update->url ='http://backwpup.com/';
+	 $new_update->package ='http://backwpup.com/backwpup.zip';
+	 $value->response['backwpup/backwpup.php']=$new_update;
+	 return $value;
+}
+
 //add edit setting to plugins page
 function backwpup_plugin_options_link($links) {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
