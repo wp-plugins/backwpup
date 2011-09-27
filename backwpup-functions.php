@@ -232,17 +232,25 @@ function backwpup_api($active=false) {
 }
 
 //check for Plugin Updates
-function backwpup_plugin_update_check($value) {
-	if (!isset($value->response))
-		return $value;
-	 $new_update = new stdClass;
-	 $new_update->id =12345;
-	 $new_update->slug ='backwpup';
-	 $new_update->new_version ='2.5-beta';
-	 $new_update->url ='http://backwpup.com/';
-	 $new_update->package ='http://backwpup.com/backwpup.zip';
-	 $value->response['backwpup/backwpup.php']=$new_update;
-	 return $value;
+function backwpup_plugin_update_check($checked_data) {
+	global $wp_version;
+	if (empty($checked_data->checked))
+		return $checked_data;	
+	// Start checking for an update
+	$post=array();
+	$post['WP_VER']=$wp_version;
+	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
+	$post['TYPE']='B';
+	$post['ACTION']='basic_check';
+	$raw_response = wp_remote_post( BACKWPUP_API_URL.'/versions/index.php', array('timeout' => 15, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
+	echo $raw_response;
+	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
+		$response = unserialize($raw_response['body']);
+	
+	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
+		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR .'/backwpup.php'] = $response;
+	
+	return $checked_data;
 }
 
 //add edit setting to plugins page
