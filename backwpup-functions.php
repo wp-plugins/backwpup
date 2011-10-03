@@ -153,7 +153,6 @@ function backwpup_plugin_activate() {
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
 	delete_option('backwpup_last_activate');
-	backwpup_api(true);
 }
 
 //on Plugin deaktivate
@@ -196,61 +195,81 @@ function backwpup_check_open_basedir($dir) {
 	return false;
 }
 
-//Backwpup API
-function backwpup_api($active=false) {
+//Backwpup API for cron trigger
+function backwpup_api_cronupdate() {
 	global $wp_version;
 	$cfg=get_option('backwpup');
-	if ($active)
-		$post['ACTIVE']='Y';
-	else
-		$post['ACTIVE']='N';
-	if (is_multisite())
-		$post['ACTIVE']='M';
-	$blugurl=get_option('siteurl');
+	if (empty($cfg['apicronservice']))
+		return;
+	$post=array();
+	$post['URL']=get_option('siteurl');
 	if (defined('WP_SITEURL'))
-		$blugurl=WP_SITEURL;
-
-	$post['URL']=$blugurl;
+		$post['URL']=WP_SITEURL;
 	$post['WP_VER']=$wp_version;
 	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
-	if (!empty($cfg['apicronservice']))
-		$post['OFFSET']=get_option('gmt_offset');
-	if (!empty($cfg['apicronservice']) and !empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
+	$post['ACTION']='cronupdate';
+	$post['OFFSET']=get_option('gmt_offset');
+	if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
 		$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
-
-	$cfg=get_option('backwpup'); //Load Settings
-	if ($cfg['apicronservice']) {
-		$jobs=get_option('backwpup_jobs');
-		if (!empty($jobs)) {
-			foreach ($jobs as $jobid => $jobvalue) {
-				if ($jobvalue['activated'] and !empty($jobvalue['cron']))
-					$post["JOBCRON[".$jobid."]"]=$jobvalue['cron'];
-			}
+	$jobs=get_option('backwpup_jobs');
+	if (!empty($jobs)) {
+		foreach ($jobs as $jobid => $jobvalue) {
+			if ($jobvalue['activated'] and !empty($jobvalue['cron']))
+				$post["JOBCRON[".$jobid."]"]=$jobvalue['cron'];
 		}
 	}
-	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 15, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
+	wp_remote_post( BACKWPUP_API_URL, array('sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 }
 
 //check for Plugin Updates
-function backwpup_plugin_update_check($checked_data) {
+function backwpup_api_plugin_update_check($checked_data) {
 	global $wp_version;
 	if (empty($checked_data->checked))
 		return $checked_data;	
 	// Start checking for an update
 	$post=array();
+	$post['URL']=get_option('siteurl');
+	if (defined('WP_SITEURL'))
+		$post['URL']=WP_SITEURL;
 	$post['WP_VER']=$wp_version;
 	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
-	$post['TYPE']='B';
-	$post['ACTION']='basic_check';
-	$raw_response = wp_remote_post( BACKWPUP_API_URL.'/versions/index.php', array('timeout' => 15, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
-	echo $raw_response;
+	if (defined('BACKWPUP_UPDATE_TYPE'))
+		$post['TYPE']=BACKWPUP_UPDATE_TYPE;
+	$post['ACTION']='updatecheck';
+	$raw_response = wp_remote_post( BACKWPUP_API_URL, array( 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
 		$response = unserialize($raw_response['body']);
-	
+
 	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
 		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR .'/backwpup.php'] = $response;
-	
 	return $checked_data;
+}
+
+function backwpup_api_plugin_infoscreen($def, $action, $args) {
+	global $wp_version;
+	
+	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASEDIR)
+		return false;
+	
+	$post=array();
+	$post['URL']=get_option('siteurl');
+	if (defined('WP_SITEURL'))
+		$post['URL']=WP_SITEURL;
+	$post['WP_VER']=$wp_version;
+	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
+	if (defined('BACKWPUP_UPDATE_TYPE'))
+		$post['TYPE']=BACKWPUP_UPDATE_TYPE;
+	$post['ACTION']='updateinfo';
+	$request = wp_remote_post( BACKWPUP_API_URL, array( 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
+
+	if (is_wp_error($request)) {
+		$res = new WP_Error('plugins_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message());
+	} else {
+		$res = unserialize($request['body']);	
+		if ($res === false)
+			$res = new WP_Error('plugins_api_failed', __('An unknown error occurred'), $request['body']);
+	}
+	return $res;
 }
 
 //add edit setting to plugins page

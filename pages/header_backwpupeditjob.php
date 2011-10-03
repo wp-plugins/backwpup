@@ -257,7 +257,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}	
 	
 	//make api call to backwpup.com
-	backwpup_api(true);
+	backwpup_api_cronupdate();
 	
 	$_POST['jobid']=$jobvalues['jobid'];
 	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';

@@ -34,7 +34,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$cfg['dirlogs']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$cfg['dirlogs'];
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
-	backwpup_api(true);
+	backwpup_api_cronupdate();
 }
 
 //add Help

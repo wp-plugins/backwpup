@@ -16,7 +16,6 @@ echo "<div id=\"ajax-response\"></div>";
 echo "</form>"; 
 $current = get_site_transient( 'update_plugins' );
 echo "<pre>";	
-print_r($current);
 echo "</pre>";	
 echo "</div>";	
 ?>
