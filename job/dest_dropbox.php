@@ -6,7 +6,14 @@ function backwpup_job_dest_dropbox() {
 	trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$backwpupjobrun['WORKING']['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox/dropbox.php'));
 	try {
-		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+		//set boxtype and authkeys
+		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox') {
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
+			$dropbox->setSandbox();
+		} else {
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox->setDropbox();
+		}
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);
 		//set oAuth Sign method
@@ -17,11 +24,6 @@ function backwpup_job_dest_dropbox() {
 			$dropbox->setoAuthSignMethodSHA1();
 			trigger_error(sprintf(__('oAuth sign method for DropBox is %s','backwpup'),__('HMAC-SHA1', 'backwpup')),E_USER_NOTICE);
 		}
-		//set boxtype
-		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox')
-			$dropbox->setSandbox();
-		else
-			$dropbox->setDropbox();
 		//get account info
 		$info=$dropbox->accountInfo();
 		if (!empty($info['uid'])) {

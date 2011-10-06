@@ -13,10 +13,18 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 			//Get Access Tokens
 			if (!class_exists('Dropbox'))
 				require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+			$jobs=get_option('backwpup_jobs');
+			//set boxtype and authkeys
+			if ($jobs[$jobid]['droperoot']=='sandbox') {
+				$dropbox = new Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
+				$dropbox->setSandbox();
+			} else {
+				$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+				$dropbox->setDropbox();
+			}
 			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
-			$jobs=get_option('backwpup_jobs');
 			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
 			$jobs[$jobid]['dropesecret']=$oAuthStuff['oauth_token_secret'];
 			update_option('backwpup_jobs',$jobs);
@@ -248,7 +256,14 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
 		if (!class_exists('Dropbox'))
 			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
-		$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+		//set boxtype and authkeys
+		if ($jobvalues['droperoot']=='sandbox') {
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
+			$dropbox->setSandbox();
+		} else {
+			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox->setDropbox();
+		}
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
