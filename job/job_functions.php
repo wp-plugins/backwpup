@@ -45,10 +45,9 @@ function backwpup_job_maintenance_mode($enable = false) {
 		return;
 	if ( $enable ) {
 		trigger_error(__('Set Blog to maintenance mode','backwpup'),E_USER_NOTICE);
-		if ( exists_option('wp-maintenance-mode-msqld') ) { //Support for WP Maintenance Mode Plugin
+		if ( get_option('wp-maintenance-mode-msqld') ) { //Support for WP Maintenance Mode Plugin
 			update_option('wp-maintenance-mode-msqld','1');
-		} elseif ( exists_option('plugin_maintenance-mode') ) { //Support for Maintenance Mode Plugin
-			$mamo=get_option('plugin_maintenance-mode');
+		} elseif ($mamo=get_option('plugin_maintenance-mode')) { //Support for Maintenance Mode Plugin
 			$mamo['mamo_activate']='on_'.current_time('timestamp');
 			$mamo['mamo_backtime_days']='0';
 			$mamo['mamo_backtime_hours']='0';
@@ -62,10 +61,9 @@ function backwpup_job_maintenance_mode($enable = false) {
 		}
 	} else {
 		trigger_error(__('Set Blog to normal mode','backwpup'),E_USER_NOTICE);
-		if ( exists_option('wp-maintenance-mode-msqld') ) { //Support for WP Maintenance Mode Plugin
+		if ( get_option('wp-maintenance-mode-msqld') ) { //Support for WP Maintenance Mode Plugin
 			update_option('wp-maintenance-mode-msqld','0');
-		} elseif ( exists_option('plugin_maintenance-mode') ) { //Support for Maintenance Mode Plugin
-			$mamo=get_option('plugin_maintenance-mode');
+		} elseif ($mamo=get_option('plugin_maintenance-mode')) { //Support for Maintenance Mode Plugin
 			$mamo['mamo_activate']='off';
 			update_option('plugin_maintenance-mode',$mamo);
 		} else { //WP Support

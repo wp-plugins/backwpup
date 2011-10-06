@@ -44,9 +44,12 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
-//Set Dropbox Aplication Keys
+//Set Dropbox Aplication Keys for DropBox
 define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
 define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
+//Set Dropbox Aplication Keys for Snadbox
+define('BACKWPUP_DROPBOX_SANDBOX_APP_KEY', 'kq53v9fb8c0fty7');
+define('BACKWPUP_DROPBOX_SANDBOX_APP_SECRET', 'c113lcp9kl8mtte');
 //Set SugarSync Aplication Keys
 define('BACKWPUP_SUGARSYNC_ACCESSKEY', 'OTcwNjc5MTI5OTQxMzY1Njc5OA');
 define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5YWVkMjFmYmI');

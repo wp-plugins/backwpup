@@ -239,7 +239,6 @@ function backwpup_api_plugin_update_check($checked_data) {
 	$raw_response = wp_remote_post( BACKWPUP_API_URL, array( 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
 		$response = unserialize($raw_response['body']);
-
 	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
 		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR .'/backwpup.php'] = $response;
 	return $checked_data;
@@ -247,10 +246,8 @@ function backwpup_api_plugin_update_check($checked_data) {
 
 function backwpup_api_plugin_infoscreen($def, $action, $args) {
 	global $wp_version;
-	
 	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASEDIR)
 		return false;
-	
 	$post=array();
 	$post['URL']=get_option('siteurl');
 	if (defined('WP_SITEURL'))
@@ -261,7 +258,6 @@ function backwpup_api_plugin_infoscreen($def, $action, $args) {
 		$post['TYPE']=BACKWPUP_UPDATE_TYPE;
 	$post['ACTION']='updateinfo';
 	$request = wp_remote_post( BACKWPUP_API_URL, array( 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
-
 	if (is_wp_error($request)) {
 		$res = new WP_Error('plugins_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message());
 	} else {
@@ -1065,7 +1061,10 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	$jobsettings['rscdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['rscdir']))));
 	if (substr($jobsettings['rscdir'],0,1)=='/')
 		$jobsettings['rscdir']=substr($jobsettings['rscdir'],1);
-
+	
+	if (!isset($jobsettings['dropesignmethod']) or ($jobsettings['dropesignmethod']!='PLAIN' and $jobsettings['dropesignmethod']!='SHA1'))
+		$jobsettings['dropesignmethod']='SHA1';
+		
 	if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 		$jobsettings['rscmaxbackups']=0;
 
@@ -1116,7 +1115,6 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['dropemail']);
 	unset($jobsettings['dropepass']);
 	unset($jobsettings['dbtables']);
-	unset($jobsettings['dropesignmethod']);
 
 	return $jobsettings;
 }
