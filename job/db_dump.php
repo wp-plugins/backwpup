@@ -6,15 +6,15 @@ function backwpup_job_db_dump() {
 		$backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']=array();
 
 	//to backup
-	$tabelstobackup=array();
-	$result=mysql_query("SHOW TABLES FROM `".DB_NAME."`"); //get table status
-	if (!$result)
+	$tablestobackup=array();
+	$tables = $wpdb->get_col("SHOW TABLES FROM `".DB_NAME."`"); //get table status
+	if (mysql_error())
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".DB_NAME."`;"),E_USER_ERROR);
-	while ($data = mysql_fetch_row($result)) {
-		if (!in_array($data[0],$backwpupjobrun['STATIC']['JOB']['dbexclude']))
-			$tabelstobackup[]=$data[0];
+	foreach ($tables as $table) {
+		if (!in_array($table,$backwpupjobrun['STATIC']['JOB']['dbexclude']))
+			$tablestobackup[]=$table;
 	}
-	$backwpupjobrun['WORKING']['STEPTODO']=count($tabelstobackup);
+	$backwpupjobrun['WORKING']['STEPTODO']=count($tablestobackup);
 
 	$datevars=array('%d','%D','%l','%N','%S','%w','%z','%W','%F','%m','%M','%n','%t','%L','%o','%Y','%a','%A','%B','%g','%G','%h','%H','%i','%s','%u','%e','%I','%O','%P','%T','%Z','%c','%U');
 	$datevalues=array(date_i18n('d'),date_i18n('D'),date_i18n('l'),date_i18n('N'),date_i18n('S'),date_i18n('w'),date_i18n('z'),date_i18n('W'),date_i18n('F'),date_i18n('m'),date_i18n('M'),date_i18n('n'),date_i18n('t'),date_i18n('L'),date_i18n('o'),date_i18n('Y'),date_i18n('a'),date_i18n('A'),date_i18n('B'),date_i18n('g'),date_i18n('G'),date_i18n('h'),date_i18n('H'),date_i18n('i'),date_i18n('s'),date_i18n('u'),date_i18n('e'),date_i18n('I'),date_i18n('O'),date_i18n('P'),date_i18n('T'),date_i18n('Z'),date_i18n('c'),date_i18n('U'));
@@ -33,18 +33,18 @@ function backwpup_job_db_dump() {
 	//Set maintenance
 	backwpup_job_maintenance_mode(true);
 
-	if (count($tabelstobackup)==0) { //Check tables to dump
+	if (count($tablestobackup)==0) { //Check tables to dump
 		trigger_error(__('No tables to dump','backwpup'),E_USER_WARNING);
 		maintenance_mode(false);
 		$backwpupjobrun['WORKING']['STEPSDONE'][]='DB_DUMP'; //set done
 		return;
 	}
 
-	$result=mysql_query("SHOW TABLE STATUS FROM `".DB_NAME."`"); //get table status
-	if (!$result)
+	$tablesstatus=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`"); //get table status
+	if (mysql_error())
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW TABLE STATUS FROM `".DB_NAME."`;"),E_USER_ERROR);
-	while ($data = mysql_fetch_assoc($result)) {
-		$status[$data['Name']]=$data;
+	foreach ($tablesstatus as $tablestatus) {
+		$status[$tablestatus->Name]=$tablestatus;
 	}
 
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
@@ -80,7 +80,7 @@ function backwpup_job_db_dump() {
 	$dbdumpheader.= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n";
 	$dbdumpheader.= "/*!40101 SET NAMES '".mysql_client_encoding()."' */;\n";
 	$dbdumpheader.= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n";
-	$dbdumpheader.= "/*!40103 SET TIME_ZONE='".mysql_result(mysql_query("SELECT @@time_zone"),0)."' */;\n";
+	$dbdumpheader.= "/*!40103 SET TIME_ZONE='".$wpdb->get_var("SELECT @@time_zone")."' */;\n";
 	$dbdumpheader.= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n";
 	$dbdumpheader.= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n";
 	$dbdumpheader.= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n";
@@ -92,11 +92,11 @@ function backwpup_job_db_dump() {
 	else
 		fwrite($file, $dbdumpheader);
 	//make table dumps
-	foreach($tabelstobackup as $table) {
+	foreach($tablestobackup as $table) {
 		if (in_array($table, $backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']))
 			continue;
 		trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);
-		backwpup_job_need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*1.3); //get more memory if needed
+		backwpup_job_need_free_memory(($status[$table]->Data_length+$status[$table]->Index_length)*1.5); //get more memory if needed
 		_backwpup_job_db_dump_table($table,$status[$table],$file);
 		$backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE'][]=$table;
 		$backwpupjobrun['WORKING']['STEPDONE']=count($backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']);
@@ -139,19 +139,18 @@ function backwpup_job_db_dump() {
 
 
 function _backwpup_job_db_dump_table($table,$status,$file) {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$wpdb;
 	// create dump
 	$tablecreate="\n--\n-- Table structure for table $table\n--\n\n";
 	$tablecreate.="DROP TABLE IF EXISTS `".$table."`;\n";
 	$tablecreate.="/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
 	$tablecreate.="/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n";
 	//Dump the table structure
-	$result=mysql_query("SHOW CREATE TABLE `".$table."`");
-	if (!$result) {
+	$tablestruc=$wpdb->get_row("SHOW CREATE TABLE `".$table."`",'ARRAY_A');
+	if (mysql_error()) {
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
 		return false;
 	}
-	$tablestruc=mysql_fetch_assoc($result);
 	$tablecreate.=$tablestruc['Create Table'].";\n";
 	$tablecreate.="/*!40101 SET character_set_client = @saved_cs_client */;\n";
 
@@ -163,29 +162,28 @@ function _backwpup_job_db_dump_table($table,$status,$file) {
 		fwrite($file, $tablecreate);
 
 	//take data of table
-	$result=mysql_query("SELECT * FROM `".$table."`");
-	if (!$result) {
+	$datas=$wpdb->get_results("SELECT * FROM `".$table."`",'ARRAY_N');
+	if (mysql_error()) {
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
 		return false;
 	}
 	//get key information
-	$i = 0;
-	$keys = array();
-	while ($i < mysql_num_fields($result)) {
-		$meta = mysql_fetch_field($result, $i);
-		$keymeta[$i]=$meta;
-		$keys[] = "`".$meta->name."`";
-		$i++;
-	}
+	$keys=$wpdb->get_col_info('name',-1);
 
 	//build key string
 	$keystring='';
 	if (!$backwpupjobrun['STATIC']['JOB']['dbshortinsert'])
-		$keystring=" (".implode(", ",$keys).")";
-
+		$keystring=" (`".implode("`, `",$keys)."`)";
+	//colem infos
+	for ($i=0;$i<count($keys);$i++) {
+		$colinfo[$i]['numeric']=$wpdb->get_col_info('numeric',$i);
+		$colinfo[$i]['type']=$wpdb->get_col_info('type',$i);
+		$colinfo[$i]['blob']=$wpdb->get_col_info('blob',$i);
+	}
+		
 	$tabledata="\n--\n-- Dumping data for table $table\n--\n\n";
 
-	if ($status['Engine']=='MyISAM')
+	if ($status->Engine=='MyISAM')
 		$tabledata.="/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n";
 
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
@@ -195,14 +193,14 @@ function _backwpup_job_db_dump_table($table,$status,$file) {
 	else
 		fwrite($file, $tabledata);
 	$tabledata='';
-
+	
 	$querystring='';
-	while ($data = mysql_fetch_array($result, MYSQL_NUM)) {
+	foreach ($datas as $data) {
 		$values = array();
 		foreach($data as $key => $value) {
 			if(is_null($value) or !isset($value)) // Make Value NULL to string NULL
 				$value = "NULL";
-			elseif($keymeta[$key]->numeric and $keymeta[$key]->type!='timestamp' and !$keymeta[$key]->blob)//is value numeric no esc
+			elseif($colinfo[$key]['numeric']==1 and $colinfo[$key]['type']!='timestamp' and $colinfo[$key]['blob']!=1)//is value numeric no esc
 				$value = empty($value) ? 0 : $value;
 			else
 				$value = "'".mysql_real_escape_string($value)."'";
@@ -226,7 +224,7 @@ function _backwpup_job_db_dump_table($table,$status,$file) {
 	if (!empty($querystring)) //dump rest
 		$tabledata=substr($querystring,0,-2).";\n";
 
-	if ($status['Engine']=='MyISAM')
+	if ($status->Engine=='MyISAM')
 		$tabledata.="/*!40000 ALTER TABLE `".$table."` ENABLE KEYS */;\n";
 
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
@@ -236,6 +234,6 @@ function _backwpup_job_db_dump_table($table,$status,$file) {
 	else
 		fwrite($file, $tabledata);
 
-	mysql_free_result($result);
+	$wpdb->flush();
 }
 ?>

@@ -16,14 +16,6 @@ function backwpup_job_dest_dropbox() {
 		}
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);
-		//set oAuth Sign method
-		if ($backwpupjobrun['STATIC']['JOB']['dropesignmethod']=='PLAIN') {
-			$dropbox->setoAuthSignMethodPlain();
-			trigger_error(sprintf(__('oAuth sign method for DropBox is %s','backwpup'),__('PLAINTEXT', 'backwpup')),E_USER_NOTICE);
-		} else {
-			$dropbox->setoAuthSignMethodSHA1();
-			trigger_error(sprintf(__('oAuth sign method for DropBox is %s','backwpup'),__('HMAC-SHA1', 'backwpup')),E_USER_NOTICE);
-		}
 		//get account info
 		$info=$dropbox->accountInfo();
 		if (!empty($info['uid'])) {

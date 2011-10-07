@@ -1061,9 +1061,6 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	$jobsettings['rscdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['rscdir']))));
 	if (substr($jobsettings['rscdir'],0,1)=='/')
 		$jobsettings['rscdir']=substr($jobsettings['rscdir'],1);
-	
-	if (!isset($jobsettings['dropesignmethod']) or ($jobsettings['dropesignmethod']!='PLAIN' and $jobsettings['dropesignmethod']!='SHA1'))
-		$jobsettings['dropesignmethod']='SHA1';
 		
 	if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 		$jobsettings['rscmaxbackups']=0;
@@ -1115,6 +1112,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['dropemail']);
 	unset($jobsettings['dropepass']);
 	unset($jobsettings['dbtables']);
+	unset($jobsettings['dropesignmethod']);
 
 	return $jobsettings;
 }

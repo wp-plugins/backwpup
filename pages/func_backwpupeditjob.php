@@ -360,11 +360,6 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 			<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
 			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauthdel" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />	
 		<?PHP } ?><br />
-		<b><?PHP _e('oAuth sign method:','backwpup'); ?></b><br />
-		<select name="dropesignmethod" id="dropesignmethod">
-		<option <?PHP selected($jobvalue['dropesignmethod'],'SHA1',true); ?> value="SHA1"><?php _e('HMAC-SHA1', 'backwpup'); ?></option>
-		<option <?PHP selected($jobvalue['dropesignmethod'],'PLAIN',true); ?> value="PLAIN"><?php _e('PLAINTEXT', 'backwpup'); ?></option> 
-		</select><br />
 		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
 		<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
 		<?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />

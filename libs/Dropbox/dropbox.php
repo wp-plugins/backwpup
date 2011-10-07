@@ -40,7 +40,6 @@ class Dropbox {
 	protected $root = 'dropbox';
 	protected $OAuthObject;
 	protected $OAuthToken;
-	protected $OAuthSignMethod='HMAC-SHA1';
 	protected $ProgressFunction = false;
 	
 	public function __construct($applicationKey, $applicationSecret) {
@@ -57,14 +56,6 @@ class Dropbox {
 	
 	public function setSandbox() {
 		$this->root = 'sandbox';
-	}
-
-	public function setoAuthSignMethodSHA1() {
-		$this->OAuthSignMethod = 'HMAC-SHA1';
-	}
-	
-	public function setoAuthSignMethodPlain() {
-		$this->OAuthSignMethod = 'PLAINTEXT';
 	}
 	
 	public function setProgressFunction($function) {
@@ -110,7 +101,7 @@ class Dropbox {
 		//request tokens
 		$OAuthSign = $this->OAuthObject->sign(array(
 			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
-			'method' 	=> $this->OAuthSignMethod,
+			'method' 	=> 'HMAC-SHA1',
 			'action'	=>'GET',
 			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
@@ -145,7 +136,7 @@ class Dropbox {
 		 $OAuthSign = $this->OAuthObject->sign(array(
 			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
 			'action'	=>'GET',
-			'method' 	=> $this->OAuthSignMethod,
+			'method' 	=> 'HMAC-SHA1',
 			'parameters'=>array('oauth_token'    => $oauth_token),
 			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
@@ -180,7 +171,7 @@ class Dropbox {
 			'path'      => $url,
 			'parameters'=> $args,
 			'action'=> $method,
-			'method' => $this->OAuthSignMethod,
+			'method' => 'HMAC-SHA1',
 			'signatures'=> $this->OAuthToken));
 		
 		/* Header*/
@@ -201,9 +192,7 @@ class Dropbox {
 			curl_setopt($ch,CURLOPT_INFILE,$datafilefd);
 			curl_setopt($ch,CURLOPT_INFILESIZE,filesize($file));
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
-			$headers[]='Content-Length: ' .strlen(filesize($file));
 			$headers[]='Authorization: '.$OAuthSign['header'];
-			trigger_error($url.$args,E_USER_WARNING);
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		} else {
 			curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);

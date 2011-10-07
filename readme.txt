@@ -60,6 +60,7 @@ Do backups and more for your WordPress Blog.
 * now manaly job starts wor with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
 * don't look for file ending on deletion and use file time not name
 * the job working is back in the WordPress envoerment
+* use my own dropbox lib again and chaned it to new api
 
 = 2.1.4 =
 * correct some values on job copy/export
