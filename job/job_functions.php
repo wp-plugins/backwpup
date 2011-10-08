@@ -315,10 +315,14 @@ function backwpup_job_job_end() {
 			$headers = 'From: '.$backwpupjobrun['STATIC']['CFG']['mailsndname'].' <'.$backwpupjobrun['STATIC']['CFG']['mailsndemail'].'>' . "\r\n";
 		else
 			$headers = 'From: '.$backwpupjobrun['STATIC']['CFG']['mailsndemail'] . "\r\n";
-
+		$status='Successful';
+		if ($backwpupjobrun['WORKING']['WARNING']>0)
+			$status='Warning';
+		if ($backwpupjobrun['WORKING']['ERROR']>0)
+			$status='Error';
 		add_filter('wp_mail_content_type',create_function('', 'return "text/html"; '));
 		wp_mail($backwpupjobrun['STATIC']['JOB']['mailaddresslog'],
-				sprintf(__('BackWPup log from %1$s: %2$s','backwpup'),date_i18n('Y/m/d @ H:i',$backwpupjobrun['STATIC']['JOB']['starttime']),$backwpupjobrun['STATIC']['JOB']['name']),
+				sprintf(__('[%3$s] BackWPup log %1$s: %2$s','backwpup'),date_i18n('Y/m/d @ H:i',$backwpupjobrun['STATIC']['JOB']['starttime']),$backwpupjobrun['STATIC']['JOB']['name'],$status),
 				$message,
 				$headers);
 	}

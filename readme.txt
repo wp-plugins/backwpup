@@ -43,7 +43,7 @@ Do backups and more for your WordPress Blog.
 == Frequently Asked Questions ==
 * FAQ: http://backwpup.com/faq
 * Manual:  http://backwpup.com/manual
-* Support: http://backwpup.com/forum
+* Support: http://backwpup.com/forums
 
 == Screenshots ==
 1. Job Page

@@ -92,7 +92,7 @@ function backwpup_contextual_help($help='') {
 		$help='<p>'.$help.'</p>';
 	add_contextual_help($current_screen,$help.
 			'<p><strong>'.__('For more information:','backwpup').'</strong></p>'.
-			'<p><a href="http://backwpup.com/forum/" target="_blank">'.__('Support','backwpup').'</a>'.
+			'<p><a href="http://backwpup.com/forums/" target="_blank">'.__('Support','backwpup').'</a>'.
 			' | <a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>'.
 			' | <a href="http://backwpup.com/" target="_blank">' . __('Plugin Homepage', 'backwpup') . '</a>'.
 			' | <a href="http://wordpress.org/extend/plugins/backwpup" target="_blank">' . __('Plugin on WordPress.org', 'backwpup') . '</a>'.
@@ -169,29 +169,28 @@ function backwpup_get_temp() {
 	//get temp dirs like wordpress get_temp_dir()
 	if (defined('WP_TEMP_DIR'))
 		$tempfolder=trim(WP_TEMP_DIR);
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder))
 		$tempfolder=sys_get_temp_dir();									//normal temp dir
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder))
 		$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder))
 		$tempfolder=WP_CONTENT_DIR.'/';
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !is_writable($tempfolder) or !is_dir($tempfolder))
+	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder))
 		$tempfolder=get_temp_dir();
 	return trailingslashit(str_replace('\\','/',realpath($tempfolder))).'backwpup_'.substr(md5(ABSPATH),6,20).'/';
 }
 //checks the dir is in openbasedir
 function backwpup_check_open_basedir($dir) {
-	$openbasedir=ini_get('open_basedir');
+	if (!ini_get('open_basedir'))
+		return true;
+	$openbasedirarray=explode(PATH_SEPARATOR,ini_get('open_basedir'));
 	$dir=rtrim(str_replace('\\','/',$dir),'/').'/';
-	if (!empty($openbasedir)) {
-		$openbasedirarray=explode(PATH_SEPARATOR,$openbasedir);
+	if (!empty($openbasedirarray)) {
 		foreach ($openbasedirarray as $basedir) {
 			if (stripos($dir,rtrim(str_replace('\\','/',$basedir),'/').'/')==0)
 				return true;
 		}
-	} else {
-		return true;
-	}
+	} 
 	return false;
 }
 
@@ -283,7 +282,7 @@ function backwpup_plugin_links($links, $file) {
 		return $links;
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
 		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
-		$links[] = '<a href="http://backwpup.com/forum/" target="_blank">' . __('Support','backwpup') . '</a>';
+		$links[] = '<a href="http://backwpup.com/forums/" target="_blank">' . __('Support','backwpup') . '</a>';
 		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;

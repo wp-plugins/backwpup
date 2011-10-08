@@ -11,18 +11,16 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 		$reqtoken=get_transient('backwpup_dropboxrequest');
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
-			if (!class_exists('Dropbox'))
-				require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
 			$jobs=get_option('backwpup_jobs');
 			//set boxtype and authkeys
 			if ($jobs[$jobid]['droperoot']=='sandbox') {
-				$dropbox = new Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
 				$dropbox->setSandbox();
 			} else {
-				$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 				$dropbox->setDropbox();
 			}
-			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
 			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -253,14 +251,13 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 
 	//get dropbox auth	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
-		if (!class_exists('Dropbox'))
-			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+		require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
 		//set boxtype and authkeys
 		if ($jobvalues['droperoot']=='sandbox') {
-			$dropbox = new Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
+			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
 			$dropbox->setSandbox();
 		} else {
-			$dropbox = new Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
 			$dropbox->setDropbox();
 		}
 		// let the user authorize (user will be redirected)
