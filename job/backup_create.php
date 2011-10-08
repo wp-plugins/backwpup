@@ -3,16 +3,16 @@ function backwpup_job_backup_create() {
 	global $backwpupjobrun;
 	if ($backwpupjobrun['WORKING']['ALLFILESIZE']==0)
 		return;
-	$filelist=get_option('backwpup_job_filelist'); //get file list
+	$filelist=get_transient('backwpup_job_filelist'); //get file list
 	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
 	if (empty($backwpupjobrun['WORKING']['STEPDONE']))
 		$backwpupjobrun['WORKING']['STEPDONE']=0;
-
+		
 	if (strtolower($backwpupjobrun['STATIC']['JOB']['fileformart'])==".zip") { //Zip files
 		if ($backwpupjobrun['STATIC']['CFG']['phpzip']) {  //use php zip lib
 			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
-                        $res = $zip->open($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],ZIPARCHIVE::CREATE);
+            $res = $zip->open($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],ZIPARCHIVE::CREATE);
 			if ($res === TRUE) {
 				for ($i=$backwpupjobrun['WORKING']['STEPDONE'];$i<$backwpupjobrun['WORKING']['STEPTODO'];$i++) {
 					if (!$zip->addFile($filelist[$i]['FILE'], $filelist[$i]['OUTFILE']))

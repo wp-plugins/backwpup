@@ -1,5 +1,5 @@
 <?PHP
-// Remove header and footer form logfile
+//Remove header and footer form logfile
 function backwpup_read_logfile($logfile) {
 	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')
 		$logfiledata=gzfile($logfile);
@@ -34,8 +34,7 @@ function backwpup_get_logfile_ajax() {
 
     $log='';
     if (is_file(trim($_POST['logfile']))) {
-        $backupdata=get_option('backwpup_job_working');
-        if (!empty($backupdata)) {
+        if (get_transient('backwpup_job_working')) {
             $warnings=$backupdata['WORKING']['WARNING'];
             $errors=$backupdata['WORKING']['ERROR'];
             $stepspersent=$backupdata['WORKING']['STEPSPERSENT'];

@@ -21,7 +21,7 @@ if (!defined('E_USER_DEPRECATED'))
 //disable user abort
 ignore_user_abort(true);
 //make needed vars global
-global $wp_version,$backwpupjobrun;
+global $backwpupjobrun;
 //set vars... from get
 if (!isset($jobstarttype) and empty($jobstarttype) and in_array($_REQUEST['starttype'],array('restarttime','restart','runnow')))
 	$jobstarttype=trim($_REQUEST['starttype']);
@@ -50,15 +50,15 @@ if (!defined('ABSPATH')) {
 require_once(BACKWPUP_JOBRUN_FOLDER.'/job_functions.php');
 
 if ($jobstarttype=='runnow' or $jobstarttype=='cronrun') {
-	if (get_option('backwpup_job_working'))
+	if (get_transient('backwpup_job_working'))
 		die('A job already running!');
 	if (isset($jobstartid) and is_integer($jobstartid)) {
 		require_once(BACKWPUP_JOBRUN_FOLDER.'/job_start.php');
-		backwpup_job_start($jobstartid);
+		backwpup_job_start($jobstartid,$jobstarttype);
 	} else
 		die('Job check');
 } elseif ($jobstarttype=='restart' or $jobstarttype=='restarttime') {
-	if (!$backwpupjobrun=get_option('backwpup_job_working'))
+	if (false === ($backwpupjobrun=get_transient('backwpup_job_working')))
 		die('No working data');
 } else {
 	die('Starttype check');
@@ -83,8 +83,8 @@ elseif ($jobstarttype=='runnow') { //got to jobrun page
 }
 //check existing Logfile
 if (!file_exists($backwpupjobrun['LOGFILE'])) {
-	delete_option('backwpup_job_working');
-	delete_option('backwpup_job_filelist');
+	delete_transient('backwpup_job_working');
+	delete_transient('backwpup_job_filelist');
 	die('No logfile found!');
 }
 
@@ -124,41 +124,6 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 }
 // Working step by step
 foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
-	//display some info massages bevor fist step
-	if (count($backwpupjobrun['WORKING']['STEPSDONE'])==0) {
-		trigger_error(sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),BACKWPUP_VERSION,date_i18n('Y'),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$wp_version),E_USER_NOTICE);
-		trigger_error(__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup'),E_USER_NOTICE);
-		trigger_error(__('[INFO]: BackWPup job:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['jobid'].'. '.$backwpupjobrun['STATIC']['JOB']['name'].'; '.$backwpupjobrun['STATIC']['JOB']['type'],E_USER_NOTICE);
-		if ($backwpupjobrun['STATIC']['JOB']['activated'])
-			trigger_error(__('[INFO]: BackWPup cron:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['cron'].'; '.date_i18n('D, j M Y @ H:i',$backwpupjobrun['STATIC']['JOB']['cronnextrun']),E_USER_NOTICE);
-		if ($jobstarttype=='cronrun')
-			trigger_error(__('[INFO]: BackWPup job strated by cron','backwpup'),E_USER_NOTICE);
-		elseif ($jobstarttype=='runnow')
-			trigger_error(__('[INFO]: BackWPup job strated manualy','backwpup'),E_USER_NOTICE);
-		trigger_error(__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS,E_USER_NOTICE);
-		if ((bool)ini_get('safe_mode'))
-			trigger_error(sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time')),E_USER_NOTICE);
-		trigger_error(__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0),E_USER_NOTICE);
-		if (function_exists('curl_init')) {
-			$curlversion=curl_version();
-			trigger_error(__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version'],E_USER_NOTICE);
-		}
-		trigger_error(__('[INFO]: Temp folder is:','backwpup').' '.$backwpupjobrun['STATIC']['TEMPDIR'],E_USER_NOTICE);
-		if(!empty($backwpupjobrun['STATIC']['backupfile']))
-			trigger_error(__('[INFO]: Backup file is:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],E_USER_NOTICE);
-		//test for destinations
-		if (in_array('DB',$backwpupjobrun['STATIC']['TODO']) or in_array('WPEXP',$backwpupjobrun['STATIC']['TODO']) or in_array('FILE',$backwpupjobrun['STATIC']['TODO'])) {
-			$desttest=false;
-			foreach($backwpupjobrun['WORKING']['STEPS'] as $deststeptest) {
-				if (substr($deststeptest,0,5)=='DEST_') {
-					$desttest=true;
-					break;
-				}
-			}
-			if (!$desttest)
-				trigger_error(__('No destination defineid for backup!!! Please correct job settings','backwpup'),E_USER_ERROR);
-		}
-	}
 	//Set next step
 	if (!isset($backwpupjobrun['WORKING'][$step]['STEP_TRY']) or empty($backwpupjobrun['WORKING'][$step]['STEP_TRY'])) {
 		$backwpupjobrun['WORKING'][$step]['STEP_TRY']=0;

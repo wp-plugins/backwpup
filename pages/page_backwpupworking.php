@@ -1,8 +1,6 @@
 <?PHP
 if (!defined('ABSPATH'))
 	die();
-
-
 ?>
 <div class="wrap">
 <?php screen_icon(); ?>
@@ -11,8 +9,7 @@ if (!defined('ABSPATH'))
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif;
-    $backupdata=get_option('backwpup_job_working');
-	if (!empty($backupdata)) {
+	if ($backupdata=get_transient('backwpup_job_working')) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile($backupdata['LOGFILE']);
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".$backupdata['LOGFILE']."\">";

@@ -29,7 +29,7 @@ function backwpup_job_db_dump() {
 	$backwpupjobrun['STATIC']['JOB']['dbdumpfile'].='.sql';
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz' or $backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
 		$backwpupjobrun['STATIC']['JOB']['dbdumpfile'].='.'.$backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression'];
-
+	
 	//Set maintenance
 	backwpup_job_maintenance_mode(true);
 

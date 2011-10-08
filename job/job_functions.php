@@ -4,10 +4,11 @@ function backwpup_job_add_file($files) {
 	global $backwpupjobrun;
 	if (empty($files))
 		return;
-	$filelist=get_option('backwpup_job_filelist');
+	if (false===($filelist=get_transient('backwpup_job_filelist')))
+		$filelist=array();
 	foreach($files as $file)
 		$filelist[]=$file;
-	update_option('backwpup_job_filelist',$filelist);
+	set_transient( 'backwpup_job_filelist', $filelist, BACKWPUP_JOB_TRANSIENT_LIVETIME );
 }
 
 function backwpup_job_inbytes($value) {
@@ -82,8 +83,7 @@ function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload
 
 function backwpup_job_update_working_data($mustwrite=false) {
 	global $backwpupjobrun,$wpdb;
-    $backupdata=get_option('backwpup_job_working');
-	if (empty($backupdata))
+	if (false===get_transient('backwpup_job_working'))
 		backwpup_job_job_end();
 	if ($mustwrite or empty($backwpupjobrun['runmicrotime']) or $backwpupjobrun['runmicrotime']<(microtime()-1000)) { //only update all 1 sec.
 		if(!mysql_ping($wpdb->dbh)) { //check MySQL connection
@@ -100,7 +100,7 @@ function backwpup_job_update_working_data($mustwrite=false) {
 			$backwpupjobrun['WORKING']['STEPSPERSENT']=1;
 		$backwpupjobrun['WORKING']['TIMESTAMP']=current_time('timestamp');
 		@set_time_limit(0);
-		update_option('backwpup_job_working',$backwpupjobrun);
+		set_transient( 'backwpup_job_working', $backwpupjobrun, BACKWPUP_JOB_TRANSIENT_LIVETIME );
 	}
 	return true;
 }
@@ -228,16 +228,12 @@ function backwpup_job_job_end() {
 		$filesize=0;
 
 	//clean up temp
-	if ($dir = opendir($backwpupjobrun['STATIC']['TEMPDIR'])) {
-		while (($file = readdir($dir)) !== false) {
-			if (is_readable($backwpupjobrun['STATIC']['TEMPDIR'].$file) and is_file($backwpupjobrun['STATIC']['TEMPDIR'].$file)) {
-				if ($file!='.' and $file!='..') {
-					unlink($backwpupjobrun['STATIC']['TEMPDIR'].$file);
-				}
-			}
-		}
-		closedir($dir);
-	}
+	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile']))
+		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile']);
+	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']))	
+		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']);
+	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']))	
+		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']);
 
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['lastrun']=$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime'];
@@ -329,8 +325,8 @@ function backwpup_job_job_end() {
 
 	$backwpupjobrun['WORKING']['STEPDONE']=1;
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='JOB_END'; //set done
-	delete_option('backwpup_job_working');
-	delete_option('backwpup_job_filelist');
+	delete_transient('backwpup_job_working');
+	delete_transient('backwpup_job_filelist');
 	die();
 }
 
@@ -381,8 +377,7 @@ function backwpup_job_shutdown($signal='') {
 		backwpup_job_job_end();
 		exit;
 	} 
-	$backupdata=get_option('backwpup_job_working');
-	if (empty($backupdata))
+	if (false===get_transient('backwpup_job_working'))
 		exit;
 	//set PID to 0
 	$backwpupjobrun['WORKING']['PID']=0;

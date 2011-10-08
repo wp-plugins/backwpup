@@ -61,7 +61,7 @@ function backwpup_job_file_list() {
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='FILE_LIST'; //set done
 	unset($tempfilelist);
 
-	$filelist=get_option('backwpup_job_filelist'); //get files
+	$filelist=get_transient('backwpup_job_filelist'); //get files
 	if (empty($filelist)) {
 		trigger_error(__('No files to backup','backwpup'),E_USER_ERROR);
 	} else {

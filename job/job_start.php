@@ -1,43 +1,10 @@
 <?PHP
-function backwpup_job_start($jobid='') {
+function backwpup_job_start($jobid,$jobstarttype) {
 	global $wpdb,$wp_version,$backwpupjobrun;
-
 	//clean var
 	$backwpupjobrun = array();
-	//get and create temp dir
+	//get temp dir
 	$backwpupjobrun['STATIC']['TEMPDIR']=backwpup_get_temp();
-	if (!is_dir($backwpupjobrun['STATIC']['TEMPDIR'])) {
-		if (!mkdir(rtrim($backwpupjobrun['STATIC']['TEMPDIR'],'/'),0777,true)) {
-			printf(__('Can not create temp folder: %s','backwpup'),$backwpupjobrun['STATIC']['TEMPDIR']);
-			return false;
-		}
-	}
-	if (!is_writable($backwpupjobrun['STATIC']['TEMPDIR'])) {
-		_e("Temp dir not writeable","backwpup");
-		return false;
-	} else {  //clean up old temp files
-		if ($dir = opendir($backwpupjobrun['STATIC']['TEMPDIR'])) {
-			while (($file = readdir($dir)) !== false) {
-				if (is_readable($backwpupjobrun['STATIC']['TEMPDIR'].$file) and is_file($backwpupjobrun['STATIC']['TEMPDIR'].$file)) {
-					if ($file!='.' and $file!='..') {
-						unlink($backwpupjobrun['STATIC']['TEMPDIR'].$file);
-					}
-				}
-			}
-			closedir($dir);
-		}
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'.htaccess'))
-				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'index.html'))
-				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'index.html',"\n");
-			if (!is_file($backwpupjobrun['STATIC']['TEMPDIR'].'index.php'))
-				file_put_contents($backwpupjobrun['STATIC']['TEMPDIR'].'index.php',"\n");
-		}
-	}
-
 	//Set config data
 	$backwpupjobrun['STATIC']['CFG']=get_option('backwpup');
 	//check exists gzip functions
@@ -49,49 +16,8 @@ function backwpup_job_start($jobid='') {
 	$backwpupjobrun['STATIC']['JOB']=backwpup_get_job_vars($jobid);
 	//Setup Logs dir
 	$backwpupjobrun['STATIC']['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpupjobrun['STATIC']['CFG']['dirlogs']),'/').'/';
-	if (!is_dir($backwpupjobrun['STATIC']['CFG']['dirlogs'])) {
-		if (!mkdir(rtrim($backwpupjobrun['STATIC']['CFG']['dirlogs'],'/'),0777,true)) {
-			printf(__('Can not create folder for log files: %s','backwpup'),$backwpupjobrun['STATIC']['CFG']['dirlogs']);
-			return false;
-		}
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'.htaccess'))
-				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.html'))
-				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.html',"\n");
-			if (!is_file($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.php'))
-				file_put_contents($backwpupjobrun['STATIC']['CFG']['dirlogs'].'index.php',"\n");
-		}
-	}
-	if (!is_writable($backwpupjobrun['STATIC']['CFG']['dirlogs'])) {
-		_e("Log folder not writeable!","backwpup");
-		return false;
-	}
 	//set Logfile
 	$backwpupjobrun['LOGFILE']=$backwpupjobrun['STATIC']['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
-	//create log file
-	$fd=fopen($backwpupjobrun['LOGFILE'],'w');
-	//Create log file header
-	fwrite($fd,"<html>\n<head>\n");
-	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
-	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
-	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
-	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpupjobrun['STATIC']['JOB']['jobid']."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$backwpupjobrun['STATIC']['JOB']['name']."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$backwpupjobrun['STATIC']['JOB']['type']."\" />\n");
-	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
-	fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
-	fwrite($fd,"<style type=\"text/css\">\n");
-	fwrite($fd,".timestamp {background-color:grey;}\n");
-	fwrite($fd,".warning {background-color:yellow;}\n");
-	fwrite($fd,".error {background-color:red;}\n");
-	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
-	fwrite($fd,"</style>\n");
-	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
-	fclose($fd);
 	//Set job start settings
 	$jobs=get_option('backwpup_jobs');
 	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime']=current_time('timestamp'); //set start time for job
@@ -112,6 +38,7 @@ function backwpup_job_start($jobid='') {
 		//set Backup Dir if not set
 		if (empty($backwpupjobrun['STATIC']['JOB']['backupdir']) or $backwpupjobrun['STATIC']['JOB']['backupdir']=='/') {
 			$backwpupjobrun['STATIC']['JOB']['backupdir']=$backwpupjobrun['STATIC']['TEMPDIR'];
+			$backwpupjobrun['WORKING']['TEMPFILES'][]=$backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile'];
 		} else {
 			//clear path
 			$backwpupjobrun['STATIC']['JOB']['backupdir']=rtrim(str_replace('\\','/',$backwpupjobrun['STATIC']['JOB']['backupdir']),'/').'/';
@@ -189,8 +116,62 @@ function backwpup_job_start($jobid='') {
 	//mark all as not done
 	foreach($backwpupjobrun['WORKING']['STEPS'] as $step)
 		$backwpupjobrun['WORKING'][$step]['DONE']=false;
-	//write working file
-	update_option('backwpup_job_working',$backwpupjobrun);
-
+	//write working date
+	set_transient( 'backwpup_job_working', $backwpupjobrun, BACKWPUP_JOB_TRANSIENT_LIVETIME );
+	//create log file
+	$fd=fopen($backwpupjobrun['LOGFILE'],'w');
+	fwrite($fd,"<html>\n<head>\n");
+	fwrite($fd,"<meta name=\"backwpup_version\" content=\"".BACKWPUP_VERSION."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_logtime\" content=\"".current_time('timestamp')."\" />\n");
+	fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"0\" />",100)."\n");
+	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
+	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpupjobrun['STATIC']['JOB']['jobid']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$backwpupjobrun['STATIC']['JOB']['name']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$backwpupjobrun['STATIC']['JOB']['type']."\" />\n");
+	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
+	fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
+	fwrite($fd,"<style type=\"text/css\">\n");
+	fwrite($fd,".timestamp {background-color:grey;}\n");
+	fwrite($fd,".warning {background-color:yellow;}\n");
+	fwrite($fd,".error {background-color:red;}\n");
+	fwrite($fd,"#body {font-family:monospace;font-size:12px;white-space:nowrap;}\n");
+	fwrite($fd,"</style>\n");
+	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
+	fwrite($fd,sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),BACKWPUP_VERSION,date_i18n('Y'),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$wp_version)."<br />\n");
+	fwrite($fd,__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup')."<br />\n");
+	fwrite($fd,__('[INFO]: BackWPup job:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['jobid'].'. '.$backwpupjobrun['STATIC']['JOB']['name'].'; '.$backwpupjobrun['STATIC']['JOB']['type']."<br />\n");
+	if ($backwpupjobrun['STATIC']['JOB']['activated'])
+		fwrite($fd,__('[INFO]: BackWPup cron:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['cron'].'; '.date_i18n('D, j M Y @ H:i',$backwpupjobrun['STATIC']['JOB']['cronnextrun'])."<br />\n");
+	if ($jobstarttype=='cronrun')
+		fwrite($fd,__('[INFO]: BackWPup job strated by cron','backwpup')."<br />\n");
+	elseif ($jobstarttype=='runnow')
+		fwrite($fd,__('[INFO]: BackWPup job strated manualy','backwpup')."<br />\n");
+	fwrite($fd,__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS."<br />\n");
+	if ((bool)ini_get('safe_mode'))
+		fwrite($fd,sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time'))."<br />\n");
+	fwrite($fd,__('[INFO]: MySQL ver.:','backwpup').' '.mysql_result(mysql_query("SELECT VERSION() AS version"),0)."<br />\n");
+	if (function_exists('curl_init')) {
+		$curlversion=curl_version();
+		fwrite($fd,__('[INFO]: curl ver.:','backwpup').' '.$curlversion['version'].'; '.$curlversion['ssl_version']."<br />\n");
+	}
+	fwrite($fd,__('[INFO]: Temp folder is:','backwpup').' '.$backwpupjobrun['STATIC']['TEMPDIR']."<br />\n");
+	fwrite($fd,__('[INFO]: Logfile folder is:','backwpup').' '.$backwpupjobrun['STATIC']['CFG']['dirlogs']."<br />\n");
+	if(!empty($backwpupjobrun['STATIC']['backupfile']))
+		fwrite($fd,__('[INFO]: Backup file is:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']."<br />\n");
+	//test for destinations
+	if (in_array('DB',$backwpupjobrun['STATIC']['TODO']) or in_array('WPEXP',$backwpupjobrun['STATIC']['TODO']) or in_array('FILE',$backwpupjobrun['STATIC']['TODO'])) {
+		$desttest=false;
+		foreach($backwpupjobrun['WORKING']['STEPS'] as $deststeptest) {
+			if (substr($deststeptest,0,5)=='DEST_') {
+				$desttest=true;
+				break;
+			}
+		}
+		if (!$desttest) {
+			fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">".__('[ERROR]','backwpup').__('No destination defineid for backup!!! Please correct job settings','backwpup')."</span><br />\n");
+		    $backwpupjobrun['WORKING']['ERROR']=1;
+		}
+	}
+	fclose($fd);
 }
 ?>

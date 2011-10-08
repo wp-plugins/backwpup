@@ -40,7 +40,7 @@ define('BACKWPUP_USER_CAPABILITY', 'export');
 //Set useable destinations
 if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
-		define('BACKWPUP_DESTS', 'FTP,DROPBOX,MSAZURE');
+		define('BACKWPUP_DESTS', 'FTP,MSAZURE');
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
@@ -58,54 +58,54 @@ define('BACKWPUP_API_URL', 'https://api.backwpup.com');
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
     define('AWS_CERTIFICATE_AUTHORITY', true);
+//live time for job runn data
+if (!defined('BACKWPUP_JOB_TRANSIENT_LIVETIME'))
+    define('BACKWPUP_JOB_TRANSIENT_LIVETIME', 60*60*2);
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
 require_once(dirname(__FILE__).'/backwpup-functions.php');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
-//Admin message
-if (is_multisite())
-	add_action('network_admin_notices', 'backwpup_admin_notice');
-else
-	add_action('admin_notices', 'backwpup_admin_notice');
 //add cron intervals
 add_filter('cron_schedules', 'backwpup_intervals');
 //call activation settings
 backwpup_plugin_activate();
-//Check if plugin can activated
-if (backwpup_env_checks()) {
-	if (is_multisite()) {  //For multisite
-		//add Menu
-		add_action('network_admin_menu','backwpup_admin_menu');
-		//add Dashboard widget
-		add_action('wp_network_dashboard_setup', 'backwpup_add_dashboard');
-		if (is_main_site())
-			add_action('plugins_loaded','backwpup_plugin_activate');
-		//Additional links on the plugin page
-		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
-	} else {
-		//add Menu
-		add_action('admin_menu', 'backwpup_admin_menu',97);
-		//add Dashboard widget
-		add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
-		//Additional links on the plugin page
-		add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
-		add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
-	}
-	//Add filter for Plugin Updates from backwpup.com
-	add_filter('pre_set_site_transient_update_plugins', 'backwpup_api_plugin_update_check');
-	//Add filter to take over the Plugin info screen
-	add_filter('plugins_api', 'backwpup_api_plugin_infoscreen', 10, 3);
-	//Actions for Cron job
-	add_action('backwpup_cron', 'backwpup_cron',1);
-	//add Admin Bar menu
-	add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
-	//load ajax functions
-	backwpup_load_ajax();
-	//Disabele WP_Corn
-	$cfg=get_option('backwpup');
-	if (!empty($cfg['disablewpcron']))
-		define('DISABLE_WP_CRON',true);
+//For multisite or singel Blog
+if (is_multisite()) {
+	//Admin message
+	add_action('network_admin_notices', 'backwpup_admin_notice');
+	//add Menu
+	add_action('network_admin_menu','backwpup_admin_menu');
+	//add Dashboard widget
+	add_action('wp_network_dashboard_setup', 'backwpup_add_dashboard');
+	if (is_main_site())
+		add_action('plugins_loaded','backwpup_plugin_activate');
+	//Additional links on the plugin page
+	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
+} else {
+	//Admin message
+	add_action('admin_notices', 'backwpup_admin_notice');
+	//add Menu
+	add_action('admin_menu', 'backwpup_admin_menu',97);
+	//add Dashboard widget
+	add_action('wp_dashboard_setup', 'backwpup_add_dashboard');
+	//Additional links on the plugin page
+	add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
+	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 }
+//Add filter for Plugin Updates from backwpup.com
+add_filter('pre_set_site_transient_update_plugins', 'backwpup_api_plugin_update_check');
+//Add filter to take over the Plugin info screen
+add_filter('plugins_api', 'backwpup_api_plugin_infoscreen', 10, 3);
+//Actions for Cron job
+add_action('backwpup_cron', 'backwpup_cron',1);
+//add Admin Bar menu
+add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
+//load ajax functions
+backwpup_load_ajax();
+//Disabele WP_Corn
+$cfg=get_option('backwpup');
+if (!empty($cfg['disablewpcron']))
+	define('DISABLE_WP_CRON',true);
 ?>

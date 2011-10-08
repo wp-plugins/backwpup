@@ -177,7 +177,7 @@ function backwpup_get_temp() {
 		$tempfolder=WP_CONTENT_DIR.'/';
 	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder))
 		$tempfolder=get_temp_dir();
-	return trailingslashit(str_replace('\\','/',realpath($tempfolder))).'backwpup_'.substr(md5(ABSPATH),6,20).'/';
+	return trailingslashit(str_replace('\\','/',realpath($tempfolder)));
 }
 //checks the dir is in openbasedir
 function backwpup_check_open_basedir($dir) {
@@ -297,8 +297,7 @@ function backwpup_intervals($schedules) {
 
 //cron work
 function backwpup_cron() {
-	$backupdata=get_option('backwpup_job_working');
-	if (!empty($backupdata)) {
+	if ($backupdata=get_transient('backwpup_job_working')) {
 		$revtime=current_time('timestamp')-600; //10 min no progress.
 		$httpauthheader='';
 		if (!empty($backupdata['STATIC']['CFG']['httpauthuser']) and !empty($backupdata['STATIC']['CFG']['httpauthpassword']))
@@ -464,7 +463,6 @@ function backwpup_dashboard_activejobs() {
 		echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
 		return;
 	}
-	$backupdata=get_option('backwpup_job_working');
 	$tmp = Array();
 	foreach($jobs as &$ma)
 		$tmp[] = &$ma["cronnextrun"];
@@ -472,7 +470,7 @@ function backwpup_dashboard_activejobs() {
 	$count=0;
 	echo '<ul>';
 	foreach ($jobs as $jobid => $jobvalue) {
-		if (!empty($backupdata['JOBID']) and $backupdata['JOBID']==$jobvalue['jobid']) {
+		if ($backupdata=get_transient('backwpup_job_working') and $backupdata['STATIC']['JOB']['jobid']==$jobvalue['jobid']) {
 			$runtime=current_time('timestamp')-$jobvalue['starttime'];
 			echo '<li><span style="font-weight:bold;">'.$jobvalue['jobid'].'. '.$jobvalue['name'].': </span>';
 			printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
@@ -509,13 +507,11 @@ function backwpup_add_adminbar() {
 		return;
     /* Add the main siteadmin menu item */
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
-	$backupdata=get_option('backwpup_job_working');
-    if (!empty($backupdata))
+    if ($backupdata=get_transient('backwpup_job_working'))
 		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
     $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
 	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
 function backwpup_get_upload_dir() {
@@ -704,48 +700,6 @@ function backwpup_admin_url($url) {
 	} else {
 		return admin_url($url);
 	}
-}
-
-function backwpup_env_checks() {
-	global $wp_version,$backwpup_admin_message;
-	$message='';
-	$checks=true;
-	$cfg=get_option('backwpup');
-	if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
-		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
-		$checks=false;
-	}
-	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
-		$message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
-		$checks=false;
-	}
-	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);
-	}
-	if (!is_dir($cfg['dirlogs'])) { // check logs folder
-		$message.=sprintf(__("- Log folder '%s' does not exists!",'backwpup'),$cfg['dirlogs']).'<br />';
-	}
-	if (!is_writable($cfg['dirlogs'])) { // check logs folder
-		$message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$cfg['dirlogs']).'<br />';
-	}
-	if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
-		$message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$cfg['dirlogs']).'<br />';
-	}
-	if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') { // check logs folder
-		$message.=sprintf(__("- WP_CONTENT_URL '%s' must set as a full URL!",'backwpup'),WP_CONTENT_URL).'<br />';
-	}
-	if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') { // check logs folder
-		$message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
-	}
-	if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
-		if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
-			$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
-		}
-	}
-	//put massage if one
-	if (!empty($message))
-		$backwpup_admin_message = '<div id="message" class="error fade"><strong>BackWPup:</strong><br />'.$message.'</div>';
-	return $checks;
 }
 
 function backwpup_admin_notice() {
