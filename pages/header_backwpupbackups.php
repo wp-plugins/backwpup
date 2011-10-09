@@ -66,14 +66,15 @@ if (!empty($doaction)) {
 					}
 				}
 			} elseif ($dest=='DROPBOX') {
-				if (!class_exists('Dropbox_API'))
-					require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+				require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 				if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 					try {
-						$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-						$dropbox = new Dropbox_API($oauth,$jobvalue['droperoot']);
-						$oauth->setToken($jobvalue['dropetoken'],$jobvalue['dropesecret']);
-						$dropbox->delete($backupfile);
+						if ($jobvalue['droperoot']=='sandbox')
+							$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+						else
+							$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+						$dropbox->fileopsDelete($backupfile);
 						unset($dropbox);
 					} catch (Exception $e) {
 						$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
@@ -197,25 +198,27 @@ if (!empty($doaction)) {
 		break;
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');
-		if (!class_exists('Dropbox_API'))
-			require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
-			$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox = new Dropbox_API($oauth,$jobs[$jobid]['droperoot']);
-			$oauth->setToken($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
+			if ($jobs[$jobid]['droperoot']=='sandbox')
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			else
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
+			$filemeta=$dropbox->metadata($_GET['file'],false,1);
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-			//header("Content-Type: ".$dropfile['content_type']);
+			header("Content-Type: ".$filemeta['mime_type']);
 			header("Content-Type: application/force-download");
 			header("Content-Type: application/octet-stream");
 			header("Content-Type: application/download");
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
-			//header("Content-Length: ".$dropfile['bytes']);
-			echo $dropbox->getFile($_GET['file']);
+			header("Content-Length: ".$filemeta['bytes']);
+			$dropbox->download($_GET['file'],true);
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());

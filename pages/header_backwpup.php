@@ -85,12 +85,13 @@ if (!empty($doaction)) {
 			break;
         delete_transient('backwpup_job_working');
         delete_transient('backwpup_job_filelist');
+		delete_transient('backwpup_job_folderlist');
 		//clean up temp
-		if (file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
+		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
 			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']);
-		if (file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
+		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
 			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']);
-		if (file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']))	
+		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']))	
 			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']);
 		if (!empty($backupdata['LOGFILE'])) {
 			file_put_contents($backupdata['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);

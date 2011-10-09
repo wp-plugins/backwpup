@@ -356,7 +356,7 @@ function backwpup_backup_types($type='',$echo=false) {
 			}
 		}
 	} else {
-		$typename=array('WPEXP','DB','FILE','OPTIMIZE','CHECK');
+		$typename=array('DB','WPEXP','FILE','OPTIMIZE','CHECK');
 	}
 
 	if ($echo)
@@ -797,8 +797,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 		$jobsettings['dbshortinsert']=false;
 
-
-	if (!isset($jobsettings['dbdumpfile']) or !empty($jobsettings['dbdumpfile']) or !is_string($jobsettings['dbdumpfile']))
+	if (!isset($jobsettings['dbdumpfile']) or empty($jobsettings['dbdumpfile']) or !is_string($jobsettings['dbdumpfile']))
 		$jobsettings['dbdumpfile']=DB_NAME;
 
 	if (!isset($jobsettings['dbdumpfilecompression']) or ($jobsettings['dbdumpfilecompression']!='gz' and $jobsettings['dbdumpfilecompression']!='bz2' and $jobsettings['dbdumpfilecompression']!=''))
@@ -807,6 +806,12 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['maintenance']) or !is_bool($jobsettings['maintenance']))
 		$jobsettings['maintenance']=false;
 
+	if (!isset($jobsettings['wpexportfile']) or empty($jobsettings['wpexportfile']) or !is_string($jobsettings['wpexportfile']))
+		$jobsettings['wpexportfile']=sanitize_key(get_bloginfo('name')).'.wordpress.%Y-%m-%d';
+
+	if (!isset($jobsettings['wpexportfilecompression']) or ($jobsettings['wpexportfilecompression']!='gz' and $jobsettings['wpexportfilecompression']!='bz2' and $jobsettings['dbdumpfilecompression']!=''))
+		$jobsettings['wpexportfilecompression']='';		
+		
 	if (!isset($jobsettings['fileexclude']) or !is_string($jobsettings['fileexclude']))
 		$jobsettings['fileexclude']='';
 	$fileexclude=explode(',',$jobsettings['fileexclude']);
@@ -889,6 +894,9 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	}
 	sort($jobsettings['backupuploadsexcludedirs']);
 
+	if ($jobsettings['backuptype']!='archive' and $jobsettings['backuptype']!='sync')
+		$jobsettings['backuptype']='archive';
+	
 	$fileformarts=array('.zip','.tar.gz','.tar.bz2','.tar');
 	if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
 		$jobsettings['fileformart']='.zip';

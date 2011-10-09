@@ -54,7 +54,10 @@ function backwpup_job_file_list() {
 		$outfile=str_replace($removepath,'',$tempfilelist[$i]);
 		if (substr($outfile,0,1)=='/') //remove first /
 			$outfile=substr($outfile,1);
-		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
+		$folder=trailingslashit(dirname($outfile));
+		if ($folder='.')
+			$folder='/';
+		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'],'FOLDER'=>$folder);
 	}
 	backwpup_job_add_file($filelist); //add files to list
 	$backwpupjobrun['WORKING']['STEPDONE']=2;
@@ -77,8 +80,9 @@ function _backwpup_job_file_list( $folder = '', $levels = 100, $excludedirs=arra
 		return false;
 	if ($levels == 100 or $levels == 95)
 		backwpup_job_update_working_data();
-	$folder=rtrim($folder,'/').'/';
+	$folder=trailingslashit($folder);
 	if ( $dir = @opendir( $folder ) ) {
+		backwpup_job_add_folder(str_replace(trailingslashit(str_replace('\\','/',ABSPATH)),'',$folder));
 		while (($file = readdir( $dir ) ) !== false ) {
 			if ( in_array($file, array('.', '..','.svn') ) )
 				continue;
@@ -94,7 +98,7 @@ function _backwpup_job_file_list( $folder = '', $levels = 100, $excludedirs=arra
 			} elseif ( is_link($folder.$file) ) {
 				trigger_error(sprintf(__('Link "%s" not followed','backwpup'),$folder.$file),E_USER_WARNING);
 			} elseif ( is_dir( $folder.$file )) {
-				_backwpup_job_file_list( rtrim($folder.$file,'/'), $levels - 1,$excludedirs);
+				_backwpup_job_file_list( trailingslashit($folder.$file), $levels - 1,$excludedirs);
 			} elseif ( is_file( $folder.$file ) or is_executable($folder.$file)) { //add file to filelist
 				$tempfilelist[]=$folder.$file;
 			} else {

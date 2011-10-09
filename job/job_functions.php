@@ -1,7 +1,6 @@
 <?PHP
 // add to file list
 function backwpup_job_add_file($files) {
-	global $backwpupjobrun;
 	if (empty($files))
 		return;
 	if (false===($filelist=get_transient('backwpup_job_filelist')))
@@ -9,6 +8,15 @@ function backwpup_job_add_file($files) {
 	foreach($files as $file)
 		$filelist[]=$file;
 	set_transient( 'backwpup_job_filelist', $filelist, BACKWPUP_JOB_TRANSIENT_LIVETIME );
+}
+
+function backwpup_job_add_folder($folder) {
+	if (empty($folder))
+		return;
+	if (false===($folderlist=get_transient('backwpup_job_folderlist')))
+		$folderlist=array();
+	$folderlist[]=$folder;
+	set_transient( 'backwpup_job_folderlist', $folderlist, BACKWPUP_JOB_TRANSIENT_LIVETIME );
 }
 
 function backwpup_job_inbytes($value) {
@@ -78,7 +86,7 @@ function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload
 	if ($backwpupjobrun['WORKING']['STEPTODO']>10)
 		$backwpupjobrun['WORKING']['STEPDONE']=$uploaded;
 	backwpup_job_update_working_data();
-	return(0);
+	@set_time_limit(10);
 }
 
 function backwpup_job_update_working_data($mustwrite=false) {
@@ -228,11 +236,11 @@ function backwpup_job_job_end() {
 		$filesize=0;
 
 	//clean up temp
-	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile']))
+	if (!empty($backwpupjobrun['STATIC']['backupfile']) and file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile']))
 		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['backupfile']);
-	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']))	
+	if (!empty($backwpupjobrun['STATIC']['JOB']['dbdumpfile']) and file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']))	
 		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']);
-	if (file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']))	
+	if (!empty($backwpupjobrun['STATIC']['JOB']['wpexportfile']) and file_exists($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']))	
 		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']);
 
 	$jobs=get_option('backwpup_jobs');
@@ -327,6 +335,7 @@ function backwpup_job_job_end() {
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='JOB_END'; //set done
 	delete_transient('backwpup_job_working');
 	delete_transient('backwpup_job_filelist');
+	delete_transient('backwpup_job_folderlist');
 	die();
 }
 

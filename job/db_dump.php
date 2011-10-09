@@ -50,7 +50,7 @@ function backwpup_job_db_dump() {
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
 		$file = gzopen($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'], 'wb9');
 	elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
-		$file = bzopen($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'], 'wb9');
+		$file = bzopen($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'], 'w');
 	else
 		$file = fopen($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'], 'wb');
 
@@ -130,7 +130,8 @@ function backwpup_job_db_dump() {
 		$filestat=stat($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']);
 		trigger_error(sprintf(__('Add database dump "%1$s" with %2$s to backup file list','backwpup'),$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],backwpup_formatBytes($filestat['size'])),E_USER_NOTICE);
 		$backwpupjobrun['WORKING']['ALLFILESIZE']+=$filestat['size'];
-		backwpup_job_add_file(array(array('FILE'=>$backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'OUTFILE'=>$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'])));
+		backwpup_job_add_file(array(array('FILE'=>$backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'OUTFILE'=>$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'],'FOLDER'=>'/')));
+		backwpup_job_add_folder('/');
 	}
 	//Back from maintenance
 	backwpup_job_maintenance_mode(false);

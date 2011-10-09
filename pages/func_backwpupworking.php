@@ -34,7 +34,7 @@ function backwpup_get_logfile_ajax() {
 
     $log='';
     if (is_file(trim($_POST['logfile']))) {
-        if (get_transient('backwpup_job_working')) {
+        if ($backupdata=get_transient('backwpup_job_working')) {
             $warnings=$backupdata['WORKING']['WARNING'];
             $errors=$backupdata['WORKING']['ERROR'];
             $stepspersent=$backupdata['WORKING']['STEPSPERSENT'];
@@ -48,7 +48,6 @@ function backwpup_get_logfile_ajax() {
             $log.='<span id="stopworking"></span>';
         }
         $logfilarray=backwpup_read_logfile(trim($_POST['logfile']));
-        //for ($i=0;$i<count($logfilarray);$i++)
         for ($i=$_POST['logpos'];$i<count($logfilarray);$i++)
                 $log.=$logfilarray[$i];
         echo json_encode(array('logpos'=>count($logfilarray),'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));

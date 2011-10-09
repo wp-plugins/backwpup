@@ -69,11 +69,47 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						?>
 						</div>
 					</div>
-					<span id="dbshortinsert" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>><input class="checkbox" type="checkbox"<?php checked($jobvalue['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instead of full (with keys)','backwpup');?><br /></span>
+					<span id="dbdump" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>>
+					<strong><?php _e('Filename for Dump:','backwpup');?></strong> <input class="long-text" type="text" name="dbdumpfile" value="<?php echo $jobvalue['dbdumpfile'];?>"/>.sql 
+					<br /><strong><?php _e('Copmpression for dump:','backwpup');?></strong>
+					<?PHP
+					echo ' <input class="radio" type="radio"'.checked('',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="" />'.__('none','backwpup');
+					if (function_exists('gzopen'))
+						echo ' <input class="radio" type="radio"'.checked('gz',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="gz" />'.__('GZip','backwpup');
+					else
+						echo ' <input class="radio" type="radio"'.checked('gz',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="gz" disabled="disabled" />'.__('GZip','backwpup');
+					if (function_exists('bzopen'))
+						echo ' <input class="radio" type="radio"'.checked('bz2',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="bz2" />'.__('BZip2','backwpup');
+					else
+						echo ' <input class="radio" type="radio"'.checked('bz2',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="bz2" disabled="disabled" />'.__('BZip2','backwpup');	
+					?>
+					<br />
+					<input class="checkbox" type="checkbox"<?php checked($jobvalue['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instead of full (with keys)','backwpup');?><br />
+					</span>
 					<input class="checkbox" type="checkbox"<?php checked($jobvalue['maintenance'],true,true);?> name="maintenance" value="1"/> <?php _e('Set Blog Maintenance Mode on Database Operations','backwpup');?><br />
 				</div>
 			</div>
 
+			<div id="wpexport" class="stuffbox" <?PHP if (!in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+				<h3><label for="dbtables"><?PHP _e('Wordpress Export','backwpup'); ?></label></h3>
+				<div class="inside">
+					<strong><?php _e('Filename for Export:','backwpup');?></strong> <input class="long-text" type="text" name="wpexportfile" value="<?php echo $jobvalue['wpexportfile'];?>"/>.xml 
+					<br /><strong><?php _e('Copmpression for Export:','backwpup');?></strong>
+					<?PHP
+					echo ' <input class="radio" type="radio"'.checked('',$jobvalue['wpexportfilecompression'],false).' name="wpexportfilecompression" value="" />'.__('none','backwpup');
+					if (function_exists('gzopen'))
+						echo ' <input class="radio" type="radio"'.checked('gz',$jobvalue['wpexportfilecompression'],false).' name="wpexportfilecompression" value="gz" />'.__('GZip','backwpup');
+					else
+						echo ' <input class="radio" type="radio"'.checked('gz',$jobvalue['wpexportfilecompression'],false).' name="wpexportfilecompression" value="gz" disabled="disabled" />'.__('GZip','backwpup');
+					if (function_exists('bzopen'))
+						echo ' <input class="radio" type="radio"'.checked('bz2',$jobvalue['wpexportfilecompression'],false).' name="wpexportfilecompression" value="bz2" />'.__('BZip2','backwpup');
+					else
+						echo ' <input class="radio" type="radio"'.checked('bz2',$jobvalue['wpexportfilecompression'],false).' name="wpexportfilecompression" value="bz2" disabled="disabled" />'.__('BZip2','backwpup');	
+					?>
+				</div>
+			</div>
+			
+			
 			<div id="filebackup" class="stuffbox" <?PHP if (!in_array("FILE",$todo)) echo 'style="display:none;"';?>>
 				<h3><label for="backuproot"><?PHP _e('File Backup','backwpup'); ?></label></h3>
 				<div class="inside">

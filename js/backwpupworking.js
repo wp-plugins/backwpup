@@ -1,6 +1,5 @@
 jQuery(document).ready( function($) {
-	if ($('#logfile').length>0) {
-		var refreshId = setInterval(function() {
+		backwpupshowworking = function() {
 			$.ajax({
 				type: 'POST',
 				url: ajaxurl,
@@ -19,8 +18,7 @@ jQuery(document).ready( function($) {
 					}
 					if ( '' != rundata.LOG ) {
 						$('#showworking').append(rundata.LOG);
-						//$('#showworking').replaceWith('<div id=\"showworking\">'+rundata.LOG+'</div>');
-						$('#showworking').scrollTop(rundata.logpos*12);
+						$('#showworking').scrollTop(rundata.logpos*14);
 					}
 					if ( 0 < rundata.ERROR ) {
 						$('#errors').replaceWith('<span id="errors">'+rundata.ERROR+'</span>');
@@ -44,9 +42,12 @@ jQuery(document).ready( function($) {
 			});
 			$("#stopworking").each(function(index) {
 				$("#message").remove();
-				clearInterval(refreshId);
+				System.exit(0);
 			});
-		}, 1000);
+			setTimeout("backwpupshowworking()",1000);
+		};
+	if ($('#logfile').length>0) {
+		setTimeout("backwpupshowworking()",1000);
 	}
 });
 

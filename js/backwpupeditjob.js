@@ -32,9 +32,14 @@ jQuery(document).ready( function($) {
 			$('#databasejobs').hide();
 		}
 		if ( true == $('#jobtype-select-DB').prop('checked')) {
-			$('#dbshortinsert').show();
+			$('#dbdump').show();
 		} else {
-			$('#dbshortinsert').hide();
+			$('#dbdump').hide();
+		}
+		if ( true == $('#jobtype-select-WPEXP').prop('checked')) {
+			$('#wpexport').show();
+		} else {
+			$('#wpexport').hide();
 		}
 		if ( true == $('#jobtype-select-FILE').prop('checked')) {
 			$('#filebackup').show();
@@ -42,6 +47,21 @@ jQuery(document).ready( function($) {
 			$('#filebackup').hide();
 		}
 	});
+
+	$('input[name="backuptype"]').change(function() {
+		if ($(this).val()=='sync') {
+			$('.nosync').hide();
+			$('#backwpup_jobedit_destmail').hide();
+		} else {
+			$('.nosync').show();
+			$('#backwpup_jobedit_destmail').show();
+		}
+	});
+	
+	if ($('input[name="backuptype"]').val()=='sync') {
+		$('.nosync').hide();
+		$('#backwpup_jobedit_destmail').hide();	
+	}
 	
 	$('input[name="cronselect"]').change(function() {
 		if ( 'basic' == $('input[name="cronselect"]:checked').val()) {

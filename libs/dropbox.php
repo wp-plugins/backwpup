@@ -39,20 +39,16 @@ class backwpup_Dropbox {
 	protected $OAuthToken;
 	protected $ProgressFunction = false;
 	
-	public function __construct($applicationKey, $applicationSecret) {
+	public function __construct($applicationKey, $applicationSecret,$root='dropbox') {
 		$this->OAuthObject = new backwpup_OAuthSimple($applicationKey, $applicationSecret);
+		if ($root=='sandbox')
+			$this->root = 'sandbox';
+		else
+			$this->root = 'dropbox';
 	}
 
 	public function setOAuthTokens($token,$secret) {
 		$this->OAuthToken = array('oauth_token'=>$token,'oauth_secret'=> $secret);
-	}
-	
-	public function setDropbox() {
-		$this->root = 'dropbox';
-	}
-	
-	public function setSandbox() {
-		$this->root = 'sandbox';
 	}
 	
 	public function setProgressFunction($function) {
@@ -79,13 +75,16 @@ class backwpup_Dropbox {
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
 	
-	public function download($path){
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL. 'files/'.$this->root.'/'.$path;
-		return $this->request($url);
+	public function download($path,$echo=false){
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files/'.$this->root.'/'.trim($path,'/');
+		if (!$echo)
+			return $this->request($url);
+		else
+			$this->request($url,'','GET','',true);
 	}
 	
 	public function metadata($path = '', $listContents = true, $fileLimit = 10000){
-		$url = self::API_URL.self::API_VERSION_URL. 'metadata/' . $this->root . '/' . ltrim($path, '/');
+		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
 	
@@ -159,7 +158,7 @@ class backwpup_Dropbox {
 		}
 	}	
 	
-	protected function request($url, $args = null, $method = 'GET', $file = null){
+	protected function request($url, $args = null, $method = 'GET', $file = null,$echo=false){
 		$args = (is_array($args)) ? $args : array();
 		/* Sign Request*/
 		$this->OAuthObject->reset();
@@ -191,23 +190,29 @@ class backwpup_Dropbox {
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		} else {
-			curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
+			$headers[]='Authorization: '.$OAuthSign['header'];
+			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
+			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		}
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
-		curl_setopt($ch, CURLOPT_AUTOREFERER, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
 		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
 		}
-		$content = curl_exec($ch);
+		if ($echo) {
+			echo curl_exec($ch);
+			$output='';
+		} else {
+			$content = curl_exec($ch);
+			$output = json_decode($content, true);
+		}
 		$status = curl_getinfo($ch);
-		$output = json_decode($content, true);
 		
 		if (isset($output['error']) or $status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
 			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];

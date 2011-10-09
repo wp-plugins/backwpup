@@ -288,19 +288,20 @@ function backwpup_get_backup_files($jobid,$dest) {
 	}
 	//Get files/filinfo from Dropbox
 	if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
-		if (!class_exists('Dropbox_API'))
-			require_once(realpath(dirname(__FILE__).'/../libs/Dropbox/autoload.php'));
+		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 		try {
-			$oauth = new Dropbox_OAuth_Wordpress(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox = new Dropbox_API($oauth,$jobvalue['droperoot']);
-			$oauth->setToken($jobvalue['dropetoken'],$jobvalue['dropesecret']);
-			$contents = $dropbox->getMetaData($jobvalue['dropedir']);
+			if ($jobvalue['droperoot']=='sandbox')
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			else
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+			$contents = $dropbox->metadata($jobvalue['dropedir']);
 			if (is_array($contents)) {
 				foreach ($contents['contents'] as $object) {
 					if ($object['is_dir']!=true) {
 						$files[$filecounter]['JOBID']=$jobid;
 						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']="https://api-content.dropbox.com/0/files/".$jobvalue['droperoot']."/".dirname($object['path'])."/";
+						$files[$filecounter]['folder']="https://api-content.dropbox.com/1/files/".$jobvalue['droperoot']."/".dirname($object['path'])."/";
 						$files[$filecounter]['file']=$object['path'];
 						$files[$filecounter]['filename']=basename($object['path']);
 						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;

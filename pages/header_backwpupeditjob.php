@@ -11,16 +11,14 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 		$reqtoken=get_transient('backwpup_dropboxrequest');
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
-			require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			$jobs=get_option('backwpup_jobs');
 			//set boxtype and authkeys
-			if ($jobs[$jobid]['droperoot']=='sandbox') {
-				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
-				$dropbox->setSandbox();
-			} else {
+			if ($jobs[$jobid]['droperoot']=='sandbox')
+				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			else
 				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-				$dropbox->setDropbox();
-			}
+
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
 			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -111,6 +109,8 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['dbdumpfilecompression']=$_POST['dbdumpfilecompression'];
 	$jobvalues['dbshortinsert']= (isset($_POST['dbshortinsert']) && $_POST['dbshortinsert']==1) ? true : false;
 	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
+	$jobvalues['wpexportfile']=$_POST['wpexportfile'];
+	$jobvalues['wpexportfilecompression']=$_POST['wpexportfilecompression'];
 	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';
 	$jobvalues['dirinclude']=isset($_POST['dirinclude']) ? stripslashes($_POST['dirinclude']) : '';
 	$jobvalues['backuproot']= (isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false;
@@ -123,6 +123,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['backupthemesexcludedirs']=!empty($_POST['backupthemesexcludedirs']) ? (array)$_POST['backupthemesexcludedirs'] : array();
 	$jobvalues['backupuploads']= (isset($_POST['backupuploads']) && $_POST['backupuploads']==1) ? true : false;
 	$jobvalues['backupuploadsexcludedirs']=!empty($_POST['backupuploadsexcludedirs']) ? (array)$_POST['backupuploadsexcludedirs'] : array();
+	$jobvalues['backuptype']=$_POST['backuptype'];
 	$jobvalues['fileprefix']= isset($_POST['fileprefix']) ? $_POST['fileprefix'] : '';
 	$jobvalues['fileformart']=$_POST['fileformart'];
 	$jobvalues['mailefilesize']=isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0;
@@ -251,15 +252,13 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 
 	//get dropbox auth	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
-		require_once (dirname(__FILE__).'/../libs/dropbox/dropbox.php');
+		require_once (dirname(__FILE__).'/../libs/dropbox.php');
 		//set boxtype and authkeys
-		if ($jobvalues['droperoot']=='sandbox') {
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET);
-			$dropbox->setSandbox();
-		} else {
+		if ($jobvalues['droperoot']=='sandbox')
+			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+		else
 			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
-			$dropbox->setDropbox();
-		}
+
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
