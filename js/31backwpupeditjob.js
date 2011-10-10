@@ -56,7 +56,12 @@ jQuery(document).ready( function($) {
 			$('.nosync').show();
 			$('#backwpup_jobedit_destmail').show();
 		}
-	});	
+	});
+	
+	if ($('input[name="backuptype"]:checked').val()=='sync') {
+		$('.nosync').hide();
+		$('#backwpup_jobedit_destmail').hide();	
+	}
 	
 	$('input[name="cronselect"]').change(function() {
 		if ( 'basic' == $('input[name="cronselect"]:checked').val()) {

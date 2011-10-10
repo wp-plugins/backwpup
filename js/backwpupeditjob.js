@@ -58,7 +58,7 @@ jQuery(document).ready( function($) {
 		}
 	});
 	
-	if ($('input[name="backuptype"]').val()=='sync') {
+	if ($('input[name="backuptype"]:checked').val()=='sync') {
 		$('.nosync').hide();
 		$('#backwpup_jobedit_destmail').hide();	
 	}

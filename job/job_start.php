@@ -35,7 +35,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 		//make emty file list
 		$backwpupjobrun['WORKING']['ALLFILESIZE']=0;
         $backwpupjobrun['WORKING']['backupfilesize']=0;
-		if ($backwpupjobrun['STATIC']['JOB']['backupdir']=='archive') {
+		if ($backwpupjobrun['STATIC']['JOB']['backuptype']=='archive') {
 			//set Backup Dir if not set
 			if (empty($backwpupjobrun['STATIC']['JOB']['backupdir']) or $backwpupjobrun['STATIC']['JOB']['backupdir']=='/') {
 				$backwpupjobrun['STATIC']['JOB']['backupdir']=$backwpupjobrun['STATIC']['TEMPDIR'];

@@ -38,13 +38,13 @@ jQuery(document).ready( function($) {
 						$('#progresssteps').css('width', parseFloat(rundata.STEPPERSENT)+'%');
 						$('.progressbar').show();
 					}
+					$("#stopworking").each(function(index) {
+						$("#message").remove();
+						System.exit(0);
+					});
+					setTimeout("backwpupshowworking()",1000);
 				}
 			});
-			$("#stopworking").each(function(index) {
-				$("#message").remove();
-				System.exit(0);
-			});
-			setTimeout("backwpupshowworking()",1000);
 		};
 	if ($('#logfile').length>0) {
 		setTimeout("backwpupshowworking()",1000);
