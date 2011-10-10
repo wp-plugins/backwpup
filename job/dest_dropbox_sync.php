@@ -61,7 +61,7 @@ function backwpup_job_dest_dropbox_sync() {
 		}
 		//delete files not in filelist
 		if (!$found) {
-			trigger_error(sprintf(__('Delete file from DropBox: %s','backwpup'),$files['OUTFILE']),E_USER_NOTICE);
+			trigger_error(sprintf(__('Delete file from DropBox: %s','backwpup'),$path),E_USER_NOTICE);
 			try {
 				$dropbox->fileopsDelete($remotefile['FILE']);
 			} catch (Exception $e) {
