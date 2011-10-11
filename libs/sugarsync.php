@@ -21,7 +21,7 @@
  * This software is provided by the author "as is" and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the author be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
  *
  * @author		Daniel Huesken <daniel@huesken-net.de>
- * @version		1.0.0
+ * @version		1.0.1
  *
  * @copyright	Copyright (c), Daniel Huesken. All rights reserved.
  * @license		BSD License
@@ -82,9 +82,12 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_URL,self::API_URL .'/authorization');
 		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
+		curl_setopt($curl,CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($curl,CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSLVERSION,3);
 		curl_setopt($curl,CURLOPT_HEADER,true);
 		curl_setopt($curl,CURLOPT_HTTPHEADER,array('Content-Type: application/xml; charset=UTF-8'));
 		curl_setopt($curl,CURLOPT_POSTFIELDS,$auth);
@@ -147,8 +150,11 @@ class SugarSync {
 		curl_setopt($curl,CURLOPT_USERAGENT,'PHP SugarSync/'. self::VERSION);
 		if(ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) curl_setopt($curl,CURLOPT_FOLLOWLOCATION,true);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
+		curl_setopt($curl,CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($curl,CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,false);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSLVERSION,3);
 		
 		if ($method == 'POST') {	
 			$headers[]='Content-Type: application/xml; charset=UTF-8';

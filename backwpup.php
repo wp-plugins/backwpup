@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: WordPress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.1.5
+Version: 2.5-Dev
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -32,7 +32,7 @@ Domain Path: /lang/
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '2.1.5');
+define('BACKWPUP_VERSION', '2.5-Dev');
 //Set Min Wordpress Version
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.1');
 //Set User Capability
@@ -44,15 +44,6 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
-//Set Dropbox Aplication Keys for DropBox
-define('BACKWPUP_DROPBOX_APP_KEY', 'q2jbt0unkkc54u2');
-define('BACKWPUP_DROPBOX_APP_SECRET', 't5hlbxtz473hchy');
-//Set Dropbox Aplication Keys for Snadbox
-define('BACKWPUP_DROPBOX_SANDBOX_APP_KEY', 'kq53v9fb8c0fty7');
-define('BACKWPUP_DROPBOX_SANDBOX_APP_SECRET', 'c113lcp9kl8mtte');
-//Set SugarSync Aplication Keys
-define('BACKWPUP_SUGARSYNC_ACCESSKEY', 'OTcwNjc5MTI5OTQxMzY1Njc5OA');
-define('BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY', 'NzNmNDMwMDBiNTkwNDY0YzhjY2JiN2E5YWVkMjFmYmI');
 //BackWPup API url
 define('BACKWPUP_API_URL', 'https://api.backwpup.com');
 //use Cert in AWS dir

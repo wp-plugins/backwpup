@@ -242,7 +242,7 @@ function backwpup_api_plugin_update_check($checked_data) {
 		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR .'/backwpup.php'] = $response;
 	return $checked_data;
 }
-
+//infoscreen
 function backwpup_api_plugin_infoscreen($def, $action, $args) {
 	global $wp_version;
 	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASEDIR)
@@ -266,7 +266,27 @@ function backwpup_api_plugin_infoscreen($def, $action, $args) {
 	}
 	return $res;
 }
-
+//get Keys
+function backwpup_api_get_keys() {
+	global $wp_version;
+	$iv = mcrypt_create_iv (mcrypt_get_block_size (MCRYPT_TripleDES, MCRYPT_MODE_CBC), MCRYPT_DEV_RANDOM);
+	$post=array();
+	$post['URL']=get_option('siteurl');
+	if (defined('WP_SITEURL'))
+		$post['URL']=WP_SITEURL;
+	$post['WP_VER']=$wp_version;
+	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
+	$post['ACTION']='getkeys';
+	$post['KEY']=substr(NONCE_SALT,5,20);
+	$raw_response = wp_remote_post( BACKWPUP_API_URL, array( 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
+	if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
+		$response = unserialize(mcrypt_cbc(MCRYPT_TripleDES, $post['KEY'].'Gdze6Frr65bf', trim(base64_decode($raw_response['body'])), MCRYPT_DECRYPT, $iv));
+	if (!empty($response)) { // Feed the update data into WP updater
+		$cfg=array_merge(get_option('backwpup'),$response);
+		update_option('backwpup',$cfg);
+	}
+	return $checked_data;
+}
 //add edit setting to plugins page
 function backwpup_plugin_options_link($links) {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
@@ -1034,12 +1054,12 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
 		$jobsettings['dropedir']='';
-	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',str_replace(' ','_',trim($jobsettings['dropedir'])))));
+	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['dropedir']))));
 	if (substr($jobsettings['dropedir'],0,1)=='/')
 		$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);
 
-	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
-		$jobsettings['droperoot']='dropbox';
+	if ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox')
+		$jobsettings['droperoot']='sandbox';
 
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;

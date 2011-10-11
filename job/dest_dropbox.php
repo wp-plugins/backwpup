@@ -8,9 +8,9 @@ function backwpup_job_dest_dropbox() {
 	try {
 		//set boxtype and authkeys
 		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			$dropbox = new backwpup_Dropbox($backwpupjobrun['STATIC']['CFG']['DROPBOX_SANDBOX_APP_KEY'], $backwpupjobrun['STATIC']['CFG']['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 		else 
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox = new backwpup_Dropbox($backwpupjobrun['STATIC']['CFG']['DROPBOX_APP_KEY'], $backwpupjobrun['STATIC']['CFG']['DROPBOX_APP_SECRET']);
 		
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);

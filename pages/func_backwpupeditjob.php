@@ -356,13 +356,14 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<?PHP if (empty($jobvalue['dropetoken']) and empty($jobvalue['dropesecret'])) { ?>
 			<b><?PHP _e('Root:','backwpup'); ?></b>&nbsp;
 			<select name="droperoot" id="droperoot">
-			<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('dropbox', 'backwpup'); ?></option>
-			<option <?PHP selected($jobvalue['droperoot'],'sandbox',true); ?> value="sandbox"><?php _e('sandbox', 'backwpup'); ?></option> 
+			<option <?PHP selected($jobvalue['droperoot'],'sandbox',true); ?> value="sandbox"><?php _e('Sandbox (App folder)', 'backwpup'); ?></option> 
+			<option <?PHP selected($jobvalue['droperoot'],'dropbox',true); ?> value="dropbox"><?php _e('Dropbox (full dropbox)', 'backwpup'); ?></option>
 			</select><br />
 			<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
 			<span style="color:red;"><?php _e('Not authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauth" class="button-primary" accesskey="d" value="<?php _e('Authenticate!', 'backwpup'); ?>" /><br />
 		<?PHP } else  { ?>
-			<b><?PHP _e('Root:','backwpup'); ?></b>&nbsp;<?PHP echo $jobvalue['droperoot']; ?><br />
+			<input name="droperoot" type="hidden" value="<?PHP echo $jobvalue['droperoot'];?>" />
+			<b><?PHP _e('Root:','backwpup'); ?></b>&nbsp;<?PHP echo ($jobvalue['droperoot']=='sandbox')?_e('Sandbox (App folder)', 'backwpup'):_e('Dropbox (full dropbox)', 'backwpup'); ?><br />
 			<b><?PHP _e('Login:','backwpup'); ?></b>&nbsp;
 			<span style="color:green;"><?php _e('Authenticated!', 'backwpup'); ?></span> <input type="submit" name="dropboxauthdel" class="button-primary" accesskey="d" value="<?php _e('Delete!', 'backwpup'); ?>" /><br />	
 		<?PHP } ?><br />
@@ -371,7 +372,7 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<span class="nosync"><?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
 	</div>
 	<div class="destlinks">
-		<a name="dropbox" href="http://db.tt/MfxHKBd" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a name="dropbox" href="http://db.tt/Bm0l8dfn" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
 		<a href="https://www.dropbox.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />

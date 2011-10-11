@@ -8,9 +8,9 @@ function backwpup_job_dest_dropbox_sync() {
 	try {
 		//set boxtype and authkeys
 		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			$dropbox = new backwpup_Dropbox($backwpupjobrun['STATIC']['CFG']['DROPBOX_SANDBOX_APP_KEY'], $backwpupjobrun['STATIC']['CFG']['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 		else 
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox = new backwpup_Dropbox($backwpupjobrun['STATIC']['CFG']['DROPBOX_APP_KEY'], $backwpupjobrun['STATIC']['CFG']['DROPBOX_APP_SECRET']);
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);
 		//get account info
@@ -23,6 +23,7 @@ function backwpup_job_dest_dropbox_sync() {
 		trigger_error(sprintf(__('%s free on DropBox','backwpup'),backwpup_formatBytes($dropboxfreespase)),E_USER_NOTICE);
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+		return false;
 	}
 	//get files
 	$filelist=get_transient('backwpup_job_filelist'); //get file list

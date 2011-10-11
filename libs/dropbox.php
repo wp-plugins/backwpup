@@ -68,8 +68,8 @@ class backwpup_Dropbox {
 		if (!is_readable($file) or !is_file($file)){
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		}
-		if (filesize($file)>314572800){
-			throw new DropboxException("Error: File \"$file\" is to big max. 300 MB.");
+		if (filesize($file)>157286400){
+			throw new DropboxException("Error: File \"$file\" is to big max. 150 MB.");
 		}
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/').'/'.basename($file);
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
@@ -93,6 +93,11 @@ class backwpup_Dropbox {
 		return $this->request($url, array('path' => $path, 'root' => $this->root));
 	}
 
+	public function fileopsCreate_folder($path){
+		$url = self::API_URL.self::API_VERSION_URL.'fileops/create_folder';
+		return $this->request($url, array('path' => $path, 'root' => $this->root));
+	}
+
 	public function oAuthAuthorize($callback_url) {
 		//request tokens
 		$OAuthSign = $this->OAuthObject->sign(array(
@@ -102,8 +107,11 @@ class backwpup_Dropbox {
 			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -137,8 +145,11 @@ class backwpup_Dropbox {
 			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -194,9 +205,12 @@ class backwpup_Dropbox {
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		}
+		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
+		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
@@ -215,8 +229,8 @@ class backwpup_Dropbox {
 		$status = curl_getinfo($ch);
 		
 		if (isset($output['error']) or $status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
-			if(isset($output['error']) && is_string($output['error'])) $message = $output['error'];
-			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
+			if(isset($output['error']) && is_string($output['error'])) $message = '('.$status['http_code'].') '.$output['error'];
+			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) '('.$status['http_code'].') '.$output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			elseif ($status['http_code']==400) $message = '(400) Bad input parameter: '.strip_tags($content);
 			elseif ($status['http_code']==401) $message = '(401) Bad or expired token. This can happen if the user or Dropbox revoked or expired an access token. To fix, you should re-authenticate the user.';

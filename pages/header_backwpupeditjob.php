@@ -13,11 +13,12 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			$jobs=get_option('backwpup_jobs');
+			$cfg=get_option('backwpup');
 			//set boxtype and authkeys
 			if ($jobs[$jobid]['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+				$dropbox = new backwpup_Dropbox($cfg['DROPBOX_SANDBOX_APP_KEY'], $cfg['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 			else
-				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+				$dropbox = new backwpup_Dropbox($cfg['DROPBOX_APP_KEY'], $cfg['DROPBOX_APP_SECRET']);
 
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
@@ -138,7 +139,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	$jobvalues['ftpssl']= (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false;
 	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
-	$jobvalues['droperoot']=isset($_POST['droperoot']) ? $_POST['droperoot'] : 'dropbox';
+	$jobvalues['droperoot']=$_POST['droperoot'];
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
@@ -252,12 +253,14 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 
 	//get dropbox auth	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
+		backwpup_api_get_keys();
+		$cfg=get_option('backwpup');
 		require_once (dirname(__FILE__).'/../libs/dropbox.php');
 		//set boxtype and authkeys
 		if ($jobvalues['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+			$dropbox = new backwpup_Dropbox($cfg['DROPBOX_SANDBOX_APP_KEY'], $cfg['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 		else
-			$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+			$dropbox = new backwpup_Dropbox($cfg['DROPBOX_APP_KEY'], $cfg['DROPBOX_APP_SECRET']);
 
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
