@@ -336,6 +336,7 @@ function backwpup_job_job_end() {
 	delete_transient('backwpup_job_working');
 	delete_transient('backwpup_job_filelist');
 	delete_transient('backwpup_job_folderlist');
+	delete_transient('backwpup_backups_chache');
 	die();
 }
 
