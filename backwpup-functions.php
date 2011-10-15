@@ -174,7 +174,6 @@ function backwpup_plugin_deactivate() {
 	$cfg=get_option('backwpup'); 
 	$cfg['last_activate']=''; //set to not activated
 	update_option('backwpup',$cfg);
-	backwpup_api(false);
 }
 
 //get temp dir
@@ -208,7 +207,7 @@ function backwpup_check_open_basedir($dir) {
 }
 
 //Backwpup API
-function backwpup_api($active=false) {
+function backwpup_api() {
 	global $wp_version;
 	$cfg=get_option('backwpup');
 	$blugurl=get_option('siteurl');
