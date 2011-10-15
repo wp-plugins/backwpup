@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.1
 Tested up to: 3.2.1
-Stable tag: 2.1.4
+Stable tag: 2.1.5
 
 WordPress Backup and more...
 
@@ -52,7 +52,7 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
-= 2.1.5 =
+= 2.5 =
 * Improved mysql dump
 * mysql dump restore improvements
 * Improved XML export
@@ -60,7 +60,12 @@ Do backups and more for your WordPress Blog.
 * now manaly job starts wor with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
 * don't look for file ending on deletion and use file time not name
 * the job working is back in the WordPress envoerment
+
+= 2.1.5 =
+* Updated AWS lib to 1.4.4
 * use my own dropbox lib again and chaned it to new api
+* Fixed security vulnerability
+* some littel fixes
 
 = 2.1.4 =
 * correct some values on job copy/export
