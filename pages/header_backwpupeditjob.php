@@ -13,12 +13,13 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			$jobs=get_option('backwpup_jobs');
-			$cfg=get_option('backwpup');
 			//set boxtype and authkeys
+			$backwpupapi=new backwpup_api();
+			$keys=$backwpupapi->get_keys();
 			if ($jobs[$jobid]['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox($cfg['DROPBOX_SANDBOX_APP_KEY'], $cfg['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+				$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 			else
-				$dropbox = new backwpup_Dropbox($cfg['DROPBOX_APP_KEY'], $cfg['DROPBOX_APP_SECRET']);
+				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
@@ -253,14 +254,14 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 
 	//get dropbox auth	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
-		backwpup_api_get_keys();
-		$cfg=get_option('backwpup');
 		require_once (dirname(__FILE__).'/../libs/dropbox.php');
 		//set boxtype and authkeys
+		$backwpupapi=new backwpup_api();
+		$keys=$backwpupapi->get_keys();
 		if ($jobvalues['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox($cfg['DROPBOX_SANDBOX_APP_KEY'], $cfg['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+			$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 		else
-			$dropbox = new backwpup_Dropbox($cfg['DROPBOX_APP_KEY'], $cfg['DROPBOX_APP_SECRET']);
+			$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
@@ -271,7 +272,8 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}
 	
 	//make api call to backwpup.com
-	backwpup_api_cronupdate();
+	$backwpupapi=new backwpup_api();
+	$backwpupapi->cronupdate();
 	
 	$_POST['jobid']=$jobvalues['jobid'];
 	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';

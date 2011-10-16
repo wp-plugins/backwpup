@@ -69,10 +69,12 @@ if (!empty($doaction)) {
 				require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 				if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 					try {
+						$backwpupapi=new backwpup_api();
+						$keys=$backwpupapi->get_keys();
 						if ($jobvalue['droperoot']=='sandbox')
-							$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+							$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 						else
-							$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+							$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 						$dropbox->fileopsDelete($backupfile);
 						unset($dropbox);
@@ -202,10 +204,12 @@ if (!empty($doaction)) {
 		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
 		try {
+			$backwpupapi=new backwpup_api();
+			$keys=$backwpupapi->get_keys();
 			if ($jobs[$jobid]['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_SANDBOX_APP_KEY, BACKWPUP_DROPBOX_SANDBOX_APP_SECRET,'sandbox');
+				$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 			else
-				$dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
 			$filemeta=$dropbox->metadata($_GET['file'],false,1);
 			header("Pragma: public");

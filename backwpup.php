@@ -44,8 +44,6 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
-//BackWPup API url
-define('BACKWPUP_API_URL', 'https://api.backwpup.com');
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
     define('AWS_CERTIFICATE_AUTHORITY', true);
@@ -56,6 +54,7 @@ if (!defined('BACKWPUP_JOB_TRANSIENT_LIVETIME'))
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
 require_once(dirname(__FILE__).'/backwpup-functions.php');
+require_once(dirname(__FILE__).'/libs/backwpup_api.php');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //add cron intervals
@@ -85,10 +84,6 @@ if (is_multisite()) {
 	add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php', 'backwpup_plugin_options_link');
 	add_filter('plugin_row_meta', 'backwpup_plugin_links',10,2);
 }
-//Add filter for Plugin Updates from backwpup.com
-add_filter('pre_set_site_transient_update_plugins', 'backwpup_api_plugin_update_check');
-//Add filter to take over the Plugin info screen
-add_filter('plugins_api', 'backwpup_api_plugin_infoscreen', 10, 3);
 //Actions for Cron job
 add_action('backwpup_cron', 'backwpup_cron',1);
 //add Admin Bar menu
