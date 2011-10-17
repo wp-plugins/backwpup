@@ -79,6 +79,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	$backwpupjobrun['WORKING']['STEPSPERSENT']=0;
 	$backwpupjobrun['WORKING']['STEPPERSENT']=0;
 	$backwpupjobrun['WORKING']['TIMESTAMP']=current_time('timestamp');
+	$backwpupjobrun['WORKING']['JOBENDINPROGRESS']=false;
 	//build working steps
 	$backwpupjobrun['WORKING']['STEPS']=array();
 	//setup job steps

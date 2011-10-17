@@ -71,7 +71,7 @@ class backwpup_Dropbox {
 		if (filesize($file)>157286400){
 			throw new DropboxException("Error: File \"$file\" is to big max. 150 MB.");
 		}
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/').'/'.basename($file);
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
 	
@@ -90,12 +90,12 @@ class backwpup_Dropbox {
 	
 	public function fileopsDelete($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/delete';
-		return $this->request($url, array('path' => $path, 'root' => $this->root));
+		return $this->request($url, array('path' => '/'.trim($path,'/'), 'root' => $this->root));
 	}
 
 	public function fileopsCreate_folder($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/create_folder';
-		return $this->request($url, array('path' => $path, 'root' => $this->root));
+		return $this->request($url, array('path' => '/'.trim($path,'/'), 'root' => $this->root));
 	}
 
 	public function oAuthAuthorize($callback_url) {

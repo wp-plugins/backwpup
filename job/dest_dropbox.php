@@ -34,7 +34,7 @@ function backwpup_job_dest_dropbox() {
 		$dropbox->setProgressFunction('backwpup_job_curl_progresscallback');
 		// put the file
 		trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
-		$response = $dropbox->upload($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],$backwpupjobrun['STATIC']['JOB']['dropedir']); 
+		$response = $dropbox->upload($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile']); 
 		if ($response['bytes']==filesize($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])) {
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
 			$backwpupjobrun['WORKING']['STEPDONE']++;

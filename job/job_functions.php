@@ -91,8 +91,11 @@ function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload
 
 function backwpup_job_update_working_data($mustwrite=false) {
 	global $backwpupjobrun,$wpdb;
-	if (false===get_transient('backwpup_job_working'))
+	if (false===($value=get_transient('backwpup_job_working'))) {
+		@set_time_limit(10);
 		backwpup_job_job_end();
+		return false;
+	}
 	if ($mustwrite or empty($backwpupjobrun['runmicrotime']) or $backwpupjobrun['runmicrotime']<(microtime()-1000)) { //only update all 1 sec.
 		if(!mysql_ping($wpdb->dbh)) { //check MySQL connection
 			trigger_error(__('Database connection is gone create a new one.','backwpup'),E_USER_NOTICE);
@@ -201,10 +204,9 @@ function backwpup_job_joberrorhandler() {
 function backwpup_job_job_end() {
 	global $backwpupjobrun;
 	//check if job_end allredy runs
-	if (empty($backwpupjobrun['WORKING']['JOBENDINPROGRESS']) or !$backwpupjobrun['WORKING']['JOBENDINPROGRESS']) {
+	if (!$backwpupjobrun['WORKING']['JOBENDINPROGRESS']) 
 		$backwpupjobrun['WORKING']['JOBENDINPROGRESS']=true;
-		backwpup_job_update_working_data(true);
-	} else
+	else
 		return;
 
 	$backwpupjobrun['WORKING']['STEPTODO']=1;
@@ -330,7 +332,6 @@ function backwpup_job_job_end() {
 				$message,
 				$headers);
 	}
-
 	$backwpupjobrun['WORKING']['STEPDONE']=1;
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='JOB_END'; //set done
 	delete_transient('backwpup_job_working');
