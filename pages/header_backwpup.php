@@ -107,7 +107,6 @@ if (!empty($doaction)) {
 			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastrun',$backupdata['STATIC']['JOB']['starttime']);
 			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
 		}
-		sleep(3);
 		//clean up temp
 		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
 			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']);

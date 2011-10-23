@@ -1,7 +1,10 @@
 <?PHP
 function backwpup_job_dest_dropbox_sync() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2;
+	//get files
+	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
+	$folderlist=backwpup_get_option('WORKING','FOLDERLIST'); //get folder list
+	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 	trigger_error(sprintf(__('%d. Try to sync files with DropBox...','backwpup'),$backwpupjobrun['WORKING']['DEST_DROPBOX_SYNC']['STEP_TRY']),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
@@ -27,10 +30,6 @@ function backwpup_job_dest_dropbox_sync() {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		return false;
 	}
-	//get files
-	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
-	$folderlist=backwpup_get_option('WORKING','FOLDERLIST'); //get folder list
-	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
 	//check
 	trigger_error(__('Get remote file and folder list...','backwpup'),E_USER_NOTICE);
 	$remotefilelist=array();

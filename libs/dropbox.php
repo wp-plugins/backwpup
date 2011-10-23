@@ -214,7 +214,7 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
+		if (!empty($this->ProgressFunction) and function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
 			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
@@ -227,6 +227,8 @@ class backwpup_Dropbox {
 			$output = json_decode($content, true);
 		}
 		$status = curl_getinfo($ch);
+		if ($method == 'PUT')
+			fclose($datafilefd);
 		
 		if (isset($output['error']) or $status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {
 			if(isset($output['error']) && is_string($output['error'])) $message = '('.$status['http_code'].') '.$output['error'];

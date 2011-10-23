@@ -140,7 +140,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	fwrite($fd,"<title>".sprintf(__('BackWPup log for %1$s from %2$s at %3$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['name'],date_i18n(get_option('date_format')),date_i18n(get_option('time_format')))."</title>\n</head>\n<body id=\"body\">\n");
 	fwrite($fd,sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'),BACKWPUP_VERSION,date_i18n('Y'),'<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>',$wp_version)."<br />\n");
 	fwrite($fd,__('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup')."<br />\n");
-	fwrite($fd,__('[INFO]: BackWPup job:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['jobid'].'. '.$backwpupjobrun['STATIC']['JOB']['name'].'; '.$backwpupjobrun['STATIC']['JOB']['type']."<br />\n");
+	fwrite($fd,__('[INFO]: BackWPup job:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['jobid'].'. '.$backwpupjobrun['STATIC']['JOB']['name'].'; '.implode('+',$backwpupjobrun['STATIC']['JOB']['type'])."<br />\n");
 	if ($backwpupjobrun['STATIC']['JOB']['activated'])
 		fwrite($fd,__('[INFO]: BackWPup cron:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['cron'].'; '.date_i18n('D, j M Y @ H:i',$backwpupjobrun['STATIC']['JOB']['cronnextrun'])."<br />\n");
 	if ($jobstarttype=='cronrun')
