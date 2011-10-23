@@ -34,7 +34,8 @@ function backwpup_get_logfile_ajax() {
 
     $log='';
     if (is_file(trim($_POST['logfile']))) {
-        if ($backupdata=get_transient('backwpup_job_working')) {
+		$backupdata=backwpup_get_option('WORKING','DATA');
+        if (!empty($backupdata)) {
             $warnings=$backupdata['WORKING']['WARNING'];
             $errors=$backupdata['WORKING']['ERROR'];
             $stepspersent=$backupdata['WORKING']['STEPSPERSENT'];

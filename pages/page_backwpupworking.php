@@ -9,7 +9,8 @@ if (!defined('ABSPATH'))
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif;
-	if ($backupdata=get_transient('backwpup_job_working')) {
+	$backupdata=backwpup_get_option('WORKING','DATA');
+	if (!empty($backupdata)) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile($backupdata['LOGFILE']);
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".$backupdata['LOGFILE']."\">";
@@ -31,7 +32,7 @@ if (!defined('ABSPATH'))
 		echo "<div class=\"clear\"></div>";
 		echo "<div class=\"progressbar\"><div id=\"progressstep\" style=\"width:".$backupdata['WORKING']['STEPSPERSENT']."%;\">".$backupdata['WORKING']['STEPSPERSENT']."%</div></div>";
 		echo "<div class=\"progressbar\"><div id=\"progresssteps\" style=\"width:".$backupdata['WORKING']['STEPPERSENT']."%;\">".$backupdata['WORKING']['STEPPERSENT']."%</div></div>";
-	} elseif (is_file(trim($_GET['logfile']))) {
+	} elseif (!empty($_GET['logfile']) and is_file(trim($_GET['logfile']))) {
 		echo '<div id="showlogfile">';
 		foreach (backwpup_read_logfile(trim($_GET['logfile'])) as $line)
 			echo $line."\n";

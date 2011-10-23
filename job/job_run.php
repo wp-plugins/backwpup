@@ -21,7 +21,7 @@ if (!defined('E_USER_DEPRECATED'))
 //disable user abort
 ignore_user_abort(true);
 //make needed vars global
-global $backwpupjobrun;
+global $wpdb,$backwpupjobrun;
 //set vars... from get
 if (!isset($jobstarttype) and empty($jobstarttype) and in_array($_REQUEST['starttype'],array('restarttime','restart','runnow')))
 	$jobstarttype=trim($_REQUEST['starttype']);
@@ -48,9 +48,9 @@ if (!defined('ABSPATH')) {
 
 //load needed functions for the jobrun
 require_once(BACKWPUP_JOBRUN_FOLDER.'/job_functions.php');
-
+$backwpupjobrun=backwpup_get_option('WORKING','DATA');
 if ($jobstarttype=='runnow' or $jobstarttype=='cronrun') {
-	if (get_transient('backwpup_job_working'))
+	if (!empty($backwpupjobrun))
 		die('A job already running!');
 	if (isset($jobstartid) and is_integer($jobstartid)) {
 		require_once(BACKWPUP_JOBRUN_FOLDER.'/job_start.php');
@@ -58,7 +58,7 @@ if ($jobstarttype=='runnow' or $jobstarttype=='cronrun') {
 	} else
 		die('Job check');
 } elseif ($jobstarttype=='restart' or $jobstarttype=='restarttime') {
-	if (false === ($backwpupjobrun=get_transient('backwpup_job_working')))
+	if (empty($backwpupjobrun) or !is_array($backwpupjobrun))
 		die('No working data');
 } else {
 	die('Starttype check');
@@ -83,8 +83,8 @@ elseif ($jobstarttype=='runnow') { //got to jobrun page
 }
 //check existing Logfile
 if (!file_exists($backwpupjobrun['LOGFILE'])) {
-	delete_transient('backwpup_job_working');
-	delete_transient('backwpup_job_filelist');
+    $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
+	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
 	die('No logfile found!');
 }
 
@@ -124,6 +124,7 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 }
 // Working step by step
 foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
+	global $backwpup_cfg;
 	//Set next step
 	if (!isset($backwpupjobrun['WORKING'][$step]['STEP_TRY']) or empty($backwpupjobrun['WORKING'][$step]['STEP_TRY'])) {
 		$backwpupjobrun['WORKING'][$step]['STEP_TRY']=0;
@@ -135,14 +136,14 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 	//Run next step
 	if (!in_array($step,$backwpupjobrun['WORKING']['STEPSDONE'])) {
 		if (function_exists('backwpup_job_'.strtolower($step))) {
-			while ($backwpupjobrun['WORKING'][$step]['STEP_TRY']<$backwpupjobrun['STATIC']['CFG']['jobstepretry']) {
+			while ($backwpupjobrun['WORKING'][$step]['STEP_TRY']<$backwpup_cfg['jobstepretry']) {
 				if (in_array($step,$backwpupjobrun['WORKING']['STEPSDONE']))
 					break;
 				$backwpupjobrun['WORKING'][$step]['STEP_TRY']++;
 				backwpup_job_update_working_data(true);
 				call_user_func('backwpup_job_'.strtolower($step));
 			}
-			if ($backwpupjobrun['WORKING'][$step]['STEP_TRY']>=$backwpupjobrun['STATIC']['CFG']['jobstepretry'])
+			if ($backwpupjobrun['WORKING'][$step]['STEP_TRY']>=$backwpup_cfg['jobstepretry'])
 				trigger_error(__('Step arborted has too many trys!','backwpup'),E_USER_ERROR);
 		} else {
 			trigger_error(sprintf(__('Can not find job step function %s!','backwpup'),strtolower($step)),E_USER_ERROR);

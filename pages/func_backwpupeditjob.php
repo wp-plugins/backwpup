@@ -12,7 +12,7 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 	<div class="misc-pub-section misc-pub-section-last"> 
 	<?php 
 	foreach (backwpup_backup_types() as $type) {
-		echo "<input class=\"jobtype-select checkbox\" id=\"jobtype-select-".$type."\" type=\"checkbox\"".checked(true,in_array($type,explode('+',$jobvalue['type'])),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
+		echo "<input class=\"jobtype-select checkbox\" id=\"jobtype-select-".$type."\" type=\"checkbox\"".checked(true,in_array($type,$jobvalue['type']),false)." name=\"type[]\" value=\"".$type."\"/> ".backwpup_backup_types($type);
 	}
 	if (!function_exists('curl_init'))
 		echo '<br /><strong style="color:red;">'.__( 'PHP curl functions not available! Most backup destinations deaktivated!', 'backwpup' ).'</strong>';
@@ -60,11 +60,14 @@ function backwpup_jobedit_metabox_backupfile($jobvalue) {
 			echo '<input class="radio" type="radio"'.checked('.tar.bz2',$jobvalue['fileformart'],false).' name="fileformart" value=".tar.bz2" disabled="disabled" />'.__('Tar BZip2','backwpup').'<br />';	
 		_e('Preview:','backwpup'); 
 		echo '<br /><i><span id="backupfileprefix">'.$jobvalue['fileprefix'].'</span>'.date_i18n('Y-m-d_H-i-s').'<span id="backupfileformart">'.$jobvalue['fileformart'].'</span></i>';
-	echo '</div>';
+	?>
+	</div>
+	<?PHP
 }
 
 function backwpup_jobedit_metabox_sendlog($jobvalue) {
-	_e('E-Mail-Adress:','backwpup'); ?>
+	_e('E-Mail-Adress:','backwpup'); 
+	?>
 	<input name="mailaddresslog" id="mailaddresslog" type="text" value="<?PHP echo $jobvalue['mailaddresslog'];?>" class="large-text" /><br />
 	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['mailerroronly'],true); ?> name="mailerroronly" /> <?PHP _e('Only send an e-mail if there are errors.','backwpup'); ?>
 	<?PHP 
@@ -99,12 +102,12 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 		<?PHP 	echo '<input class="radio" type="radio"'.checked("advanced",$jobvalue['cronselect'],false).' name="cronselect" value="advanced" />'.__('advanced','backwpup').'&nbsp;';
 				echo '<input class="radio" type="radio"'.checked("basic",$jobvalue['cronselect'],false).' name="cronselect" value="basic" />'.__('basic','backwpup');?>
 		<br /><br />
-		<div id="schedadvanced" <?PHP if ($jobvalue['cronselect']!='advanced') echo 'style="display:none;"';?>>
+		<div id="schedadvanced"<?PHP if ($jobvalue['cronselect']!='advanced') echo ' style="display:none;"';?>>
 			<div id="cron-min-box">
 				<b><?PHP _e('Minutes: ','backwpup'); ?></b><br />
 				<?PHP 
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$minutes,true),true,false).' name="cronminutes[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-				echo '<div id="cron-min">';
+				?><div id="cron-min"><?PHP
 				for ($i=0;$i<60;$i=$i+5) {
 					echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$minutes,true),true,false).' name="cronminutes[]" value="'.$i.'" /> '.$i.'<br />';
 				}
@@ -116,7 +119,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				<?PHP 
 
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$hours,true),true,false).' name="cronhours[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-				echo '<div id="cron-hour">';
+				?><div id="cron-hour"><?PHP
 				for ($i=0;$i<24;$i++) {
 					echo '<input class="checkbox" type="checkbox"'.checked(in_array("$i",$hours,true),true,false).' name="cronhours[]" value="'.$i.'" /> '.$i.'<br />';
 				}
@@ -138,7 +141,9 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				<b><?PHP _e('Month:','backwpup'); ?></b><br />
 				<?PHP 	
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-				echo '<div id="cron-month">';
+				?>
+				<div id="cron-month">
+				<?PHP
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January','backwpup').'<br />';
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February','backwpup').'<br />';
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March','backwpup').'<br />';
@@ -158,7 +163,9 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 				<b><?PHP _e('Day of Week:','backwpup'); ?></b><br />
 				<?PHP 
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$wday,true),true,false).' name="cronwday[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
-				echo '<div id="cron-weekday">';
+				?>
+				<div id="cron-weekday">
+				<?PHP
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("0",$wday,true),true,false).' name="cronwday[]" value="0" /> '.__('Sunday','backwpup').'<br />';
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$wday,true),true,false).' name="cronwday[]" value="1" /> '.__('Monday','backwpup').'<br />';
 				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$wday,true),true,false).' name="cronwday[]" value="2" /> '.__('Tuesday','backwpup').'<br />';
@@ -171,7 +178,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 			<br class="clear" />
 		</div>
-		<div id="schedbasic" <?PHP if ($jobvalue['cronselect']!='basic') echo 'style="display:none;"';?>>
+		<div id="schedbasic"<?PHP if ($jobvalue['cronselect']!='basic') echo ' style="display:none;"';?>>
 			<table>
 			<tr>
 			<th>
@@ -372,7 +379,7 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<span class="nosync"><?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
 	</div>
 	<div class="destlinks">
-		<a name="dropbox" href="http://db.tt/Bm0l8dfn" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+		<a href="http://db.tt/Bm0l8dfn" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
 		<a href="https://www.dropbox.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 	</div>
 	<br class="clear" />

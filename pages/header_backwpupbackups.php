@@ -12,9 +12,8 @@ if (!empty($doaction)) {
 	switch($doaction) {
 	case 'delete': //Delete Backup archives
 		check_admin_referer('bulk-backups');
-		$jobs=get_option('backwpup_jobs'); //Load jobs
 		list($jobid,$dest)=explode(',',$_GET['jobdest']);
-		$jobvalue=$jobs[$jobid];
+		$jobvalue=$jobvalue=backwpup_get_job_vars($jobid);
 		foreach ($_GET['backupfiles'] as $backupfile) {
 			if ($dest=='FOLDER') {
 				if (is_file($backupfile))
@@ -172,11 +171,11 @@ if (!empty($doaction)) {
 		check_admin_referer('download-backup');
 		if (!class_exists('AmazonS3'))
 			require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
-		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
+		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$s3 = new AmazonS3($jobs[$jobid]['awsAccessKey'], $jobs[$jobid]['awsSecretKey']);
-			$s3file=$s3->get_object($jobs[$jobid]['awsBucket'], $_GET['file']);
+			$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+			$s3file=$s3->get_object($jobvalue['awsBucket'], $_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());
 		} 
@@ -201,16 +200,16 @@ if (!empty($doaction)) {
 	case 'downloaddropbox': //Download Dropbox Backup
 		check_admin_referer('download-backup');
 		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
-		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
+		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
 			$backwpupapi=new backwpup_api();
 			$keys=$backwpupapi->get_keys();
-			if ($jobs[$jobid]['droperoot']=='sandbox')
+			if ($jobvalue['droperoot']=='sandbox')
 				$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 			else
 				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
-			$dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
+			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 			$filemeta=$dropbox->metadata($_GET['file'],false,1);
 			header("Pragma: public");
 			header("Expires: 0");
@@ -232,10 +231,12 @@ if (!empty($doaction)) {
 		check_admin_referer('download-backup');
 		if (!class_exists('SugarSync'))
 			require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
-		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
+		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$sugarsync = new SugarSync($jobs[$jobid]['sugaruser'],base64_decode($jobs[$jobid]['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+			$backwpupapi=new backwpup_api();
+			$keys=$backwpupapi->get_keys();
+			$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),$keys['SUGARSYNC_ACCESSKEY'], $keys['SUGARSYNC_PRIVATEACCESSKEY']);
 			$response=$sugarsync->get(urldecode($_GET['file']));
 			header("Pragma: public");
 			header("Expires: 0");
@@ -257,10 +258,10 @@ if (!empty($doaction)) {
 		check_admin_referer('download-backup');
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
-		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
+		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobs[$jobid]['msazureHost'],$jobs[$jobid]['msazureAccName'],$jobs[$jobid]['msazureKey']);
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -271,7 +272,7 @@ if (!empty($doaction)) {
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
 			//header("Content-Length: ".$s3file->header->_info->size_download);
-			echo $storageClient->getBlobData($jobs[$jobid]['msazureContainer'], $_GET['file']);
+			echo $storageClient->getBlobData($jobvalue['msazureContainer'], $_GET['file']);
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -281,15 +282,15 @@ if (!empty($doaction)) {
 		check_admin_referer('download-backup');
 		if (!class_exists('CF_Authentication'))
 			require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
-		$jobs=get_option('backwpup_jobs');
 		$jobid=$_GET['jobid'];
+		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$auth = new CF_Authentication($jobs[$jobid]['rscUsername'], $jobs[$jobid]['rscAPIKey']);
+			$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
 			$auth->ssl_use_cabundle();
 			if ($auth->authenticate()) {
 				$conn = new CF_Connection($auth);
 				$conn->ssl_use_cabundle();
-				$backwpupcontainer = $conn->get_container($jobs[$jobid]['rscContainer']);
+				$backwpupcontainer = $conn->get_container($jobvalue['rscContainer']);
 				$backupfile=$backwpupcontainer->get_object($_GET['file']);
 				header("Pragma: public");
 				header("Expires: 0");

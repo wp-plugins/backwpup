@@ -102,7 +102,11 @@ function backwpup_job_db_dump() {
 		$backwpupjobrun['WORKING']['STEPDONE']=count($backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']);
 	}
 	//for better import with mysql client
-	$dbdumpfooter= "\n";
+	$dbdumpfooter= "\n--\n-- Delelte not needet values on backwpup table\n--\n\n";
+	$dbdumpfooter.= "DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP';\n";
+	$dbdumpfooter.= "DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING';\n";
+	$dbdumpfooter.= "\n";
+	$dbdumpfooter.= "\n";
 	$dbdumpfooter.= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n";
 	$dbdumpfooter.= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n";
 	$dbdumpfooter.= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n";
@@ -162,7 +166,7 @@ function _backwpup_job_db_dump_table($table,$status,$file) {
 	else
 		fwrite($file, $tablecreate);
 
-	//take data of table
+	//get data from table
 	$datas=$wpdb->get_results("SELECT * FROM `".$table."`",'ARRAY_N');
 	if (mysql_error()) {
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);

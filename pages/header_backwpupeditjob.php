@@ -8,24 +8,23 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 	check_admin_referer('edit-job');
 	$backwpup_message='';
 	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
-		$reqtoken=get_transient('backwpup_dropboxrequest');
+		$reqtoken=backwpup_get_option('TEMP','DROPBOXAUTH');
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
-			$jobs=get_option('backwpup_jobs');
 			//set boxtype and authkeys
 			$backwpupapi=new backwpup_api();
 			$keys=$backwpupapi->get_keys();
-			if ($jobs[$jobid]['droperoot']=='sandbox')
+			$root=backwpup_get_option('JOB_'.$jobid,'droperoot');
+			if ($root=='sandbox')
 				$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
 			else
 				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
-			$jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
-			$jobs[$jobid]['dropesecret']=$oAuthStuff['oauth_token_secret'];
-			update_option('backwpup_jobs',$jobs);
+			backwpup_update_option('JOB_'.$jobid,'dropetoken',$oAuthStuff['oauth_token']);
+			backwpup_update_option('JOB_'.$jobid,'dropesecret',$oAuthStuff['oauth_token_secret']);
 			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
 		} else {
 			$backwpup_message.=__('Wrong Token for Dropbox authentication received!','backwpup').'<br />';
@@ -33,7 +32,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 	} else {
 		$backwpup_message.=__('No Dropbox authentication received!','backwpup').'<br />';	
 	}
-	delete_transient('backwpup_dropboxrequest');
+	backwpup_delete_option('TEMP','DROPBOXAUTH');
 	$_POST['jobid']=$jobid;
 }
 
@@ -41,7 +40,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel'])) and !empty($_POST['jobid'])) {
 	check_admin_referer('edit-job');
 	$jobvalues['jobid']=(int) $_POST['jobid'];
-	$jobvalues['type']= implode('+',(array)$_POST['type']);
+	$jobvalues['type']=(array)$_POST['type'];
 	$jobvalues['name']= esc_html($_POST['name']);
 	$jobvalues['activated']= (isset($_POST['activated']) && $_POST['activated']==1) ? true : false;
 	$jobvalues['cronselect']= $_POST['cronselect']=='basic' ? 'basic':'advanced';
@@ -235,22 +234,17 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}
 
 	//save chages
-	$jobs=get_option('backwpup_jobs'); //Load Settings
-	$jobs[$jobvalues['jobid']]=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
-	update_option('backwpup_jobs',$jobs);
+	$jobvalues=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
+	foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
+		backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+	}
 	
 	//activate/deactivate seduling if not needed
-	$activejobs=false;
-	foreach ($jobs as $jobid => $jobvalue) {
-		if (!empty($jobvalue['activated'])) 
-			$activejobs=true;
-	}
-	if ($activejobs and false === wp_next_scheduled('backwpup_cron')) {
+	$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
+	if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
 		wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
-	}
-	if (!$activejobs and false !== wp_next_scheduled('backwpup_cron')) {
+	if (empty($activejobs))
 		wp_clear_scheduled_hook('backwpup_cron');
-	}
 
 	//get dropbox auth	
 	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
@@ -266,7 +260,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
-		set_transient('backwpup_dropboxrequest',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']),600);
+		backwpup_update_option('TEMP','DROPBOXAUTH',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
 		//forward to auth page
 		wp_redirect($response['authurl']);
 	}

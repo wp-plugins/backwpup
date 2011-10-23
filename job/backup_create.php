@@ -1,15 +1,15 @@
 <?PHP
 function backwpup_job_backup_create() {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$backwpup_cfg;
 	if ($backwpupjobrun['WORKING']['ALLFILESIZE']==0)
 		return;
-	$filelist=get_transient('backwpup_job_filelist'); //get file list
+	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
 	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
 	if (empty($backwpupjobrun['WORKING']['STEPDONE']))
 		$backwpupjobrun['WORKING']['STEPDONE']=0;
 		
 	if (strtolower($backwpupjobrun['STATIC']['JOB']['fileformart'])==".zip") { //Zip files
-		if ($backwpupjobrun['STATIC']['CFG']['phpzip']) {  //use php zip lib
+		if ($backwpup_cfg['phpzip']) {  //use php zip lib
 			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
             $res = $zip->open($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],ZIPARCHIVE::CREATE);

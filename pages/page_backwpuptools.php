@@ -1,16 +1,17 @@
 <?PHP
 if (!defined('ABSPATH')) 
 	die();
-
-
-echo "<div class=\"wrap\">";
+global $wpdb;
+?>
+<div class="wrap">
+<?PHP
 screen_icon();
 echo "<h2>".esc_html( __('BackWPup Tools', 'backwpup'))."</h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
-echo "<form id=\"posts-filter\" enctype=\"multipart/form-data\" action=\"".backwpup_admin_url('admin.php')."?page=backwpuptools\" method=\"post\">";
-wp_nonce_field('backwpup-tools');
 ?>
+<form id="posts-filter" enctype="multipart/form-data" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpuptools'; ?>" method="post">
+<?PHP wp_nonce_field('backwpup-tools'); ?>
 <input type="hidden" name="action" value="update" />
 <h3><?PHP _e('Database restore','backwpup'); ?></h3> 
 <table class="form-table"> 
@@ -61,10 +62,10 @@ if (isset($_POST['dbrestore']) and $_POST['dbrestore']==__('Restore', 'backwpup'
 if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
 	echo "<th scope=\"row\"><label for=\"maxlogs\">".__('Select jobs to import','backwpup')."</label></th><td>";
 	$import=file_get_contents($_FILES['importfile']['tmp_name']);
-	$oldjobs=get_option('backwpup_jobs');
+	$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value DESC");
 	foreach ( unserialize($import) as $jobid => $jobvalue ) {
 		echo "<select name=\"importtype[".$jobid."]\" title=\"".__('Import Type', 'backwpup')."\"><option value=\"not\">".__('No Import', 'backwpup')."</option>";
-		if (is_array($oldjobs[$jobid]))
+		if (in_array($jobid,$jobids))
 			echo "<option value=\"over\">".__('Overwrite', 'backwpup')."</option><option value=\"append\">".__('Append', 'backwpup')."</option>"; 
 		else
 			echo "<option value=\"over\">".__('Import', 'backwpup')."</option>";
@@ -76,45 +77,45 @@ if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name
 }
 if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !empty($_POST['importfile'])) {
 	echo "<th scope=\"row\"><label for=\"maxlogs\">".__('Import','backwpup')."</label></th><td>";
-	$oldjobs=get_option('backwpup_jobs');
-	$import=unserialize(urldecode($_POST['importfile']));
+	$import=unserialize(trim(urldecode($_POST['importfile'])));
 	foreach ( $_POST['importtype'] as $id => $type ) {
 		if ($type=='over') {
-			unset($oldjobs[$id]);
-			$oldjobs[$id]=$import[$id];
-			$oldjobs[$id]['activated']=false;
-			$oldjobs[$id]['cronnextrun']='';
-			$oldjobs[$id]['starttime']='';
-			$oldjobs[$id]['logfile']='';
-			$oldjobs[$id]['lastlogfile']='';
-			$oldjobs[$id]['lastrun']='';
-			$oldjobs[$id]['lastruntime']='';
-			$oldjobs[$id]['lastbackupdownloadurl']='';								
+			$import[$id]['jobid']=$id;
+			$import[$id]['activated']=false;
+			$import[$id]['cronnextrun']='';
+			$import[$id]['starttime']='';
+			$import[$id]['logfile']='';
+			$import[$id]['lastlogfile']='';
+			$import[$id]['lastrun']='';
+			$import[$id]['lastruntime']='';
+			$import[$id]['lastbackupdownloadurl']='';
+			//delte old
+			$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'JOB_'.$id));
+			//save
+			foreach ($import[$id] as $jobvaluename => $jobvaluevalue) {
+				backwpup_update_option('JOB_'.$import[$id]['jobid'],$jobvaluename,$jobvaluevalue);
+			}					
 		} elseif ($type=='append') {
-			if (is_array($oldjobs)) { //generate a new id for new job
-				$heighestid=0;
-				foreach ($oldjobs as $jobkey => $jobvalue) 
-					if ($jobkey>$heighestid) $heighestid=$jobkey;
-				$jobid=$heighestid+1;
-			} else {
-				$jobid=1;
-			}
-			$oldjobs[$jobid]=$import[$id];
-			$oldjobs[$jobid]['activated']=false;
-			$oldjobs[$jobid]['cronnextrun']='';
-			$oldjobs[$jobid]['starttime']='';
-			$oldjobs[$jobid]['logfile']='';
-			$oldjobs[$jobid]['lastlogfile']='';
-			$oldjobs[$jobid]['lastrun']='';
-			$oldjobs[$jobid]['lastruntime']='';
-			$oldjobs[$jobid]['lastbackupdownloadurl']='';
+			unset($import[$id]['jobid']);
+			$import[$id]['activated']=false;
+			$import[$id]['cronnextrun']='';
+			$import[$id]['starttime']='';
+			$import[$id]['logfile']='';
+			$import[$id]['lastlogfile']='';
+			$import[$id]['lastrun']='';
+			$import[$id]['lastruntime']='';
+			$import[$id]['lastbackupdownloadurl']='';
+			//save
+			$jobvalues=backwpup_get_job_vars(0,$import[$id]);
+			foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
+				backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+			}	
 		} 
 	}
-	update_option('backwpup_jobs',$oldjobs);
 	_e('Jobs imported!', 'backwpup');
 }
+echo '</td>';
 ?>
-</td>
 </tr>
 </table>
 

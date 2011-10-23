@@ -1,6 +1,6 @@
 <?PHP
 function backwpup_job_dest_mail() {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$backwpup_cfg;
 	$backwpupjobrun['WORKING']['STEPTODO']=$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 	trigger_error(sprintf(__('%d. try to sending backup with mail...','backwpup'),$backwpupjobrun['WORKING']['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
@@ -16,10 +16,10 @@ function backwpup_job_dest_mail() {
 	}
 
 	trigger_error(__('Send backuparchiv with mail....','backwpup'),E_USER_NOTICE);
-	if (empty($backwpupjobrun['STATIC']['CFG']['mailsndname']))
-		$headers = 'From: '.$backwpupjobrun['STATIC']['CFG']['mailsndname'].' <'.$backwpupjobrun['STATIC']['CFG']['mailsndemail'].'>' . "\r\n";
+	if (empty($backwpup_cfg['mailsndname']))
+		$headers = 'From: '.$backwpup_cfg['mailsndname'].' <'.$backwpup_cfg['mailsndemail'].'>' . "\r\n";
 	else
-		$headers = 'From: '.$backwpupjobrun['STATIC']['CFG']['mailsndemail'] . "\r\n";
+		$headers = 'From: '.$backwpup_cfg['mailsndemail'] . "\r\n";
 	
 	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*5);
 	$mail=wp_mail($backwpupjobrun['STATIC']['JOB']['mailaddress'],

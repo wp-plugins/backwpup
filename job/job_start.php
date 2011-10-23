@@ -1,35 +1,28 @@
 <?PHP
 function backwpup_job_start($jobid,$jobstarttype) {
-	global $wpdb,$wp_version,$backwpupjobrun;
+	global $wpdb,$wp_version,$backwpupjobrun,$backwpup_cfg;
 	//clean var
 	$backwpupjobrun = array();
 	//get temp dir
 	$backwpupjobrun['STATIC']['TEMPDIR']=backwpup_get_temp();
-	//Set config data
-	$backwpupjobrun['STATIC']['CFG']=get_option('backwpup');
 	//check exists gzip functions
 	if(!function_exists('gzopen'))
-		$backwpupjobrun['STATIC']['CFG']['gzlogs']=false;
+		$backwpup_cfg['gzlogs']=false;
 	if(!class_exists('ZipArchive'))
-		$backwpupjobrun['STATIC']['CFG']['phpzip']=false;
+		$backwpup_cfg['phpzip']=false;
 	//Set job data
 	$backwpupjobrun['STATIC']['JOB']=backwpup_get_job_vars($jobid);
-	//Setup Logs dir
-	$backwpupjobrun['STATIC']['CFG']['dirlogs']=rtrim(str_replace('\\','/',$backwpupjobrun['STATIC']['CFG']['dirlogs']),'/').'/';
 	//set Logfile
-	$backwpupjobrun['LOGFILE']=$backwpupjobrun['STATIC']['CFG']['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
+	$backwpupjobrun['LOGFILE']=$backwpup_cfg['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 	//Set job start settings
-	$jobs=get_option('backwpup_jobs');
-	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime']=current_time('timestamp'); //set start time for job
-	$backwpupjobrun['STATIC']['JOB']['starttime']=$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['starttime'];
-	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['logfile']=$backwpupjobrun['LOGFILE'];	   //Set current logfile
-	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cronnextrun']=backwpup_cron_next($jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cron']);  //set next run
-	$backwpupjobrun['STATIC']['JOB']['cronnextrun']=$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cronnextrun'];
-	$jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['lastbackupdownloadurl']='';
-	$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']='';
-	update_option('backwpup_jobs',$jobs); //Save job Settings
+	$backwpupjobrun['STATIC']['JOB']['starttime']=current_time('timestamp'); //set start time for job
+	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime',$backwpupjobrun['STATIC']['JOB']['starttime']);
+	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'logfile',$backwpupjobrun['LOGFILE']); //Set current logfile
+	$backwpupjobrun['STATIC']['JOB']['cronnextrun']=backwpup_cron_next($jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cron']);  //set next run
+	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'cronnextrun',$backwpupjobrun['STATIC']['JOB']['cronnextrun']);
+	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','');
 	//Set todo
-	$backwpupjobrun['STATIC']['TODO']=explode('+',$backwpupjobrun['STATIC']['JOB']['type']);
+	$backwpupjobrun['STATIC']['TODO']=$backwpupjobrun['STATIC']['JOB']['type'];
 	//only for jobs that makes backups
 	if (in_array('FILE',$backwpupjobrun['STATIC']['TODO']) or in_array('DB',$backwpupjobrun['STATIC']['TODO']) or in_array('WPEXP',$backwpupjobrun['STATIC']['TODO'])) {
 		//make emty file list
@@ -125,7 +118,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	foreach($backwpupjobrun['WORKING']['STEPS'] as $step)
 		$backwpupjobrun['WORKING'][$step]['DONE']=false;
 	//write working date
-	set_transient( 'backwpup_job_working', $backwpupjobrun, BACKWPUP_JOB_TRANSIENT_LIVETIME );
+	backwpup_update_option('WORKING','DATA',$backwpupjobrun);
 	//create log file
 	$fd=fopen($backwpupjobrun['LOGFILE'],'w');
 	fwrite($fd,"<html>\n<head>\n");
@@ -135,7 +128,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />",100)."\n");
 	fwrite($fd,"<meta name=\"backwpup_jobid\" content=\"".$backwpupjobrun['STATIC']['JOB']['jobid']."\" />\n");
 	fwrite($fd,"<meta name=\"backwpup_jobname\" content=\"".$backwpupjobrun['STATIC']['JOB']['name']."\" />\n");
-	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".$backwpupjobrun['STATIC']['JOB']['type']."\" />\n");
+	fwrite($fd,"<meta name=\"backwpup_jobtype\" content=\"".implode('+',$backwpupjobrun['STATIC']['JOB']['type'])."\" />\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />",100)."\n");
 	fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />",100)."\n");
 	fwrite($fd,"<style type=\"text/css\">\n");
@@ -163,7 +156,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 		fwrite($fd,sprintf(__('[INFO]: curl ver.: %1$s; %2$s','backwpup'),$curlversion['version'],$curlversion['ssl_version'])."<br />\n");
 	}
 	fwrite($fd,sprintf(__('[INFO]: Temp folder is: %s','backwpup'),$backwpupjobrun['STATIC']['TEMPDIR'])."<br />\n");
-	fwrite($fd,sprintf(__('[INFO]: Logfile folder is: %s','backwpup'),$backwpupjobrun['STATIC']['CFG']['dirlogs'])."<br />\n");
+	fwrite($fd,sprintf(__('[INFO]: Logfile folder is: %s','backwpup'),$backwpup_cfg['dirlogs'])."<br />\n");
 	fwrite($fd,sprintf(__('[INFO]: Backup type is: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['backuptype'])."<br />\n");
 	if(!empty($backwpupjobrun['STATIC']['backupfile']) and $backwpupjobrun['STATIC']['JOB']['backuptype']=='archive')
 		fwrite($fd,sprintf(__('[INFO]: Backup file is: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])."<br />\n");

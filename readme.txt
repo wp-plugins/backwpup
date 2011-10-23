@@ -60,6 +60,7 @@ Do backups and more for your WordPress Blog.
 * now manaly job starts wor with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
 * don't look for file ending on deletion and use file time not name
 * the job working is back in the WordPress envoerment
+* abb own database table for backwpup
 
 = 2.1.5 =
 * Updated AWS lib to 1.4.4

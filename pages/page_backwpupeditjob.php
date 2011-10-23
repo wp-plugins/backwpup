@@ -19,7 +19,6 @@ if (isset($_REQUEST['jobid']) and !empty($_REQUEST['jobid'])) {
 	$jobvalue=backwpup_get_job_vars();
 }
 //set extra vars
-$todo=explode('+',$jobvalue['type']);
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
 <div class="wrap">
@@ -55,7 +54,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 						
-			<div id="databasejobs" class="stuffbox" <?PHP if (!in_array("CHECK",$todo) and !in_array("DB",$todo) and !in_array("OPTIMIZE",$todo)) echo 'style="display:none;"';?>>
+			<div id="databasejobs" class="stuffbox"<?PHP if (!in_array("CHECK",$jobvalue['type']) and !in_array("DB",$jobvalue['type']) and !in_array("OPTIMIZE",$jobvalue['type'])) echo ' style="display:none;"';?>>
 				<h3><label for="dbtables"><?PHP _e('Database Jobs','backwpup'); ?></label></h3>
 				<div class="inside">
 					<div>
@@ -69,7 +68,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						?>
 						</div>
 					</div>
-					<span id="dbdump" <?PHP if (!in_array("DB",$todo)) echo 'style="display:none;"';?>>
+					<span id="dbdump"<?PHP if (!in_array("DB",$jobvalue['type'])) echo ' style="display:none;"';?>>
 					<strong><?php _e('Filename for Dump:','backwpup');?></strong> <input class="long-text" type="text" name="dbdumpfile" value="<?php echo $jobvalue['dbdumpfile'];?>"/>.sql 
 					<br /><strong><?php _e('Copmpression for dump:','backwpup');?></strong>
 					<?PHP
@@ -90,7 +89,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 
-			<div id="wpexport" class="stuffbox" <?PHP if (!in_array("WPEXP",$todo)) echo 'style="display:none;"';?>>
+			<div id="wpexport" class="stuffbox"<?PHP if (!in_array("WPEXP",$jobvalue['type'])) echo ' style="display:none;"';?>>
 				<h3><label for="dbtables"><?PHP _e('Wordpress Export','backwpup'); ?></label></h3>
 				<div class="inside">
 					<strong><?php _e('Filename for Export:','backwpup');?></strong> <input class="long-text" type="text" name="wpexportfile" value="<?php echo $jobvalue['wpexportfile'];?>"/>.xml 
@@ -110,7 +109,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 			</div>
 			
 			
-			<div id="filebackup" class="stuffbox" <?PHP if (!in_array("FILE",$todo)) echo 'style="display:none;"';?>>
+			<div id="filebackup" class="stuffbox"<?PHP if (!in_array("FILE",$jobvalue['type'])) echo ' style="display:none;"';?>>
 				<h3><label for="backuproot"><?PHP _e('File Backup','backwpup'); ?></label></h3>
 				<div class="inside">
 					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b><br />&nbsp;<br />

@@ -47,9 +47,11 @@ if (!defined('BACKWPUP_DESTS')) {
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
     define('AWS_CERTIFICATE_AUTHORITY', true);
-//live time for job runn data
-if (!defined('BACKWPUP_JOB_TRANSIENT_LIVETIME'))
-    define('BACKWPUP_JOB_TRANSIENT_LIVETIME', 60*60*2);
+//show SQL error on debug
+if (defined('WP_DEBUG') and WP_DEBUG) {
+	global $wpdb;
+	$wpdb->show_errors();
+}
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
@@ -60,7 +62,7 @@ register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //add cron intervals
 add_filter('cron_schedules', 'backwpup_intervals');
 //call activation settings
-backwpup_plugin_activate();
+backwpup_plugin_init();
 //For multisite or singel Blog
 if (is_multisite()) {
 	//Admin message
@@ -90,8 +92,4 @@ add_action('backwpup_cron', 'backwpup_cron',1);
 add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
 //load ajax functions
 backwpup_load_ajax();
-//Disabele WP_Corn
-$cfg=get_option('backwpup');
-if (!empty($cfg['disablewpcron']))
-	define('DISABLE_WP_CRON',true);
 ?>

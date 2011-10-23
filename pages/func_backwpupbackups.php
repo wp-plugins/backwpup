@@ -36,14 +36,10 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		
 		list($this->jobid,$this->dest)=explode(',',$jobdest);
 		
-		if (false === ($backups=get_transient('backwpup_backups_chache'))) {  //create new list
+		$backups=backwpup_get_option('TEMP','BACKUPS');
+		if (!empty($backups) or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
 			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$backups,300);
-		}
-		
-		if (!$backups or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
-			$backups=backwpup_get_backup_files($this->jobid,$this->dest);
-			set_transient('backwpup_backups_chache',$backups,300);		
+			backwpup_update_option('TEMP','BACKUPS',$backups);			
 		}
 		
 		//if no itmes brake
@@ -134,12 +130,12 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	function extra_tablenav( $which ) {
 		if ( 'top' != $which )
 			return;
-		$jobs=get_option('backwpup_jobs');
 		echo '<div class="alignleft actions">';
 		echo "<select name=\"jobdest\" id=\"jobdest\" class=\"postform\">\n";
 		foreach ($this->get_dest_list() as $jobdest) {
 			list($jobid,$dest)=explode(',',$jobdest);
-			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.','.$this->dest,$jobdest).">".$dest.": ".esc_html($jobs[$jobid]['name'])."</option>\n";
+			$jobname=backwpup_get_option('JOB_'.$this->jobid,'name');
+			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.','.$this->dest,$jobdest).">".$dest.": ".esc_html($jobname)."</option>\n";
 		}
 		echo "</select>\n";
 		submit_button( __('Change Destination','backwpup'), 'secondary', '', false, array( 'id' => 'post-query-submit' ) );
@@ -147,10 +143,12 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	}
 	
 	function get_dest_list() {
+		global $wpdb;
 		$jobdest=array();
-		$jobs=get_option('backwpup_jobs');
-		if (!empty($jobs) and is_array($jobs)) {
-			foreach ($jobs as $jobid => $jobvalue) {
+		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value");
+		if (!empty($jobids)) {
+			foreach ($jobids as $jobid) {
+				$jobvalue=backwpup_get_job_vars($jobid);
 				if (!empty($jobvalue['backupdir']) and is_dir($jobvalue['backupdir']))
 					$jobdest[]=$jobid.',FOLDER';
 				foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
@@ -198,10 +196,10 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	
 	function display_rows() {
 		$style = '';
-		$jobs=get_option('backwpup_jobs'); //Load jobs
 		foreach ( $this->items as $backup ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
-			echo "\n\t", $this->single_row( $backup, $jobs[$this->jobid], $style );
+			$jobvalues=backwpup_get_job_vars($this->jobid);
+			echo "\n\t", $this->single_row( $backup, $jobvalues, $style );
 		}
 	}
 	
@@ -261,8 +259,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 	global $backwpup_message;
 	if (empty($jobid) or (!in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))) and $dest!='FOLDER'))
 		return false;
-	$jobs=get_option('backwpup_jobs'); //Load jobs
-	$jobvalue=$jobs[$jobid];
+	$jobvalue=backwpup_get_job_vars($jobid);
 	$filecounter=0;
 	$files=array();
 	//Get files/filinfo in backup folder

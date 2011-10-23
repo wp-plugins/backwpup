@@ -16,11 +16,11 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 
 	function prepare_items() {
-		global $mode;
-		$jobs=get_option('backwpup_jobs');
-		if (!empty($jobs) and is_array($jobs)) {
-			foreach ($jobs as $key => $value) {
-				$this->items[]=backwpup_get_job_vars($key);
+		global $mode,$wpdb;
+		$jobsids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value ASC");
+		if (!empty($jobsids)) {
+			foreach ($jobsids as $jobid) {
+				$this->items[$jobid]=backwpup_get_job_vars($jobid);
 			}
 		} else {
 			$this->items='';
@@ -63,7 +63,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function display_rows() {
 		//check for running job
-		$backupdata=get_transient('backwpup_job_working');
+		$backupdata=backwpup_get_option('WORKING','DATA');
 		$style = '';
 		foreach ( $this->items as $jobvalue ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
@@ -103,7 +103,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						if (BACKWPUP_ENV_CHECK_OK)
 							$actions['runnow'] = "<a href=\"" . wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?ABSPATH='.urlencode(ABSPATH).'&starttype=runnow&jobid='.(int)$jobvalue["jobid"], 'backwpup-job-running') . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
-						if ($backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
+						if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 							$actions['working'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
 							$actions['abort'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 						}
@@ -138,9 +138,9 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					break;
 				case 'last':
 					$r .=  "<td $attributes>";
-					if (isset($jobvalue['lastrun']) && $jobvalue['lastrun']) {
+					if (!empty($jobvalue['lastrun'])) {
 						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['lastrun']);
-						if (isset($jobvalue['lastruntime']))
+						if (!empty($jobvalue['lastruntime']))
 							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
 					} else {
 						$r .= __('None','backwpup').'<br />';
@@ -227,7 +227,7 @@ function backwpup_show_info_td() {
 	global $wpdb;
 	$mode=$_POST['mode'];
 	$jobvalue=backwpup_get_job_vars($_POST['jobid']);
-	if (in_array('DB',explode('+',$jobvalue['type'])) or in_array('OPTIMIZE',explode('+',$jobvalue['type'])) or in_array('CHECK',explode('+',$jobvalue['type']))) {
+	if (in_array('DB',$jobvalue['type']) or in_array('OPTIMIZE',$jobvalue['type']) or in_array('CHECK',$jobvalue['type'])) {
 		$dbsize=array('size'=>0,'num'=>0,'rows'=>0);
 		$status=$wpdb->get_results("SHOW TABLE STATUS FROM `".DB_NAME."`;", ARRAY_A);
 		foreach($status as $tablekey => $tablevalue) {
@@ -243,7 +243,7 @@ function backwpup_show_info_td() {
 			echo  __("DB Rows:","backwpup")." ".$dbsize['rows']."<br />";
 		}
 	}
-	if (in_array('FILE',explode('+',$jobvalue['type']))) {
+	if (in_array('FILE',$jobvalue['type'])) {
 		$files=backwpup_calc_file_size($jobvalue);
 		echo __("Files Size:","backwpup")." ".backwpup_formatBytes($files['size'])."<br />";
 		if ( 'excerpt' == $mode ) {

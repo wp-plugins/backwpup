@@ -1,7 +1,7 @@
 <?PHP
 if (!defined('ABSPATH'))
 	die();
-
+global $wpdb;
 
 //Create Table
 $backwpup_listtable = new BackWPup_Jobs_Table;
@@ -12,44 +12,37 @@ $doaction = $backwpup_listtable->current_action();
 if (!empty($doaction)) {
 	switch($doaction) {
 	case 'delete': //Delete Job
-		$jobs=get_option('backwpup_jobs');
 		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
-				unset($jobs[$jobid]);
+				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'JOB_'.$jobid));
 			}
 		}
 		//activate/deactivate seduling if not needed
-		$activejobs=false;
-		foreach ($jobs as $jobid => $jobvalue) {
-			if (!empty($jobvalue['activated']))
-				$activejobs=true;
-		}
-		if (!$activejobs and false !== wp_next_scheduled('backwpup_cron')) {
+		$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
+		if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
+			wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
+		if (empty($activejobs)) 
 			wp_clear_scheduled_hook('backwpup_cron');
-		}
-		update_option('backwpup_jobs',$jobs);
 		break;
 	case 'copy': //Copy Job
 		$jobid = (int) $_GET['jobid'];
 		check_admin_referer('copy-job_'.$jobid);
-		$jobs=get_option('backwpup_jobs');
-		//generate new ID
-		$heighestid=0;
-		foreach ($jobs as $jobkey => $jobvalue) {
-			if ($jobkey>$heighestid) $heighestid=$jobkey;
+		$oldjob=backwpup_get_job_vars($jobid);
+		//create new
+		unset($oldjob['jobid']);
+		$jobvalues=backwpup_get_job_vars(0,$oldjob);
+		$jobvalues['name']=__('Copy of','backwpup').' '.$jobvalues['name'];
+		$jobvalues['activated']='';
+		$jobvalues['fileprefix']=str_replace($jobid,$jobvalues['jobid'],$jobvalues['fileprefix']);
+		unset($jobvalues['logfile']);
+		unset($jobvalues['starttime']);
+		unset($jobvalues['lastbackupdownloadurl']);
+		unset($jobvalues['lastruntime']);
+		unset($jobvalues['lastrun']);	
+		foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
+			backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
 		}
-		$newjobid=$heighestid+1;
-		$jobs[$newjobid]=$jobs[$jobid];
-		$jobs[$newjobid]['name']=__('Copy of','backwpup').' '.$jobs[$newjobid]['name'];
-		$jobs[$newjobid]['activated']=false;
-		$jobs[$newjobid]['fileprefix']=str_replace($jobid,$newjobid,$jobs[$jobid]['fileprefix']);
-		unset($jobs[$newjobid]['logfile']);
-		unset($jobs[$newjobid]['starttime']);
-		unset($jobs[$newjobid]['lastbackupdownloadurl']);
-		unset($jobs[$newjobid]['lastruntime']);
-		unset($jobs[$newjobid]['lastrun']);
-		update_option('backwpup_jobs',$jobs);
 		break;
 	case 'export': //Copy Job
 		if (is_array($_GET['jobs'])) {
@@ -80,19 +73,11 @@ if (!empty($doaction)) {
 		break;
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
-		$backupdata=get_transient('backwpup_job_working');
+		$backupdata=backwpup_get_option('WORKING','DATA');
 		if (empty($backupdata))
 			break;
-        delete_transient('backwpup_job_working');
-        delete_transient('backwpup_job_filelist');
-		delete_transient('backwpup_job_folderlist');
-		//clean up temp
-		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']);
-		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']);
-		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']))	
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']);
+        $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
+		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
 		if (!empty($backupdata['LOGFILE'])) {
 			file_put_contents($backupdata['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 			//write new log header
@@ -117,14 +102,19 @@ if (!empty($doaction)) {
 				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['WORKING']['PID'];
 		}
 		//update job settings
-		if (!empty($backupdata['STATIC']['JOB']['jobid'])) {
-			$jobs=get_option('backwpup_jobs');
-			if (isset($newlogfile) and !empty($newlogfile))
-				$jobs[$runningfile['STATIC']['JOB']['jobid']]['logfile']=$newlogfile;
-			$jobs[$backupdata['STATIC']['JOB']['jobid']]['lastrun']=$jobs[$backupdata['STATIC']['JOB']['jobid']]['starttime'];
-			$jobs[$backupdata['STATIC']['JOB']['jobid']]['lastruntime']=$backupdata['timestamp']-$jobs[$backupdata['STATIC']['JOB']['jobid']]['starttime'];
-			update_option('backwpup_jobs',$jobs); //Save Settings
+		if (!empty($backupdata['STATIC']['JOB']['jobid']) and !empty($backupdata['STATIC']['JOB']['starttime'])) {
+			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'starttime','');
+			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastrun',$backupdata['STATIC']['JOB']['starttime']);
+			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
 		}
+		sleep(3);
+		//clean up temp
+		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
+			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']);
+		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
+			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']);
+		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']))	
+			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']);
 		break;
 	}
 }
@@ -135,9 +125,8 @@ backwpup_contextual_help(__('Here is the job overview with some information. You
 $backwpup_listtable->prepare_items();
 
 //ENV Checks
-global $wp_version,$backwpup_admin_message;
+global $wp_version,$backwpup_admin_message,$backwpup_cfg;
 $backwpup_admin_message='';
-$cfg=get_option('backwpup');
 if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
 	$backwpup_admin_message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
 	$checks=false;
@@ -146,26 +135,26 @@ if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
 	$backwpup_admin_message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 	$checks=false;
 }
-if (!backwpup_check_open_basedir($cfg['dirlogs'])) { // check logs folder
-	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$cfg['dirlogs']).'<br />';
-	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($cfg['dirlogs']),FS_CHMOD_DIR,true);
+if (!backwpup_check_open_basedir($backwpup_cfg['dirlogs'])) { // check logs folder
+	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['dirlogs']).'<br />';
+	if (!empty($backwpup_cfg['dirlogs']) and !is_dir($backwpup_cfg['dirlogs'])) { // create logs folder if it not exists
+		@mkdir(untrailingslashit($backwpup_cfg['dirlogs']),FS_CHMOD_DIR,true);
 	}
-	if (!is_dir($cfg['dirlogs'])) { // check logs folder
-		$backwpup_admin_message.=printf(__("- Log folder '%s' not exists!",'backwpup'),$cfg['dirlogs']);
+	if (!is_dir($backwpup_cfg['dirlogs'])) { // check logs folder
+		$backwpup_admin_message.=printf(__("- Log folder '%s' not exists!",'backwpup'),$backwpup_cfg['dirlogs']);
 	}
-	if (!is_writable($cfg['dirlogs'])) { // check logs folder
-		$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$cfg['dirlogs']).'<br />';
+	if (!is_writable($backwpup_cfg['dirlogs'])) { // check logs folder
+		$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['dirlogs']).'<br />';
 	} else {
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($cfg['dirlogs'].'.htaccess'))
-				file_put_contents($cfg['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
+			if (!is_file($backwpup_cfg['dirlogs'].'.htaccess'))
+				file_put_contents($backwpup_cfg['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($cfg['dirlogs'].'index.html'))
-				file_put_contents($cfg['dirlogs'].'index.html',"\n");
-			if (!is_file($cfg['dirlogs'].'index.php'))
-				file_put_contents($cfg['dirlogs'].'index.php',"\n");
+			if (!is_file($backwpup_cfg['dirlogs'].'index.html'))
+				file_put_contents($backwpup_cfg['dirlogs'].'index.html',"\n");
+			if (!is_file($backwpup_cfg['dirlogs'].'index.php'))
+				file_put_contents($backwpup_cfg['dirlogs'].'index.php',"\n");
 		}
 	}
 }
@@ -175,7 +164,7 @@ if (!backwpup_check_open_basedir($tempdir)) { // check temp folder
 	if (!is_dir($tempdir)) { // create logs folder if it not exists
 		@mkdir(untrailingslashit($tempdir),FS_CHMOD_DIR,true);
 	}
-	if (!is_dir($cfg['dirlogs'])) { // check logs folder
+	if (!is_dir($backwpup_cfg['dirlogs'])) { // check logs folder
 		$backwpup_admin_message.=printf(__("- Temp folder '%s' not exists!",'backwpup'),$tempdir);
 	}
 	if (!is_writable($tempdir)) { // check logs folder

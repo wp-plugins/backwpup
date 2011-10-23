@@ -13,19 +13,21 @@ class backwpup_api {
 	
 	//API for cron trigger
 	public function cronupdate() {
-		$cfg=get_option('backwpup');
-		if (empty($cfg['apicronservice']))
+		global $wpdb,$backwpup_cfg;
+		if (empty($backwpup_cfg['apicronservice']))
 			return;
 		$post=array();
 		$post['ACTION']='cronupdate';
 		$post['OFFSET']=get_option('gmt_offset');
-		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
-			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
-		$jobs=get_option('backwpup_jobs');
-		if (!empty($jobs)) {
-			foreach ($jobs as $jobid => $jobvalue) {
-				if ($jobvalue['activated'] and !empty($jobvalue['cron']))
-					$post["JOBCRON[".$jobid."]"]=$jobvalue['cron'];
+		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
+			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword']));
+		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' ORDER BY main_name");
+		if (!empty($activejobs)) {
+			foreach ($activejobs as $mainname) {
+				$jobid=backwpup_get_option($mainname,'jobid');
+				$cron=backwpup_get_option($mainname,'cron');
+				if (!empty($cron))
+					$post["JOBCRON[".$jobid."]"]=$cron;
 			}
 		}
 		$raw_response = wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
@@ -67,14 +69,17 @@ class backwpup_api {
 	
 	//get Keys
 	public function get_keys() {
-		if (false===($keys=get_transient('backwpup_api')) or empty($keys)) {
+		$keys=backwpup_get_option('API','KEYS');
+		if (!is_array($keys) or empty($keys['lastupdate']) or $keys['lastupdate']<time()-(60*60*24*7)) {
 			$post=array();
 			$post['ACTION']='getkeys';
 			$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 			if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
 				$keys = unserialize(trim(base64_decode($raw_response['body'])));
-			if (is_array($keys))
-				set_transient('backwpup_api',$keys,60*60*24*7);
+			if (is_array($keys)) {
+				$keys['lastupdate']=time();
+				backwpup_update_option('API','KEYS',$keys);
+			}
 		}
 		return $keys;
 	}
