@@ -35,8 +35,9 @@ function backwpup_job_dest_dropbox_sync() {
 	$remotefilelist=array();
 	$remotefolderlist=array();
 	backwpup_job_dest_dropbox_sync_get_remote_files($backwpupjobrun['STATIC']['JOB']['dropedir'],$dropbox,$remotefilelist,$remotefolderlist);
-	rsort($remotefolderlist);
+	
 	//Start sync
+	rsort($remotefolderlist);
 	trigger_error(__('Sync folder...','backwpup'),E_USER_NOTICE);
 	foreach($remotefolderlist as $remotefolder) {
 		backwpup_job_update_working_data();
@@ -56,14 +57,14 @@ function backwpup_job_dest_dropbox_sync() {
 			} catch (Exception $e) {
 				trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 			}
-			//delte files form remotefolder list if folder deletet
+			//delete files form remotefolder list if folder deletet
 			foreach($remotefilelist as $remotekey => $remotefile) {
-				if (strpos($remotefolder,$remotefile['FILE']) == 0) 
+				if (strpos($remotefile['FILE'],$remotefolder) !== false) {
 					unset($remotefilelist[$remotekey]);
+				}
 			}
 		}
 	}
-	unset($remotefolderlist);
 	
 	trigger_error(__('Sync files...','backwpup'),E_USER_NOTICE);
 	foreach($remotefilelist as $remotefile) {
@@ -94,7 +95,7 @@ function backwpup_job_dest_dropbox_sync() {
 			}	
 		}
 	}
-	unset($remotefilelist);
+
 	//upload files not on dest
 	foreach($filelist as $filekey => $files) {
 		trigger_error(sprintf(__('Upload new file to DropBox: %s','backwpup'),$files['OUTFILE']),E_USER_NOTICE);
