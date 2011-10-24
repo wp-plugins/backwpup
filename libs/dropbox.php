@@ -199,11 +199,11 @@ class backwpup_Dropbox {
 			curl_setopt($ch,CURLOPT_INFILESIZE,filesize($file));
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
 			$headers[]='Authorization: '.$OAuthSign['header'];
-			curl_setopt($ch, CURLOPT_URL, $url.$args);
+			curl_setopt($ch, CURLOPT_URL, pathencode($url).$args);
 		} else {
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
-			curl_setopt($ch, CURLOPT_URL, $url.$args);
+			curl_setopt($ch, CURLOPT_URL, pathencode($url).$args);
 		}
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
@@ -251,6 +251,20 @@ class backwpup_Dropbox {
 			else
 				return $output;
 		}
+	}
+	
+	private function pathencode($string) {
+        $string = urlencode($string);
+        $string = str_replace('+','%20',$string);
+        $string = str_replace('!','%21',$string);
+        $string = str_replace('*','%2A',$string);
+        $string = str_replace('\'','%27',$string);
+        $string = str_replace('(','%28',$string);
+        $string = str_replace(')','%29',$string);	
+		$string = str_replace('%2F','/',$string);
+		//$string = str_replace('%3F','?',$string);
+		//$string = str_replace('%3D','=',$string);
+		return $string;
 	}
 
 }
