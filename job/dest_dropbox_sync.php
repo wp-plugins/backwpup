@@ -54,14 +54,14 @@ function backwpup_job_dest_dropbox_sync() {
 			trigger_error(sprintf(__('Delete folder from DropBox: %s','backwpup'),$remotefolder),E_USER_NOTICE);
 			try {
 				$dropbox->fileopsDelete($remotefolder);
+				//delete files form remotefolder list if folder deletet
+				foreach($remotefilelist as $remotekey => $remotefile) {
+					if (strpos($remotefile['FILE'],$remotefolder) !== false) {
+						unset($remotefilelist[$remotekey]);
+					}
+				}
 			} catch (Exception $e) {
 				trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
-			}
-			//delete files form remotefolder list if folder deletet
-			foreach($remotefilelist as $remotekey => $remotefile) {
-				if (strpos($remotefile['FILE'],$remotefolder) !== false) {
-					unset($remotefilelist[$remotekey]);
-				}
 			}
 		}
 	}
@@ -115,16 +115,16 @@ function backwpup_job_dest_dropbox_sync_get_remote_files($folder,&$dropbox,&$rem
 	backwpup_job_update_working_data();
 	try {
 		$remote = $dropbox->metadata($folder,true);
+		foreach($remote['contents'] as $entries) {
+			if ($entries['is_dir']) {
+				$remotefolderlist[]=$entries['path'];
+				backwpup_job_dest_dropbox_sync_get_remote_files($entries['path'],$dropbox,$remotefilelist,$remotefolderlist);
+			} else {
+				$remotefilelist[]=array('FILE'=>$entries['path'],'BYTES'=>$entries['bytes']);
+			}
+		}
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
-	}
-	foreach($remote['contents'] as $entries) {
-		if ($entries['is_dir']) {
-			$remotefolderlist[]=$entries['path'];
-			backwpup_job_dest_dropbox_sync_get_remote_files($entries['path'],$dropbox,$remotefilelist,$remotefolderlist);
-		} else {
-			$remotefilelist[]=array('FILE'=>$entries['path'],'BYTES'=>$entries['bytes']);
-		}
 	}
 }
 ?>

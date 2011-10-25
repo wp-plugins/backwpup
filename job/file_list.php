@@ -57,7 +57,7 @@ function backwpup_job_file_list() {
 		$folder=trailingslashit(dirname($outfile));
 		if ($folder='.')
 			$folder='/';
-		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'],'FOLDER'=>$folder);
+		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
 	}
 	backwpup_job_add_file($filelist); //add files to list
 	$backwpupjobrun['WORKING']['STEPDONE']=2;

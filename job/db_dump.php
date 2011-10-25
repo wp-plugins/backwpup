@@ -18,7 +18,7 @@ function backwpup_job_db_dump() {
 
 	$datevars=array('%d','%D','%l','%N','%S','%w','%z','%W','%F','%m','%M','%n','%t','%L','%o','%Y','%a','%A','%B','%g','%G','%h','%H','%i','%s','%u','%e','%I','%O','%P','%T','%Z','%c','%U');
 	$datevalues=array(date_i18n('d'),date_i18n('D'),date_i18n('l'),date_i18n('N'),date_i18n('S'),date_i18n('w'),date_i18n('z'),date_i18n('W'),date_i18n('F'),date_i18n('m'),date_i18n('M'),date_i18n('n'),date_i18n('t'),date_i18n('L'),date_i18n('o'),date_i18n('Y'),date_i18n('a'),date_i18n('A'),date_i18n('B'),date_i18n('g'),date_i18n('G'),date_i18n('h'),date_i18n('H'),date_i18n('i'),date_i18n('s'),date_i18n('u'),date_i18n('e'),date_i18n('I'),date_i18n('O'),date_i18n('P'),date_i18n('T'),date_i18n('Z'),date_i18n('c'),date_i18n('U'));
-	$backwpupjobrun['STATIC']['JOB']['dbdumpfile']=utf8_decode(str_replace($datevars,$datevalues,$backwpupjobrun['STATIC']['JOB']['dbdumpfile']));
+	$backwpupjobrun['STATIC']['JOB']['dbdumpfile']=str_replace($datevars,$datevalues,$backwpupjobrun['STATIC']['JOB']['dbdumpfile']);
 
 	//check compression
 	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz' and !function_exists('gzopen'))
