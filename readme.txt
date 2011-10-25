@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.1
 Tested up to: 3.2.1
-Stable tag: 2.1.5
+Stable tag: 2.1.6
 
 WordPress Backup and more...
 
@@ -61,6 +61,12 @@ Do backups and more for your WordPress Blog.
 * don't look for file ending on deletion and use file time not name
 * the job working is back in the WordPress envoerment
 * abb own database table for backwpup
+
+= 2.1.6 =
+* fixed Dropbox with no path problem
+* fixed Dropbox path with witespace
+* Updated AWS lib to 1.4.5
+* 2. fix for security vulnerability
 
 = 2.1.5 =
 * Updated AWS lib to 1.4.4
