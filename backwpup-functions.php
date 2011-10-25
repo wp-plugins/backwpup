@@ -202,7 +202,9 @@ function backwpup_plugin_init() {
 
 function backwpup_update_option($mainname,$name,$value) {
 	global $wpdb;
-	if (empty(trim($mainname)) or empty(trim($nam)))
+	$mainname=trim($mainname);
+	$name=trim($name);
+	if (empty($mainname) or empty($name))
 		return false;
 	if (is_object($value))
 		$value = clone $value;
@@ -220,7 +222,9 @@ function backwpup_update_option($mainname,$name,$value) {
 
 function backwpup_get_option($mainname,$name) {
 	global $wpdb;
-	if (empty(trim($mainname)) or empty(trim($nam)))
+	$mainname=trim($mainname);
+	$name=trim($name);
+	if (empty($mainname) or empty($name))
 		return false;
 	$value=$wpdb->get_row($wpdb->prepare("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main_name=%s AND name=%s LIMIT 1",$mainname,$name));
 	if (is_object($value)) 
@@ -231,7 +235,9 @@ function backwpup_get_option($mainname,$name) {
 
 function backwpup_add_option($mainname,$name,$value) {
 	global $wpdb;
-	if (empty(trim($mainname)) or empty(trim($nam)))
+	$mainname=trim($mainname);
+	$name=trim($name);
+	if (empty($mainname) or empty($name))
 		return false;
 	if (is_object($value))
 		$value = clone $value;
@@ -243,9 +249,11 @@ function backwpup_add_option($mainname,$name,$value) {
 }
 
 function backwpup_delete_option($mainname,$name) {	
-	if (empty(trim($mainname)) or empty(trim($nam)))
-		return false;
 	global $wpdb;
+	$mainname=trim($mainname);
+	$name=trim($name);
+	if (empty($mainname) or empty($name))
+		return false;
 	$result=$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s AND name=%s LIMIT 1",$mainname,$name));
 	if ($result)
 		return true;
@@ -255,6 +263,10 @@ function backwpup_delete_option($mainname,$name) {
 
 function backwpup_exists_option($mainname,$name) {
 	global $wpdb;
+	$mainname=trim($mainname);
+	$name=trim($name);
+	if (empty($mainname) or empty($name))
+		return false;
 	$value=$wpdb->get_row($wpdb->prepare("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main_name=%s AND name=%s LIMIT 1",$mainname,$name));
 	if (is_object($value)) 
 		return true;
