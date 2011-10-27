@@ -8,7 +8,7 @@ class backwpup_api {
 		global $wp_version;
 		$this->headers['User-Agent']='BackWPup/'.BACKWPUP_VERSION.' WordPress/'.$wp_version;
 		$this->headers['Authorization']='Basic '.base64_encode(BACKWPUP_VERSION.':'.md5(trim(get_bloginfo('url'))));
-		$this->headers['Referer']=get_bloginfo('url');
+		$this->headers['Referer']=trim(get_bloginfo('url'));
 	}
 	
 	//API for cron trigger
@@ -31,7 +31,7 @@ class backwpup_api {
 			}
 		}
 		$raw_response = wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-		if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
 			return true;
 		else
 			return false;
@@ -41,26 +41,22 @@ class backwpup_api {
 	public function plugin_update_check() {
 		// Start checking for an update
 		$post=array();
-		if (defined('BACKWPUP_UPDATE_TYPE'))
-			$post['TYPE']=BACKWPUP_UPDATE_TYPE;
 		$post['ACTION']='updatecheck';
 		$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-		if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
-			$response = unserialize($raw_response['body']);
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
+			$response = unserialize(wp_remote_retrieve_body($raw_response));
 		return $response;
 	}
 	
 	//infoscreen
 	public function plugin_infoscreen() {
 		$post=array();
-		if (defined('BACKWPUP_UPDATE_TYPE'))
-			$post['TYPE']=BACKWPUP_UPDATE_TYPE;
 		$post['ACTION']='updateinfo';
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (is_wp_error($request)) {
 			$res = new WP_Error('plugins_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message());
 		} else {
-			$res = unserialize($request['body']);	
+			$res = unserialize(wp_remote_retrieve_body($request));	
 			if ($res === false)
 				$res = new WP_Error('plugins_api_failed', __('An unknown error occurred'), $request['body']);
 		}
@@ -74,8 +70,8 @@ class backwpup_api {
 			$post=array();
 			$post['ACTION']='getkeys';
 			$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-			if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
-				$keys = unserialize(trim(base64_decode($raw_response['body'])));
+			if (!is_wp_error($raw_response) and 200 == wp_remote_retrieve_response_code($raw_response))
+				$keys = unserialize(trim(base64_decode(wp_remote_retrieve_body($raw_response))));
 			if (is_array($keys)) {
 				$keys['lastupdate']=time();
 				backwpup_update_option('API','KEYS',$keys);
@@ -90,7 +86,7 @@ class backwpup_api {
 		$post['ACTION']='delete';
 		delete_transient('backwpup_api');
 		$raw_response=wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-		if (!is_wp_error($raw_response) && ($raw_response['response']['code'] == 200))
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
 			return true;
 		else
 			return false;
@@ -99,11 +95,11 @@ class backwpup_api {
 
 function backwpup_api_plugin_update_check($checked_data) {
 	if (empty($checked_data->checked))
-		return $checked_data;	
+		return $checked_data;
 	$backwpupapi=new backwpup_api();
 	$response=$backwpupapi->plugin_update_check();
 	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
-		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR .'/backwpup.php'] = $response;
+		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php'] = $response;
 	return $checked_data;
 }
 //Add filter for Plugin Updates from backwpup.com
