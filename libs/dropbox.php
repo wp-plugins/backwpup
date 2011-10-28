@@ -245,12 +245,15 @@ class backwpup_Dropbox {
 			if(isset($output['error']) && is_string($output['error'])) $message = '('.$status['http_code'].') '.$output['error'];
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) '('.$status['http_code'].') '.$output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
+			elseif ($status['http_code']==304) $message = '(304) The folder contents have not changed (relies on hash parameter).';
 			elseif ($status['http_code']==400) $message = '(400) Bad input parameter: '.strip_tags($content);
 			elseif ($status['http_code']==401) $message = '(401) Bad or expired token. This can happen if the user or Dropbox revoked or expired an access token. To fix, you should re-authenticate the user.';
 			elseif ($status['http_code']==403) $message = '(403) Bad OAuth request (wrong consumer key, bad nonce, expired timestamp, ...). Unfortunately, reauthenticating the user won\'t help here.';
 			elseif ($status['http_code']==404) $message = '(404) The file was not found at the specified path, or was not found at the specified rev.';
 			elseif ($status['http_code']==405) $message = '(405) Request method not expected (generally should be GET,PUT or POST).';
+			elseif ($status['http_code']==406) $message = '(406) There are too many file entries to return.';
 			elseif ($status['http_code']==411) $message = '(411) Chunked encoding was attempted for this upload, but is not supported by Dropbox.';
+			elseif ($status['http_code']==415) $message = '(415) The image is invalid and cannot be thumbnailed.';
 			elseif ($status['http_code']==503) $message = '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis.';
 			elseif ($status['http_code']==507) $message = '(507) User is over Dropbox storage quota.';
 			else $message = '('.$status['http_code'].') Invalid response.';

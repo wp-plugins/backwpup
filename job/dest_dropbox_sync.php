@@ -21,7 +21,7 @@ function backwpup_job_dest_dropbox_sync() {
 		//get account info
 		$info=$dropbox->accountInfo();
 		if (!empty($info['uid'])) {
-			trigger_error(sprintf(__('Authed with DropBox from %s','backwpup'),$info['display_name']),E_USER_NOTICE);
+			trigger_error(sprintf(__('Authed with DropBox from %s','backwpup'),$info['display_name'].' ('.$info['email'].')'),E_USER_NOTICE);
 		}
 		//Quota
 		$dropboxfreespase=$info['quota_info']['quota']-$info['quota_info']['shared']-$info['quota_info']['normal'];
