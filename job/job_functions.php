@@ -18,7 +18,8 @@ function backwpup_job_add_folder($folder) {
 	if (empty($folderlist))
 		$folderlist=array();
 	$folderlist[]=$folder;
-	backwpup_update_option('WORKING','FOLDERLIST',$folderlist);
+	rsort($folderlist);
+	backwpup_update_option('WORKING','FOLDERLIST',array_unique($folderlist));
 }
 
 function backwpup_job_inbytes($value) {
@@ -92,14 +93,14 @@ function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload
 }
 
 function backwpup_job_update_working_data($mustwrite=false) {
-	global $backwpupjobrun,$wpdb,$backwpuprunmicrotime;
+	global $backwpupjobrun,$wpdb;
 	$backupdata=backwpup_get_option('WORKING','DATA');
 	if (empty($backupdata)) {
 		backwpup_job_job_end();
 		return false;
 	}
-	if ($mustwrite or empty($backwpuprunmicrotime) or $backwpuprunmicrotime<(microtime()-1000)) { //only update all 1 sec.
-		$backwpuprunmicrotime=microtime();
+	$timevorupdate=current_time('timestamp')-1; //only update all 1 sec.
+	if ($mustwrite or $backwpupjobrun['WORKING']['TIMESTAMP']<=$timevorupdate) { 
 		if(!mysql_ping($wpdb->dbh)) { //check MySQL connection
 			trigger_error(__('Database connection is gone create a new one.','backwpup'),E_USER_NOTICE);
 			$wpdb->db_connect();
@@ -193,7 +194,7 @@ function backwpup_job_joberrorhandler() {
 	}
 
     //write working data
-	backwpup_job_update_working_data();
+	backwpup_job_update_working_data($adderrorwarning);
 
 	if ($args[0]==E_ERROR or $args[0]==E_CORE_ERROR or $args[0]==E_COMPILE_ERROR) {//Die on fatal php errors.
 		die();

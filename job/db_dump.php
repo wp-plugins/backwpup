@@ -91,20 +91,119 @@ function backwpup_job_db_dump() {
 		bzwrite($file, $dbdumpheader);
 	else
 		fwrite($file, $dbdumpheader);
+		
 	//make table dumps
 	foreach($tablestobackup as $table) {
 		if (in_array($table, $backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']))
 			continue;
 		trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);
 		backwpup_job_need_free_memory(($status[$table]->Data_length+$status[$table]->Index_length)*1.5); //get more memory if needed
-		_backwpup_job_db_dump_table($table,$status[$table],$file);
+		backwpup_job_update_working_data();
+		
+		$tablecreate="\n--\n-- Table structure for table $table\n--\n\n";
+		$tablecreate.="DROP TABLE IF EXISTS `".$table."`;\n";
+		$tablecreate.="/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+		$tablecreate.="/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n";
+		//Dump the table structure
+		$tablestruc=$wpdb->get_row("SHOW CREATE TABLE `".$table."`",'ARRAY_A');
+		if (mysql_error()) {
+			trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
+			return false;
+		}
+		$tablecreate.=$tablestruc['Create Table'].";\n";
+		$tablecreate.="/*!40101 SET character_set_client = @saved_cs_client */;\n";
+
+		if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
+			gzwrite($file, $tablecreate);
+		elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
+			bzwrite($file, $tablecreate);
+		else
+			fwrite($file, $tablecreate);
+
+		//get data from table
+		$datas=$wpdb->get_results("SELECT * FROM `".$table."`",'ARRAY_N');
+		if (mysql_error()) {
+			trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
+			return false;
+		}
+		//get key information
+		$keys=$wpdb->get_col_info('name',-1);
+
+		//build key string
+		$keystring='';
+		if (!$backwpupjobrun['STATIC']['JOB']['dbshortinsert'])
+			$keystring=" (`".implode("`, `",$keys)."`)";
+		//colem infos
+		for ($i=0;$i<count($keys);$i++) {
+			$colinfo[$i]['numeric']=$wpdb->get_col_info('numeric',$i);
+			$colinfo[$i]['type']=$wpdb->get_col_info('type',$i);
+			$colinfo[$i]['blob']=$wpdb->get_col_info('blob',$i);
+		}
+			
+		$tabledata="\n--\n-- Dumping data for table $table\n--\n\n";
+
+		if ($status[$table]->Engine=='MyISAM')
+			$tabledata.="/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n";
+
+		if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
+			gzwrite($file, $tabledata);
+		elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
+			bzwrite($file, $tabledata);
+		else
+			fwrite($file, $tabledata);
+		$tabledata='';
+		
+		$querystring='';
+		foreach ($datas as $data) {
+			$values = array();
+			foreach($data as $key => $value) {
+				if(is_null($value) or !isset($value)) // Make Value NULL to string NULL
+					$value = "NULL";
+				elseif($colinfo[$key]['numeric']==1 and $colinfo[$key]['type']!='timestamp' and $colinfo[$key]['blob']!=1)//is value numeric no esc
+					$value = empty($value) ? 0 : $value;
+				else
+					$value = "'".mysql_real_escape_string($value)."'";
+				$values[] = $value;
+			}
+			if (empty($querystring))
+				$querystring="INSERT INTO `".$table."`".$keystring." VALUES\n";
+			if (strlen($querystring)<=50000) { //write dump on more than 50000 chars.
+				$querystring.="(".implode(", ",$values)."),\n";
+			} else {
+				$querystring.="(".implode(", ",$values).");\n";
+				if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
+					gzwrite($file, $querystring);
+				elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
+					bzwrite($file, $querystring);
+				else
+					fwrite($file, $querystring);
+				$querystring='';
+			}
+		}
+		if (!empty($querystring)) //dump rest
+			$tabledata=substr($querystring,0,-2).";\n";
+
+		if ($status[$table]->Engine=='MyISAM')
+			$tabledata.="/*!40000 ALTER TABLE `".$table."` ENABLE KEYS */;\n";
+
+		if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
+			gzwrite($file, $tabledata);
+		elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
+			bzwrite($file, $tabledata);
+		else
+			fwrite($file, $tabledata);
+
+		$wpdb->flush();
+		
 		$backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE'][]=$table;
 		$backwpupjobrun['WORKING']['STEPDONE']=count($backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']);
 	}
+	
 	//for better import with mysql client
 	$dbdumpfooter= "\n--\n-- Delelte not needet values on backwpup table\n--\n\n";
-	$dbdumpfooter.= "DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP';\n";
-	$dbdumpfooter.= "DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING';\n";
+	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='TEMP';\n";
+	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='WORKING';\n";
+	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='API';\n";
 	$dbdumpfooter.= "\n";
 	$dbdumpfooter.= "\n";
 	$dbdumpfooter.= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n";
@@ -140,105 +239,5 @@ function backwpup_job_db_dump() {
 	//Back from maintenance
 	backwpup_job_maintenance_mode(false);
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='DB_DUMP'; //set done
-}
-
-
-function _backwpup_job_db_dump_table($table,$status,$file) {
-	global $backwpupjobrun,$wpdb;
-	// create dump
-	$tablecreate="\n--\n-- Table structure for table $table\n--\n\n";
-	$tablecreate.="DROP TABLE IF EXISTS `".$table."`;\n";
-	$tablecreate.="/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-	$tablecreate.="/*!40101 SET character_set_client = '".mysql_client_encoding()."' */;\n";
-	//Dump the table structure
-	$tablestruc=$wpdb->get_row("SHOW CREATE TABLE `".$table."`",'ARRAY_A');
-	if (mysql_error()) {
-		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SHOW CREATE TABLE `".$table."`"),E_USER_ERROR);
-		return false;
-	}
-	$tablecreate.=$tablestruc['Create Table'].";\n";
-	$tablecreate.="/*!40101 SET character_set_client = @saved_cs_client */;\n";
-
-	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
-		gzwrite($file, $tablecreate);
-	elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
-		bzwrite($file, $tablecreate);
-	else
-		fwrite($file, $tablecreate);
-
-	//get data from table
-	$datas=$wpdb->get_results("SELECT * FROM `".$table."`",'ARRAY_N');
-	if (mysql_error()) {
-		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
-		return false;
-	}
-	//get key information
-	$keys=$wpdb->get_col_info('name',-1);
-
-	//build key string
-	$keystring='';
-	if (!$backwpupjobrun['STATIC']['JOB']['dbshortinsert'])
-		$keystring=" (`".implode("`, `",$keys)."`)";
-	//colem infos
-	for ($i=0;$i<count($keys);$i++) {
-		$colinfo[$i]['numeric']=$wpdb->get_col_info('numeric',$i);
-		$colinfo[$i]['type']=$wpdb->get_col_info('type',$i);
-		$colinfo[$i]['blob']=$wpdb->get_col_info('blob',$i);
-	}
-		
-	$tabledata="\n--\n-- Dumping data for table $table\n--\n\n";
-
-	if ($status->Engine=='MyISAM')
-		$tabledata.="/*!40000 ALTER TABLE `".$table."` DISABLE KEYS */;\n";
-
-	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
-		gzwrite($file, $tabledata);
-	elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
-		bzwrite($file, $tabledata);
-	else
-		fwrite($file, $tabledata);
-	$tabledata='';
-	
-	$querystring='';
-	foreach ($datas as $data) {
-		$values = array();
-		foreach($data as $key => $value) {
-			if(is_null($value) or !isset($value)) // Make Value NULL to string NULL
-				$value = "NULL";
-			elseif($colinfo[$key]['numeric']==1 and $colinfo[$key]['type']!='timestamp' and $colinfo[$key]['blob']!=1)//is value numeric no esc
-				$value = empty($value) ? 0 : $value;
-			else
-				$value = "'".mysql_real_escape_string($value)."'";
-			$values[] = $value;
-		}
-		if (empty($querystring))
-			$querystring="INSERT INTO `".$table."`".$keystring." VALUES\n";
-		if (strlen($querystring)<=50000) { //write dump on more than 50000 chars.
-			$querystring.="(".implode(", ",$values)."),\n";
-		} else {
-			$querystring.="(".implode(", ",$values).");\n";
-			if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
-				gzwrite($file, $querystring);
-			elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
-				bzwrite($file, $querystring);
-			else
-				fwrite($file, $querystring);
-			$querystring='';
-		}
-	}
-	if (!empty($querystring)) //dump rest
-		$tabledata=substr($querystring,0,-2).";\n";
-
-	if ($status->Engine=='MyISAM')
-		$tabledata.="/*!40000 ALTER TABLE `".$table."` ENABLE KEYS */;\n";
-
-	if ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='gz')
-		gzwrite($file, $tabledata);
-	elseif ($backwpupjobrun['STATIC']['JOB']['dbdumpfilecompression']=='bz2')
-		bzwrite($file, $tabledata);
-	else
-		fwrite($file, $tabledata);
-
-	$wpdb->flush();
 }
 ?>

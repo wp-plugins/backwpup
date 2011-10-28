@@ -43,9 +43,8 @@ function backwpup_job_dest_dropbox_sync() {
 		backwpup_job_update_working_data();
 		$found=false;
 		foreach($folderlist as $folderkey => $folder) {
-			if('/'.trim(trim($backwpupjobrun['STATIC']['JOB']['dropedir'],'/').'/'.$folder,'/')==$remotefolder) {
+			if(strpos('/'.trim(trim($backwpupjobrun['STATIC']['JOB']['dropedir'],'/').'/'.$folder,'/'),$remotefolder) !== false) {
 				$found=true;
-				unset($folderlist[$folderkey]);
 				break;				
 			}
 		}
