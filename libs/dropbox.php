@@ -87,6 +87,16 @@ class backwpup_Dropbox {
 		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
+
+	public function shares($path = ''){
+		$url = self::API_URL.self::API_VERSION_URL.'shares/'.$this->root.'/'.trim($path,'/');
+		return $this->request($url);
+	}
+	
+	public function media($path = ''){
+		$url = self::API_URL.self::API_VERSION_URL.'media/'.$this->root.'/'.trim($path,'/');
+		return $this->request($url);
+	}
 	
 	public function fileopsDelete($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/delete';

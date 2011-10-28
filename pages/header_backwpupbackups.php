@@ -210,18 +210,9 @@ if (!empty($doaction)) {
 			else
 				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
-			$filemeta=$dropbox->metadata($_GET['file'],false,1);
-			header("Pragma: public");
-			header("Expires: 0");
-			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-			header("Content-Type: ".$filemeta['mime_type']);
-			header("Content-Type: application/force-download");
-			header("Content-Type: application/octet-stream");
-			header("Content-Type: application/download");
-			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
-			header("Content-Transfer-Encoding: binary");
-			header("Content-Length: ".$filemeta['bytes']);
-			$dropbox->download($_GET['file'],true);
+			$media=$dropbox->media($_GET['file']);
+			if (!empty($media['url']))
+				header("Location: ".$media['url']);
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());
