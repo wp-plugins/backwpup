@@ -66,7 +66,7 @@ class backwpup_api {
 	//get Keys
 	public function get_keys() {
 		$keys=backwpup_get_option('API','KEYS');
-		if (!is_array($keys) or empty($keys['lastupdate']) or $keys['lastupdate']<time()-(60*60*24*7)) {
+		if (!is_array($keys) or empty($keys['lastupdate']) or $keys['lastupdate']<time()-(60*60*24*7) or empty($keys['BOXNET'])) {
 			$post=array();
 			$post['ACTION']='getkeys';
 			$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
@@ -88,6 +88,19 @@ class backwpup_api {
 		$raw_response=wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
 			return true;
+		else
+			return false;
+	}
+	
+	//box.net Proxy
+	public function boxnetauthproxy($ticket,$callback) {
+		$post=array();
+		$post['ACTION']='boxnetproxy';
+		$post['TICKET']=$ticket;
+		$post['CALLBACK']=$callback;
+		$raw_response=wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
+			return base64_decode(wp_remote_retrieve_body($raw_response));
 		else
 			return false;
 	}

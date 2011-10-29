@@ -11,6 +11,7 @@ jQuery(document).ready( function($) {
 			$('#backwpup_jobedit_destazure').show();
 			$('#backwpup_jobedit_destrsc').show();
 			$('#backwpup_jobedit_destdropbox').show();
+			$('#backwpup_jobedit_destboxnet').show();
 			$('#backwpup_jobedit_destsugarsync').show();
 			$('#backwpup_jobedit_destfile').show();
 			$('#backwpup_jobedit_destmail').show();
@@ -22,6 +23,7 @@ jQuery(document).ready( function($) {
 			$('#backwpup_jobedit_destazure').hide();
 			$('#backwpup_jobedit_destrsc').hide();
 			$('#backwpup_jobedit_destdropbox').hide();
+			$('#backwpup_jobedit_destboxnet').hide();
 			$('#backwpup_jobedit_destsugarsync').hide();
 			$('#backwpup_jobedit_destfile').hide();
 			$('#backwpup_jobedit_destmail').hide();

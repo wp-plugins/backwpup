@@ -2,8 +2,8 @@
 if (!defined('ABSPATH')) 
 	die();
 
-//Save Dropbox  settings
-if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  { 
+//Save Dropbox auth
+if (isset($_GET['auth']) and $_GET['auth']=='Dropbox')  { 
 	$jobid = (int) $_GET['jobid'];
 	check_admin_referer('edit-job');
 	$backwpup_message='';
@@ -36,8 +36,30 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 	$_POST['jobid']=$jobid;
 }
 
+//Save Boxnet auth
+if (isset($_GET['auth']) and $_GET['auth']=='Boxnet')  { 
+	$jobid = (int) $_GET['jobid'];
+	check_admin_referer('edit-job');
+	$backwpup_message='';
+	if (!empty($_REQUEST['auth_token'])) {
+		$reqtoken=backwpup_get_option('TEMP','BOXNETTICKET');
+		if ($reqtoken==$_REQUEST['ticket']) {
+			//Save Auth
+			backwpup_update_option('JOB_'.$jobid,'boxnetauth',$_REQUEST['auth_token']);
+			$backwpup_message.=__('Box.net authentication complete!','backwpup').'<br />';
+		} else {
+			$backwpup_message.=__('Wrong ticket for Box.net authentication received!','backwpup').'<br />';
+		}
+	} else {
+		$backwpup_message.=__('No Box.net authentication received!','backwpup').'<br />';	
+	}
+	backwpup_delete_option('TEMP','BOXNETTICKET');
+	$_POST['jobid']=$jobid;
+}
+
+
 //Save Job settings
-if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel'])) and !empty($_POST['jobid'])) {
+if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
 	check_admin_referer('edit-job');
 	$jobvalues['jobid']=(int) $_POST['jobid'];
 	$jobvalues['type']=(array)$_POST['type'];
@@ -227,12 +249,17 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 	}
 	
 	
-	if (isset($_POST['dropboxauthdel']) and !empty($_POST['dropboxauthdel'])) {
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Delete Dropbox authentication!', 'backwpup')) {
 		$jobvalues['dropetoken']='';
 		$jobvalues['dropesecret']='';
 		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
 	}
 
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Delete Box.net authentication!', 'backwpup')) {
+		$jobvalues['boxnetauth']='';
+		$backwpup_message.=__('Box.net authentication deleted!','backwpup').'<br />';
+	}
+	
 	//save chages
 	$jobvalues=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
@@ -247,7 +274,7 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 		wp_clear_scheduled_hook('backwpup_cron');
 
 	//get dropbox auth	
-	if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Dropbox authenticate!', 'backwpup')) {
 		require_once (dirname(__FILE__).'/../libs/dropbox.php');
 		//set boxtype and authkeys
 		$backwpupapi=new backwpup_api();
@@ -258,11 +285,32 @@ if ((isset($_POST['submit']) or isset($_POST['dropboxauth']) or isset($_POST['dr
 			$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
 
 		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
+		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Dropbox&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
 		backwpup_update_option('TEMP','DROPBOXAUTH',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
 		//forward to auth page
 		wp_redirect($response['authurl']);
+	}
+	
+	//get box.net auth	
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
+		if (!class_exists('boxclient'))
+			require_once (dirname(__FILE__).'/../libs/box.net/boxlibphp5.php');
+		//set boxtype and authkeys
+		$backwpupapi=new backwpup_api();
+		$keys=$backwpupapi->get_keys();
+		$box =& new boxclient($keys['BOXNET'],'');
+		$ticket=$box->getTicket();
+		if ($ticket['status']=='get_ticket_ok') {
+			$callback=backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Boxnet&_wpnonce='.wp_create_nonce('edit-job');
+			$authurl=$backwpupapi->boxnetauthproxy($ticket['ticket'],$callback);
+			// save oauth_token_secret 
+			backwpup_update_option('TEMP','BOXNETTICKET',$ticket['ticket']);
+			//forward to auth page
+			wp_redirect($authurl);
+		} else {
+			$backwpup_message.=__('Box.net get authentication faild!','backwpup').'<br />';
+		}
 	}
 	
 	//make api call to backwpup.com
@@ -288,6 +336,8 @@ if (in_array('FTP',$dests))
 	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), 'backwpup_jobedit_metabox_destftp', $current_screen->id, 'advanced', 'default');
 if (in_array('DROPBOX',$dests))
 	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), 'backwpup_jobedit_metabox_destdropbox', $current_screen->id, 'advanced', 'default');
+if (in_array('BOXNET',$dests))
+	add_meta_box('backwpup_jobedit_destboxnet', __('Backup to Box.net','backwpup'), 'backwpup_jobedit_metabox_destboxnet', $current_screen->id, 'advanced', 'default');
 if (in_array('SUGARSYNC',$dests))
 	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), 'backwpup_jobedit_metabox_destsugarsync', $current_screen->id, 'advanced', 'default');
 if (in_array('S3',$dests))

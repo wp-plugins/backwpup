@@ -1109,6 +1109,18 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (!isset($jobsettings['dropemaxbackups']) or !is_numeric($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;
 
+	if (!isset($jobsettings['boxnetauth']) or !is_string($jobsettings['boxnetauth']))
+		$jobsettings['boxnetauth']='';	
+
+	if (!isset($jobsettings['boxnetdir']) or !is_string($jobsettings['boxnetdir']) or $jobsettings['boxnetdir']=='/')
+		$jobsettings['boxnetdir']='';
+	$jobsettings['boxnetdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['boxnetdir']))));
+	if (substr($jobsettings['boxnetdir'],0,1)=='/')
+		$jobsettings['boxnetdir']=substr($jobsettings['boxnetdir'],1);
+
+	if (!isset($jobsettings['boxnetbackups']) or !is_numeric($jobsettings['boxnetbackups']))
+		$jobsettings['boxnetbackups']=0;		
+		
 	if (!isset($jobsettings['sugaruser']) or !is_string($jobsettings['sugaruser']))
 		$jobsettings['sugaruser']='';
 

@@ -42,7 +42,7 @@ if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
 		define('BACKWPUP_DESTS', 'FTP,MSAZURE');
 	else
-		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
+		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE,BOXNET');
 }
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
