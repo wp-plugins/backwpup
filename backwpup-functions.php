@@ -543,7 +543,7 @@ function backwpup_add_dashboard() {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
-	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
+	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Active Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
 }
 
 //add admin bar menu

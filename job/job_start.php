@@ -98,6 +98,8 @@ function backwpup_job_start($jobid,$jobstarttype) {
 			$backwpupjobrun['WORKING']['STEPS'][]='DEST_FTP'.$backuptypeextension;
 		if (!empty($backwpupjobrun['STATIC']['JOB']['dropetoken']) and !empty($backwpupjobrun['STATIC']['JOB']['dropesecret']) and in_array('DROPBOX',explode(',',strtoupper(BACKWPUP_DESTS))))
 			$backwpupjobrun['WORKING']['STEPS'][]='DEST_DROPBOX'.$backuptypeextension;
+		if (!empty($backwpupjobrun['STATIC']['JOB']['boxnetauth']) and in_array('BOXNET',explode(',',strtoupper(BACKWPUP_DESTS))))
+			$backwpupjobrun['WORKING']['STEPS'][]='DEST_BOXNET'.$backuptypeextension;
 		if (!empty($backwpupjobrun['STATIC']['JOB']['sugaruser']) and !empty($backwpupjobrun['STATIC']['JOB']['sugarpass']) and !empty($backwpupjobrun['STATIC']['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))
 			$backwpupjobrun['WORKING']['STEPS'][]='DEST_SUGARSYNC'.$backuptypeextension;
 		if (!empty($backwpupjobrun['STATIC']['JOB']['awsAccessKey']) and !empty($backwpupjobrun['STATIC']['JOB']['awsSecretKey']) and !empty($backwpupjobrun['STATIC']['JOB']['awsBucket']) and in_array('S3',explode(',',strtoupper(BACKWPUP_DESTS))))
@@ -144,9 +146,9 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	if ($backwpupjobrun['STATIC']['JOB']['activated'])
 		fwrite($fd,__('[INFO]: BackWPup cron:','backwpup').' '.$backwpupjobrun['STATIC']['JOB']['cron'].'; '.date_i18n('D, j M Y @ H:i',$backwpupjobrun['STATIC']['JOB']['cronnextrun'])."<br />\n");
 	if ($jobstarttype=='cronrun')
-		fwrite($fd,__('[INFO]: BackWPup job strated by cron','backwpup')."<br />\n");
+		fwrite($fd,__('[INFO]: BackWPup job started by cron','backwpup')."<br />\n");
 	elseif ($jobstarttype=='runnow')
-		fwrite($fd,__('[INFO]: BackWPup job strated manualy','backwpup')."<br />\n");
+		fwrite($fd,__('[INFO]: BackWPup job started manually','backwpup')."<br />\n");
 	fwrite($fd,__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS."<br />\n");
 	if ((bool)ini_get('safe_mode'))
 		fwrite($fd,sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time'))."<br />\n");
@@ -170,7 +172,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 			}
 		}
 		if (!$desttest) {
-			fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">".__('[ERROR]','backwpup').__('No destination defineid for backup!!! Please correct job settings','backwpup')."</span><br />\n");
+			fwrite($fd,"<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">".__('[ERROR]','backwpup').__('No destination defined for backup!!! Please correct job settings','backwpup')."</span><br />\n");
 		    $backwpupjobrun['WORKING']['ERROR']=1;
 		}
 	}

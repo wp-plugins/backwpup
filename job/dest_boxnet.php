@@ -1,0 +1,121 @@
+<?PHP
+function backwpup_job_dest_boxnet() {
+	global $backwpupjobrun;
+	$backwpupjobrun['WORKING']['STEPTODO']=2;
+	$backwpupjobrun['WORKING']['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sending backup file to Box.net...','backwpup'),$backwpupjobrun['WORKING']['DEST_BOXNET']['STEP_TRY']),E_USER_NOTICE);
+	
+	//set authkeys
+	$backwpupapi=new backwpup_api();
+	$keys=$backwpupapi->get_keys();
+
+	//get account info
+	$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_info&api_key='.$keys['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth']);
+	if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+		$info = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+	} elseif(is_wp_error($raw_response)) {
+		trigger_error(sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message()),E_USER_ERROR);
+	}
+	if ($info->status=='get_account_info_ok') {
+		trigger_error(sprintf(__('Authed with Box.net from %s','backwpup'),$info->user->email),E_USER_NOTICE);
+	} else {
+		trigger_error(sprintf(__('Box.net API: %s !!!','backwpup'),$info->status),E_USER_ERROR);
+	}
+	//Check Quota
+	$boxfreespase=(float)$info->user->space_amount-(float)$info->user->space_used;
+	if ($backwpupjobrun['WORKING']['backupfilesize']>$boxfreespase) {
+		trigger_error(__('No free space left on Box.nat Account!!!','backwpup'),E_USER_ERROR);
+		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+		return;
+	} else {
+		trigger_error(sprintf(__('%s free on Box.net.','backwpup'),backwpup_formatBytes($boxfreespase)),E_USER_NOTICE);
+	}
+	//check filesize
+	if ($backwpupjobrun['WORKING']['backupfilesize']>(float)$info->user->max_upload_size) {
+		trigger_error(sprintf(__('Filesize to big max. %s allowed with your Box.net account!!!','backwpup'),backwpup_formatBytes((float)$info->user->max_upload_size)),E_USER_ERROR);
+		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+		return;
+	}
+	
+	//create folder if needed
+	$boxnetfolderid=0;
+	if ($backwpupjobrun['STATIC']['JOB']['boxnetdir']!='/' and !empty($backwpupjobrun['STATIC']['JOB']['boxnetdir'])) {
+		$folders=split('/',trim($backwpupjobrun['STATIC']['JOB']['boxnetdir'],'/'));
+		foreach ($folders as $folder) {
+			$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=create_folder&share=0&name='.urlencode($folder).'&parent_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth']);
+			if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+				$folder = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+			} elseif(is_wp_error($raw_response)) {
+				trigger_error(sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message()),E_USER_ERROR);
+			}
+			if ($folder->status!='create_ok' and $folder->status!='s_folder_exists') {
+				trigger_error(sprintf(__('Box.net API on folder create: %s !!!','backwpup'),$folder->status),E_USER_ERROR);
+				return;
+			} else {
+				$boxnetfolderid=(float)$folder->folder->folder_id;
+			}
+		}
+	}
+	
+	//post the file
+	trigger_error(__('Upload to Box.net now started... ','backwpup'),E_USER_NOTICE);
+	$boundary=md5(time());
+	$post="--".$boundary."\r\n";
+	$post.="content-disposition: form-data; name=\"new_file1\"; filename=\"".rawurlencode($backwpupjobrun['STATIC']['backupfile'])."\"\r\n";
+	//$post.="Content-type: application/octet-stream\r\n";
+	$post.="\r\n";
+	$post.=file_get_contents($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
+	$post.="\r\n--".$boundary."--\r\n";
+	
+	$raw_response=wp_remote_post('https://upload.box.net/api/1.0/upload/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$boxnetfolderid,array('sslverify' => false, 'body'=>$post,'timeout' => 300,'headers'=>array('Content-Type'=>'multipart/form-data, boundary='.$boundary))); 
+	if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+		$response = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+	} elseif(is_wp_error($raw_response)) {
+		trigger_error(sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message()),E_USER_ERROR);
+	}
+	
+	if ($response->status=='upload_ok') {
+		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','https://www.box.net/api/1.0/download/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$response->files->file->attributes()->id);
+		$backwpupjobrun['WORKING']['STEPDONE']++;
+		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+		trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://www.box.net/api/1.0/download/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$response->files->file->attributes()->id),E_USER_NOTICE);
+	} else {
+		trigger_error(sprintf(__('Error on transfere backup to box.net: %s','backwpup'),$response->status),E_USER_ERROR);
+		return;
+	}
+
+	if ($backwpupjobrun['STATIC']['JOB']['boxnetbackups']>0) { //Delete old backups
+		$backupfilelist=array();
+		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_tree&folder_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'&params[]=nozip&params[]=simple&params[]=onelevel');
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+			$metadata = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+		} elseif(is_wp_error($raw_response)) {
+			trigger_error(sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message()),E_USER_ERROR);
+		}
+		if ($metadata->status=='listing_ok') {
+			trigger_error(serialize($metadata),E_USER_ERROR);
+			foreach ($metadata->status->folder->files as $data) {
+				$file=basename($data['path']);
+				if ($data['is_dir']!=true and $backwpupjobrun['STATIC']['JOB']['fileprefix'] == substr($file,0,strlen($backwpupjobrun['STATIC']['JOB']['fileprefix'])))
+					$backupfilelist[strtotime($data['modified'])]=$file;
+			}
+		}
+		if (count($backupfilelist)>$backwpupjobrun['STATIC']['JOB']['dropemaxbackups']) {
+			$numdeltefiles=0;
+			while ($file=array_shift($backupfilelist)) {
+				if (count($backupfilelist)<$backwpupjobrun['STATIC']['JOB']['dropemaxbackups'])
+					break;
+				$response=$dropbox->fileopsDelete($backwpupjobrun['STATIC']['JOB']['dropedir'].$file); //delete files on Cloud
+				if ($response['is_deleted']=='true')
+					$numdeltefiles++;
+				else
+					trigger_error(sprintf(__('Error on delete file on DropBox: %s','backwpup'),$file),E_USER_ERROR);
+			}
+			if ($numdeltefiles>0)
+				trigger_error(sprintf(_n('One file deleted on DropBox','%d files deleted on DropBox',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+		}
+	}
+
+	$backwpupjobrun['WORKING']['STEPDONE']++;
+}
+?>

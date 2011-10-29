@@ -97,7 +97,7 @@ if ($backwpupjobrun['WORKING']['PID']!=getmypid() and $backwpupjobrun['WORKING']
 	trigger_error(__('Job restart terminated, bcause old job runs again!','backwpup'),E_USER_ERROR);
 	die();
 } elseif($jobstarttype=='restarttime') {
-	trigger_error(__('Job restarted, because inactivity!','backwpup'),E_USER_ERROR);
+	trigger_error(__('Job restarted, because of inactivity!','backwpup'),E_USER_ERROR);
 } elseif ($backwpupjobrun['WORKING']['PID']!=getmypid() and $backwpupjobrun['WORKING']['PID']!=0 and $backwpupjobrun['WORKING']['timestamp']>(time()-500)) {
 	trigger_error(sprintf(__('Second Prozess is running, but old job runs! Start type is %s','backwpup'),$jobstarttype),E_USER_ERROR);
 	die();
@@ -144,7 +144,7 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 				call_user_func('backwpup_job_'.strtolower($step));
 			}
 			if ($backwpupjobrun['WORKING'][$step]['STEP_TRY']>=$backwpup_cfg['jobstepretry'])
-				trigger_error(__('Step arborted has too many trys!','backwpup'),E_USER_ERROR);
+				trigger_error(__('Step aborted has too many tries!','backwpup'),E_USER_ERROR);
 		} else {
 			trigger_error(sprintf(__('Can not find job step function %s!','backwpup'),strtolower($step)),E_USER_ERROR);
 			$backwpupjobrun['WORKING']['STEPSDONE'][]=$step;

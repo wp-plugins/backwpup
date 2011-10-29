@@ -36,7 +36,7 @@ function backwpup_job_dest_dropbox() {
 		trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
 		$response = $dropbox->upload($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile']); 
 		if ($response['bytes']==filesize($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])) {
-			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
+			backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid']);
 			$backwpupjobrun['WORKING']['STEPDONE']++;
 			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_DROPBOX'; //set done
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/1/files/'.$backwpupjobrun['STATIC']['JOB']['droperoot'].'/'.$backwpupjobrun['STATIC']['JOB']['dropedir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);

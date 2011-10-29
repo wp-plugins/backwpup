@@ -43,7 +43,7 @@ if (isset($_GET['auth']) and $_GET['auth']=='Boxnet')  {
 	$backwpup_message='';
 	if (!empty($_REQUEST['auth_token'])) {
 		$reqtoken=backwpup_get_option('TEMP','BOXNETTICKET');
-		if ($reqtoken==$_REQUEST['ticket']) {
+		if ($reqtoken==$_REQUEST['ticket'] and !empty($_REQUEST['ticket'])) {
 			//Save Auth
 			backwpup_update_option('JOB_'.$jobid,'boxnetauth',$_REQUEST['auth_token']);
 			$backwpup_message.=__('Box.net authentication complete!','backwpup').'<br />';
@@ -163,6 +163,8 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
 	$jobvalues['droperoot']=$_POST['droperoot'];
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
+	$jobvalues['boxnetbackups']=isset($_POST['boxnetbackups']) ? (int)$_POST['boxnetbackups'] : 0;	
+	$jobvalues['boxnetdir']=isset($_POST['boxnetdir']) ? $_POST['boxnetdir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
 	$jobvalues['awsrrs']= (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false;
@@ -294,18 +296,18 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	
 	//get box.net auth	
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
-		if (!class_exists('boxclient'))
-			require_once (dirname(__FILE__).'/../libs/box.net/boxlibphp5.php');
 		//set boxtype and authkeys
 		$backwpupapi=new backwpup_api();
 		$keys=$backwpupapi->get_keys();
-		$box =& new boxclient($keys['BOXNET'],'');
-		$ticket=$box->getTicket();
-		if ($ticket['status']=='get_ticket_ok') {
+		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_ticket&api_key='.$keys['BOXNET']);
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+			$response = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+		}
+		if ($response->status=='get_ticket_ok') {
 			$callback=backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Boxnet&_wpnonce='.wp_create_nonce('edit-job');
-			$authurl=$backwpupapi->boxnetauthproxy($ticket['ticket'],$callback);
+			$authurl=$backwpupapi->boxnetauthproxy((string)$response->ticket,$callback);
 			// save oauth_token_secret 
-			backwpup_update_option('TEMP','BOXNETTICKET',$ticket['ticket']);
+			backwpup_update_option('TEMP','BOXNETTICKET',(string)$response->ticket);
 			//forward to auth page
 			wp_redirect($authurl);
 		} else {

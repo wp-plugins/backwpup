@@ -69,7 +69,7 @@ class backwpup_Dropbox {
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		}
 		if (filesize($file)>157286400){
-			throw new DropboxException("Error: File \"$file\" is to big max. 150 MB.");
+			throw new DropboxException("Error: File \"$file\" is too big max. 150 MB.");
 		}
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
