@@ -81,6 +81,12 @@ if (!empty($doaction)) {
 						$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
 					}
 				}	
+			} elseif ($dest=='BOXNET') {
+				if (!empty($jobvalue['boxnetauth'])) {
+					$backwpupapi=new backwpup_api();
+					$keys=$backwpupapi->get_keys();
+					wp_remote_get('http://www.box.net/api/1.0/rest?action=delete&target=file&target_id='.$backupfile.'&api_key='.$keys['BOXNET'].'&auth_token='.$jobvalue['boxnetauth']);
+				}	
 			} elseif ($dest=='SUGARSYNC') {
 				if (!class_exists('SugarSync'))
 					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));

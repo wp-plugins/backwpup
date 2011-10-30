@@ -2,7 +2,7 @@
 function backwpup_job_file_list() {
 	global $backwpupjobrun,$tempfilelist;
 	//Make filelist
-	trigger_error(sprintf(__('%d. try for make list of files to backup....','backwpup'),$backwpupjobrun['WORKING']['FILE_LIST']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Trying for make list of files to backup....','backwpup'),$backwpupjobrun['WORKING']['FILE_LIST']['STEP_TRY']),E_USER_NOTICE);
 	$backwpupjobrun['WORKING']['STEPTODO']=2;
 
 	//Check free memory for file list

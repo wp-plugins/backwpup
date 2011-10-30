@@ -159,6 +159,8 @@ class BackWPup_Backups_Table extends WP_List_Table {
 						$jobdest[]=$jobid.','.$dest;						
 					if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret']))
 						$jobdest[]=$jobid.','.$dest;
+					if ($dest=='BOXNET' and !empty($jobvalue['boxnetauth']))
+						$jobdest[]=$jobid.','.$dest;
 					if ($dest=='RSC' and !empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer']))
 						$jobdest[]=$jobid.','.$dest;
 					if ($dest=='FTP' and !empty($jobvalue['ftphost']) and function_exists('ftp_connect') and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']))
@@ -312,6 +314,51 @@ function backwpup_get_backup_files($jobid,$dest) {
 			}
 		} catch (Exception $e) {
 			$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
+		}
+	}
+	//Get files/filinfo from Box.net
+	if ($dest=='BOXNET' and !empty($jobvalue['boxnetauth'])) {
+		$backwpupapi=new backwpup_api();
+		$keys=$backwpupapi->get_keys();
+		//create folder if needed
+		$boxnetfolderid=0;
+		if ($jobvalue['boxnetdir']!='/' and !empty($jobvalue['boxnetdir'])) {
+			$folders=split('/',trim($jobvalue['boxnetdir'],'/'));
+			foreach ($folders as $folder) {
+				$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=create_folder&share=0&name='.urlencode($folder).'&parent_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$jobvalue['boxnetauth']);
+				if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+					$folder = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+				} elseif(is_wp_error($raw_response)) {
+					$backwpup_message.=sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message());
+				}
+				if ($folder->status!='create_ok' and $folder->status!='s_folder_exists') {
+					$backwpup_message.=sprintf(__('Box.net API on folder create: %s !!!','backwpup'),$folder->status);
+					return;
+				} else {
+					$boxnetfolderid=(float)$folder->folder->folder_id;
+				}
+			}
+		}
+		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_tree&folder_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$jobvalue['boxnetauth'].'&params[]=nozip&params[]=onelevel&params[]=simple');
+		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
+			$contents = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
+		} elseif(is_wp_error($raw_response)) {
+			$backwpup_message.=sprintf(__('Box.net API: %s','backwpup'),$raw_response->get_error_message());
+		}
+		if (is_object($contents)) {
+			foreach ($contents->tree->folder->files->file as $object) {
+				if ($object['is_dir']!=true) {
+					$files[$filecounter]['JOBID']=$jobid;
+					$files[$filecounter]['DEST']=$dest;
+					$files[$filecounter]['folder']="https://www.box.net/".$jobvalue['boxnetdir']."/";
+					$files[$filecounter]['file']=(float)$object->attributes()->id;
+					$files[$filecounter]['filename']=(string)$object->attributes()->file_name;
+					$files[$filecounter]['downloadurl']='https://www.box.net/api/1.0/download/'.$jobvalue['boxnetauth'].'/'.(float)$object->attributes()->id;
+					$files[$filecounter]['filesize']=(float)$object->attributes()->size;
+					$files[$filecounter]['time']=(float)$object->attributes()->updated;
+					$filecounter++;
+				}
+			}
 		}
 	}
 	//Get files/filinfo from Sugarsync

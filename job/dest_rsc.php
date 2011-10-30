@@ -1,7 +1,7 @@
 <?PHP
 function backwpup_job_dest_rsc() {
 	global $backwpupjobrun;
-	trigger_error($backwpupjobrun['WORKING']['DEST_RSC']['STEP_TRY'].'. '.__('Try to sending backup file to Rackspace Cloud...','backwpup'),E_USER_NOTICE);
+	trigger_error($backwpupjobrun['WORKING']['DEST_RSC']['STEP_TRY'].'. '.__('Trying to sending backup file to Rackspace Cloud...','backwpup'),E_USER_NOTICE);
 	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 	require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');

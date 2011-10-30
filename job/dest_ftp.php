@@ -6,7 +6,7 @@ function backwpup_job_dest_ftp() {
 		return;
 	}
 	$backwpupjobrun['WORKING']['STEPTODO']=2;
-	trigger_error(sprintf(__('%d. try to sending backup file to a FTP Server...','backwpup'),$backwpupjobrun['WORKING']['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Trying to sending backup file to a FTP Server...','backwpup'),$backwpupjobrun['WORKING']['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
 
 	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
 

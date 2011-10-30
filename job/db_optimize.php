@@ -1,7 +1,7 @@
 <?PHP
 function backwpup_job_db_optimize() {
 	global $backwpupjobrun,$wpdb;
-	trigger_error(sprintf(__('%d. try for database optimize...','backwpup'),$backwpupjobrun['WORKING']['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try for database optimize...','backwpup'),$backwpupjobrun['WORKING']['DB_OPTIMIZE']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']))
 		$backwpupjobrun['WORKING']['DB_OPTIMIZE']['DONETABLE']=array();
 	

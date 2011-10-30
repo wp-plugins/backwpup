@@ -2,7 +2,7 @@
 function backwpup_job_wp_export() {
 	global $backwpupjobrun;
 	$backwpupjobrun['WORKING']['STEPTODO']=1;
-	trigger_error(sprintf(__('%d. try for wordpress export to XML file...','backwpup'),$backwpupjobrun['WORKING']['WP_EXPORT']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Trying for WordPress Export to XML file...','backwpup'),$backwpupjobrun['WORKING']['WP_EXPORT']['STEP_TRY']),E_USER_NOTICE);
 	backwpup_job_need_free_memory('10M'); //5MB free memory
 	//build filename
 	$datevars=array('%d','%D','%l','%N','%S','%w','%z','%W','%F','%m','%M','%n','%t','%L','%o','%Y','%a','%A','%B','%g','%G','%h','%H','%i','%s','%u','%e','%I','%O','%P','%T','%Z','%c','%U');
@@ -45,7 +45,7 @@ function backwpup_job_wp_export() {
 	//add XML file to backupfiles
 	if (is_readable($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile'])) {
 		$filestat=stat($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']);
-		trigger_error(sprintf(__('Add XML export "%1$s" to backup list with %2$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['wpexportfile'],backwpup_formatBytes($filestat['size'])),E_USER_NOTICE);
+		trigger_error(sprintf(__('Added XML export "%1$s" to backup list with %2$s','backwpup'),$backwpupjobrun['STATIC']['JOB']['wpexportfile'],backwpup_formatBytes($filestat['size'])),E_USER_NOTICE);
 		$backwpupjobrun['WORKING']['ALLFILESIZE']+=$filestat['size'];
 		backwpup_job_add_file(array(array('FILE'=>$backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile'],'OUTFILE'=>$backwpupjobrun['STATIC']['JOB']['wpexportfile'],'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'],'FOLDER'=>'/')));
 		backwpup_job_add_folder('/');

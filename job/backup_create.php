@@ -10,7 +10,7 @@ function backwpup_job_backup_create() {
 		
 	if (strtolower($backwpupjobrun['STATIC']['JOB']['fileformart'])==".zip") { //Zip files
 		if ($backwpup_cfg['phpzip']) {  //use php zip lib
-			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
+			trigger_error(sprintf(__('%d. Trying to create backup zip archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
             $res = $zip->open($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'],ZIPARCHIVE::CREATE);
 			if ($res === TRUE) {
@@ -43,7 +43,7 @@ function backwpup_job_backup_create() {
 					trigger_error(sprintf(__('Zip returns status: %s','backwpup'),$zip->status),E_USER_ERROR);
 				}
 				$res2=$zip->close();
-				trigger_error(__('Backup zip archive create done!','backwpup'),E_USER_NOTICE);
+				trigger_error(__('Backup zip archive created!','backwpup'),E_USER_NOTICE);
 				$backwpupjobrun['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
 			} else {
 				trigger_error(sprintf(__('Can not create backup zip archive $s!','backwpup'),$res),E_USER_ERROR);
@@ -53,7 +53,7 @@ function backwpup_job_backup_create() {
 			require_once(trailingslashit(str_replace('\\','/',ABSPATH)).'wp-admin/includes/class-pclzip.php');
 			//Create Zip File
 			if (is_array($filelist[0])) {
-				trigger_error(sprintf(__('%d. try to create backup zip (PclZip) archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
+				trigger_error(sprintf(__('%d. Trying to create backup zip (PclZip) archive...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 				for ($i=0;$i<$backwpupjobrun['WORKING']['STEPTODO'];$i++) { //must begin at 0 for PCLzip
 					$files[$i][79001]=$filelist[$i]['FILE'];
 					$files[$i][79003]=$filelist[$i]['OUTFILE'];
@@ -66,7 +66,7 @@ function backwpup_job_backup_create() {
 				} else {
 					$backwpupjobrun['WORKING']['STEPDONE']=count($filelist);
 					unset($files);
-					trigger_error(__('Backup zip archive create done','backwpup'),E_USER_NOTICE);
+					trigger_error(__('Backup zip archive created','backwpup'),E_USER_NOTICE);
 				}
 			}
 		}
@@ -84,7 +84,7 @@ function backwpup_job_backup_create() {
 			trigger_error(__('Can not create tar arcive file!','backwpup'),E_USER_ERROR);
 			return;
 		} else {
-			trigger_error(sprintf(__('%1$d. try to create %2$s archive file...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY'],substr($backwpupjobrun['STATIC']['JOB']['fileformart'],1)),E_USER_NOTICE);
+			trigger_error(sprintf(__('%1$d. Trying to create %2$s archive file...','backwpup'),$backwpupjobrun['WORKING']['BACKUP_CREATE']['STEP_TRY'],substr($backwpupjobrun['STATIC']['JOB']['fileformart'],1)),E_USER_NOTICE);
 		}
 
 		for ($index=$backwpupjobrun['WORKING']['STEPDONE'];$index<$backwpupjobrun['WORKING']['STEPTODO'];$index++) {
@@ -186,7 +186,7 @@ function backwpup_job_backup_create() {
 			fwrite($tarbackup, pack("a1024", "")); // Add 1024 bytes of NULLs to designate EOF
 			fclose($tarbackup);
 		}
-		trigger_error(sprintf(__('%s archive creation done','backwpup'),substr($backwpupjobrun['STATIC']['JOB']['fileformart'],1)),E_USER_NOTICE);
+		trigger_error(sprintf(__('%s archive created','backwpup'),substr($backwpupjobrun['STATIC']['JOB']['fileformart'],1)),E_USER_NOTICE);
 	}
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='BACKUP_CREATE'; //set done
 	$backwpupjobrun['WORKING']['backupfilesize']=filesize($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);

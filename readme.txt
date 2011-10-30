@@ -61,6 +61,7 @@ Do backups and more for your WordPress Blog.
 * don't look for file ending on deletion and use file time not name
 * the job working is back in the WordPress envoerment
 * add own database table for backwpup
+* added support for Box.net
 
 = 2.1.6 =
 * fixed Dropbox with no path problem

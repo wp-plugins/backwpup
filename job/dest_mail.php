@@ -3,7 +3,7 @@ function backwpup_job_dest_mail() {
 	global $backwpupjobrun,$backwpup_cfg;
 	$backwpupjobrun['WORKING']['STEPTODO']=$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. try to sending backup with mail...','backwpup'),$backwpupjobrun['WORKING']['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Trying to sending backup with mail...','backwpup'),$backwpupjobrun['WORKING']['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
 	
 	//check file Size
 	if (!empty($backwpupjobrun['STATIC']['JOB']['mailefilesize'])) {
@@ -15,7 +15,7 @@ function backwpup_job_dest_mail() {
 		}
 	}
 
-	trigger_error(__('Send backuparchiv with mail....','backwpup'),E_USER_NOTICE);
+	trigger_error(__('Sending mail...','backwpup'),E_USER_NOTICE);
 	if (empty($backwpup_cfg['mailsndname']))
 		$headers = 'From: '.$backwpup_cfg['mailsndname'].' <'.$backwpup_cfg['mailsndemail'].'>' . "\r\n";
 	else
@@ -31,7 +31,7 @@ function backwpup_job_dest_mail() {
 		trigger_error(__('Error on sending mail!','backwpup'),E_USER_ERROR);
 	} else {
 		$backwpupjobrun['WORKING']['STEPTODO']=$backwpupjobrun['WORKING']['backupfilesize'];
-		trigger_error(__('Mail send.','backwpup'),E_USER_NOTICE);
+		trigger_error(__('Mail sent.','backwpup'),E_USER_NOTICE);
 	}
 	$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_MAIL'; //set done
 }

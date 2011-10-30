@@ -1,7 +1,7 @@
 <?PHP
 function backwpup_job_db_dump() {
 	global $backwpupjobrun,$wpdb,$wp_version;
-	trigger_error(sprintf(__('%d. try for database dump...','backwpup'),$backwpupjobrun['WORKING']['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try for database dump...','backwpup'),$backwpupjobrun['WORKING']['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']))
 		$backwpupjobrun['WORKING']['DB_DUMP']['DONETABLE']=array();
 
@@ -231,7 +231,7 @@ function backwpup_job_db_dump() {
 	//add database file to backupfiles
 	if (is_readable($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'])) {
 		$filestat=stat($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile']);
-		trigger_error(sprintf(__('Add database dump "%1$s" with %2$s to backup file list','backwpup'),$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],backwpup_formatBytes($filestat['size'])),E_USER_NOTICE);
+		trigger_error(sprintf(__('Added database dump "%1$s" with %2$s to backup file list','backwpup'),$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],backwpup_formatBytes($filestat['size'])),E_USER_NOTICE);
 		$backwpupjobrun['WORKING']['ALLFILESIZE']+=$filestat['size'];
 		backwpup_job_add_file(array(array('FILE'=>$backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'OUTFILE'=>$backwpupjobrun['STATIC']['JOB']['dbdumpfile'],'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode'],'FOLDER'=>'/')));
 		backwpup_job_add_folder('/');

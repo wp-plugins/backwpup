@@ -398,7 +398,7 @@ function backwpup_job_shutdown($signal='') {
 	$httpauthheader='';
 	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 		$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword'])));
-	wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 5, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'user-agent'=>'BackWPup','body' => array( '_wpnonce' => wp_create_nonce('backwpup-job-running'), 'starttype' => 'restart','ABSPATH'=> ABSPATH)));
+	@wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 5, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'user-agent'=>'BackWPup','body' => array( '_wpnonce' => wp_create_nonce('backwpup-job-running'), 'starttype' => 'restart','ABSPATH'=> ABSPATH)));
 	exit;
 }
 ?>

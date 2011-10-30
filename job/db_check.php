@@ -1,7 +1,7 @@
 <?PHP
 function backwpup_job_db_check() {
 	global $backwpupjobrun,$wpdb;
-	trigger_error(sprintf(__('%d. try for database check...','backwpup'),$backwpupjobrun['WORKING']['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try for database check...','backwpup'),$backwpupjobrun['WORKING']['DB_CHECK']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']) or !is_array($backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']))
 		$backwpupjobrun['WORKING']['DB_CHECK']['DONETABLE']=array();
 	
