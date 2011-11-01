@@ -3,7 +3,7 @@ function backwpup_job_dest_mail() {
 	global $backwpupjobrun,$backwpup_cfg;
 	$backwpupjobrun['WORKING']['STEPTODO']=$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Trying to sending backup with mail...','backwpup'),$backwpupjobrun['WORKING']['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try to sending backup with mail...','backwpup'),$backwpupjobrun['WORKING']['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
 	
 	//check file Size
 	if (!empty($backwpupjobrun['STATIC']['JOB']['mailefilesize'])) {

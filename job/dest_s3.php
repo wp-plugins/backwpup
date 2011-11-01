@@ -1,7 +1,7 @@
 <?PHP
 function backwpup_job_dest_s3() {
 	global $backwpupjobrun;
-	trigger_error(sprintf(__('%d. Trying to sending backup file to Amazon S3...','backwpup'),$backwpupjobrun['WORKING']['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$backwpupjobrun['WORKING']['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 

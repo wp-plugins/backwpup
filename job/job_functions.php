@@ -84,9 +84,17 @@ function backwpup_job_maintenance_mode($enable = false) {
 	}
 }
 
+function backwpup_job_curl_progressfunction($handle) {
+	if (defined('CURLOPT_PROGRESSFUNCTION')) {
+		curl_setopt($handle, CURLOPT_NOPROGRESS, false);
+		curl_setopt($handle, CURLOPT_PROGRESSFUNCTION, 'backwpup_job_curl_progresscallback');
+		curl_setopt($handle, CURLOPT_BUFFERSIZE, 512);
+	}
+}
+
 function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
 	global $backwpupjobrun;
-	if ($backwpupjobrun['WORKING']['STEPTODO']>10)
+	if ($backwpupjobrun['WORKING']['STEPTODO']>10 and $backwpupjobrun['STATIC']['JOB']['backuptype']!='sync')
 		$backwpupjobrun['WORKING']['STEPDONE']=$uploaded;
 	backwpup_job_update_working_data();
 	@set_time_limit(10);

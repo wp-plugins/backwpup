@@ -2,7 +2,7 @@
 function backwpup_job_dest_msazure() {
 	global $backwpupjobrun;
 	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	trigger_error(sprintf(__('%d. Trying sending backup to a Microsoft Azure (Blob)...','backwpup'),$backwpupjobrun['WORKING']['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$backwpupjobrun['WORKING']['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
 
 	require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 	need_free_memory(4194304*1.5);

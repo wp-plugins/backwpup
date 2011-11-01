@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_boxnet() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2;
+	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Trying to sending backup file to Box.net...','backwpup'),$backwpupjobrun['WORKING']['DEST_BOXNET']['STEP_TRY']),E_USER_NOTICE);
+	trigger_error(sprintf(__('%d. Try to sending backup file to Box.net...','backwpup'),$backwpupjobrun['WORKING']['DEST_BOXNET']['STEP_TRY']),E_USER_NOTICE);
 	
 	//set authkeys
 	$backwpupapi=new backwpup_api();
@@ -37,10 +37,12 @@ function backwpup_job_dest_boxnet() {
 		return;
 	}
 	
+	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
+	
 	//create folder if needed
 	$boxnetfolderid=0;
 	if ($backwpupjobrun['STATIC']['JOB']['boxnetdir']!='/' and !empty($backwpupjobrun['STATIC']['JOB']['boxnetdir'])) {
-		$folders=split('/',trim($backwpupjobrun['STATIC']['JOB']['boxnetdir'],'/'));
+		$folders=explode('/',trim($backwpupjobrun['STATIC']['JOB']['boxnetdir'],'/'));
 		foreach ($folders as $folder) {
 			$raw_response=@wp_remote_get('http://www.box.net/api/1.0/rest?action=create_folder&share=0&name='.urlencode($folder).'&parent_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth']);
 			if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
@@ -56,7 +58,8 @@ function backwpup_job_dest_boxnet() {
 			}
 		}
 	}
-	
+	//add prozess callback
+	add_action('http_api_curl','backwpup_job_curl_progressfunction');
 	//post the file
 	trigger_error(__('Upload to Box.net now started... ','backwpup'),E_USER_NOTICE);
 	$boundary=md5(time());
@@ -83,7 +86,9 @@ function backwpup_job_dest_boxnet() {
 		trigger_error(sprintf(__('Error on transfere backup to box.net: %s','backwpup'),$response->status),E_USER_ERROR);
 		return;
 	}
-
+	//remove prozess callback
+	remove_action('http_api_curl','backwpup_job_curl_progressfunction');	
+	
 	if ($backwpupjobrun['STATIC']['JOB']['boxnetbackups']>0) { //Delete old backups
 		$backupfilelist=array();
 		$raw_response=@wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_tree&folder_id='.$boxnetfolderid.'&api_key='.$keys['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'&params[]=nozip&params[]=simple&params[]=onelevel');
@@ -119,7 +124,6 @@ function backwpup_job_dest_boxnet() {
 				trigger_error(sprintf(_n('One file deleted on Box.net','%d files deleted on Box.net',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 		}
 	}
-
 	$backwpupjobrun['WORKING']['STEPDONE']++;
 }
 ?>
