@@ -46,7 +46,7 @@ if (!defined('BACKWPUP_DESTS')) {
 }
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
-    define('AWS_CERTIFICATE_AUTHORITY', true);
+    define('AWS_CERTIFICATE_AUTHORITY', dirname(__FILE__).'/libs/cacert.pem');
 //show SQL error on debug
 if (defined('WP_DEBUG') and WP_DEBUG) {
 	global $wpdb;

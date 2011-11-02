@@ -271,7 +271,8 @@ function backwpup_jobedit_metabox_dests3($jobvalue) {
 		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 		<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
 		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
-		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Backups with reduced redundancy!','backwpup'); ?><br />
+		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Files with reduced redundancy!','backwpup'); ?><br />
+		<input class="checkbox" value="AES256" type="checkbox" <?php checked($jobvalue['awsssencrypt'],'AES256'); ?> name="awsssencrypt" />  <?PHP _e('Save Files Server Side Encrypted!','backwpup'); ?><br />
 	</div>
 	<div class="destlinks">
 		<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />

@@ -5,9 +5,7 @@ define('DONOTMINIFY', true);
 define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY',false); //W3TC will not loaded
-define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/'); //Set a constance for not direkt loding in other files
-if (!defined('AWS_CERTIFICATE_AUTHORITY'))
-    define('AWS_CERTIFICATE_AUTHORITY', true); //for S3 and Gstorage
+define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
 //definie E_DEPRECATED if PHP lower than 5.3
 if (!defined('E_DEPRECATED'))
 	define('E_DEPRECATED',8192);

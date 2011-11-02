@@ -53,15 +53,17 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.5 =
+* added sync with destionation for files to backup
 * Improved mysql dump
 * mysql dump restore improvements
 * Improved XML export
 * removed mail send options, please use a plugin like 'WP Mail SMTP'
-* now manaly job starts wor with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
-* don't look for file ending on deletion and use file time not name
-* the job working is back in the WordPress envoerment
+* now manaly job start works with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
+* don't look for file endings on deletion and use file time not name
+* the job works now in the WordPress envoerment again
 * add own database table for backwpup
 * added support for Box.net
+* many bug fixes
 
 = 2.1.6 =
 * fixed Dropbox with no path problem
