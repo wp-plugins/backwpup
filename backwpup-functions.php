@@ -199,7 +199,6 @@ function backwpup_plugin_init() {
 
 }
 
-
 function backwpup_update_option($mainname,$name,$value) {
 	global $wpdb;
 	$mainname=trim($mainname);
@@ -1017,7 +1016,7 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (!isset($jobsettings['awsSecretKey']) or !is_string($jobsettings['awsSecretKey']))
 		$jobsettings['awsSecretKey']='';
 
-	if ($jobsettings['awsssencrypt']!='' and $jobsettings['awsssencrypt']!='AES256')
+	if (!isset($jobsettings['awsssencrypt']) or ($jobsettings['awsssencrypt']!='' and $jobsettings['awsssencrypt']!='AES256'))
 		$jobsettings['awsssencrypt']='';
 
 	if (!isset($jobsettings['awsrrs']))

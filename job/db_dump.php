@@ -61,9 +61,9 @@ function backwpup_job_db_dump() {
 	}
 
 	$dbdumpheader= "-- ---------------------------------------------------------\n";
-	$dbdumpheader.= "-- Dump with BackWPup ver.: ".BACKWPUP_VERSION."\n";
+	$dbdumpheader.= "-- Dumped with BackWPup ver.: ".BACKWPUP_VERSION."\n";
 	$dbdumpheader.= "-- Plugin for WordPress ".$wp_version." by Daniel Huesken\n";
-	$dbdumpheader.= "-- http://danielhuesken.de/portfolio/backwpup/\n";
+	$dbdumpheader.= "-- http://backwpup.com\n";
 	$dbdumpheader.= "-- Blog Name: ".get_bloginfo('name')."\n";
 	if (defined('WP_SITEURL'))
         $dbdumpheader.= "-- Blog URL: ".trailingslashit(WP_SITEURL)."\n";
@@ -72,7 +72,7 @@ function backwpup_job_db_dump() {
 	$dbdumpheader.= "-- Blog ABSPATH: ".trailingslashit(str_replace('\\','/',ABSPATH))."\n";
 	$dbdumpheader.= "-- Table Prefix: ".$wpdb->prefix."\n";
 	$dbdumpheader.= "-- Database Name: ".DB_NAME."\n";
-	$dbdumpheader.= "-- Dump on: ".date_i18n('Y-m-d H:i.s')."\n";
+	$dbdumpheader.= "-- Dumped on: ".date_i18n('Y-m-d H:i.s')."\n";
 	$dbdumpheader.= "-- ---------------------------------------------------------\n\n";
 	//for better import with mysql client
 	$dbdumpheader.= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";
