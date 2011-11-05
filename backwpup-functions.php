@@ -9,7 +9,7 @@ function backwpup_admin_menu() {
 	$backupdata=backwpup_get_option('WORKING','DATA');
 	if (!empty($backupdata))
 		$hook = add_submenu_page( 'backwpup', __('Working Job','backwpup'), __('Working Job','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
-	elseif ($_REQUEST['page']=='backwpupworking')
+	elseif (isset($_REQUEST['page']) and $_REQUEST['page']=='backwpupworking')
 		$hook = add_submenu_page( 'backwpup', __('Watch Log','backwpup'), __('Watch Log','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header',1);
 	$hook = add_submenu_page( 'backwpup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuplogs', 'backwpup_menu_page' );
