@@ -6,7 +6,11 @@ function backwpup_admin_menu() {
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
-	$hook = add_submenu_page( 'backwpup', __('Working','backwpup'), __('Working','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
+	$backupdata=backwpup_get_option('WORKING','DATA');
+	if (!empty($backupdata))
+		$hook = add_submenu_page( 'backwpup', __('Working Job','backwpup'), __('Working Job','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
+	elseif ($_REQUEST['page']=='backwpupworking')
+		$hook = add_submenu_page( 'backwpup', __('Watch Log','backwpup'), __('Watch Log','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header',1);
 	$hook = add_submenu_page( 'backwpup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuplogs', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
@@ -547,17 +551,53 @@ function backwpup_add_dashboard() {
 
 //add admin bar menu
 function backwpup_add_adminbar() {
-	global $wp_admin_bar,$backwpup_cfg;
+	global $wp_admin_bar,$backwpup_cfg,$wpdb;
 	if (!$backwpup_cfg['showadminbar'] || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
 		return;
-    /* Add the main siteadmin menu item */
-    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
     $backupdata=backwpup_get_option('WORKING','DATA');
+	$menutitle=__( 'BackWPup', 'backwpup' );
 	if (!empty($backupdata))
-		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
-    $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
+		$menutitle.=' <span id="ab-updates" class="update-count" style="color:red;font-weight:bold;text-decoration:blink;">!</span>';
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => $menutitle, 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
+	if (!empty($backupdata)) {
+		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working' ,'parent' => 'backwpup_jobs', 'title' => '<span style="color:red;text-decoration:blink;">'.__('See Working!','backwpup').'</span>', 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
+		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working_abort' ,'parent' => 'backwpup_working', 'title' => __('Abort!','backwpup'), 'href' => wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job')));
+	}
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs', 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_new', 'parent' => 'backwpup_jobs', 'title' => __('Add New','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs' ,'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_backups' ,'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
+	//add jobs
+	$jobs=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value DESC");
+	foreach ($jobs as $job) {
+		$name=backwpup_get_option('JOB_'.$job,'name');
+		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_'.$job, 'parent' => 'backwpup_jobs', 'title' => $name, 'href' => wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$job, 'edit-job')));
+		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_runnow_'.$job, 'parent' => 'backwpup_jobs_'.$job, 'title' => __('Run Now','backwpup'), 'href' => wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?ABSPATH='.urlencode(ABSPATH).'&starttype=runnow&jobid='.(int)$job, 'backwpup-job-running')));
+	}
+	//get log files
+	$logfiles=array();
+	if ( $dir = @opendir( $backwpup_cfg['dirlogs'] ) ) {
+		while (($file = readdir( $dir ) ) !== false ) {
+			if (is_file($backwpup_cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
+				$logfiles[]=$file;
+		}
+		closedir( $dir );
+		rsort($logfiles);
+	}
+	if (count($logfiles)>0) {
+		for ($i=0;$i<5;$i++) {
+			$logdata=backwpup_read_logheader($backwpup_cfg['dirlogs'].'/'.$logfiles[$i]);
+			$title = '<span>'.date_i18n(get_option('date_format').' @ '.get_option('time_format'),$logdata['logtime']).' ';
+			$title.= $logdata['name'];
+			if ($logdata['errors']>0)
+				$title.= sprintf(' <span style="color:red;">('._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').')</span></span>', $logdata['errors']);
+			if ($logdata['warnings']>0)
+				$title.= sprintf(' <span style="color:#e66f00;">('._n("%d WARNING", "%d WARNINGS", $logdata['warnings'],'backwpup').')</span></span>', $logdata['warnings']);
+			if($logdata['errors']==0 and $logdata['warnings']==0)
+				$title.= ' <span style="color:green;">('.__('O.K.','backwpup').')</span></span>';
+			$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs_'.$i ,'parent' => 'backwpup_logs', 'title' => $title, 'href' => wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$backwpup_cfg['dirlogs'].'/'.$logfiles[$i], 'view-log_'.$logfiles[$i])));
+		}
+	}
 }
 
 function backwpup_get_upload_dir() {

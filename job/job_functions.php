@@ -138,44 +138,49 @@ function backwpup_job_joberrorhandler() {
         return;
 
 	$adderrorwarning=false;
-
+	
 	switch ($args[0]) {
 	case E_NOTICE:
 	case E_USER_NOTICE:
-		$message="<span>".$args[1]."</span>";
+		$messagetype="<span>";
 		break;
 	case E_WARNING:
+	case E_CORE_WARNING:
+	case E_COMPILE_WARNING:
 	case E_USER_WARNING:
 		$backwpupjobrun['WORKING']['WARNING']++;
 		$adderrorwarning=true;
-		$message="<span class=\"warning\">".__('[WARNING]','backwpup')." ".$args[1]."</span>";
+		$messagetype="<span class=\"warning\">".__('WARNING:','backwpup');
 		break;
 	case E_ERROR:
+	case E_PARSE:
+	case E_CORE_ERROR:
+	case E_COMPILE_ERROR:
 	case E_USER_ERROR:
 		$backwpupjobrun['WORKING']['ERROR']++;
 		$adderrorwarning=true;
-		$message="<span class=\"error\">".__('[ERROR]','backwpup')." ".$args[1]."</span>";
+		$messagetype="<span class=\"error\">".__('ERROR:','backwpup');
 		break;
 	case E_DEPRECATED:
 	case E_USER_DEPRECATED:
-		$message="<span>".__('[DEPRECATED]','backwpup')." ".$args[1]."</span>";
+		$messagetype="<span>".__('DEPRECATED:','backwpup');
 		break;
 	case E_STRICT:
-		$message="<span>".__('[STRICT NOTICE]','backwpup')." ".$args[1]."</span>";
+		$messagetype="<span>".__('STRICT NOTICE:','backwpup');
 		break;
 	case E_RECOVERABLE_ERROR:
-		$message="<span>".__('[RECOVERABLE ERROR]','backwpup')." ".$args[1]."</span>";
+		$messagetype="<span>".__('RECOVERABLE ERROR:','backwpup');
 		break;
 	default:
-		$message="<span>[".$args[0]."] ".$args[1]."</span>";
+		$messagetype="<span>".$args[0].":";
 		break;
 	}
 
 	//log line
-	$timestamp="<span class=\"timestamp\" title=\"[Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> ";
+	$timestamp="<span title=\"[Type: ".$args[0]."|Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">[".date_i18n('d-M-Y H:i:s')."]</span> ";
 	//wirte log file
 	if (is_writable($backwpupjobrun['LOGFILE'])) {
-		file_put_contents($backwpupjobrun['LOGFILE'], $timestamp.$message."<br />\n", FILE_APPEND);
+		file_put_contents($backwpupjobrun['LOGFILE'], $timestamp.$messagetype." ".$args[1]."</span><br />".BACKWPUP_LINE_SEPARATOR, FILE_APPEND);
 
 		//write new log header
 		if ($adderrorwarning) {
@@ -185,12 +190,12 @@ function backwpup_job_joberrorhandler() {
 				$line=fgets($fd);
 				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 					fseek($fd,$filepos);
-					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backwpupjobrun['WORKING']['ERROR']."\" />",100)."\n");
+					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backwpupjobrun['WORKING']['ERROR']."\" />",100).BACKWPUP_LINE_SEPARATOR);
 					$found++;
 				}
 				if (stripos($line,"<meta name=\"backwpup_warnings\"") !== false) {
 					fseek($fd,$filepos);
-					fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$backwpupjobrun['WORKING']['WARNING']."\" />",100)."\n");
+					fwrite($fd,str_pad("<meta name=\"backwpup_warnings\" content=\"".$backwpupjobrun['WORKING']['WARNING']."\" />",100).BACKWPUP_LINE_SEPARATOR);
 					$found++;
 				}
 				if ($found>=2)
@@ -277,12 +282,12 @@ function backwpup_job_job_end() {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".backwpup_get_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime')."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".backwpup_get_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime')."\" />",100).BACKWPUP_LINE_SEPARATOR);
 				$found++;
 			}
 			if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100)."\n");
+				fwrite($fd,str_pad("<meta name=\"backwpup_backupfilesize\" content=\"".$filesize."\" />",100).BACKWPUP_LINE_SEPARATOR);
 				$found++;
 			}
 			if ($found>=2)
@@ -293,8 +298,11 @@ function backwpup_job_job_end() {
 	}
 	//Restore error handler
 	restore_error_handler();
+	@ini_set('log_errors', $backwpupjobrun['PHP']['INI']['LOG_ERRORS']);
+	@ini_set('error_log', $backwpupjobrun['PHP']['INI']['ERROR_LOG']);
+	@ini_set('display_errors', $backwpupjobrun['PHP']['INI']['DISPLAY_ERRORS']);
 	//logfile end
-	file_put_contents($backwpupjobrun['LOGFILE'], "</body>\n</html>\n", FILE_APPEND);
+	file_put_contents($backwpupjobrun['LOGFILE'], "</body>".BACKWPUP_LINE_SEPARATOR."</html>", FILE_APPEND);
 	//gzip logfile
 	if ($backwpup_cfg['gzlogs'] and is_writable($backwpupjobrun['LOGFILE'])) {
 		$fd=fopen($backwpupjobrun['LOGFILE'],'r');
@@ -337,7 +345,7 @@ function backwpup_job_job_end() {
 			$status='Error';
 		add_filter('wp_mail_content_type',create_function('', 'return "text/html"; '));
 		wp_mail($backwpupjobrun['STATIC']['JOB']['mailaddresslog'],
-				sprintf(__('[%3$s] BackWPup log %1$s: %2$s','backwpup'),date_i18n('Y/m/d @ H:i',$backwpupjobrun['STATIC']['JOB']['lastrun']),$backwpupjobrun['STATIC']['JOB']['name'],$status),
+				sprintf(__('[%3$s] BackWPup log %1$s: %2$s','backwpup'),date_i18n('d-M-Y H:i',$backwpupjobrun['STATIC']['JOB']['lastrun']),$backwpupjobrun['STATIC']['JOB']['name'],$status),
 				$message,
 				$headers);
 	}
@@ -355,43 +363,19 @@ function backwpup_job_shutdown($signal='') {
 		return;
 	//Put last error to log if one
 	$lasterror=error_get_last();
-	if (($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_COMPILE_ERROR or !empty($signal))) {
-		if (!empty($signal))
-			file_put_contents($backwpupjobrun['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".sprintf(__('Signal $d send to script!','backwpup'),$signal)."</span><br />\n", FILE_APPEND);
-		file_put_contents($backwpupjobrun['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".$lasterror['line']."|File: ".basename($lasterror['file'])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".$lasterror['message']."</span><br />\n", FILE_APPEND);
-		//write new log header
-		$backwpupjobrun['WORKING']['ERROR']++;
-		$fd=fopen($backwpupjobrun['LOGFILE'],'r+');
-		while (!feof($fd)) {
-			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backwpupjobrun['WORKING']['ERROR']."\" />",100)."\n");
-				break;
-			}
-			$filepos=ftell($fd);
-		}
-		fclose($fd);
-	}
+	if ($lasterror['type']==E_ERROR or $lasterror['type']==E_PARSE or $lasterror['type']==E_CORE_ERROR or $lasterror['type']==E_CORE_WARNING or $lasterror['type']==E_COMPILE_ERROR or $lasterror['type']==E_COMPILE_WARNING)
+		backwpup_job_joberrorhandler($lasterror['type'],$lasterror['message'],$lasterror['file'],$lasterror['line']);
+	//Put sigterm to log
+	if (!empty($signal))
+		trigger_error(sprintf(__('Signal $d send to script!','backwpup'),$signal),E_USER_ERROR);
 	//no more restarts
 	$backwpupjobrun['WORKING']['RESTART']++;
 	if ((defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) or $backwpupjobrun['WORKING']['RESTART']>=$backwpup_cfg['jobscriptretry']) {  //only x restarts allowed
 		if (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON)
-			file_put_contents($backwpupjobrun['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\"|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]>".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Can not restart on alternate cron....','backwpup')."</span><br />\n", FILE_APPEND);
+			trigger_error(__('Can not restart on alternate cron....','backwpup'),E_USER_ERROR);
 		else
-			file_put_contents($backwpupjobrun['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."\"|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]>".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('To many restarts....','backwpup')."</span><br />\n", FILE_APPEND);
+			trigger_error(__('To many restarts....','backwpup'),E_USER_ERROR);
 		$backwpupjobrun['WORKING']['ERROR']++;
-		$fd=fopen($backwpupjobrun['LOGFILE'],'r+');
-		while (!feof($fd)) {
-			$line=fgets($fd);
-			if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
-				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backwpupjobrun['WORKING']['ERROR']."\" />",100)."\n");
-				break;
-			}
-			$filepos=ftell($fd);
-		}
-		fclose($fd);
 		backwpup_job_job_end();
 		exit;
 	} 
@@ -402,7 +386,7 @@ function backwpup_job_shutdown($signal='') {
 	$backwpupjobrun['WORKING']['PID']=0;
 	//Excute jobrun again
 	backwpup_job_update_working_data(true);
-	file_put_contents($backwpupjobrun['LOGFILE'], "<span class=\"timestamp\" title=\"[Line: ".__LINE__."|File: ".basename(__FILE__)."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">".date_i18n('Y/m/d H:i.s').":</span> <span>".$backwpupjobrun['WORKING']['RESTART'].'. '.__('Script stop! Will started again now!','backwpup')."</span><br />\n", FILE_APPEND);
+	trigger_error(sprintf(__('%d. Script stop! Will started again now!','backwpup'),$backwpupjobrun['WORKING']['RESTART']),E_USER_NOTICE);
 	$httpauthheader='';
 	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 		$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword'])));

@@ -5,7 +5,7 @@ define('DONOTMINIFY', true);
 define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY',false); //W3TC will not loaded
-define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
+define('BACKWPUP_LINE_SEPARATOR', strstr(PHP_OS, 'WIN') || strtr(PHP_OS, "OS/2")? "\r\n" : "\n");
 //definie E_DEPRECATED if PHP lower than 5.3
 if (!defined('E_DEPRECATED'))
 	define('E_DEPRECATED',8192);
@@ -45,13 +45,13 @@ if (!defined('ABSPATH')) {
 }
 
 //load needed functions for the jobrun
-require_once(BACKWPUP_JOBRUN_FOLDER.'/job_functions.php');
+require_once(dirname(__FILE__).'/job_functions.php');
 $backwpupjobrun=backwpup_get_option('WORKING','DATA');
 if ($jobstarttype=='runnow' or $jobstarttype=='cronrun') {
 	if (!empty($backwpupjobrun))
 		die('A job already running!');
 	if (isset($jobstartid) and is_integer($jobstartid)) {
-		require_once(BACKWPUP_JOBRUN_FOLDER.'/job_start.php');
+		require_once(dirname(__FILE__).'/job_start.php');
 		backwpup_job_start($jobstartid,$jobstarttype);
 	} else
 		die('Job check');
@@ -85,10 +85,13 @@ if (!file_exists($backwpupjobrun['LOGFILE'])) {
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
 	die('No logfile found!');
 }
-
-//set ticks
-declare(ticks=1);
 //set function for PHP user defineid error handling
+$backwpupjobrun['PHP']['INI']['ERROR_LOG']=ini_get('error_log');
+$backwpupjobrun['PHP']['INI']['LOG_ERRORS']=ini_get('log_errors');
+$backwpupjobrun['PHP']['INI']['DISPLAY_ERRORS']=ini_get('display_errors');
+@ini_set('error_log', $backwpupjobrun['LOGFILE']);
+@ini_set('display_errors', 'Off');
+@ini_set('log_errors', 'On');
 set_error_handler('backwpup_job_joberrorhandler',E_ALL | E_STRICT);
 //Check dobbel running and inactivity
 if ($backwpupjobrun['WORKING']['PID']!=getmypid() and $backwpupjobrun['WORKING']['TIMESTAMP']>(current_time('timestamp')-500) and $jobstarttype=='restarttime') {
@@ -105,7 +108,10 @@ $backwpupjobrun['WORKING']['PID']=getmypid();
 // execute function on job shutdown
 register_shutdown_function('backwpup_job_shutdown');
 if (function_exists('pcntl_signal')) {
-	pcntl_signal(SIGTERM, 'backwpup_job_shutdown');
+	declare(ticks=1); //set ticks
+	pcntl_signal(15, 'backwpup_job_shutdown'); //SIGTERM
+	//pcntl_signal(9, 'backwpup_job_shutdown'); //SIGKILL
+	pcntl_signal(2, 'backwpup_job_shutdown'); //SIGINT
 }
 //update working data
 backwpup_job_update_working_data(true);
@@ -113,8 +119,8 @@ backwpup_job_update_working_data(true);
 foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
 	if ($step!='JOB_END') {
-		if (is_file(BACKWPUP_JOBRUN_FOLDER.$stepfile)) {
-			require_once(BACKWPUP_JOBRUN_FOLDER.$stepfile);
+		if (is_file(dirname(__FILE__).'/'.$stepfile)) {
+			require_once(dirname(__FILE__).'/'.$stepfile);
 		} else {
 			trigger_error(sprintf(__('Can not find job step file: %s','backwpup'),$stepfile),E_USER_ERROR);
 		}

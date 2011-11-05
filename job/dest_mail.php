@@ -23,7 +23,7 @@ function backwpup_job_dest_mail() {
 	
 	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*5);
 	$mail=wp_mail($backwpupjobrun['STATIC']['JOB']['mailaddress'],
-			sprintf(__('BackWPup archive from %1$s: %2$s','backwpup'),date_i18n('Y/m/d @ H:i',$backwpupjobrun['STATIC']['JOB']['starttime']),$backwpupjobrun['STATIC']['JOB']['name']),
+			sprintf(__('BackWPup archive from %1$s: %2$s','backwpup'),date_i18n('d-M-Y H:i',$backwpupjobrun['STATIC']['JOB']['starttime']),$backwpupjobrun['STATIC']['JOB']['name']),
 			sprintf(__('Backup archive: %s','backwpup'),$backwpupjobrun['STATIC']['backupfile']),
 			$headers,array($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']));
 
