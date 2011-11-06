@@ -19,7 +19,7 @@ if (!defined('E_USER_DEPRECATED'))
 //disable user abort
 ignore_user_abort(true);
 //make needed vars global
-global $wpdb,$backwpupjobrun;
+global $wpdb,$backwpupjobrun,$backwpup_cfg,$l10n;
 //set vars... from get
 if (!isset($jobstarttype) and empty($jobstarttype) and in_array($_REQUEST['starttype'],array('restarttime','restart','runnow')))
 	$jobstarttype=trim($_REQUEST['starttype']);
@@ -43,7 +43,9 @@ if (!defined('ABSPATH')) {
 		die();
 	}
 }
-
+//unload translation
+if (!empty($backwpup_cfg['unloadtranslations']))
+	unset($l10n);
 //load needed functions for the jobrun
 require_once(dirname(__FILE__).'/job_functions.php');
 $backwpupjobrun=backwpup_get_option('WORKING','DATA');
@@ -120,7 +122,7 @@ foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
 	if ($step!='JOB_END') {
 		if (is_file(dirname(__FILE__).'/'.$stepfile)) {
-			require_once(dirname(__FILE__).'/'.$stepfile);
+			include_once(dirname(__FILE__).'/'.$stepfile);
 		} else {
 			trigger_error(sprintf(__('Can not find job step file: %s','backwpup'),$stepfile),E_USER_ERROR);
 		}

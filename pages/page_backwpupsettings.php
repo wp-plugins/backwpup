@@ -64,9 +64,16 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 </tr>
 <tr valign="top"> 
 <th scope="row"><?PHP _e('PHP zip class','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('PHP zip','backwpup'); ?></span></legend><label for="phpzip"> 
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('PHP zip class','backwpup'); ?></span></legend><label for="phpzip"> 
 <input name="phpzip" type="checkbox" id="phpzip" value="1" <?php checked($backwpup_cfg['phpzip'],true); ?><?php if (!class_exists('ZipArchive')) echo " disabled=\"disabled\""; ?> /> 
 <?PHP _e('Use PHP zip class if available! Normaly PCL Zip class will used.','backwpup'); ?></label> 
+</fieldset></td>
+</tr>
+<tr valign="top"> 
+<th scope="row"><?PHP _e('Unload Translation','backwpup'); ?></th> 
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Unload Translation','backwpup'); ?></span></legend><label for="unloadtranslations"> 
+<input name="unloadtranslations" type="checkbox" id="unloadtranslations" value="1" <?php checked($backwpup_cfg['unloadtranslations'],true); ?> /> 
+<?PHP _e('Unload all WordPress Translations on Job run to reduce Memory.','backwpup'); ?></label> 
 </fieldset></td>
 </tr>
 </table>

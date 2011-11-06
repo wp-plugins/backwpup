@@ -45,6 +45,13 @@ class backwpup_api {
 		$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
 			$response = unserialize(wp_remote_retrieve_body($raw_response));
+		else
+			return;
+		$apiapps=backwpup_get_option('TEMP','APIAPP');
+		$apiappsmd5=md5($apiapps);
+		if ($response->appsmd5!=$apiappsmd5)
+			backwpup_delete_option('TEMP','APIAPP');
+		unset($response->appsmd5);
 		return $response;
 	}
 	
@@ -64,20 +71,18 @@ class backwpup_api {
 	}
 	
 	//get Keys
-	public function get_keys() {
-		$keys=backwpup_get_option('API','KEYS');
-		if (!is_array($keys) or empty($keys['lastupdate']) or $keys['lastupdate']<time()-(60*60*24*7) or empty($keys['BOXNET'])) {
+	public function get_apps() {
+		$apiapps=backwpup_get_option('TEMP','APIAPP');
+		if (empty($apiapps)) {
 			$post=array();
-			$post['ACTION']='getkeys';
+			$post['ACTION']='getapps';
 			$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-			if (!is_wp_error($raw_response) and 200 == wp_remote_retrieve_response_code($raw_response))
-				$keys = unserialize(trim(base64_decode(wp_remote_retrieve_body($raw_response))));
-			if (is_array($keys)) {
-				$keys['lastupdate']=time();
-				backwpup_update_option('API','KEYS',$keys);
+			if (!is_wp_error($raw_response) and 200 == wp_remote_retrieve_response_code($raw_response)) {
+				$apiapps = trim(wp_remote_retrieve_body($raw_response));
+				backwpup_update_option('TEMP','APIAPP',$apiapps);
 			}
 		}
-		return $keys;
+		return unserialize(base64_decode($apiapps));
 	}
 	
 	//delete blog
@@ -111,7 +116,7 @@ function backwpup_api_plugin_update_check($checked_data) {
 		return $checked_data;
 	$backwpupapi=new backwpup_api();
 	$response=$backwpupapi->plugin_update_check();
-	if (is_object($response) && !empty($response)) // Feed the update data into WP updater
+	if (is_object($response) && !empty($response->slug)) // Feed the update data into WP updater
 		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php'] = $response;
 	return $checked_data;
 }

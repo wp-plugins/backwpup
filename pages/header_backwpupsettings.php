@@ -23,6 +23,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	backwpup_update_option('CFG','maxlogs',abs((int)$_POST['maxlogs']));
 	backwpup_update_option('CFG','gzlogs',isset($_POST['gzlogs']) ? true : false);
 	backwpup_update_option('CFG','phpzip',isset($_POST['phpzip']) ? true : false);
+	backwpup_update_option('CFG','unloadtranslations',isset($_POST['unloadtranslations']) ? true : false);
 	backwpup_update_option('CFG','apicronservice',isset($_POST['apicronservice']) ? true : false);
 	backwpup_update_option('CFG','httpauthuser',$_POST['httpauthuser']);
 	backwpup_update_option('CFG','httpauthpassword',base64_encode($_POST['httpauthpassword']));

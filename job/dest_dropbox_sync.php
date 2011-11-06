@@ -1,6 +1,6 @@
 <?PHP
 function backwpup_job_dest_dropbox_sync() {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$backwpup_cfg;
 	//get files
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
 	$folderlist=backwpup_get_option('WORKING','FOLDERLIST'); //get folder list
@@ -10,12 +10,10 @@ function backwpup_job_dest_dropbox_sync() {
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 	try {
 		//set boxtype and authkeys
-		$backwpupapi=new backwpup_api();
-		$keys=$backwpupapi->get_keys();
 		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
 		else 
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);
 		//get account info

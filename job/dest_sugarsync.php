@@ -1,6 +1,6 @@
 <?PHP
 function backwpup_job_dest_sugarsync() {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$backwpup_cfg;
 	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 	trigger_error(sprintf(__('%d. Try to sending backup to SugarSync...','backwpup'),$backwpupjobrun['WORKING']['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);

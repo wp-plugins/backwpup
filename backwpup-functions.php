@@ -23,7 +23,7 @@ function backwpup_admin_menu() {
 }
 
 function backwpup_menu_page() {
-	global $backwpup_message,$backwpup_listtable,$current_screen;
+	global $backwpup_message,$backwpup_cfg,$backwpup_listtable,$current_screen;
 	//check user premessions
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
@@ -34,12 +34,12 @@ function backwpup_menu_page() {
 		$page=$_REQUEST['page'];
 		//check page file exists
 		if (is_file(dirname(__FILE__).'/pages/page_'.$page.'.php'))
-			require_once(dirname(__FILE__).'/pages/page_'.$page.'.php');
+			include_once(dirname(__FILE__).'/pages/page_'.$page.'.php');
 	}
 }
 
 function backwpup_menu_page_header() {
-	global $wp_version,$backwpup_message,$backwpup_listtable,$current_screen;
+	global $wp_version,$backwpup_message,$backwpup_cfg,$backwpup_listtable,$current_screen;
 	//check user premessions
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
@@ -71,10 +71,10 @@ function backwpup_menu_page_header() {
 			}
 			//incude functions
 			if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php'))
-				require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
+				include_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
 			//include code
 			if (is_file(dirname(__FILE__).'/pages/header_'.$page.'.php'))
-				require_once(dirname(__FILE__).'/pages/header_'.$page.'.php');
+				include_once(dirname(__FILE__).'/pages/header_'.$page.'.php');
 		}
 	}
 }
@@ -86,7 +86,7 @@ function backwpup_load_ajax() {
 		$page=$_POST['backwpupajaxpage'];
 		//incude functions
 		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php'))
-			require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
+			include_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
 	}
 }
 
@@ -112,6 +112,9 @@ function backwpup_plugin_init() {
 	// return if not main
 	if (!is_main_site())
 		return;
+	//show SQL error on debug
+	if (defined('WP_DEBUG') and WP_DEBUG)
+		$wpdb->show_errors();
 	//Create log table
 	$dbversion=backwpup_get_option('DBVERSION','DBVERSION');
 	//Create DB table if not exists
@@ -184,6 +187,8 @@ function backwpup_plugin_init() {
 		if (!function_exists('gzopen') or empty($gzlogs)) backwpup_update_option('CFG','gzlogs',false);
 		$phpzip=backwpup_get_option('CFG','phpzip');
 		if (!class_exists('ZipArchive') or empty($phpzip)) backwpup_update_option('CFG','phpzip',false);
+		$unloadtranslations=backwpup_get_option('CFG','unloadtranslations');
+		if (empty($unloadtranslations)) backwpup_update_option('CFG','unloadtranslations',false);
 		$apicronservice=backwpup_get_option('CFG','apicronservice');
 		if (!is_bool($apicronservice)) backwpup_update_option('CFG','apicronservice',false);
 		$dirlogs=backwpup_get_option('CFG','dirlogs');
@@ -196,11 +201,12 @@ function backwpup_plugin_init() {
 	}
 
 	//load cfg
+	$backwpupapi=new backwpup_api();
+	$backwpup_cfg=$backwpupapi->get_apps();
 	$cfgs=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main_name='CFG'");
 	foreach ($cfgs as $cfg) {
 		$backwpup_cfg[$cfg->name]=maybe_unserialize($cfg->value);
 	}
-
 }
 
 function backwpup_update_option($mainname,$name,$value) {
@@ -279,8 +285,11 @@ function backwpup_exists_option($mainname,$name) {
 
 //on Plugin deaktivate
 function backwpup_plugin_deactivate() {
+	global $wpdb;
 	wp_clear_scheduled_hook('backwpup_cron'); //delete cron
-	backwpup_update_option('DBVERSION','DBVERSION',0.0);
+	backwpup_update_option('DBVERSION','DBVERSION','0.0');
+	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
+	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
 	$backwpupapi=new backwpup_api();
 	$backwpupapi->delete();	
 }
@@ -363,7 +372,7 @@ function backwpup_cron() {
 				if ($cronnextrun<=current_time('timestamp')) {
 					$jobstarttype='cronrun';
 					$jobstartid=backwpup_get_option($main_name,'jobid');
-					require_once(dirname(__FILE__).'/job/job_run.php');
+					include_once(dirname(__FILE__).'/job/job_run.php');
 					exit;
 				}
 			}

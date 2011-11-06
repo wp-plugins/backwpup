@@ -13,13 +13,11 @@ if (isset($_GET['auth']) and $_GET['auth']=='Dropbox')  {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			//set boxtype and authkeys
-			$backwpupapi=new backwpup_api();
-			$keys=$backwpupapi->get_keys();
 			$root=backwpup_get_option('JOB_'.$jobid,'droperoot');
 			if ($root=='sandbox')
-				$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
 			else
-				$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
+				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
 
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
@@ -280,12 +278,10 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Dropbox authenticate!', 'backwpup')) {
 		require_once (dirname(__FILE__).'/../libs/dropbox.php');
 		//set boxtype and authkeys
-		$backwpupapi=new backwpup_api();
-		$keys=$backwpupapi->get_keys();
 		if ($jobvalues['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
 		else
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
 
 		// let the user authorize (user will be redirected)
 		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Dropbox&_wpnonce='.wp_create_nonce('edit-job'));
@@ -298,9 +294,7 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	//get box.net auth	
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
 		//set boxtype and authkeys
-		$backwpupapi=new backwpup_api();
-		$keys=$backwpupapi->get_keys();
-		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_ticket&api_key='.$keys['BOXNET']);
+		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_ticket&api_key='.$backwpup_cfg['BOXNET']);
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 			$response = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
 		}

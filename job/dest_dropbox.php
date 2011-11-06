@@ -1,18 +1,16 @@
 <?PHP
 function backwpup_job_dest_dropbox() {
-	global $backwpupjobrun;
+	global $backwpupjobrun,$backwpup_cfg;
 	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
 	trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$backwpupjobrun['WORKING']['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 	try {
 		//set boxtype and authkeys
-		$backwpupapi=new backwpup_api();
-		$keys=$backwpupapi->get_keys();
 		if ($backwpupjobrun['STATIC']['JOB']['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_SANDBOX_APP_KEY'], $keys['DROPBOX_SANDBOX_APP_SECRET'],'sandbox');
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
 		else 
-			$dropbox = new backwpup_Dropbox($keys['DROPBOX_APP_KEY'], $keys['DROPBOX_APP_SECRET']);
+			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
 		
 		// set the tokens 
 		$dropbox->setOAuthTokens($backwpupjobrun['STATIC']['JOB']['dropetoken'],$backwpupjobrun['STATIC']['JOB']['dropesecret']);

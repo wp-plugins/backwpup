@@ -47,21 +47,16 @@ if (!defined('BACKWPUP_DESTS')) {
 //use Cert in AWS dir
 if (!defined('AWS_CERTIFICATE_AUTHORITY'))
     define('AWS_CERTIFICATE_AUTHORITY', dirname(__FILE__).'/libs/cacert.pem');
-//show SQL error on debug
-if (defined('WP_DEBUG') and WP_DEBUG) {
-	global $wpdb;
-	$wpdb->show_errors();
-}
 //load Text Domain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASEDIR.'/lang');
 //Load functions file
-require_once(dirname(__FILE__).'/backwpup-functions.php');
-require_once(dirname(__FILE__).'/libs/backwpup_api.php');
+include_once(dirname(__FILE__).'/backwpup-functions.php');
+include_once(dirname(__FILE__).'/libs/backwpup_api.php');
 //Plugin deactivate
 register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 //add cron intervals
 add_filter('cron_schedules', 'backwpup_intervals');
-//call activation settings
+//call plugin init
 backwpup_plugin_init();
 //For multisite or singel Blog
 if (is_multisite()) {

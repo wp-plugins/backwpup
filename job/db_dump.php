@@ -203,7 +203,6 @@ function backwpup_job_db_dump() {
 	$dbdumpfooter= "\n--\n-- Delelte not needet values on backwpup table\n--\n\n";
 	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='TEMP';\n";
 	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='WORKING';\n";
-	$dbdumpfooter.= "DELETE FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='API';\n";
 	$dbdumpfooter.= "\n";
 	$dbdumpfooter.= "\n";
 	$dbdumpfooter.= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n";

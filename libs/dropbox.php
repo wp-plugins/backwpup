@@ -34,17 +34,17 @@ class backwpup_Dropbox {
 	const API_WWW_URL = 'https://www.dropbox.com/';
 	const API_VERSION_URL = '1/';
 	
-	protected $root = 'dropbox';
-	protected $OAuthObject;
-	protected $OAuthToken;
-	protected $ProgressFunction = false;
+	private $root = 'sandbox';
+	private $OAuthObject;
+	private $OAuthToken;
+	private $ProgressFunction = false;
 	
-	public function __construct($applicationKey, $applicationSecret,$root='dropbox') {
+	public function __construct($applicationKey, $applicationSecret,$dropbox=false) {
 		$this->OAuthObject = new backwpup_OAuthSimple($applicationKey, $applicationSecret);
-		if ($root=='sandbox')
-			$this->root = 'sandbox';
-		else
+		if ($dropbox)
 			$this->root = 'dropbox';
+		else
+			$this->root = 'sandbox';
 	}
 
 	public function setOAuthTokens($token,$secret) {
@@ -65,12 +65,10 @@ class backwpup_Dropbox {
 	
 	public function upload($file, $path = '',$overwrite=true){
 		$file = str_replace("\\", "/",$file);
-		if (!is_readable($file) or !is_file($file)){
+		if (!is_readable($file) or !is_file($file))
 			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
-		}
-		if (filesize($file)>157286400){
+		if (filesize($file)>157286400)
 			throw new DropboxException("Error: File \"$file\" is too big max. 150 MB.");
-		}
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
@@ -87,7 +85,14 @@ class backwpup_Dropbox {
 		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
-
+	
+	public function search($path = '', $query , $fileLimit = 1000){
+		if (strlen($query)>=3)
+			throw new DropboxException("Error: Query \"$query\" must three characters long.");
+		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.trim($path,'/');
+		return $this->request($url, array('query' => $query, 'file_limit' => $fileLimit));
+	}
+	
 	public function shares($path = ''){
 		$url = self::API_URL.self::API_VERSION_URL.'shares/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url);
@@ -112,7 +117,7 @@ class backwpup_Dropbox {
 		//request tokens
 		$OAuthSign = $this->OAuthObject->sign(array(
 			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
-			'method' 	=> 'HMAC-SHA1',
+			'method' 	=>'HMAC-SHA1',
 			'action'	=>'GET',
 			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
@@ -120,8 +125,10 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		if (is_file(dirname(__FILE__).'/cacert.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -150,7 +157,7 @@ class backwpup_Dropbox {
 		 $OAuthSign = $this->OAuthObject->sign(array(
 			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
 			'action'	=>'GET',
-			'method' 	=> 'HMAC-SHA1',
+			'method' 	=>'HMAC-SHA1',
 			'parameters'=>array('oauth_token'    => $oauth_token),
 			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
@@ -158,8 +165,10 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		if (is_file(dirname(__FILE__).'/cacert.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -179,7 +188,7 @@ class backwpup_Dropbox {
 		}
 	}	
 	
-	protected function request($url, $args = null, $method = 'GET', $file = null,$echo=false){
+	private function request($url, $args = null, $method = 'GET', $file = null, $echo=false){
 		$args = (is_array($args)) ? $args : array();
 		$url = $this->url_encode($url);
 		/* Sign Request*/
@@ -198,9 +207,9 @@ class backwpup_Dropbox {
 		$ch = curl_init();
 		if ($method == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-			curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 			$args = (is_array($args)) ? http_build_query($args) : $args;
-			$headers[]='Content-Length: ' .strlen($args);
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
+			$headers[]='Content-Length: '.strlen($args);
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			curl_setopt($ch, CURLOPT_URL, $url);
 		} elseif ($method == 'PUT') {
@@ -220,8 +229,10 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
-		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+		if (is_file(dirname(__FILE__).'/cacert.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
