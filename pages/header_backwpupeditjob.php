@@ -291,6 +291,8 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 		wp_redirect($response['authurl']);
 	}
 	
+	$backwpupapi=new backwpup_api();
+	
 	//get box.net auth	
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
 		//set boxtype and authkeys
@@ -310,8 +312,7 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 		}
 	}
 	
-	//make api call to backwpup.com
-	$backwpupapi=new backwpup_api();
+	//make api call to backwpup.com 
 	$backwpupapi->cronupdate();
 	
 	$_POST['jobid']=$jobvalues['jobid'];
