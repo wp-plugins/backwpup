@@ -63,6 +63,7 @@ Do backups and more for your WordPress Blog.
 * the job works now in the WordPress envoerment again
 * add own database table for backwpup
 * added support for Box.net
+* Updated AWS lib to 1.4.7
 * many bug fixes
 
 = 2.1.6 =
