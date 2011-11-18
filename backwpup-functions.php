@@ -1,7 +1,7 @@
 <?PHP
 //Thems Option menu entry
 function backwpup_admin_menu() {
-	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', BACKWPUP_PLUGIN_BASEURL.'/css/backup-icon20.gif');
+	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', BACKWPUP_PLUGIN_BASEURL.'/css/BackWPup16.png');
 	$hook = add_submenu_page( 'backwpup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', 'backwpup_menu_page' );

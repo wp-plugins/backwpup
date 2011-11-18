@@ -53,6 +53,7 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.5 =
+* New Logo
 * added sync with destionation for files to backup
 * Improved mysql dump
 * mysql dump restore improvements
