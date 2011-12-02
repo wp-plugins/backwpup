@@ -2,14 +2,13 @@
 if (!defined('ABSPATH')) 
 	die();
 
-
 global $wpdb,$screen_layout_columns;
 
 //may be needed to ensure that a special box is always available
-add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), 'backwpup_jobedit_metabox_save', $current_screen->id, 'side', 'high');
-add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), 'backwpup_jobedit_metabox_schedule', $current_screen->id, 'side', 'core');
-add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), 'backwpup_jobedit_metabox_destfolder', $current_screen->id, 'advanced', 'core');
-add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), 'backwpup_jobedit_metabox_destmail', $current_screen->id, 'advanced', 'core');
+add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), 'backwpup_jobedit_metabox_save', get_current_screen()->id, 'side', 'high');
+add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), 'backwpup_jobedit_metabox_schedule', get_current_screen()->id, 'side', 'core');
+add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), 'backwpup_jobedit_metabox_destfolder', get_current_screen()->id, 'advanced', 'core');
+add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), 'backwpup_jobedit_metabox_destmail', get_current_screen()->id, 'advanced', 'core');
 
 //get and check job id
 if (isset($_REQUEST['jobid']) and !empty($_REQUEST['jobid'])) {
@@ -37,10 +36,10 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
 <?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
 <?php wp_nonce_field('backwpupeditjob_ajax_nonce', 'backwpupeditjobajaxnonce', false ); ?>
-<div id="poststuff" class="metabox-holder<?php echo 2 == $screen_layout_columns ? ' has-right-sidebar' : ''; ?>">
+<div id="poststuff" class="metabox-holder<?php echo 1 != $screen_layout_columns ? ' has-right-sidebar' : ''; ?>">
 	<div id="side-info-column" class="inner-sidebar">
 	<?php
-	$side_meta_boxes = do_meta_boxes($current_screen->id, 'side', $jobvalue);
+	$side_meta_boxes = do_meta_boxes(get_current_screen()->id, 'side', $jobvalue);
 	?>
 	</div>
 	
@@ -206,9 +205,9 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 			
-			<?php do_meta_boxes($current_screen->id, 'normal', $jobvalue); ?>
+			<?php do_meta_boxes(get_current_screen()->id, 'normal', $jobvalue); ?>
 		
-			<?php do_meta_boxes($current_screen->id, 'advanced', $jobvalue); ?>
+			<?php do_meta_boxes(get_current_screen()->id, 'advanced', $jobvalue); ?>
 			
 		</div>
 	</div>
@@ -220,7 +219,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 <script type="text/javascript">
 	//<![CDATA[
 	jQuery(document).ready( function($) {
-		postboxes.add_postbox_toggles('<?php echo $current_screen->id; ?>');
+		postboxes.add_postbox_toggles('<?php echo get_current_screen()->id; ?>');
 	});
 	//]]>
 </script>

@@ -117,14 +117,14 @@ function backwpup_api_plugin_update_check($checked_data) {
 	$backwpupapi=new backwpup_api();
 	$response=$backwpupapi->plugin_update_check();
 	if (is_object($response) && !empty($response->slug)) // Feed the update data into WP updater
-		$checked_data->response[BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php'] = $response;
+		$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/backwpup.php'] = $response;
 	return $checked_data;
 }
 //Add filter for Plugin Updates from backwpup.com
 add_filter('pre_set_site_transient_update_plugins', 'backwpup_api_plugin_update_check');
 
 function backwpup_api_plugin_infoscreen($def, $action, $args) {
-	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASEDIR)
+	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASENAME)
 		return false;
 	$backwpupapi=new backwpup_api();
 	$res=$backwpupapi->plugin_infoscreen();

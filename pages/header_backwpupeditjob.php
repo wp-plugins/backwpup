@@ -270,7 +270,7 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	//activate/deactivate seduling if not needed
 	$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
 	if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
-		wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
+		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 	if (empty($activejobs))
 		wp_clear_scheduled_hook('backwpup_cron');
 
@@ -328,27 +328,33 @@ wp_enqueue_script('wp-lists');
 wp_enqueue_script('postbox');
 
 //add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
-add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), 'backwpup_jobedit_metabox_backupfile', $current_screen->id, 'side', 'default');
-add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), 'backwpup_jobedit_metabox_sendlog', $current_screen->id, 'side', 'default');
+add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), 'backwpup_jobedit_metabox_backupfile', get_current_screen()->id, 'side', 'default');
+add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), 'backwpup_jobedit_metabox_sendlog', get_current_screen()->id, 'side', 'default');
 if (in_array('FTP',$dests))
-	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), 'backwpup_jobedit_metabox_destftp', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), 'backwpup_jobedit_metabox_destftp', get_current_screen()->id, 'advanced', 'default');
 if (in_array('DROPBOX',$dests))
-	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), 'backwpup_jobedit_metabox_destdropbox', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), 'backwpup_jobedit_metabox_destdropbox', get_current_screen()->id, 'advanced', 'default');
 if (in_array('BOXNET',$dests))
-	add_meta_box('backwpup_jobedit_destboxnet', __('Backup to Box.net','backwpup'), 'backwpup_jobedit_metabox_destboxnet', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destboxnet', __('Backup to Box.net','backwpup'), 'backwpup_jobedit_metabox_destboxnet', get_current_screen()->id, 'advanced', 'default');
 if (in_array('SUGARSYNC',$dests))
-	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), 'backwpup_jobedit_metabox_destsugarsync', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), 'backwpup_jobedit_metabox_destsugarsync', get_current_screen()->id, 'advanced', 'default');
 if (in_array('S3',$dests))
-	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), 'backwpup_jobedit_metabox_dests3', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), 'backwpup_jobedit_metabox_dests3', get_current_screen()->id, 'advanced', 'default');
 if (in_array('GSTORAGE',$dests))
-	add_meta_box('backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), 'backwpup_jobedit_metabox_destgstorage', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), 'backwpup_jobedit_metabox_destgstorage', get_current_screen()->id, 'advanced', 'default');
 if (in_array('MSAZURE',$dests))
-	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), 'backwpup_jobedit_metabox_destazure', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), 'backwpup_jobedit_metabox_destazure', get_current_screen()->id, 'advanced', 'default');
 if (in_array('RSC',$dests))
-	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), 'backwpup_jobedit_metabox_destrsc', $current_screen->id, 'advanced', 'default');
+	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), 'backwpup_jobedit_metabox_destrsc', get_current_screen()->id, 'advanced', 'default');
+
 //add clumns
-add_screen_option('layout_columns', array('max' => 2));
+add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
 
 //add Help
-backwpup_contextual_help(__('','backwpup'));
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content'	=>
+	'<p>' . '</p>'
+) );
 ?>

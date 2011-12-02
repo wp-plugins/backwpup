@@ -2,7 +2,6 @@
 if (!defined('ABSPATH')) 
 	die();
 
-	
 echo "<div class=\"wrap\">";
 screen_icon();
 echo "<h2>".esc_html( __('BackWPup Logs', 'backwpup'))."</h2>";

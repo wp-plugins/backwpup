@@ -8,5 +8,10 @@ if (!empty($_GET['logfile'])) {
 }
 
 //add Help
-backwpup_contextual_help(__('Here you see working jobs or logfiles','backwpup'));
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content'	=>
+	'<p>' .__('Here you see a working jobs or a logfile','backwpup') . '</p>'
+) );
 ?>

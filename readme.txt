@@ -2,7 +2,7 @@
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
-Requires at least: 3.1
+Requires at least: 3.2
 Tested up to: 3.2.1
 Stable tag: 2.1.6
 
@@ -114,7 +114,7 @@ Do backups and more for your WordPress Blog.
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)
-* Uses now ‘WP_TEMP_DIR’ for getting temp folder
+* Uses now ï¿½WP_TEMP_DIRï¿½ for getting temp folder
 * Updated AWS lib to 1.3.6
 * Job runs now in UTC time. Time outputs will convert.
 * Many languge strings changed for better translation

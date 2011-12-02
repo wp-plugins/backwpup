@@ -3,5 +3,10 @@ if (!defined('ABSPATH'))
 	die();
 
 //add Help
-backwpup_contextual_help();
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content'	=>
+	'<p>' . '</p>'
+) );
 ?>

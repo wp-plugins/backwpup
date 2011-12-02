@@ -21,7 +21,7 @@ if (!empty($doaction)) {
 		//activate/deactivate seduling if not needed
 		$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
 		if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
-			wp_schedule_event(time(), 'backwpup_int', 'backwpup_cron');
+			wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 		if (empty($activejobs)) 
 			wp_clear_scheduled_hook('backwpup_cron');
 		break;
@@ -119,7 +119,12 @@ if (!empty($doaction)) {
 }
 
 //add Help
-backwpup_contextual_help(__('Here is the job overview with some information. You can see some further information of the jobs, how many can be switched with the view button. Also you can manage the jobs or abbort working jobs. Some links are added to have direct access to the last log or download.','backwpup'));
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content'	=>
+	'<p>' . __('Here can see some information about the jobs. How many can be switched with the view button. Also you can manage the jobs and abort working. With the links you have direct access to the last log or download.','backwpup') . '</p>'
+) );
 
 $backwpup_listtable->prepare_items();
 

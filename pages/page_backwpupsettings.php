@@ -1,7 +1,6 @@
 <?PHP
 if (!defined('ABSPATH')) 
 	die();
-global $backwpup_cfg;
 ?>
 <div class="wrap">
 <?PHP

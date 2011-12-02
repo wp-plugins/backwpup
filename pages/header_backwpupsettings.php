@@ -49,5 +49,10 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 }
 
 //add Help
-backwpup_contextual_help();
+get_current_screen()->add_help_tab( array(
+	'id'      => 'overview',
+	'title'   => __('Overview'),
+	'content'	=>
+	'<p>' . '</p>'
+) );
 ?>
