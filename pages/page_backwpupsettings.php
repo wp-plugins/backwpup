@@ -30,8 +30,8 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <p><?PHP _e('Here you can set Logfile related options.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top"> 
-<th scope="row"><label for="dirlogs"><?PHP _e('Log file Folder','backwpup'); ?></label></th> 
-<td><input name="dirlogs" type="text" id="dirlogs" value="<?PHP echo $backwpup_cfg['dirlogs'];?>" class="regular-text code" />
+<th scope="row"><label for="logfolder"><?PHP _e('Log file Folder','backwpup'); ?></label></th>
+<td><input name="logfolder" type="text" id="logfolder" value="<?PHP echo $backwpup_cfg['logfolder'];?>" class="regular-text code" />
 </td> 
 </tr>
 <tr valign="top"> 
@@ -75,6 +75,11 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <?PHP _e('Unload all WordPress Translations on Job run to reduce Memory.','backwpup'); ?></label> 
 </fieldset></td>
 </tr>
+	<tr valign="top">
+		<th scope="row"><label for="tempfolder"><?PHP _e('Temp file Folder','backwpup'); ?></label></th>
+		<td><input name="tempfolder" type="text" id="tempfolder" value="<?PHP echo $backwpup_cfg['tempfolder'];?>" class="regular-text code" />
+		</td>
+	</tr>
 </table>
 
 <h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3>
@@ -90,7 +95,7 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 </table>
 
 <h3><?PHP _e('Http basic authentication','backwpup'); ?></h3>
-<p><?PHP _e('Is your blog behind a http basic authentication (.htaccess)? Then you must set the username and password four authentication.','backwpup'); ?></p>
+<p><?PHP _e('Is your blog behind a http basic authentication (.htaccess)? Then you must set the username and password for authentication to get jobs working.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top">
 <th scope="row"><label for="httpauthuser"><?PHP _e('Username:','backwpup'); ?></label></th> 
@@ -102,6 +107,23 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo base64_decode($backwpup_cfg['httpauthpassword']);?>" class="regular-text" />
 </tr>
 </table>
+
+	<h3><?PHP _e('Direct Job start','backwpup'); ?></h3>
+	<p><?PHP _e('If you would start job with a url, to use your hosters cron or so, you must setup some security.','backwpup'); ?></p>
+	<p><?PHP _e('When you use it it will not looked for job activation or job cron settings!','backwpup'); ?></p>
+	<table class="form-table">
+		<tr valign="top">
+			<th scope="row"><label for="jobrunauthkey"><?PHP _e('Set auth key:','backwpup'); ?></label></th>
+			<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
+				<span><?PHP _e('A sample key is:','backwpup'); echo substr(  md5( AUTH_KEY ) ,5,17 ) ?> </span><br />
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><?PHP _e('URL to use','backwpup'); ?></th>
+			<td><?PHP echo BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=runext&jobid=<em>JOBID</em>'; ?><br />
+				<span><?PHP _e('replace <em>JOBID</em> with the ID of job to start','backwpup'); ?></span>
+		</tr>
+	</table>
 
 <h3><?PHP _e('WP-Cron','backwpup'); ?></h3>
 <p><?PHP _e('If you would use the cron job of your hoster you must point it to the url:','backwpup'); echo ' <i>'.get_option('siteurl').'/wp-cron.php</i>'; ?></p>

@@ -1,5 +1,5 @@
 <?PHP
-class backwpup_api {
+class BackWPup_api {
 
 	private $apiurl='https://api.backwpup.com';
 	private $headers=array();
@@ -21,7 +21,7 @@ class backwpup_api {
 		$post['OFFSET']=get_option('gmt_offset');
 		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword']));
-		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' ORDER BY main_name");
+		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' ORDER BY main_name");
 		if (!empty($activejobs)) {
 			foreach ($activejobs as $mainname) {
 				$jobid=backwpup_get_option($mainname,'jobid');
@@ -47,10 +47,10 @@ class backwpup_api {
 			$response = unserialize(wp_remote_retrieve_body($raw_response));
 		else
 			return;
-		$apiapps=backwpup_get_option('TEMP','APIAPP');
+		$apiapps=backwpup_get_option('temp','apiapp');
 		$apiappsmd5=md5($apiapps);
 		if ($response->appsmd5!=$apiappsmd5)
-			backwpup_delete_option('TEMP','APIAPP');
+			backwpup_delete_option('temp','apiapp');
 		unset($response->appsmd5);
 		return $response;
 	}
@@ -72,14 +72,14 @@ class backwpup_api {
 	
 	//get Keys
 	public function get_apps() {
-		$apiapps=backwpup_get_option('TEMP','APIAPP');
+		$apiapps=backwpup_get_option('temp','apiapp');
 		if (empty($apiapps)) {
 			$post=array();
 			$post['ACTION']='getapps';
 			$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 			if (!is_wp_error($raw_response) and 200 == wp_remote_retrieve_response_code($raw_response)) {
 				$apiapps = trim(wp_remote_retrieve_body($raw_response));
-				backwpup_update_option('TEMP','APIAPP',$apiapps);
+				backwpup_update_option('temp','apiapp',$apiapps);
 			}
 		}
 		return unserialize(base64_decode($apiapps));
@@ -114,7 +114,7 @@ class backwpup_api {
 function backwpup_api_plugin_update_check($checked_data) {
 	if (empty($checked_data->checked))
 		return $checked_data;
-	$backwpupapi=new backwpup_api();
+	$backwpupapi=new BackWPup_api();
 	$response=$backwpupapi->plugin_update_check();
 	if (is_object($response) && !empty($response->slug)) // Feed the update data into WP updater
 		$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/backwpup.php'] = $response;
@@ -126,7 +126,7 @@ add_filter('pre_set_site_transient_update_plugins', 'backwpup_api_plugin_update_
 function backwpup_api_plugin_infoscreen($def, $action, $args) {
 	if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASENAME)
 		return false;
-	$backwpupapi=new backwpup_api();
+	$backwpupapi=new BackWPup_api();
 	$res=$backwpupapi->plugin_infoscreen();
 	return $res;
 }

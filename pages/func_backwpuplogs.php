@@ -23,9 +23,9 @@ class BackWPup_Logs_Table extends WP_List_Table {
 			
 		//load logs
 		$logfiles=array();
-		if ( $dir = @opendir( $backwpup_cfg['dirlogs'] ) ) {
+		if ( $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
-				if (is_file($backwpup_cfg['dirlogs'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8))) 
+				if (is_file($backwpup_cfg['logfolder'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
@@ -91,8 +91,8 @@ class BackWPup_Logs_Table extends WP_List_Table {
 		$style = '';
 		foreach ( $this->items as $logfile ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
-			$logdata=backwpup_read_logheader($backwpup_cfg['dirlogs'].$logfile);
-			echo "\n\t", $this->single_row( $backwpup_cfg['dirlogs'].$logfile, $logdata, $style );
+			$logdata=backwpup_read_logheader($backwpup_cfg['logfolder'].$logfile);
+			echo "\n\t", $this->single_row( $backwpup_cfg['logfolder'].$logfile, $logdata, $style );
 		}
 	}
 	

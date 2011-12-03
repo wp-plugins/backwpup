@@ -2102,7 +2102,7 @@ msgid "http://backwpup.com"
 msgstr ""
 
 #. Description of the plugin/theme
-msgid "WordPress Backup and more…"
+msgid "WordPress Backup and moreï¿½"
 msgstr ""
 
 #. Author of the plugin/theme

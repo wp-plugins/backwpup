@@ -48,7 +48,7 @@ if (!empty($backwpup_cfg['unloadtranslations']))
 	unset($l10n);
 //load needed functions for the jobrun
 require_once(dirname(__FILE__).'/job_functions.php');
-$backwpupjobrun=backwpup_get_option('WORKING','DATA');
+$backwpupjobrun=backwpup_get_option('working','data');
 if ($jobstarttype=='runnow' or $jobstarttype=='cronrun') {
 	if (!empty($backwpupjobrun))
 		die('A job already running!');
@@ -87,7 +87,7 @@ if (!file_exists($backwpupjobrun['LOGFILE'])) {
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
 	die('No logfile found!');
 }
-//set function for PHP user defineid error handling
+//set function for PHP user defined error handling
 $backwpupjobrun['PHP']['INI']['ERROR_LOG']=ini_get('error_log');
 $backwpupjobrun['PHP']['INI']['LOG_ERRORS']=ini_get('log_errors');
 $backwpupjobrun['PHP']['INI']['DISPLAY_ERRORS']=ini_get('display_errors');
@@ -120,7 +120,7 @@ backwpup_job_update_working_data(true);
 //Load needed files
 foreach($backwpupjobrun['WORKING']['STEPS'] as $step) {
 	$stepfile=strtolower($step).'.php';
-	if ($step!='JOB_END') {
+	if ($step!='job_END') {
 		if (is_file(dirname(__FILE__).'/'.$stepfile)) {
 			include_once(dirname(__FILE__).'/'.$stepfile);
 		} else {

@@ -102,7 +102,7 @@ function backwpup_job_curl_progresscallback($download_size, $downloaded, $upload
 
 function backwpup_job_update_working_data($mustwrite=false) {
 	global $backwpupjobrun,$wpdb;
-	$backupdata=backwpup_get_option('WORKING','DATA');
+	$backupdata=backwpup_get_option('working','data');
 	if (empty($backupdata)) {
 		backwpup_job_job_end();
 		return false;
@@ -123,7 +123,7 @@ function backwpup_job_update_working_data($mustwrite=false) {
 			$backwpupjobrun['WORKING']['STEPSPERSENT']=1;
 		$backwpupjobrun['WORKING']['TIMESTAMP']=current_time('timestamp');
 		@set_time_limit(0);
-		backwpup_update_option('WORKING','DATA',$backwpupjobrun);
+		backwpup_update_option('working','data',$backwpupjobrun);
 	}
 	return true;
 }
@@ -186,6 +186,7 @@ function backwpup_job_joberrorhandler() {
 		if ($adderrorwarning) {
 			$found=0;
 			$fd=fopen($backwpupjobrun['LOGFILE'],'r+');
+			$filepos=ftell($fd);
 			while (!feof($fd)) {
 				$line=fgets($fd);
 				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
@@ -232,7 +233,7 @@ function backwpup_job_job_end() {
 	backwpup_job_maintenance_mode(false);
 	//delete old logs
 	if (!empty($backwpup_cfg['maxlogs'])) {
-		if ( $dir = opendir($backwpup_cfg['dirlogs']) ) { //make file list
+		if ( $dir = opendir($backwpup_cfg['logfolder']) ) { //make file list
 			while (($file = readdir($dir)) !== false ) {
 				if ('backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and (".html" == substr($file,-5) or ".html.gz" == substr($file,-8)))
 					$logfilelist[]=$file;
@@ -243,7 +244,7 @@ function backwpup_job_job_end() {
 			rsort($logfilelist);
 			$numdeltefiles=0;
 			for ($i=$backwpup_cfg['maxlogs'];$i<sizeof($logfilelist);$i++) {
-				unlink($backwpup_cfg['dirlogs'].$logfilelist[$i]);
+				unlink($backwpup_cfg['logfolder'].$logfilelist[$i]);
 				$numdeltefiles++;
 			}
 			if ($numdeltefiles>0)
@@ -266,23 +267,24 @@ function backwpup_job_job_end() {
 		unlink($backwpupjobrun['STATIC']['TEMPDIR'].$backwpupjobrun['STATIC']['JOB']['wpexportfile']);
 
 	//Update job options
-	$starttime=backwpup_get_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime');
+	$starttime=backwpup_get_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime');
 	if (!empty($starttime)) {
-		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastrun',$starttime);
-		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$starttime));
-		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime','');
+		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastrun',$starttime);
+		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$starttime));
+		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime','');
 	}
-	$backwpupjobrun['STATIC']['JOB']['lastrun']=$starttime=backwpup_get_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastrun');
+	$backwpupjobrun['STATIC']['JOB']['lastrun']=$starttime=backwpup_get_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastrun');
 	
 	//write header info
 	if (is_writable($backwpupjobrun['LOGFILE'])) {
 		$fd=fopen($backwpupjobrun['LOGFILE'],'r+');
+		$filepos=ftell($fd);
 		$found=0;
 		while (!feof($fd)) {
 			$line=fgets($fd);
 			if (stripos($line,"<meta name=\"backwpup_jobruntime\"") !== false) {
 				fseek($fd,$filepos);
-				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".backwpup_get_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime')."\" />",100).BACKWPUP_LINE_SEPARATOR);
+				fwrite($fd,str_pad("<meta name=\"backwpup_jobruntime\" content=\"".backwpup_get_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastruntime')."\" />",100).BACKWPUP_LINE_SEPARATOR);
 				$found++;
 			}
 			if (stripos($line,"<meta name=\"backwpup_backupfilesize\"") !== false) {
@@ -314,7 +316,7 @@ function backwpup_job_job_end() {
 		fclose($fd);
 		unlink($backwpupjobrun['LOGFILE']);
 		$backwpupjobrun['LOGFILE']=$backwpupjobrun['LOGFILE'].'.gz';
-		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'logfile',$backwpupjobrun['LOGFILE']);
+		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'logfile',$backwpupjobrun['LOGFILE']);
 	}
 
 	//Send mail with log
@@ -350,7 +352,7 @@ function backwpup_job_job_end() {
 				$headers);
 	}
 	$backwpupjobrun['WORKING']['STEPDONE']=1;
-	$backwpupjobrun['WORKING']['STEPSDONE'][]='JOB_END'; //set done
+	$backwpupjobrun['WORKING']['STEPSDONE'][]='job_END'; //set done
     $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
 	exit;
@@ -379,7 +381,7 @@ function backwpup_job_shutdown($signal='') {
 		backwpup_job_job_end();
 		exit;
 	} 
-	$backupdata=backwpup_get_option('WORKING','DATA');
+	$backupdata=backwpup_get_option('working','data');
 	if (empty($backupdata))
 		exit;
 	//set PID to 0
@@ -390,7 +392,7 @@ function backwpup_job_shutdown($signal='') {
 	$httpauthheader='';
 	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 		$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword'])));
-	@wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 5, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'user-agent'=>'BackWPup','body' => array( '_wpnonce' => wp_create_nonce('backwpup-job-running'), 'starttype' => 'restart','ABSPATH'=> ABSPATH)));
+	@wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.wp_create_nonce('backwpup-job-running').'&starttype=restart', array('timeout' => 5, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
 	exit;
 }
 ?>

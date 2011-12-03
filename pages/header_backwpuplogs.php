@@ -16,8 +16,8 @@ if (!empty($doaction)) {
 			check_admin_referer('bulk-logs');
 			$num=0;
 			foreach ($_GET['logfiles'] as $logfile) {
-				if (is_file($backwpup_cfg['dirlogs'].'/'.$logfile))
-					unlink($backwpup_cfg['dirlogs'].'/'.$logfile);
+				if (is_file($backwpup_cfg['logfolder'].'/'.$logfile))
+					unlink($backwpup_cfg['logfolder'].'/'.$logfile);
 				$num++;
 			}
 		}

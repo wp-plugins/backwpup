@@ -134,7 +134,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		echo "<select name=\"jobdest\" id=\"jobdest\" class=\"postform\">\n";
 		foreach ($this->get_dest_list() as $jobdest) {
 			list($jobid,$dest)=explode(',',$jobdest);
-			$jobname=backwpup_get_option('JOB_'.$this->jobid,'name');
+			$jobname=backwpup_get_option('job_'.$this->jobid,'name');
 			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.','.$this->dest,$jobdest).">".$dest.": ".esc_html($jobname)."</option>\n";
 		}
 		echo "</select>\n";
@@ -145,7 +145,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	function get_dest_list() {
 		global $wpdb;
 		$jobdest=array();
-		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value");
+		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value");
 		if (!empty($jobids)) {
 			foreach ($jobids as $jobid) {
 				$jobvalue=backwpup_get_job_vars($jobid);

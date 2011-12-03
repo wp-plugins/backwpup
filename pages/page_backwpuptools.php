@@ -62,7 +62,7 @@ if (isset($_POST['dbrestore']) and $_POST['dbrestore']==__('Restore', 'backwpup'
 if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
 	echo "<th scope=\"row\"><label for=\"maxlogs\">".__('Select jobs to import','backwpup')."</label></th><td>";
 	$import=file_get_contents($_FILES['importfile']['tmp_name']);
-	$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value DESC");
+	$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value DESC");
 	foreach ( unserialize($import) as $jobid => $jobvalue ) {
 		echo "<select name=\"importtype[".$jobid."]\" title=\"".__('Import Type', 'backwpup')."\"><option value=\"not\">".__('No Import', 'backwpup')."</option>";
 		if (in_array($jobid,$jobids))
@@ -90,10 +90,10 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 			$import[$id]['lastruntime']='';
 			$import[$id]['lastbackupdownloadurl']='';
 			//delte old
-			$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'JOB_'.$id));
+			$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'job_'.$id));
 			//save
 			foreach ($import[$id] as $jobvaluename => $jobvaluevalue) {
-				backwpup_update_option('JOB_'.$import[$id]['jobid'],$jobvaluename,$jobvaluevalue);
+				backwpup_update_option('job_'.$import[$id]['jobid'],$jobvaluename,$jobvaluevalue);
 			}					
 		} elseif ($type=='append') {
 			unset($import[$id]['jobid']);
@@ -108,7 +108,7 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 			//save
 			$jobvalues=backwpup_get_job_vars(0,$import[$id]);
 			foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
-				backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+				backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
 			}	
 		} 
 	}

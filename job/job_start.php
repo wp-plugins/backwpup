@@ -13,14 +13,14 @@ function backwpup_job_start($jobid,$jobstarttype) {
 	//Set job data
 	$backwpupjobrun['STATIC']['JOB']=backwpup_get_job_vars($jobid);
 	//set Logfile
-	$backwpupjobrun['LOGFILE']=$backwpup_cfg['dirlogs'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
+	$backwpupjobrun['LOGFILE']=$backwpup_cfg['logfolder'].'backwpup_log_'.date_i18n('Y-m-d_H-i-s').'.html';
 	//Set job start settings
 	$backwpupjobrun['STATIC']['JOB']['starttime']=current_time('timestamp'); //set start time for job
-	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime',$backwpupjobrun['STATIC']['JOB']['starttime']);
-	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'logfile',$backwpupjobrun['LOGFILE']); //Set current logfile
-	$backwpupjobrun['STATIC']['JOB']['cronnextrun']=backwpup_cron_next($jobs[$backwpupjobrun['STATIC']['JOB']['jobid']]['cron']);  //set next run
-	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'cronnextrun',$backwpupjobrun['STATIC']['JOB']['cronnextrun']);
-	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','');
+	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'starttime',$backwpupjobrun['STATIC']['JOB']['starttime']);
+	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'logfile',$backwpupjobrun['LOGFILE']); //Set current logfile
+	$backwpupjobrun['STATIC']['JOB']['cronnextrun']=backwpup_cron_next($backwpupjobrun['STATIC']['JOB']['jobid']['cron']);  //set next run
+	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'cronnextrun',$backwpupjobrun['STATIC']['JOB']['cronnextrun']);
+	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','');
 	//Set todo
 	$backwpupjobrun['STATIC']['TODO']=$backwpupjobrun['STATIC']['JOB']['type'];
 	//only for jobs that makes backups
@@ -43,7 +43,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 						return false;
 					}
 					//create .htaccess for apache and index.html for other
-					if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+					if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check for apache webserver
 						if (!is_file($backwpupjobrun['STATIC']['JOB']['backupdir'].'.htaccess'))
 							file_put_contents($backwpupjobrun['STATIC']['JOB']['backupdir'].'.htaccess',"Order allow,deny\ndeny from all");
 					} else {
@@ -115,12 +115,12 @@ function backwpup_job_start($jobid,$jobstarttype) {
 		$backwpupjobrun['WORKING']['STEPS'][]='DB_CHECK';
 	if (in_array('OPTIMIZE',$backwpupjobrun['STATIC']['TODO']))
 		$backwpupjobrun['WORKING']['STEPS'][]='DB_OPTIMIZE';
-	$backwpupjobrun['WORKING']['STEPS'][]='JOB_END';
+	$backwpupjobrun['WORKING']['STEPS'][]='job_END';
 	//mark all as not done
 	foreach($backwpupjobrun['WORKING']['STEPS'] as $step)
 		$backwpupjobrun['WORKING'][$step]['DONE']=false;
 	//write working date
-	backwpup_update_option('WORKING','DATA',$backwpupjobrun);
+	backwpup_update_option('working','data',$backwpupjobrun);
 	//create log file
 	$fd=fopen($backwpupjobrun['LOGFILE'],'w');
 	fwrite($fd,"<html>".BACKWPUP_LINE_SEPARATOR."<head>".BACKWPUP_LINE_SEPARATOR);
@@ -158,7 +158,7 @@ function backwpup_job_start($jobid,$jobstarttype) {
 		fwrite($fd,sprintf(__('[INFO]: curl ver.: %1$s; %2$s','backwpup'),$curlversion['version'],$curlversion['ssl_version'])."<br />".BACKWPUP_LINE_SEPARATOR);
 	}
 	fwrite($fd,sprintf(__('[INFO]: Temp folder is: %s','backwpup'),$backwpupjobrun['STATIC']['TEMPDIR'])."<br />".BACKWPUP_LINE_SEPARATOR);
-	fwrite($fd,sprintf(__('[INFO]: Logfile folder is: %s','backwpup'),$backwpup_cfg['dirlogs'])."<br />".BACKWPUP_LINE_SEPARATOR);
+	fwrite($fd,sprintf(__('[INFO]: Logfile folder is: %s','backwpup'),$backwpup_cfg['logfolder'])."<br />".BACKWPUP_LINE_SEPARATOR);
 	fwrite($fd,sprintf(__('[INFO]: Backup type is: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['backuptype'])."<br />".BACKWPUP_LINE_SEPARATOR);
 	if(!empty($backwpupjobrun['STATIC']['backupfile']) and $backwpupjobrun['STATIC']['JOB']['backuptype']=='archive')
 		fwrite($fd,sprintf(__('[INFO]: Backup file is: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])."<br />".BACKWPUP_LINE_SEPARATOR);

@@ -179,7 +179,7 @@ class AmazonEMR extends CFRuntime
 	 * @param array $steps (Required) A list of StepConfig to be executed by the job flow. <ul>
 	 * 	<li><code>x</code> - <code>array</code> - This represents a simple array index. <ul>
 	 * 		<li><code>Name</code> - <code>string</code> - Required - The name of the job flow step. </li>
-	 * 		<li><code>ActionOnFailure</code> - <code>string</code> - Optional - Specifies the action to take if the job flow step fails. [Allowed values: <code>TERMINATE_JOB_FLOW</code>, <code>CANCEL_AND_WAIT</code>, <code>CONTINUE</code>]</li>
+	 * 		<li><code>ActionOnFailure</code> - <code>string</code> - Optional - Specifies the action to take if the job flow step fails. [Allowed values: <code>TERMINATE_job_FLOW</code>, <code>CANCEL_AND_WAIT</code>, <code>CONTINUE</code>]</li>
 	 * 		<li><code>HadoopJarStep</code> - <code>array</code> - Required - Specifies the JAR file used for the job flow step. Takes an associative array of parameters that can have the following keys: <ul>
 	 * 			<li><code>Properties</code> - <code>array</code> - Optional - A list of Java properties that are set when the step runs. You can use these properties to pass key value pairs to your main function. <ul>
 	 * 				<li><code>x</code> - <code>array</code> - This represents a simple array index. <ul>
@@ -385,7 +385,7 @@ class AmazonEMR extends CFRuntime
 	 * 	<li><code>Steps</code> - <code>array</code> - Optional - A list of steps to be executed by the job flow. <ul>
 	 * 		<li><code>x</code> - <code>array</code> - This represents a simple array index. <ul>
 	 * 			<li><code>Name</code> - <code>string</code> - Required - The name of the job flow step. </li>
-	 * 			<li><code>ActionOnFailure</code> - <code>string</code> - Optional - Specifies the action to take if the job flow step fails. [Allowed values: <code>TERMINATE_JOB_FLOW</code>, <code>CANCEL_AND_WAIT</code>, <code>CONTINUE</code>]</li>
+	 * 			<li><code>ActionOnFailure</code> - <code>string</code> - Optional - Specifies the action to take if the job flow step fails. [Allowed values: <code>TERMINATE_job_FLOW</code>, <code>CANCEL_AND_WAIT</code>, <code>CONTINUE</code>]</li>
 	 * 			<li><code>HadoopJarStep</code> - <code>array</code> - Required - Specifies the JAR file used for the job flow step. Takes an associative array of parameters that can have the following keys: <ul>
 	 * 				<li><code>Properties</code> - <code>array</code> - Optional - A list of Java properties that are set when the step runs. You can use these properties to pass key value pairs to your main function. <ul>
 	 * 					<li><code>x</code> - <code>array</code> - This represents a simple array index. <ul>

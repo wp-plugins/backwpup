@@ -64,7 +64,7 @@ function backwpup_job_dest_dropbox_sync() {
 	}
 	
 	//set calback function
-	$dropbox->setProgressFunction('backwpup_job_curl_progresscallback');	
+	$dropbox->setProgressFunction('backwpup_job_curl_progresscallback');
 	
 	trigger_error(__('Sync files...','backwpup'),E_USER_NOTICE);
 	foreach($remotefilelist as $remotefile) {

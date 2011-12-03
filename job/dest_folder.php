@@ -3,7 +3,7 @@ function backwpup_job_dest_folder() {
 	global $backwpupjobrun;
 	$backwpupjobrun['WORKING']['STEPTODO']=1;
 	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
+	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
 	//Delete old Backupfiles
 	$backupfilelist=array();
 	if ($backwpupjobrun['STATIC']['JOB']['maxbackups']>0) {

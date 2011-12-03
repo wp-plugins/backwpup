@@ -9,7 +9,7 @@ if (!defined('ABSPATH'))
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
 	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif;
-	$backupdata=backwpup_get_option('WORKING','DATA');
+	$backupdata=backwpup_get_option('working','data');
 	if (!empty($backupdata)) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile($backupdata['LOGFILE']);

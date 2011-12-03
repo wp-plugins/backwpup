@@ -39,7 +39,7 @@ class CFHadoopBootstrap extends CFHadoopBase
 	// Daemon types
 	const DAEMON_NAME_NODE = 'namenode';
 	const DAEMON_DATA_NODE = 'datanode';
-	const DAEMON_JOB_TRACKER = 'jobtracker';
+	const DAEMON_job_TRACKER = 'jobtracker';
 	const DAEMON_TASK_TRACKER = 'tasktracker';
 	const DAEMON_CLIENT = 'client';
 

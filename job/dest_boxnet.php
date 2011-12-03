@@ -73,7 +73,7 @@ function backwpup_job_dest_boxnet() {
 	}
 	
 	if ($response->status=='upload_ok') {
-		backwpup_update_option('JOB_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','https://www.box.net/api/1.0/download/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$response->files->file->attributes()->id);
+		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','https://www.box.net/api/1.0/download/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$response->files->file->attributes()->id);
 		$backwpupjobrun['WORKING']['STEPDONE']++;
 		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
 		trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://www.box.net/'.$backwpupjobrun['STATIC']['JOB']['boxnetdir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
@@ -82,7 +82,7 @@ function backwpup_job_dest_boxnet() {
 		return;
 	}
 	//remove prozess callback
-	remove_action('http_api_curl','backwpup_job_curl_progressfunction');	
+	remove_action('http_api_curl','backwpup_job_curl_progressfunction');
 	
 	if ($backwpupjobrun['STATIC']['JOB']['boxnetbackups']>0) { //Delete old backups
 		$backupfilelist=array();

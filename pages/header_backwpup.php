@@ -15,11 +15,11 @@ if (!empty($doaction)) {
 		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
-				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'JOB_'.$jobid));
+				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'job_'.$jobid));
 			}
 		}
 		//activate/deactivate seduling if not needed
-		$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
+		$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' LIMIT 1",0,0);
 		if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
 			wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 		if (empty($activejobs)) 
@@ -41,7 +41,7 @@ if (!empty($doaction)) {
 		unset($jobvalues['lastruntime']);
 		unset($jobvalues['lastrun']);	
 		foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
-			backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+			backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
 		}
 		break;
 	case 'export': //Copy Job
@@ -73,7 +73,7 @@ if (!empty($doaction)) {
 		break;
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
-		$backupdata=backwpup_get_option('WORKING','DATA');
+		$backupdata=backwpup_get_option('working','data');
 		if (empty($backupdata))
 			break;
         $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
@@ -103,9 +103,9 @@ if (!empty($doaction)) {
 		}
 		//update job settings
 		if (!empty($backupdata['STATIC']['JOB']['jobid']) and !empty($backupdata['STATIC']['JOB']['starttime'])) {
-			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'starttime','');
-			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastrun',$backupdata['STATIC']['JOB']['starttime']);
-			backwpup_update_option('JOB_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
+			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'starttime','');
+			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'lastrun',$backupdata['STATIC']['JOB']['starttime']);
+			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
 		}
 		//clean up temp
 		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
@@ -139,57 +139,57 @@ if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
 	$backwpup_admin_message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 	$checks=false;
 }
-if (!backwpup_check_open_basedir($backwpup_cfg['dirlogs'])) { // check logs folder
-	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['dirlogs']).'<br />';
-	if (!empty($backwpup_cfg['dirlogs']) and !is_dir($backwpup_cfg['dirlogs'])) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($backwpup_cfg['dirlogs']),FS_CHMOD_DIR,true);
+if (!backwpup_check_open_basedir($backwpup_cfg['logfolder'])) { // check logs folder
+	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
+	if (!empty($backwpup_cfg['logfolder']) and !is_dir($backwpup_cfg['logfolder'])) { // create logs folder if it not exists
+		@mkdir(untrailingslashit($backwpup_cfg['logfolder']),FS_CHMOD_DIR,true);
 	}
-	if (!is_dir($backwpup_cfg['dirlogs'])) { // check logs folder
-		$backwpup_admin_message.=printf(__("- Log folder '%s' not exists!",'backwpup'),$backwpup_cfg['dirlogs']);
+	if (!is_dir($backwpup_cfg['logfolder'])) { // check logs folder
+		$backwpup_admin_message.=printf(__("- Log folder '%s' not exists!",'backwpup'),$backwpup_cfg['logfolder']);
 	}
-	if (!is_writable($backwpup_cfg['dirlogs'])) { // check logs folder
-		$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['dirlogs']).'<br />';
+	if (!is_writable($backwpup_cfg['logfolder'])) { // check logs folder
+		$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
 	} else {
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_cfg['dirlogs'].'.htaccess'))
-				file_put_contents($backwpup_cfg['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
+			if (!is_file($backwpup_cfg['logfolder'].'.htaccess'))
+				file_put_contents($backwpup_cfg['logfolder'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($backwpup_cfg['dirlogs'].'index.html'))
-				file_put_contents($backwpup_cfg['dirlogs'].'index.html',"\n");
-			if (!is_file($backwpup_cfg['dirlogs'].'index.php'))
-				file_put_contents($backwpup_cfg['dirlogs'].'index.php',"\n");
+			if (!is_file($backwpup_cfg['logfolder'].'index.html'))
+				file_put_contents($backwpup_cfg['logfolder'].'index.html',"\n");
+			if (!is_file($backwpup_cfg['logfolder'].'index.php'))
+				file_put_contents($backwpup_cfg['logfolder'].'index.php',"\n");
 		}
 	}
 }
-$tempdir=backwpup_get_temp();
-if (!backwpup_check_open_basedir($tempdir)) { // check temp folder
-	$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not in open_basedir path!",'backwpup'),$tempdir).'<br />';
-	if (!is_dir($tempdir)) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($tempdir),FS_CHMOD_DIR,true);
+
+if (!backwpup_check_open_basedir($backwpup_cfg['tempfolder'])) { // check temp folder
+	$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
+	if (!is_dir($backwpup_cfg['tempfolder'])) { // create logs folder if it not exists
+		@mkdir(untrailingslashit($backwpup_cfg['tempfolder']),FS_CHMOD_DIR,true);
 	}
-	if (!is_dir($backwpup_cfg['dirlogs'])) { // check logs folder
-		$backwpup_admin_message.=printf(__("- Temp folder '%s' not exists!",'backwpup'),$tempdir);
+	if (!is_dir($backwpup_cfg['tempfolder'])) {
+		$backwpup_admin_message.=printf(__("- Temp folder '%s' not exists!",'backwpup'),$backwpup_cfg['tempfolder']);
 	}
-	if (!is_writable($tempdir)) { // check logs folder
-		$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not writeable!",'backwpup'),$tempdir).'<br />';
+	if (!is_writable($backwpup_cfg['tempfolder'])) {
+		$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
 	} else {
 		//create .htaccess for apache and index.html for other
 		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($tempdir.'.htaccess'))
-				file_put_contents($tempdir.'.htaccess',"Order allow,deny\ndeny from all");
+			if (!is_file($backwpup_cfg['tempfolder'].'.htaccess'))
+				file_put_contents($backwpup_cfg['tempfolder'].'.htaccess',"Order allow,deny\ndeny from all");
 		} else {
-			if (!is_file($tempdir.'index.html'))
-				file_put_contents($tempdir.'index.html',"\n");
-			if (!is_file($tempdir.'index.php'))
-				file_put_contents($tempdir.'index.php',"\n");
+			if (!is_file($backwpup_cfg['tempfolder'].'index.html'))
+				file_put_contents($backwpup_cfg['tempfolder'].'index.html',"\n");
+			if (!is_file($backwpup_cfg['tempfolder'].'index.php'))
+				file_put_contents($backwpup_cfg['tempfolder'].'index.php',"\n");
 		}
 	}
 }
-if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') { // check logs folder
+if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') {
 	$backwpup_admin_message.=sprintf(__("- WP_CONTENT_URL '%s' must set as a full URL!",'backwpup'),WP_CONTENT_URL).'<br />';
 }
-if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') { // check logs folder
+if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') {
 	$backwpup_admin_message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
 }
 //set cheks ok or not

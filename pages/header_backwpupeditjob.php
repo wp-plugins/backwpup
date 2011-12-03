@@ -13,7 +13,7 @@ if (isset($_GET['auth']) and $_GET['auth']=='Dropbox')  {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			//set boxtype and authkeys
-			$root=backwpup_get_option('JOB_'.$jobid,'droperoot');
+			$root=backwpup_get_option('job_'.$jobid,'droperoot');
 			if ($root=='sandbox')
 				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
 			else
@@ -21,8 +21,8 @@ if (isset($_GET['auth']) and $_GET['auth']=='Dropbox')  {
 
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
-			backwpup_update_option('JOB_'.$jobid,'dropetoken',$oAuthStuff['oauth_token']);
-			backwpup_update_option('JOB_'.$jobid,'dropesecret',$oAuthStuff['oauth_token_secret']);
+			backwpup_update_option('job_'.$jobid,'dropetoken',$oAuthStuff['oauth_token']);
+			backwpup_update_option('job_'.$jobid,'dropesecret',$oAuthStuff['oauth_token_secret']);
 			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
 		} else {
 			$backwpup_message.=__('Wrong Token for Dropbox authentication received!','backwpup').'<br />';
@@ -43,7 +43,7 @@ if (isset($_GET['auth']) and $_GET['auth']=='Boxnet')  {
 		$reqtoken=backwpup_get_option('TEMP','BOXNETTICKET');
 		if ($reqtoken==$_REQUEST['ticket'] and !empty($_REQUEST['ticket'])) {
 			//Save Auth
-			backwpup_update_option('JOB_'.$jobid,'boxnetauth',$_REQUEST['auth_token']);
+			backwpup_update_option('job_'.$jobid,'boxnetauth',$_REQUEST['auth_token']);
 			$backwpup_message.=__('Box.net authentication complete!','backwpup').'<br />';
 		} else {
 			$backwpup_message.=__('Wrong ticket for Box.net authentication received!','backwpup').'<br />';
@@ -264,11 +264,11 @@ if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['
 	//save chages
 	$jobvalues=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
 	foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
-		backwpup_update_option('JOB_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+		backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
 	}
 	
 	//activate/deactivate seduling if not needed
-	$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='activated' AND value='1' LIMIT 1",0,0);
+	$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' LIMIT 1",0,0);
 	if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
 		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 	if (empty($activejobs))

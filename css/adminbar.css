@@ -1,0 +1,13 @@
+#wp-admin-bar-backwpup > .ab-item .ab-label {
+    color:#ff0000;
+    font-weight:bold;
+    text-decoration:blink;
+}
+#wp-admin-bar-backwpup > .ab-item .ab-icon {
+    background-image: url(BackWPup16.png);
+    background-repeat: no-repeat;
+}
+#wp-admin-bar-backwpup_working {
+    color:red;
+    text-decoration:blink;
+}

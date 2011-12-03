@@ -17,7 +17,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function prepare_items() {
 		global $mode,$wpdb;
-		$jobsids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'JOB_%' AND name='jobid' ORDER BY value ASC");
+		$jobsids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value ASC");
 		if (!empty($jobsids)) {
 			foreach ($jobsids as $jobid) {
 				$this->items[$jobid]=backwpup_get_job_vars($jobid);
@@ -63,7 +63,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function display_rows() {
 		//check for running job
-		$backupdata=backwpup_get_option('WORKING','DATA');
+		$backupdata=backwpup_get_option('working','data');
 		$style = '';
 		foreach ( $this->items as $jobvalue ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
@@ -101,7 +101,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$actions['export'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
 						if (BACKWPUP_ENV_CHECK_OK)
-							$actions['runnow'] = "<a href=\"" . wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php?ABSPATH='.urlencode(ABSPATH).'&starttype=runnow&jobid='.(int)$jobvalue["jobid"], 'backwpup-job-running') . "\">" . __('Run Now','backwpup') . "</a>";
+							$actions['runnow'] = "<a href=\"" . wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&starttype=runnow&jobid='.(int)$jobvalue["jobid"], 'backwpup-job-running') . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 							$actions['working'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
