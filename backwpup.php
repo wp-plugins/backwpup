@@ -77,11 +77,6 @@ class BackWPup {
 		}
 		if (is_main_site())
 			add_action('init', array($this,'plugin_init'));
-		if (defined('WP_DEBUG') and WP_DEBUG) {
-			global $wpdb;
-			$wpdb->show_errors();
-		}
-
 	}
 
 	function plugin_init() {

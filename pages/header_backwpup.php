@@ -76,8 +76,8 @@ if (!empty($doaction)) {
 		$backupdata=backwpup_get_option('working','data');
 		if (empty($backupdata))
 			break;
-        $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='WORKING'");
-		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='TEMP'");
+        $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='working'");
+		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='temp'");
 		if (!empty($backupdata['LOGFILE'])) {
 			file_put_contents($backupdata['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 			//write new log header
@@ -108,12 +108,12 @@ if (!empty($doaction)) {
 			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
 		}
 		//clean up temp
-		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']))
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['backupfile']);
-		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['dbdumpfile']);
-		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']))	
-			unlink($backupdata['STATIC']['TEMPDIR'].$backupdata['STATIC']['JOB']['wpexportfile']);
+		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['backupfile']))
+			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['backupfile']);
+		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
+			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['dbdumpfile']);
+		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['wpexportfile']))	
+			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['wpexportfile']);
 		break;
 	}
 }
