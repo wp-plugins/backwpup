@@ -24,7 +24,7 @@ function backwpup_read_logfile($logfile) {
 }
 
 function backwpup_get_logfile_ajax() {
-    //check_ajax_referer('backwpupworking_ajax_nonce');
+    check_ajax_referer('backwpupworking_ajax_nonce');
     if (is_file(trim($_POST['logfile']).'.gz'))
         $_POST['logfile']=trim($_POST['logfile']).'.gz';
 
