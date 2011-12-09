@@ -19,32 +19,55 @@ ignore_user_abort(true);
 $backwpup_cfg='';
 $backwpup_job_object='';
 global $l10n,$backwpup_cfg,$backwpup_job_object;
-//check get vars
-if (empty($_GET['starttype']) or !in_array($_GET['starttype'],array('restarttime','restart','runnow','cronrun','runext')))
-	die('Starttype check');
-if ((empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'],array('runnow','cronrun','runext')))
-	die('JOBID check');
-$_GET['_wpnonce']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_GET['_wpnonce']));
-if (empty($_GET['_wpnonce']) or !is_string($_GET['_wpnonce']))
-	die('Nonce pre check');
-if (is_file('../../../wp-load.php')) {
-	require_once('../../../wp-load.php');
-} else {
-	$_GET['ABSPATH']=preg_replace( '/[^a-zA-Z0-9:.\/_\-]/', '',trim(urldecode($_GET['ABSPATH'])));
-	$_GET['ABSPATH']=str_replace(array('../','\\','//'),'',$_GET['ABSPATH']);
-	if (file_exists($_GET['ABSPATH'].'wp-load.php'))
-		require_once($_GET['ABSPATH'].'wp-load.php');
-	else
-		die('ABSPATH check');
-}
-if (!(in_array($_GET['starttype'],array('restarttime','restart','cronrun','runnow')) and wp_verify_nonce($_GET['_wpnonce'],'backwpup-job-running'))
-	and !($_GET['starttype']=='runext' and !empty($_GET['_wpnonce']) and !empty($backwpup_cfg['jobrunauthkey']) and $backwpup_cfg['jobrunauthkey']))
+//prase comandline args
+if (defined('STDIN')) {
+	$_GET['starttype']='runcmd';
+	foreach($_SERVER['argv'] as $arg) {
+		if (strtolower(substr($arg,0,7))=='-jobid=')
+			$_GET['jobid']=(int)substr($arg,7);
+		if (strtolower(substr($arg,0,9))=='-abspath=')
+			$_GET['ABSPATH']=substr($arg,9);
+	}
+	if ((empty($_GET['jobid']) or !is_numeric($_GET['jobid'])))
+		die('JOBID check');
+	if (is_file('../../../wp-load.php')) {
+		require_once('../../../wp-load.php');
+	} else {
+		$_GET['ABSPATH']=preg_replace( '/[^a-zA-Z0-9:.\/_\-]/', '',trim(urldecode($_GET['ABSPATH'])));
+		$_GET['ABSPATH']=str_replace(array('../','\\','//'),'',$_GET['ABSPATH']);
+		if (file_exists($_GET['ABSPATH'].'wp-load.php'))
+			require_once($_GET['ABSPATH'].'wp-load.php');
+		else
+			die('ABSPATH check');
+	}
+} else { //normal start from webserver
+	//check get vars
+	if (empty($_GET['starttype']) or !in_array($_GET['starttype'],array('restarttime','restart','runnow','cronrun','runext')))
+		die('Starttype check');
+	if ((empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'],array('runnow','cronrun','runext')))
+		die('JOBID check');
+	$_GET['_wpnonce']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_GET['_wpnonce']));
+	if (empty($_GET['_wpnonce']) or !is_string($_GET['_wpnonce']))
+		die('Nonce pre check');
+	if (is_file('../../../wp-load.php')) {
+		require_once('../../../wp-load.php');
+	} else {
+		$_GET['ABSPATH']=preg_replace( '/[^a-zA-Z0-9:.\/_\-]/', '',trim(urldecode($_GET['ABSPATH'])));
+		$_GET['ABSPATH']=str_replace(array('../','\\','//'),'',$_GET['ABSPATH']);
+		if (file_exists($_GET['ABSPATH'].'wp-load.php'))
+			require_once($_GET['ABSPATH'].'wp-load.php');
+		else
+			die('ABSPATH check');
+	}
+	if (!(in_array($_GET['starttype'],array('restarttime','restart','cronrun','runnow')) and wp_verify_nonce($_GET['_wpnonce'],'backwpup-job-running'))
+		and !($_GET['starttype']=='runext' and !empty($_GET['_wpnonce']) and !empty($backwpup_cfg['jobrunauthkey']) and $backwpup_cfg['jobrunauthkey']))
 		die('Nonce check');
+}
 if ($_GET['jobid']!=backwpup_get_option('job_'.$_GET['jobid'],'jobid'))
 	die('Wrong JOBID check');
 //check running job
 $backwpupjobdata=backwpup_get_option('working','data');
-if (in_array($_GET['starttype'],array('runnow','cronrun','runext')) and !empty($backwpupjobdata))
+if (in_array($_GET['starttype'],array('runnow','cronrun','runext','runcmd')) and !empty($backwpupjobdata))
 		die('A job already running');
 if (in_array($_GET['starttype'],array('restart','restarttime')) and (empty($backwpupjobdata) or !is_array($backwpupjobdata)))
 		die('No job running');
@@ -76,7 +99,7 @@ class BackWPup_job {
 	public function __construct() {
 		global $wpdb;
 		//get job data
-		if (in_array($_GET['starttype'],array('runnow','cronrun','runext')))
+		if (in_array($_GET['starttype'],array('runnow','cronrun','runext','runcmd')))
 			$this->start((int)$_GET['jobid']);
 		else
 			$this->jobdata=backwpup_get_option('working','data');
@@ -178,6 +201,9 @@ class BackWPup_job {
 
 	private function start($jobid) {
 		global $wp_version,$backwpup_cfg;
+		//make start on cli mode
+		if (defined('STDIN'))
+			_e('Run!','backwpup');
 		//clean var
 		$this->jobdata = array();
 		//get cfg
@@ -195,7 +221,7 @@ class BackWPup_job {
 		$this->jobdata['STATIC']['JOB']['starttime']=current_time('timestamp'); //set start time for job
 		backwpup_update_option('job_'.$this->jobdata['STATIC']['JOB']['jobid'],'starttime',$this->jobdata['STATIC']['JOB']['starttime']);
 		backwpup_update_option('job_'.$this->jobdata['STATIC']['JOB']['jobid'],'logfile',$this->jobdata['LOGFILE']); //Set current logfile
-		$this->jobdata['STATIC']['JOB']['cronnextrun']=backwpup_cron_next($this->jobdata['STATIC']['JOB']['jobid']['cron']);  //set next run
+		$this->jobdata['STATIC']['JOB']['cronnextrun']=backwpup_cron_next($this->jobdata['STATIC']['JOB']['cron']);  //set next run
 		backwpup_update_option('job_'.$this->jobdata['STATIC']['JOB']['jobid'],'cronnextrun',$this->jobdata['STATIC']['JOB']['cronnextrun']);
 		backwpup_update_option('job_'.$this->jobdata['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','');
 		//only for jobs that makes backups
@@ -301,6 +327,8 @@ class BackWPup_job {
 			fwrite($fd,__('[INFO]: BackWPup job started manually','backwpup')."<br />".BACKWPUP_LINE_SEPARATOR);
 		elseif ($_GET['starttype']=='runext')
 			fwrite($fd,__('[INFO]: BackWPup job started external from url','backwpup')."<br />".BACKWPUP_LINE_SEPARATOR);
+		elseif ($_GET['starttype']=='runcmd')
+			fwrite($fd,__('[INFO]: BackWPup job started form commandline','backwpup')."<br />".BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd,__('[INFO]: PHP ver.:','backwpup').' '.phpversion().'; '.php_sapi_name().'; '.PHP_OS."<br />".BACKWPUP_LINE_SEPARATOR);
 		if ((bool)ini_get('safe_mode'))
 			fwrite($fd,sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.','backwpup'),ini_get('max_execution_time'))."<br />".BACKWPUP_LINE_SEPARATOR);
@@ -408,6 +436,7 @@ class BackWPup_job {
 		$timestamp="<span title=\"[Type: ".$args[0]."|Line: ".$args[3]."|File: ".basename($args[2])."|Mem: ".backwpup_formatBytes(@memory_get_usage(true))."|Mem Max: ".backwpup_formatBytes(@memory_get_peak_usage(true))."|Mem Limit: ".ini_get('memory_limit')."|PID: ".getmypid()."]\">[".date_i18n('d-M-Y H:i:s')."]</span> ";
 		//write log file
 		file_put_contents($this->jobdata['LOGFILE'], $timestamp.$messagetype." ".$args[1]."</span><br />".BACKWPUP_LINE_SEPARATOR, FILE_APPEND);
+
 		//write new log header
 		if ($adderrorwarning) {
 			$found=0;
@@ -467,6 +496,8 @@ class BackWPup_job {
 			$this->jobdata['WORKING']['TIMESTAMP']=current_time('timestamp');
 			@set_time_limit(0);
 			backwpup_update_option('working','data',$this->jobdata);
+			if (defined('STDIN')) //make dots on cli mode
+				echo ".";
 		}
 		return true;
 	}
@@ -607,6 +638,8 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['STEPSDONE'][]='END'; //set done
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='working'");
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='temp'");
+		if (defined('STDIN'))
+			_e('Done!','backwpup');
 		exit;
 	}
 

@@ -452,7 +452,7 @@ class BackWPup {
 		if (!empty($backupdata)) {
 			$revtime=current_time('timestamp')-600; //10 min no progress.
 			if (!empty($backupdata['working']['TIMESTAMP']) and $backupdata['working']['TIMESTAMP']<$revtime)
-				wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH'.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.wp_create_nonce('backwpup-job-running').'&starttype=restarttime', array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
+				wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.wp_create_nonce('backwpup-job-running').'&starttype=restarttime', array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
 		} else {
 			$main_names=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND vlaue='1'");
 			if (!empty($main_names)) {
@@ -460,7 +460,7 @@ class BackWPup {
 					$cronnextrun=backwpup_get_option($main_name,'cronnextrun');
 					if ($cronnextrun<=current_time('timestamp')) {
 						$jobstartid=backwpup_get_option($main_name,'jobid');
-						wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH'.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.wp_create_nonce('backwpup-job-running').'&starttype=cronrun&jobid='.(int)$jobstartid, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
+						wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.wp_create_nonce('backwpup-job-running').'&starttype=cronrun&jobid='.(int)$jobstartid, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
 						exit;
 					}
 				}

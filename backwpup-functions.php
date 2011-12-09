@@ -198,7 +198,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 }
 
 function backwpup_cron_next($cronstring) {
-	//Cronstring zerlegen
+	//Cronstring
 	list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$cronstring,5);
 
 	//make arrys form string
@@ -208,7 +208,7 @@ function backwpup_cron_next($cronstring) {
 		else
 			$cronarray[$key]=array(0=>$value);
 	}
-	//make arrys complete with ranges and steps
+	//make arryas complete with ranges and steps
 	foreach ($cronarray as $cronarraykey => $cronarrayvalue) {
 		$cron[$cronarraykey]=array();
 		foreach ($cronarrayvalue as $key => $value) {

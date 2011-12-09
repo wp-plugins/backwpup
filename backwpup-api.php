@@ -26,8 +26,10 @@ class BackWPup_api {
 			foreach ($activejobs as $mainname) {
 				$jobid=backwpup_get_option($mainname,'jobid');
 				$cron=backwpup_get_option($mainname,'cron');
-				if (!empty($cron))
+				if (!empty($cron)) {
 					$post["JOBCRON[".$jobid."]"]=$cron;
+					$post["RUNURL[".$jobid."]"]=BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['apicronservicekey'].'&starttype=apirun&jobid='.$jobid;
+				}
 			}
 		}
 		$raw_response = wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));

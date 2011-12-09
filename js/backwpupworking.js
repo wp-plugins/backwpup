@@ -39,8 +39,8 @@ jQuery(document).ready( function($) {
 					$('.progressbar').show();
 				}
 				$("#stopworking").each(function(index) {
-					$("#message").remove();
-					System.exit(0);
+					//$("#message").remove();
+					//System.exit(0);
 				});
 				setTimeout("backwpupshowworking()",1000);
 			}
