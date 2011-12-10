@@ -154,28 +154,24 @@ function backwpup_get_upload_dir() {
 		$dir = WP_CONTENT_DIR . '/uploads';
 	} else {
 		$dir = $upload_path;
-		if ( 'wp-content/uploads' == $upload_path ) {
+		if ( 'wp-content/uploads' == $upload_path )
 			$dir = WP_CONTENT_DIR . '/uploads';
-		} elseif ( 0 !== strpos($dir, ABSPATH) ) {
-			// $dir is absolute, $upload_path is (maybe) relative to ABSPATH
+		elseif ( 0 !== strpos($dir, ABSPATH) )
 			$dir = path_join( ABSPATH, $dir );
-		}
 	}
-	if (defined('UPLOADS') && !is_multisite()) {
+	if (defined('UPLOADS') && !is_multisite())
 		$dir = ABSPATH . UPLOADS;
-	}
-	if (is_multisite()) {
+	if (is_multisite())
 			$dir = untrailingslashit(WP_CONTENT_DIR).'/blogs.dir';
-	}
 	return str_replace('\\','/',trailingslashit($dir));
 }
 
 function backwpup_get_exclude_wp_dirs($folder) {
-	global $backwpup_cfg;
+	global $backwpup_cfg,$wpdb;
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
 	$excludedir[]=$backwpup_cfg['tempfolder']; //exclude temp
-	$excludedir[]=trailingslashit(str_replace('\\','/',$backwpup_cfg['logfolder'])); //exclude logfiles
+	$excludedir[]=$backwpup_cfg['logfolder']; //exclude logfiles
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
 	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
@@ -187,12 +183,10 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	if (false !== strpos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
 		$excludedir[]=backwpup_get_upload_dir();
 	//Exclude Backup dirs
-	$jobs=get_option('backwpup_jobs');
-	if (!empty($jobs)) {
-		foreach($jobs as $jobsvale) {
-			if (!empty($jobsvale['backupdir']) and $jobsvale['backupdir']!='/')
-				$excludedir[]=$jobsvale['backupdir'];
-		}
+	$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
+	if (!empty($value)) {
+		foreach($value as $backupdir)
+				$excludedir[]=$backupdir;
 	}
 	return $excludedir;
 }
