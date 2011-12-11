@@ -72,7 +72,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 
 	function single_row($jobvalue, $backupdata, $style = '' ) {
-		global $mode;
+		global $mode,$backwpup_cfg;
 
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id=\"jodid-".$jobvalue["jobid"]."\"".$style.">";
@@ -101,7 +101,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$actions['export'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
 						if (BACKWPUP_ENV_CHECK_OK)
-							$actions['runnow'] = "<a href=\"" . wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&starttype=runnow&jobid='.(int)$jobvalue["jobid"], 'backwpup-job-running') . "\">" . __('Run Now','backwpup') . "</a>";
+							$actions['runnow'] = "<a href=\"" .BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&starttype=runnow&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&jobid='.(int)$jobvalue["jobid"] . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 							$actions['working'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";

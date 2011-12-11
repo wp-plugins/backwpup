@@ -59,13 +59,13 @@ if ( defined('STDIN') ) {
 		else
 			die('ABSPATH check');
 	}
-	if ( !(in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and wp_verify_nonce($_GET['_wpnonce'], 'backwpup-job-running'))
-		and !($_GET['starttype'] == 'runext' and !empty($_GET['_wpnonce']) and !empty($backwpup_cfg['jobrunauthkey']) and $backwpup_cfg['jobrunauthkey'])
-	)
+	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow','runext' )) and $_GET['_wpnonce']!=$backwpup_cfg['jobrunauthkey'])
 		die('Nonce check');
 }
-if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid') )
-	die('Wrong JOBID check');
+if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext' )))  {
+	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
+		die('Wrong JOBID check');
+}
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');
 if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) and !empty($backwpupjobdata) )
@@ -101,9 +101,13 @@ class BackWPup_job {
 	public function __construct() {
 		global $wpdb;
 		//get job data
-		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) )
+		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) ) {
 			$this->start((int)$_GET['jobid']);
-		else
+			if (!empty($this->jobdata['STATIC']['JOB']['backupdir']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
+				$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
+			if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
+				$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
+		} else
 			$this->jobdata = backwpup_get_option('working', 'data');
 		//set function for PHP user defined error handling
 		$this->jobdata['PHP']['INI']['ERROR_LOG'] = ini_get('error_log');
@@ -128,8 +132,7 @@ class BackWPup_job {
 		// execute function on job shutdown
 		register_shutdown_function(array( $this, '__destruct' ));
 		if ( function_exists('pcntl_signal') ) {
-			declare(ticks = 1)
-			; //set ticks
+			declare(ticks = 1); //set ticks
 			pcntl_signal(15, array( $this, '__destruct' )); //SIGTERM
 			//pcntl_signal(9, array($this,'__destruct')); //SIGKILL
 			pcntl_signal(2, array( $this, '__destruct' )); //SIGINT
@@ -173,17 +176,17 @@ class BackWPup_job {
 		//Put last error to log if one
 		$lasterror = error_get_last();
 		if ( $lasterror['type'] == E_ERROR or $lasterror['type'] == E_PARSE or $lasterror['type'] == E_CORE_ERROR or $lasterror['type'] == E_CORE_WARNING or $lasterror['type'] == E_COMPILE_ERROR or $lasterror['type'] == E_COMPILE_WARNING )
-			$this->errorhandler($lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line']);
+			$this->errorhandler($lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line'],false);
 		//Put sigterm to log
 		if ( !empty($args[0]) )
-			$this->errorhandler(E_USER_ERROR, sprintf(__('Signal $d send to script!', 'backwpup')), __FILE__, __LINE__);
+			$this->errorhandler(E_USER_ERROR, sprintf(__('Signal $d send to script!', 'backwpup')), __FILE__, __LINE__,false);
 		//no more restarts
 		$this->jobdata['WORKING']['RESTART']++;
 		if ( (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) or $this->jobdata['WORKING']['RESTART'] >= $this->jobdata['STATIC']['CFG']['jobscriptretry'] ) { //only x restarts allowed
 			if ( defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON )
-				$this->errorhandler(E_USER_ERROR, __('Can not restart on alternate cron....', 'backwpup'), __FILE__, __LINE__);
+				$this->errorhandler(E_USER_ERROR, __('Can not restart on alternate cron....', 'backwpup'), __FILE__, __LINE__,false);
 			else
-				$this->errorhandler(E_USER_ERROR, __('To many restarts....', 'backwpup'), __FILE__, __LINE__);
+				$this->errorhandler(E_USER_ERROR, __('To many restarts....', 'backwpup'), __FILE__, __LINE__,false);
 			$this->end();
 			exit;
 		}
@@ -194,11 +197,16 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['PID'] = 0;
 		//Restart job
 		$this->_update_working_data(true);
-		$this->errorhandler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['WORKING']['RESTART']), __FILE__, __LINE__);
+		$this->errorhandler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['WORKING']['RESTART']), __FILE__, __LINE__,false);
 		$httpauthheader = '';
 		if ( !empty($this->jobdata['STATIC']['CFG']['httpauthuser']) and !empty($this->jobdata['STATIC']['CFG']['httpauthpassword']) )
 			$httpauthheader = array( 'Authorization' => 'Basic ' . base64_encode($this->jobdata['STATIC']['CFG']['httpauthuser'] . ':' . base64_decode($this->jobdata['STATIC']['CFG']['httpauthpassword'])) );
-		@wp_remote_get(BACKWPUP_PLUGIN_BASEURL . '/backwpup-job.php?ABSPATH=' . urlencode(str_replace('\\', '/', ABSPATH)) . '&_wpnonce=' . wp_create_nonce('backwpup-job-running') . '&starttype=restart', array( 'timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers' => $httpauthheader, 'user-agent' => 'BackWPup' ));
+		$raw_response=@wp_remote_get(BACKWPUP_PLUGIN_BASEURL . '/backwpup-job.php?ABSPATH=' . urlencode(str_replace('\\', '/', ABSPATH)) . '&_wpnonce=' . $this->jobdata['STATIC']['CFG']['jobrunauthkey'] . '&starttype=restart', array( 'timeout' => 5, 'blocking' => true, 'sslverify' => false, 'headers' => $httpauthheader, 'user-agent' => 'BackWPup' ));
+		$body=wp_remote_retrieve_body($raw_response);
+		if (200 == wp_remote_retrieve_response_code($raw_response) and !empty($body))
+			$this->errorhandler(E_USER_ERROR, $body, __FILE__, __LINE__,false);
+		if (is_wp_error($raw_response) or 200 != wp_remote_retrieve_response_code($raw_response))
+			$this->errorhandler(E_USER_ERROR, json_encode($raw_response), __FILE__, __LINE__,false);
 		exit;
 	}
 
@@ -230,8 +238,6 @@ class BackWPup_job {
 		//only for jobs that makes backups
 		if ( in_array('FILE', $this->jobdata['STATIC']['JOB']['type']) or in_array('DB', $this->jobdata['STATIC']['JOB']['type']) or in_array('WPEXP', $this->jobdata['STATIC']['JOB']['type']) ) {
 			//make empty file list
-			$this->jobdata['WORKING']['ALLFILESIZE'] = 0;
-			$this->jobdata['WORKING']['BACKUPFILESIZE'] = 0;
 			if ( $this->jobdata['STATIC']['JOB']['backuptype'] == 'archive' ) {
 				//set Backup folder to temp folder if not set
 				if ( empty($this->jobdata['STATIC']['JOB']['backupdir']) or $this->jobdata['STATIC']['JOB']['backupdir'] == '/' )
@@ -240,6 +246,7 @@ class BackWPup_job {
 				$this->jobdata['STATIC']['backupfile'] = $this->jobdata['STATIC']['JOB']['fileprefix'] . date_i18n('Y-m-d_H-i-s') . $this->jobdata['STATIC']['JOB']['fileformart'];
 			}
 		}
+		$this->jobdata['WORKING']['BACKUPFILESIZE'] = 0;
 		$this->jobdata['WORKING']['PID'] = 0;
 		$this->jobdata['WORKING']['WARNING'] = 0;
 		$this->jobdata['WORKING']['ERROR'] = 0;
@@ -252,6 +259,9 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['TIMESTAMP'] = current_time('timestamp');
 		$this->jobdata['WORKING']['ENDINPROGRESS'] = false;
 		$this->jobdata['WORKING']['EXTRAFILESTOBACKUP'] = array();
+		$this->jobdata['WORKING']['FILEEXCLUDES']=explode(',',trim($this->jobdata['STATIC']['JOB']['fileexclude']));
+		$this->jobdata['WORKING']['FILEEXCLUDES'][] ='.tmp';
+		$this->jobdata['WORKING']['FILEEXCLUDES']=array_unique($this->jobdata['WORKING']['FILEEXCLUDES']);
 		//build working steps
 		$this->jobdata['WORKING']['STEPS'] = array();
 		//setup job steps
@@ -468,7 +478,7 @@ class BackWPup_job {
 		$this->_update_working_data($adderrorwarning);
 
 		//Die on fatal php errors.
-		if ( $args[0] == E_ERROR or $args[0] == E_CORE_ERROR or $args[0] == E_COMPILE_ERROR )
+		if ( ($args[0] == E_ERROR or $args[0] == E_CORE_ERROR or $args[0] == E_COMPILE_ERROR) and $args[4]!=false)
 			die();
 
 		//true for no more php error handling.
@@ -1223,7 +1233,31 @@ class BackWPup_job {
 		}
 	}
 
+	private function _get_files_in_folder($folder) {
+		$files=array();
+		if ( $dir = @opendir($folder) ) {
+			while ( ($file = readdir($dir)) !== false ) {
+				if ( in_array($file, array( '.', '..', '.svn' )) )
+					continue;
+				foreach ($this->jobdata['WORKING']['FILEEXCLUDES'] as $exclusion) { //exclude files
+					$exclusion=trim($exclusion);
+					if (false !== stripos($folder.$file,trim($exclusion)) and !empty($exclusion))
+						continue 2;
+				}
+				if ( !is_readable($folder . $file) )
+					trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
+				elseif ( is_link($folder . $file) )
+					trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'),$folder . $file), E_USER_WARNING);
+				elseif ( is_file($folder . $file) )
+					$files[]=$folder . $file;
+			}
+			@closedir($dir);
+		}
+		return $files;
+	}
+
 	private function create_archive() {
+		require_once('saghdhsdghjash');
 		$this->jobdata['WORKING']['STEPTODO'] = count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
 		if ( empty($this->jobdata['WORKING']['STEPDONE']) )
 			$this->jobdata['WORKING']['STEPDONE'] = 0;
@@ -1251,21 +1285,11 @@ class BackWPup_job {
 					$this->jobdata['WORKING']['STEPDONE'] = 1;
 				//add normal files
 				for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
-					if ( $dir = @opendir($this->jobdata['WORKING']['FOLDERLIST'][$i]) ) {
-						while ( ($file = readdir($dir)) !== false ) {
-							if ( in_array($file, array( '.', '..', '.svn' )) )
-								continue;
-							if ( !is_readable($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-								trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-							} elseif ( is_link($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-								trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-							} elseif ( is_file($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-								if ( !$zip->addFile($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file, str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file)) )
-									trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file)), E_USER_ERROR);
-								$this->_update_working_data();
-							}
-						}
-						@closedir($dir);
+					$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
+					foreach($files as $file) {
+						if ( !$zip->addFile( $file, str_replace($removepath, '',  $file)) )
+							trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file)), E_USER_ERROR);
+						$this->_update_working_data();
 					}
 					$this->jobdata['WORKING']['STEPDONE']++;
 				}
@@ -1316,21 +1340,7 @@ class BackWPup_job {
 				$this->jobdata['WORKING']['STEPDONE'] = 1;
 			//add normal files
 			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
-				$files = array();
-				if ( $dir = @opendir($this->jobdata['WORKING']['FOLDERLIST'][$i]) ) {
-					while ( ($file = readdir($dir)) !== false ) {
-						if ( in_array($file, array( '.', '..', '.svn' )) )
-							continue;
-						if ( !is_readable($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-						} elseif ( is_link($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-						} elseif ( is_file($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							$files[] = $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file;
-						}
-					}
-					@closedir($dir);
-				}
+				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
 				if ( 0 == $zipbackupfile->add($files, PCLZIP_OPT_REMOVE_PATH, $removepath) )
 					trigger_error(sprintf(__('Zip archive add error: %s', 'backwpup'), $zipbackupfile->errorInfo(true)), E_USER_ERROR);
 				$this->_update_working_data();
@@ -1362,21 +1372,9 @@ class BackWPup_job {
 				$this->jobdata['WORKING']['STEPDONE'] = 1;
 			//add normal files
 			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
-				$files = array();
-				if ( $dir = @opendir($this->jobdata['WORKING']['FOLDERLIST'][$i]) ) {
-					while ( ($file = readdir($dir)) !== false ) {
-						if ( in_array($file, array( '.', '..', '.svn' )) )
-							continue;
-						if ( !is_readable($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-						} elseif ( is_link($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'), $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), E_USER_WARNING);
-						} elseif ( is_file($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file) ) {
-							$this->_tar_file($this->jobdata['WORKING']['FOLDERLIST'][$i] . $file, str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file), $tarbackup);
-						}
-					}
-					@closedir($dir);
-				}
+				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
+				foreach($files as $file)
+					$this->_tar_file($file, str_replace($removepath, '', $file), $tarbackup);
 				$this->_update_working_data();
 				$this->jobdata['WORKING']['STEPDONE']++;
 			}
@@ -1503,6 +1501,12 @@ class BackWPup_job {
 		}
 		$this->jobdata['WORKING']['STEPDONE']++;
 		$this->jobdata['WORKING']['STEPSDONE'][] = 'DEST_FOLDER'; //set done
+	}
+
+	private function dest_folder_sync() {
+		$this->jobdata['WORKING']['STEPTODO']=count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
+		$this->jobdata['WORKING']['STEPDONE']=0;
+		trigger_error(sprintf(__('%d. Try to sync files with folder...','backwpup'),$this->jobdata['WORKING']['DEST_FOLDER_SYNC']['STEP_TRY']),E_USER_NOTICE);
 	}
 }
 

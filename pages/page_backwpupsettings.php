@@ -108,18 +108,16 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 </tr>
 </table>
 
-	<h3><?PHP _e('Direct Job start','backwpup'); ?></h3>
-	<p><?PHP _e('If you would start job with a url, to use your hosters cron or so, you must setup some security.','backwpup'); ?></p>
-	<p><?PHP _e('When you use it it will not looked for job activation or job cron settings!','backwpup'); ?></p>
+	<h3><?PHP _e('Nonce Key for runing jobs','backwpup'); ?></h3>
 	<table class="form-table">
 		<tr valign="top">
 			<th scope="row"><label for="jobrunauthkey"><?PHP _e('Set auth key:','backwpup'); ?></label></th>
 			<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
-				<span><?PHP _e('A sample key is:','backwpup'); echo substr(  md5( AUTH_KEY ) ,5,17 ) ?> </span><br />
+				<span><?PHP _e('A sample key is:','backwpup'); echo wp_create_nonce('BackWPupJobRun'); ?> </span><br />
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row"><?PHP _e('URL to use','backwpup'); ?></th>
+			<th scope="row"><?PHP _e('URL to manually run job from external','backwpup'); ?></th>
 			<td><?PHP echo BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=runext&jobid=<em>JOBID</em>'; ?><br />
 				<span><?PHP _e('replace <em>JOBID</em> with the ID of job to start','backwpup'); ?></span>
 		</tr>
