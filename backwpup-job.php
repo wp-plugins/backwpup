@@ -1257,7 +1257,6 @@ class BackWPup_job {
 	}
 
 	private function create_archive() {
-		require_once('saghdhsdghjash');
 		$this->jobdata['WORKING']['STEPTODO'] = count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
 		if ( empty($this->jobdata['WORKING']['STEPDONE']) )
 			$this->jobdata['WORKING']['STEPDONE'] = 0;
