@@ -13,7 +13,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
       //Get Access Tokens
       require_once (dirname(__FILE__).'/../libs/dropbox.php');
       $jobs=get_option('backwpup_jobs');
-      $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+      $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
       $oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
       //Save Tokens
       $jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -164,7 +164,8 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
     if (!class_exists('CFRuntime'))
       require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
     try {
-      $s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
+	  CFCredentials::set(array('backwpup' => array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+      $s3 = new AmazonS3();
       $s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
       $jobvalues['awsBucket']=$_POST['newawsBucket'];
     } catch (Exception $e) {
@@ -176,7 +177,8 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
     if (!class_exists('CFRuntime'))
       require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
     try {
-      $gstorage = new AmazonS3($_POST['GStorageAccessKey'], $_POST['GStorageSecret']);
+	  CFCredentials::set(array('backwpup' => array('key'=>$_POST['GStorageAccessKey'],'secret'=>$_POST['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+      $gstorage = new AmazonS3();
       $gstorage->set_hostname('commondatastorage.googleapis.com');
       $gstorage->allow_hostname_override(false);
       $gstorage->create_bucket($_POST['newGStorageBucket'],'');
@@ -243,7 +245,7 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
   //get dropbox auth  
   if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
     require_once (dirname(__FILE__).'/../libs/dropbox.php');
-    $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET);
+    $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
     // let the user authorize (user will be redirected)
     $response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
     // save oauth_token_secret 
