@@ -57,7 +57,7 @@ if (isset($_GET['auth']) and $_GET['auth']=='Boxnet')  {
 
 
 //Save Job settings
-if ((isset($_POST['submit']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
+if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
 	check_admin_referer('edit-job');
 	$jobvalues['jobid']=(int) $_POST['jobid'];
 	$jobvalues['type']=(array)$_POST['type'];

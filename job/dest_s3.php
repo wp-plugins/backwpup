@@ -9,7 +9,8 @@ function backwpup_job_dest_s3() {
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 
 	try {
-		$s3 = new AmazonS3($backwpupjobrun['STATIC']['JOB']['awsAccessKey'], $backwpupjobrun['STATIC']['JOB']['awsSecretKey']);
+		CFCredentials::set(array('backwpup' => array('key'=>$backwpupjobrun['STATIC']['JOB']['awsAccessKey'],'secret'=>$backwpupjobrun['STATIC']['JOB']['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+		$s3 = new AmazonS3();
 		if ($s3->if_bucket_exists($backwpupjobrun['STATIC']['JOB']['awsBucket'])) {
 			trigger_error(sprintf(__('Connected to S3 Bucket: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['awsBucket']),E_USER_NOTICE);
 		} else {

@@ -11,7 +11,8 @@ function backwpup_job_dest_gstorage_sync() {
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 
 	try {
-		$gstorage = new AmazonS3($backwpupjobrun['STATIC']['JOB']['GStorageAccessKey'], $backwpupjobrun['STATIC']['JOB']['GStorageSecret']);
+		CFCredentials::set(array('backwpup' => array('key'=>$backwpupjobrun['STATIC']['JOB']['GStorageAccessKey'],'secret'=>$backwpupjobrun['STATIC']['JOB']['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+		$gstorage = new AmazonS3();
 		//set up s3 for google
 		$gstorage->set_hostname('commondatastorage.googleapis.com');
 		$gstorage->allow_hostname_override(false);

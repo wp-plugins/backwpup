@@ -24,7 +24,8 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
 						try {
-							$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+							CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['awsAccessKey'],'secret'=>$jobvalue['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+							$s3 = new AmazonS3();
 							$s3->ssl_verification=false;
 							$s3->delete_object($jobvalue['awsBucket'],$backupfile);
 							unset($s3);
@@ -39,7 +40,8 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket'])) {
 						try {
-							$gstorage = new AmazonS3($jobvalue['GStorageAccessKey'], $jobvalue['GStorageSecret']);
+							CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['GStorageAccessKey'],'secret'=>$jobvalue['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+							$gstorage = new AmazonS3();
 							$gstorage->ssl_verification=false;
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
@@ -175,7 +177,8 @@ if (!empty($doaction)) {
 		$jobid=$_GET['jobid'];
 		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$s3 = new AmazonS3($jobvalue['awsAccessKey'], $jobvalue['awsSecretKey']);
+			CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['awsAccessKey'],'secret'=>$jobvalue['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$s3 = new AmazonS3();
 			$s3file=$s3->get_object($jobvalue['awsBucket'], $_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());

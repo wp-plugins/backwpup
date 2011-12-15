@@ -38,8 +38,6 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE,BOXNET');
 }
-if (!defined('AWS_CERTIFICATE_AUTHORITY'))
-    define('AWS_CERTIFICATE_AUTHORITY', dirname(__FILE__).'/libs/cacert.pem');
 //Load textdomain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
 //Load some file

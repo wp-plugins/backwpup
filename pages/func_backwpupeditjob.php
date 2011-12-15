@@ -25,7 +25,7 @@ function backwpup_jobedit_metabox_save($jobvalue) {
 		<a class="submitdelete deletion" href="<?PHP echo wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue['jobid'], 'bulk-jobs'); ?>" onclick="if ( confirm('<?PHP echo esc_js(__("You are about to delete this Job. \n  'Cancel' to stop, 'OK' to delete.","backwpup")); ?>') ) { return true;}return false;"><?php _e('Delete', 'backwpup'); ?></a>
 	</div>
 	<div id="publishing-action">
-		<input type="submit" name="submit" class="button-primary" id="submit" tabindex="1" accesskey="p" value="<?php _e('Save Changes', 'backwpup'); ?>" />
+		<?php submit_button( __('Save Changes', 'backwpup'), 'primary', 'save', false, array( 'tabindex' => '2', 'accesskey' => 'p' ) ); ?>
 	</div>
 	<div class="clear"></div>
 	</div>
@@ -550,7 +550,8 @@ function backwpup_get_aws_buckets($args='') {
 			return;
 	}
 	try {
-		$s3 = new AmazonS3($awsAccessKey, $awsSecretKey);
+		CFCredentials::set(array('backwpup' => array('key'=>$awsAccessKey,'secret'=>$awsSecretKey,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+		$s3 = new AmazonS3();
 		$buckets=$s3->list_buckets();
 	} catch (Exception $e) {
 		echo '<span id="awsBucket" style="color:red;">'.$e->getMessage().'</span>';
@@ -615,7 +616,8 @@ function backwpup_get_gstorage_buckets($args='') {
 			return;
 	}
 	try {
-		$gstorage = new AmazonS3($GStorageAccessKey, $GStorageSecret);
+		CFCredentials::set(array('backwpup' => array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+		$gstorage = new AmazonS3();
 		$gstorage->set_hostname('commondatastorage.googleapis.com');
 		$gstorage->allow_hostname_override(false);
 		$buckets=$gstorage->list_buckets();
