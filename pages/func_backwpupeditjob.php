@@ -267,7 +267,7 @@ function backwpup_jobedit_metabox_dests3($jobvalue) {
 		<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 		<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo $jobvalue['awsBucket'];?>" />
 		<?PHP if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey'])) backwpup_get_aws_buckets(array('awsAccessKey'=>$jobvalue['awsAccessKey'],'awsSecretKey'=>$jobvalue['awsSecretKey'],'awsselected'=>$jobvalue['awsBucket'])); ?>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value=""><?php _e('US-East (Northern Virginia)', 'backwpup'); ?></option><option value="us-west-1"><?php _e('US-West (Northern California)', 'backwpup'); ?></option><option value="us-west-2"><?php _e('US-West (Oregon)', 'backwpup'); ?></option><option value="EU"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="ap-southeast-1"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="ap-northeast-1"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option></select><br />
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value="s3.amazonaws.com"><?php _e('US-Standard (Northern Virginia & Washington State)', 'backwpup'); ?></option><option value="s3-us-west-1.amazonaws.com"><?php _e('US-West 1 (Northern California)', 'backwpup'); ?></option><option value="s3-us-west-2.amazonaws.com"><?php _e('US-West 2 (Oregon)', 'backwpup'); ?></option><option value="s3-eu-west-1.amazonaws.com"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="s3-ap-southeast-1.amazonaws.com"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="s3-ap-northeast-1.amazonaws.com"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option><option value="s3-sa-east-1.amazonaws.com"><?php _e('South America (Sao Paulo)', 'backwpup'); ?></option><option value="s3-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud', 'backwpup'); ?></option><option value="s3-fips-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud FIPS 140-2', 'backwpup'); ?></option></select><br />
 		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 		<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
 		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
@@ -438,6 +438,17 @@ function backwpup_jobedit_metabox_destmail($jobvalue) {
 	<?PHP
 }
 
+//ever display needed boxes
+function backwpup_jobedit_metabox_displayneeded($hidden) {
+	$newhidden=array();
+	foreach($hidden as $hiddenid) {
+		if ($hiddenid!='backwpup_jobedit_save' and $hiddenid!='backwpup_jobedit_schedule')
+			$newhidden[]=$hiddenid;
+	}
+	return $newhidden;
+}
+
+add_filter( 'hidden_meta_boxes', 'backwpup_jobedit_metabox_displayneeded' );
 //ajax/normal get cron text
 function backwpup_get_cron_text($args='') {
 	if (is_array($args)) {

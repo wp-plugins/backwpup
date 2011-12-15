@@ -330,6 +330,8 @@ wp_enqueue_script('postbox');
 //add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
 add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), 'backwpup_jobedit_metabox_backupfile', get_current_screen()->id, 'side', 'default');
 add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), 'backwpup_jobedit_metabox_sendlog', get_current_screen()->id, 'side', 'default');
+add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), 'backwpup_jobedit_metabox_destfolder', get_current_screen()->id, 'advanced', 'core');
+add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), 'backwpup_jobedit_metabox_destmail', get_current_screen()->id, 'advanced', 'core');
 if (in_array('FTP',$dests))
 	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), 'backwpup_jobedit_metabox_destftp', get_current_screen()->id, 'advanced', 'default');
 if (in_array('DROPBOX',$dests))

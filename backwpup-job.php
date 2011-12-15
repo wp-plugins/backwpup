@@ -179,7 +179,7 @@ class BackWPup_job {
 			$this->errorhandler($lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line'],false);
 		//Put sigterm to log
 		if ( !empty($args[0]) )
-			$this->errorhandler(E_USER_ERROR, sprintf(__('Signal $d send to script!', 'backwpup')), __FILE__, __LINE__,false);
+			$this->errorhandler(E_USER_ERROR, sprintf(__('Signal %d send to script!', 'backwpup')), __FILE__, __LINE__,false);
 		//no more restarts
 		$this->jobdata['WORKING']['RESTART']++;
 		if ( (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) or $this->jobdata['WORKING']['RESTART'] >= $this->jobdata['STATIC']['CFG']['jobscriptretry'] ) { //only x restarts allowed
