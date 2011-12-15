@@ -3,8 +3,8 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2
-Tested up to: 3.2.1
-Stable tag: 2.1.6
+Tested up to: 3.3
+Stable tag: 2.1.7
 
 WordPress Backup and more...
 
@@ -53,7 +53,6 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.5 =
-* New Logo
 * added sync with destionation for files to backup
 * Improved mysql dump
 * mysql dump restore improvements
@@ -64,8 +63,14 @@ Do backups and more for your WordPress Blog.
 * the job works now in the WordPress envoerment again
 * add own database table for backwpup
 * added support for Box.net
-* Updated AWS lib to 1.4.7
+* Updated AWS lib to 1.5.0
 * many bug fixes
+
+= 2.1.7 =
+* New Logo
+* Fixed not displayed save button
+* Updated AWS lib to 1.5.0
+* some tweaks
 
 = 2.1.6 =
 * fixed Dropbox with no path problem
