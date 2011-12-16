@@ -66,6 +66,11 @@ if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext' )))  {
 	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
 		die('Wrong JOBID check');
 }
+//check folders
+if (!is_dir($backwpup_cfg['logfolder']) or !is_writable($backwpup_cfg['logfolder']))
+	die('Log folder not exists or not writable');
+if (!is_dir($backwpup_cfg['tempfolder']) or !is_writable($backwpup_cfg['tempfolder']))
+	die('Temp folder not exists or not writable');
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');
 if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) and !empty($backwpupjobdata) )
@@ -86,8 +91,7 @@ elseif ( $_GET['starttype'] == 'runnow' ) {
 	ob_start();
 	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpupworking');
 	echo ' ';
-	while ( @ob_end_flush() )
-		;
+	while ( @ob_end_flush() );
 	flush();
 }
 //unload translation
@@ -107,6 +111,8 @@ class BackWPup_job {
 				$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
 			if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
 				$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
+			if (!empty($this->jobdata['STATIC']['CFG']['logfolder']))
+				$this->_checkfolder($this->jobdata['STATIC']['CFG']['logfolder']);
 		} else
 			$this->jobdata = backwpup_get_option('working', 'data');
 		//set function for PHP user defined error handling
@@ -232,8 +238,6 @@ class BackWPup_job {
 		$this->jobdata['STATIC']['JOB']['starttime'] = current_time('timestamp'); //set start time for job
 		backwpup_update_option('job_' . $this->jobdata['STATIC']['JOB']['jobid'], 'starttime', $this->jobdata['STATIC']['JOB']['starttime']);
 		backwpup_update_option('job_' . $this->jobdata['STATIC']['JOB']['jobid'], 'logfile', $this->jobdata['LOGFILE']); //Set current logfile
-		$this->jobdata['STATIC']['JOB']['cronnextrun'] = backwpup_cron_next($this->jobdata['STATIC']['JOB']['cron']); //set next run
-		backwpup_update_option('job_' . $this->jobdata['STATIC']['JOB']['jobid'], 'cronnextrun', $this->jobdata['STATIC']['JOB']['cronnextrun']);
 		backwpup_update_option('job_' . $this->jobdata['STATIC']['JOB']['jobid'], 'lastbackupdownloadurl', '');
 		//only for jobs that makes backups
 		if ( in_array('FILE', $this->jobdata['STATIC']['JOB']['type']) or in_array('DB', $this->jobdata['STATIC']['JOB']['type']) or in_array('WPEXP', $this->jobdata['STATIC']['JOB']['type']) ) {
@@ -1322,6 +1326,10 @@ class BackWPup_job {
 			}
 		} elseif ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" ) { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $this->jobdata['STATIC']['CFG']['tempfolder']);
+			if ( ini_get('mbstring.func_overload') && function_exists('mb_internal_encoding') ) {
+				$previous_encoding = mb_internal_encoding();
+				mb_internal_encoding('ISO-8859-1');
+			}
 			require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			//Create Zip File
 			trigger_error(sprintf(__('%d. Trying to create backup zip (PclZip) archive...', 'backwpup'), $this->jobdata['WORKING']['CREATE_ARCHIVE']['STEP_TRY']), E_USER_NOTICE);
@@ -1345,6 +1353,8 @@ class BackWPup_job {
 				$this->_update_working_data();
 				$this->jobdata['WORKING']['STEPDONE']++;
 			}
+			if ( isset($previous_encoding) )
+				mb_internal_encoding($previous_encoding);
 			trigger_error(__('Backup zip archive created', 'backwpup'), E_USER_NOTICE);
 			$this->jobdata['WORKING']['STEPSDONE'][] = 'CREATE_ARCHIVE'; //set done
 
