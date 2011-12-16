@@ -401,13 +401,14 @@ function backwpup_jobedit_metabox_destmail($jobvalue) {
 
 //ever display needed boxes
 function backwpup_jobedit_metabox_displayneeded($hidden) {
-  $newhidden=array();
-  foreach($hidden as $hiddenid) {
-    if ($hiddenid!='backwpup_jobedit_save' and $hiddenid!='backwpup_jobedit_schedule')
-      $newhidden[]=$hiddenid;
-  }
-  return $newhidden;
+	$newhidden=array();
+	foreach($hidden as $hiddenid) {
+		if ($hiddenid!='backwpup_jobedit_save' and $hiddenid!='backwpup_jobedit_schedule')
+			$newhidden[]=$hiddenid;
+	}
+	return $newhidden;
 }
+add_filter( 'hidden_meta_boxes', 'backwpup_jobedit_metabox_displayneeded' );
 
 //ajax/normal get cron text
 function backwpup_get_cron_text($args='') {
