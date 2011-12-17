@@ -117,7 +117,7 @@ class BackWPup {
 			// delete old not nedded vars
 			$cfg['tempfolder']=$cfg['dirtemp']; //if old value switsch it to new
 			$cfg['logfolder']=$cfg['dirlogs'];
-			unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron']);
+			unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
 			if (is_array($cfg)) {
 				foreach ($cfg as $cfgname => $cfgvalue) {
 					backwpup_update_option('cfg',$cfgname,$cfgvalue);
@@ -153,7 +153,6 @@ class BackWPup {
 			$maxlogs=backwpup_get_option('cfg','maxlogs');
 			if (empty($maxlogs) or !is_numeric($maxlogs)) backwpup_update_option('cfg','maxlogs',50);
 			if (!function_exists('gzopen') or !backwpup_get_option('cfg','gzlogs')) backwpup_add_option('cfg','gzlogs',false);
-			if (!class_exists('ZipArchive') or !backwpup_get_option('cfg','phpzip')) backwpup_add_option('cfg','phpzip',false);
 			if (!backwpup_get_option('cfg','unloadtranslations')) backwpup_add_option('cfg','unloadtranslations',false);
 			if (!backwpup_get_option('cfg','apicronservice')) backwpup_add_option('cfg','apicronservice',false);
 			$logfolder=backwpup_get_option('cfg','logfolder');

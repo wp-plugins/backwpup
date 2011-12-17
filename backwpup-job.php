@@ -107,7 +107,7 @@ class BackWPup_job {
 		//get job data
 		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) ) {
 			$this->start((int)$_GET['jobid']);
-			if (!empty($this->jobdata['STATIC']['JOB']['backupdir']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
+			if (!empty($this->jobdata['STATIC']['JOB']['backupdir||']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
 				$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
 			if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
 				$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
@@ -1262,8 +1262,6 @@ class BackWPup_job {
 
 	private function create_archive() {
 		$this->jobdata['WORKING']['STEPTODO'] = count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
-		if ( empty($this->jobdata['WORKING']['STEPDONE']) )
-			$this->jobdata['WORKING']['STEPDONE'] = 0;
 
 		//create path to remove
 		if ( trailingslashit(str_replace('\\', '/', ABSPATH)) == '/' or trailingslashit(str_replace('\\', '/', ABSPATH)) == '' )
@@ -1271,60 +1269,105 @@ class BackWPup_job {
 		else
 			$removepath = trailingslashit(str_replace('\\', '/', ABSPATH));
 
-		if ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" and $this->jobdata['STATIC']['CFG']['phpzip'] ) { //use php zip lib
+		if ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" and class_exists('ZipArchive') ) { //use php zip lib
 			trigger_error(sprintf(__('%d. Trying to create backup zip archive...', 'backwpup'), $this->jobdata['WORKING']['CREATE_ARCHIVE']['STEP_TRY']), E_USER_NOTICE);
+			$numopenfiles=0;
 			$zip = new ZipArchive();
-			$res = $zip->open($this->jobdata['STATIC']['JOB']['backupdir'] . $this->jobdata['STATIC']['backupfile'], ZIPARCHIVE::CREATE);
-			if ( $res === true ) {
-				//add extra files
+			$res = $zip->open($this->jobdata['STATIC']['JOB']['backupdir'] . $this->jobdata['STATIC']['backupfile'], ZipArchive::CREATE);
+			if ( $res !== true ) {
+				trigger_error(sprintf(__('Can not create backup zip archive: %d!', 'backwpup'), $res), E_USER_ERROR);
+				$this->jobdata['WORKING']['STEPSDONE'][] = 'CREATE_ARCHIVE'; //set done
+				return;
+			}
+			//add extra files
+			if ($this->jobdata['WORKING']['STEPDONE']==0) {
 				if ( !empty($this->jobdata['WORKING']['EXTRAFILESTOBACKUP']) and $this->jobdata['WORKING']['STEPDONE'] == 0 ) {
 					foreach ( $this->jobdata['WORKING']['EXTRAFILESTOBACKUP'] as $file ) {
 						if ( !$zip->addFile($file, basename($file)) )
 							trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), basename($file)), E_USER_ERROR);
 						$this->_update_working_data();
+						$numopenfiles++;
 					}
 				}
-				if ( $this->jobdata['WORKING']['STEPDONE'] == 0 )
-					$this->jobdata['WORKING']['STEPDONE'] = 1;
-				//add normal files
-				for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
-					$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
+				$this->jobdata['WORKING']['STEPDONE']++;
+			}
+			//add normal files
+			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
+				$fodlername=trim(str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
+				if (!empty($fodlername)) {
+					if ( !$zip->addEmptyDir($fodlername) )
+						trigger_error(sprintf(__('Can not add dir "%s" to zip archive!', 'backwpup'), $fodlername), E_USER_ERROR);
+				}
+				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
+				if (count($files)>0) {
 					foreach($files as $file) {
-						if ( !$zip->addFile( $file, str_replace($removepath, '',  $file)) )
-							trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i] . $file)), E_USER_ERROR);
+						$zipfilename=str_replace($removepath, '', $file);
+						if ( !$zip->addFile( $file,$zipfilename ) )
+							trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), $zipfilename), E_USER_ERROR);
 						$this->_update_working_data();
 					}
-					$this->jobdata['WORKING']['STEPDONE']++;
 				}
-				if ( $zip->status > 0 ) {
-					$ziperror = $zip->status;
-					if ( $zip->status == 4 )
-						$ziperror = __('(4) ER_SEEK', 'backwpup');
-					if ( $zip->status == 5 )
-						$ziperror = __('(5) ER_READ', 'backwpup');
-					if ( $zip->status == 9 )
-						$ziperror = __('(9) ER_NOENT', 'backwpup');
-					if ( $zip->status == 10 )
-						$ziperror = __('(10) ER_EXISTS', 'backwpup');
-					if ( $zip->status == 11 )
-						$ziperror = __('(11) ER_OPEN', 'backwpup');
-					if ( $zip->status == 14 )
-						$ziperror = __('(14) ER_MEMORY', 'backwpup');
-					if ( $zip->status == 18 )
-						$ziperror = __('(18) ER_INVAL', 'backwpup');
-					if ( $zip->status == 19 )
-						$ziperror = __('(19) ER_NOZIP', 'backwpup');
-					if ( $zip->status == 21 )
-						$ziperror = __('(21) ER_INCONS', 'backwpup');
-					trigger_error(sprintf(__('Zip returns status: %s', 'backwpup'), $zip->status), E_USER_ERROR);
+				//colse and reopen, all added files are open on fs
+				if ($numopenfiles>=30) { //35 works with PHP 5.2.4 on win
+					if ( $zip->status > 0 ) {
+						$ziperror = $zip->status;
+						if ( $zip->status == 4 )
+							$ziperror = __('(4) ER_SEEK', 'backwpup');
+						if ( $zip->status == 5 )
+							$ziperror = __('(5) ER_READ', 'backwpup');
+						if ( $zip->status == 9 )
+							$ziperror = __('(9) ER_NOENT', 'backwpup');
+						if ( $zip->status == 10 )
+							$ziperror = __('(10) ER_EXISTS', 'backwpup');
+						if ( $zip->status == 11 )
+							$ziperror = __('(11) ER_OPEN', 'backwpup');
+						if ( $zip->status == 14 )
+							$ziperror = __('(14) ER_MEMORY', 'backwpup');
+						if ( $zip->status == 18 )
+							$ziperror = __('(18) ER_INVAL', 'backwpup');
+						if ( $zip->status == 19 )
+							$ziperror = __('(19) ER_NOZIP', 'backwpup');
+						if ( $zip->status == 21 )
+							$ziperror = __('(21) ER_INCONS', 'backwpup');
+						trigger_error(sprintf(__('Zip returns status: %s', 'backwpup'), $zip->status), E_USER_ERROR);
+					}
+					$zip->close();
+					if ( $this->jobdata['WORKING']['STEPDONE'] == 0 )
+						$this->jobdata['WORKING']['STEPDONE'] = 1;
+					$zip->open($this->jobdata['STATIC']['JOB']['backupdir'] . $this->jobdata['STATIC']['backupfile'], ZipArchive::CREATE );
+					$numopenfiles=0;
 				}
-				$zip->close();
-				trigger_error(__('Backup zip archive created', 'backwpup'), E_USER_NOTICE);
-				$this->jobdata['WORKING']['STEPSDONE'][] = 'CREATE_ARCHIVE'; //set done
-			} else {
-				trigger_error(sprintf(__('Can not create backup zip archive $s!', 'backwpup'), $res), E_USER_ERROR);
+				$numopenfiles++;
+				$this->jobdata['WORKING']['STEPDONE']++;
 			}
-		} elseif ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" ) { //use PclZip
+			//clese Zip
+			if ( $zip->status > 0 ) {
+				$ziperror = $zip->status;
+				if ( $zip->status == 4 )
+					$ziperror = __('(4) ER_SEEK', 'backwpup');
+				if ( $zip->status == 5 )
+					$ziperror = __('(5) ER_READ', 'backwpup');
+				if ( $zip->status == 9 )
+					$ziperror = __('(9) ER_NOENT', 'backwpup');
+				if ( $zip->status == 10 )
+					$ziperror = __('(10) ER_EXISTS', 'backwpup');
+				if ( $zip->status == 11 )
+					$ziperror = __('(11) ER_OPEN', 'backwpup');
+				if ( $zip->status == 14 )
+					$ziperror = __('(14) ER_MEMORY', 'backwpup');
+				if ( $zip->status == 18 )
+					$ziperror = __('(18) ER_INVAL', 'backwpup');
+				if ( $zip->status == 19 )
+					$ziperror = __('(19) ER_NOZIP', 'backwpup');
+				if ( $zip->status == 21 )
+					$ziperror = __('(21) ER_INCONS', 'backwpup');
+				trigger_error(sprintf(__('Zip returns status: %s', 'backwpup'), $zip->status), E_USER_ERROR);
+			}
+			$zip->close();
+			trigger_error(__('Backup zip archive created', 'backwpup'), E_USER_NOTICE);
+			$this->jobdata['WORKING']['STEPSDONE'][] = 'CREATE_ARCHIVE'; //set done
+		}
+		elseif ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" ) { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $this->jobdata['STATIC']['CFG']['tempfolder']);
 			if ( ini_get('mbstring.func_overload') && function_exists('mb_internal_encoding') ) {
 				$previous_encoding = mb_internal_encoding();
@@ -1346,7 +1389,7 @@ class BackWPup_job {
 			if ( $this->jobdata['WORKING']['STEPDONE'] == 0 )
 				$this->jobdata['WORKING']['STEPDONE'] = 1;
 			//add normal files
-			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
+			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
 				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
 				if ( 0 == $zipbackupfile->add($files, PCLZIP_OPT_REMOVE_PATH, $removepath) )
 					trigger_error(sprintf(__('Zip archive add error: %s', 'backwpup'), $zipbackupfile->errorInfo(true)), E_USER_ERROR);
@@ -1380,12 +1423,17 @@ class BackWPup_job {
 			if ( $this->jobdata['WORKING']['STEPDONE'] == 0 )
 				$this->jobdata['WORKING']['STEPDONE'] = 1;
 			//add normal files
-			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']; $i++ ) {
+			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
+				$fodlername=trim(str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
+				if (!empty($fodlername))
+					$this->_tar_foldername($this->jobdata['WORKING']['FOLDERLIST'][$i],$fodlername, $tarbackup);
 				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
-				foreach($files as $file)
-					$this->_tar_file($file, str_replace($removepath, '', $file), $tarbackup);
-				$this->_update_working_data();
+				if (count($files)>0) {
+					foreach($files as $file)
+						$this->_tar_file($file, str_replace($removepath, '', $file), $tarbackup);
+				}
 				$this->jobdata['WORKING']['STEPDONE']++;
+				$this->_update_working_data();
 			}
 			// Add 1024 bytes of NULLs to designate EOF
 			if ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == '.tar.gz' ) {
@@ -1425,8 +1473,8 @@ class BackWPup_job {
 		//get file stat
 		$filestat = stat($file);
 		//Set file user/group name if linux
-		$fileowner = "Unknown";
-		$filegroup = "Unknown";
+		$fileowner = __("Unknown","backwpup");
+		$filegroup = __("Unknown","backwpup");
 		if ( function_exists('posix_getpwuid') ) {
 			$info = posix_getpwuid($filestat['uid']);
 			$fileowner = $info['name'];
@@ -1445,7 +1493,7 @@ class BackWPup_job {
 			0, //type of file  0 or null = File, 5=Dir
 			"", //name of linked file  100
 			"ustar ", //USTAR indicator  6
-			" ", //USTAR version  2
+			"00", //USTAR version  2
 			$fileowner, //owner user name 32
 			$filegroup, //owner group name 32
 			"", //device major number 8
@@ -1479,8 +1527,68 @@ class BackWPup_job {
 			}
 		}
 		fclose($fd);
-		$this->_update_working_data();
 	}
+
+
+	private function _tar_foldername($folder, $foldername, $handle) {
+		//split filename larger than 100 chars
+		if ( strlen($foldername) <= 100 ) {
+			$foldernameprefix = "";
+		} else {
+			$foldernameofset = strlen($foldername) - 100;
+			$dividor = strpos($foldername, '/', $foldernameofset);
+			$foldername = substr($foldername, $dividor + 1);
+			$foldernameprefix = substr($foldername, 0, $dividor);
+			if ( strlen($foldername) > 100 )
+				trigger_error(sprintf(__('Folder name "%1$s" to long to save correctly in %2$s archive!', 'backwpup'), $foldername, substr($this->jobdata['STATIC']['JOB']['fileformart'], 1)), E_USER_WARNING);
+			if ( strlen($foldernameprefix) > 155 )
+				trigger_error(sprintf(__('Folder path "%1$s" to long to save correctly in %2$s archive!', 'backwpup'), $foldername, substr($this->jobdata['STATIC']['JOB']['fileformart'], 1)), E_USER_WARNING);
+		}
+		//get file stat
+		$folderstat = stat($folder);
+		//Set file user/group name if linux
+		$folderowner = __("Unknown","backwpup");
+		$foldergroup = __("Unknown","backwpup");
+		if ( function_exists('posix_getpwuid') ) {
+			$info = posix_getpwuid($folderstat['uid']);
+			$folderowner = $info['name'];
+			$info = posix_getgrgid($folderstat['gid']);
+			$foldergroup = $info['name'];
+		}
+		// Generate the TAR header for this file
+		$header = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
+			$foldername, //name of file  100
+			sprintf("%07o", $folderstat['mode']), //file mode  8
+			sprintf("%07o", $folderstat['uid']), //owner user ID  8
+			sprintf("%07o", $folderstat['gid']), //owner group ID  8
+			sprintf("%011o", 0), //length of file in bytes  12
+			sprintf("%011o", $folderstat['mtime']), //modify time of file  12
+			"        ", //checksum for header  8
+			5, //type of file  0 or null = File, 5=Dir
+			"", //name of linked file  100
+			"ustar ", //USTAR indicator  6
+			"00", //USTAR version  2
+			$folderowner, //owner user name 32
+			$foldergroup, //owner group name 32
+			"", //device major number 8
+			"", //device minor number 8
+			$foldernameprefix, //prefix for file name 155
+			""); //fill block 512K
+
+		// Computes the unsigned Checksum of a folder's header
+		$checksum = 0;
+		for ( $i = 0; $i < 512; $i++ )
+			$checksum += ord(substr($header, $i, 1));
+		$checksum = pack("a8", sprintf("%07o", $checksum));
+		$header = substr_replace($header, $checksum, 148, 8);
+		if ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == '.tar.gz' )
+			gzwrite($handle, $header);
+		elseif ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == '.tar.bz2' )
+			bzwrite($handle, $header);
+		else
+			fwrite($handle, $header);
+	}
+
 
 	private function dest_folder() {
 		$this->jobdata['WORKING']['STEPTODO'] = 1;

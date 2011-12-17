@@ -53,18 +53,19 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.5 =
-* added sync with destionation for files to backup
-* Improved mysql dump
-* mysql dump restore improvements
-* Improved XML export
-* removed mail send options, please use a plugin like 'WP Mail SMTP'
-* now manaly job start works with a rederict function 'define('ALTERNATE_WP_CRON', true);' not longer needed.
-* don't look for file endings on deletion and use file time not name
-* the job works now in the WordPress envoerment again
-* add own database table for backwpup
-* added support for Box.net
-* Updated AWS lib to 1.5.0
-* many bug fixes
+* Added: file sync with destination for backups
+* Added: support for Box.net
+* Added: own database table for backwpup
+* Improved: mysql dump restore
+* Improved: mysql dump
+* Improved: XML export
+* Improved: zipping
+* Improved: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
+* Improved: don't look for file extensions on deletion and use file time not name
+* Improved: the job runs now in the WordPress envoerment again
+* Updated: AWS lib to 1.5.0
+* Removed: mail send options, please use a plugin like 'WP Mail SMTP'
+* Fixed: many bugs
 
 = 2.1.7 =
 * New Logo

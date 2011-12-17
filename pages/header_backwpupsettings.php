@@ -22,7 +22,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	backwpup_update_option('cfg','jobscriptretry',$_POST['jobscriptretry']);
 	backwpup_update_option('cfg','maxlogs',abs((int)$_POST['maxlogs']));
 	backwpup_update_option('cfg','gzlogs',isset($_POST['gzlogs']) ? true : false);
-	backwpup_update_option('cfg','phpzip',isset($_POST['phpzip']) ? true : false);
 	backwpup_update_option('cfg','unloadtranslations',isset($_POST['unloadtranslations']) ? true : false);
 	backwpup_update_option('cfg','apicronservice',isset($_POST['apicronservice']) ? true : false);
 	backwpup_update_option('cfg','httpauthuser',$_POST['httpauthuser']);
