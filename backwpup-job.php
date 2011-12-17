@@ -6,7 +6,7 @@ define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY', false); //W3TC will not loaded
 define('BACKWPUP_LINE_SEPARATOR', (strstr(PHP_OS, "WIN") or strtr(PHP_OS, "OS/2")) ? "\r\n" : "\n");
-//definie E_DEPRECATED if PHP lower than 5.3
+//define E_DEPRECATED if PHP lower than 5.3
 if ( !defined('E_DEPRECATED') )
 	define('E_DEPRECATED', 8192);
 if ( !defined('E_USER_DEPRECATED') )
@@ -19,7 +19,7 @@ ignore_user_abort(true);
 $backwpup_cfg = '';
 $backwpup_job_object = '';
 global $l10n, $backwpup_cfg, $backwpup_job_object;
-//prase comandline args
+//phrase commandline args
 if ( defined('STDIN') ) {
 	$_GET['starttype'] = 'runcmd';
 	foreach ( $_SERVER['argv'] as $arg ) {
@@ -40,7 +40,7 @@ if ( defined('STDIN') ) {
 		else
 			die('ABSPATH check');
 	}
-} else { //normal start from webserver
+} else { //normal start from webservice
 	//check get vars
 	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restarttime', 'restart', 'runnow', 'cronrun', 'runext' )) )
 		die('Starttype check');
@@ -103,7 +103,6 @@ class BackWPup_job {
 	private $jobdata = false;
 
 	public function __construct() {
-		global $wpdb;
 		//get job data
 		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) ) {
 			$this->start((int)$_GET['jobid']);
@@ -123,7 +122,7 @@ class BackWPup_job {
 		@ini_set('display_errors', 'Off');
 		@ini_set('log_errors', 'On');
 		set_error_handler(array( $this, 'errorhandler' ), E_ALL | E_STRICT);
-		//Check dobbel running and inactivity
+		//Check double running and inactivity
 		if ( $this->jobdata['WORKING']['PID'] != getmypid() and $this->jobdata['WORKING']['TIMESTAMP'] > (current_time('timestamp') - 500) and $_GET['starttype'] == 'restarttime' ) {
 			trigger_error(__('Job restart terminated, because other job runs!', 'backwpup'), E_USER_ERROR);
 			die();
@@ -228,8 +227,6 @@ class BackWPup_job {
 		//check exists gzip functions
 		if ( !function_exists('gzopen') )
 			$this->jobdata['STATIC']['CFG']['gzlogs'] = false;
-		if ( !class_exists('ZipArchive') )
-			$this->jobdata['STATIC']['CFG']['phpzip'] = false;
 		//set Logfile
 		$this->jobdata['LOGFILE'] = $this->jobdata['STATIC']['CFG']['logfolder'] . 'backwpup_log_' . date_i18n('Y-m-d_H-i-s') . '.html';
 		//Set job data
@@ -266,6 +263,11 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['FILEEXCLUDES']=explode(',',trim($this->jobdata['STATIC']['JOB']['fileexclude']));
 		$this->jobdata['WORKING']['FILEEXCLUDES'][] ='.tmp';
 		$this->jobdata['WORKING']['FILEEXCLUDES']=array_unique($this->jobdata['WORKING']['FILEEXCLUDES']);
+		//create path to remove
+		if ( trailingslashit(str_replace('\\', '/', ABSPATH)) == '/' or trailingslashit(str_replace('\\', '/', ABSPATH)) == '' )
+			$this->jobdata['WORKING']['REMOVEPATH'] = '';
+		else
+			$this->jobdata['WORKING']['REMOVEPATH'] = trailingslashit(str_replace('\\', '/', ABSPATH));
 		//build working steps
 		$this->jobdata['WORKING']['STEPS'] = array();
 		//setup job steps
@@ -381,7 +383,7 @@ class BackWPup_job {
 			return false;
 		//create backup dir if it not exists
 		if ( !is_dir($folder) ) {
-			if ( !mkdir($folder, 0777, true) ) {
+			if ( !mkdir($folder, FS_CHMOD_DIR, true) ) {
 				trigger_error(sprintf(__('Can not create folder: %1$s', 'backwpup'), $folder), E_USER_ERROR);
 				return false;
 			}
@@ -406,7 +408,7 @@ class BackWPup_job {
 
 	public function errorhandler() {
 		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
-		// if error has been supressed with an @
+		// if error has been suppressed with an @
 		if ( error_reporting() == 0 )
 			return;
 
@@ -1223,10 +1225,8 @@ class BackWPup_job {
 			while ( ($file = readdir($dir)) !== false ) {
 				if ( in_array($file, array( '.', '..', '.svn' )) )
 					continue;
-				if ( !is_readable($folder . $file) ) {
+				if ( is_dir($folder . $file) and !is_readable($folder . $file) ) {
 					trigger_error(sprintf(__('Folder "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
-				} elseif ( is_link($folder . $file) ) {
-					trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'), $folder . $file), E_USER_WARNING);
 				} elseif ( is_dir($folder . $file) ) {
 					if ( in_array(trailingslashit($folder . $file), $excludedirs) or in_array(trailingslashit($folder . $file), $this->jobdata['WORKING']['FOLDERLIST']) )
 						continue;
@@ -1263,12 +1263,6 @@ class BackWPup_job {
 	private function create_archive() {
 		$this->jobdata['WORKING']['STEPTODO'] = count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
 
-		//create path to remove
-		if ( trailingslashit(str_replace('\\', '/', ABSPATH)) == '/' or trailingslashit(str_replace('\\', '/', ABSPATH)) == '' )
-			$removepath = '';
-		else
-			$removepath = trailingslashit(str_replace('\\', '/', ABSPATH));
-
 		if ( strtolower($this->jobdata['STATIC']['JOB']['fileformart']) == ".zip" and class_exists('ZipArchive') ) { //use php zip lib
 			trigger_error(sprintf(__('%d. Trying to create backup zip archive...', 'backwpup'), $this->jobdata['WORKING']['CREATE_ARCHIVE']['STEP_TRY']), E_USER_NOTICE);
 			$numopenfiles=0;
@@ -1293,15 +1287,15 @@ class BackWPup_job {
 			}
 			//add normal files
 			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
-				$fodlername=trim(str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
-				if (!empty($fodlername)) {
-					if ( !$zip->addEmptyDir($fodlername) )
-						trigger_error(sprintf(__('Can not add dir "%s" to zip archive!', 'backwpup'), $fodlername), E_USER_ERROR);
+				$foldername=trim(str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
+				if (!empty($foldername)) {
+					if ( !$zip->addEmptyDir($foldername) )
+						trigger_error(sprintf(__('Can not add dir "%s" to zip archive!', 'backwpup'), $foldername), E_USER_ERROR);
 				}
 				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
 				if (count($files)>0) {
 					foreach($files as $file) {
-						$zipfilename=str_replace($removepath, '', $file);
+						$zipfilename=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $file);
 						if ( !$zip->addFile( $file,$zipfilename ) )
 							trigger_error(sprintf(__('Can not add "%s" to zip archive!', 'backwpup'), $zipfilename), E_USER_ERROR);
 						$this->_update_working_data();
@@ -1391,7 +1385,7 @@ class BackWPup_job {
 			//add normal files
 			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
 				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
-				if ( 0 == $zipbackupfile->add($files, PCLZIP_OPT_REMOVE_PATH, $removepath) )
+				if ( 0 == $zipbackupfile->add($files, PCLZIP_OPT_REMOVE_PATH, $this->jobdata['WORKING']['REMOVEPATH']) )
 					trigger_error(sprintf(__('Zip archive add error: %s', 'backwpup'), $zipbackupfile->errorInfo(true)), E_USER_ERROR);
 				$this->_update_working_data();
 				$this->jobdata['WORKING']['STEPDONE']++;
@@ -1424,13 +1418,13 @@ class BackWPup_job {
 				$this->jobdata['WORKING']['STEPDONE'] = 1;
 			//add normal files
 			for ( $i = $this->jobdata['WORKING']['STEPDONE'] - 1; $i < $this->jobdata['WORKING']['STEPTODO']-1; $i++ ) {
-				$fodlername=trim(str_replace($removepath, '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
-				if (!empty($fodlername))
-					$this->_tar_foldername($this->jobdata['WORKING']['FOLDERLIST'][$i],$fodlername, $tarbackup);
+				$foldername=trim(str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $this->jobdata['WORKING']['FOLDERLIST'][$i]));
+				if (!empty($foldername))
+					$this->_tar_foldername($this->jobdata['WORKING']['FOLDERLIST'][$i],$foldername, $tarbackup);
 				$files=$this->_get_files_in_folder($this->jobdata['WORKING']['FOLDERLIST'][$i]);
 				if (count($files)>0) {
 					foreach($files as $file)
-						$this->_tar_file($file, str_replace($removepath, '', $file), $tarbackup);
+						$this->_tar_file($file, str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $file), $tarbackup);
 				}
 				$this->jobdata['WORKING']['STEPDONE']++;
 				$this->_update_working_data();
@@ -1529,7 +1523,6 @@ class BackWPup_job {
 		fclose($fd);
 	}
 
-
 	private function _tar_foldername($folder, $foldername, $handle) {
 		//split filename larger than 100 chars
 		if ( strlen($foldername) <= 100 ) {
@@ -1589,7 +1582,6 @@ class BackWPup_job {
 			fwrite($handle, $header);
 	}
 
-
 	private function dest_folder() {
 		$this->jobdata['WORKING']['STEPTODO'] = 1;
 		$this->jobdata['WORKING']['STEPDONE'] = 0;
@@ -1621,9 +1613,66 @@ class BackWPup_job {
 	}
 
 	private function dest_folder_sync() {
-		$this->jobdata['WORKING']['STEPTODO']=count($this->jobdata['WORKING']['FOLDERLIST']) + 1;
-		$this->jobdata['WORKING']['STEPDONE']=0;
+		$this->jobdata['WORKING']['STEPTODO']=count($this->jobdata['WORKING']['FOLDERLIST']);
 		trigger_error(sprintf(__('%d. Try to sync files with folder...','backwpup'),$this->jobdata['WORKING']['DEST_FOLDER_SYNC']['STEP_TRY']),E_USER_NOTICE);
+
+		//create not existing folders
+		foreach($this->jobdata['WORKING']['FOLDERLIST'] as $folder) {
+			$testfolder=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
+			if (!is_dir($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder))
+				mkdir($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder,FS_CHMOD_DIR, true);
+		}
+		//sync folder by folder
+		$this->_dest_folder_sync_files($this->jobdata['STATIC']['JOB']['backupdir']);
+	}
+
+	private function _dest_folder_sync_files($folder = '', $levels = 100) {
+		if ( empty($folder) )
+			return false;
+		if ( !$levels )
+			return false;
+		$this->_update_working_data();
+		$folder = trailingslashit($folder);
+		//get files to sync
+		$filestosync=$this->_get_files_in_folder($this->jobdata['WORKING']['REMOVEPATH'].trim(str_replace($this->jobdata['STATIC']['JOB']['backupdir'], '', $folder)));
+		if ($folder==$this->jobdata['STATIC']['JOB']['backupdir']) //add extra files to sync
+			$filestosync=array_merge($filestosync,$this->jobdata['WORKING']['EXTRAFILESTOBACKUP']);
+
+		if ( $dir = @opendir($folder) ) {
+			while ( ($file = readdir($dir)) !== false ) {
+				if ( in_array($file, array( '.', '..' )) )
+					continue;
+				if ( !is_readable($folder . $file) ) {
+					trigger_error(sprintf(__('File or folder "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
+				}  elseif ( is_dir($folder . $file) ) {
+					$testfolder=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
+					if (in_array($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder,$this->jobdata['WORKING']['FOLDERLIST'])) {
+						$this->_dest_folder_sync_files(trailingslashit($folder . $file), $levels - 1);
+					} else {
+						rmdir($folder . $file);
+						trigger_error(sprintf(__('Folder deleted %s','backwpup'),$folder . $file));
+					}
+				} elseif ( is_file($folder . $file) ) {
+					$testfile=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
+					if (in_array($this->jobdata['STATIC']['JOB']['backupdir'].$testfile,$filestosync)) {
+						if (filesize($this->jobdata['STATIC']['JOB']['backupdir'].$testfile)!=flezise($folder . $file))
+							copy($this->jobdata['STATIC']['JOB']['backupdir'].$testfile,$folder . $file);
+						foreach($filestosync as $key => $keyfile) {
+							if ($keyfile==$this->jobdata['STATIC']['JOB']['backupdir'].$testfile)
+								unset($filestosync[$key]);
+						}
+					} else {
+						unlink($folder . $file);
+						trigger_error(sprintf(__('File deleted %s','backwpup'),$folder . $file));
+					}
+				}
+			}
+			@closedir($dir);
+		}
+		//sync new files
+		foreach($filestosync as $keyfile) {
+			copy($keyfile,$folder . basename($keyfile));
+		}
 	}
 }
 
