@@ -1618,12 +1618,16 @@ class BackWPup_job {
 
 		//create not existing folders
 		foreach($this->jobdata['WORKING']['FOLDERLIST'] as $folder) {
-			$testfolder=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
+			$testfolder=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder);
+			if (empty($testfolder))
+				continue;
 			if (!is_dir($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder))
 				mkdir($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder,FS_CHMOD_DIR, true);
 		}
 		//sync folder by folder
 		$this->_dest_folder_sync_files($this->jobdata['STATIC']['JOB']['backupdir']);
+		$this->jobdata['WORKING']['STEPDONE']++;
+		$this->jobdata['WORKING']['STEPSDONE'][] = 'DEST_FOLDER_SYNC'; //set done
 	}
 
 	private function _dest_folder_sync_files($folder = '', $levels = 100) {
@@ -1645,20 +1649,19 @@ class BackWPup_job {
 				if ( !is_readable($folder . $file) ) {
 					trigger_error(sprintf(__('File or folder "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
 				}  elseif ( is_dir($folder . $file) ) {
-					$testfolder=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
-					if (in_array($this->jobdata['STATIC']['JOB']['backupdir'].$testfolder,$this->jobdata['WORKING']['FOLDERLIST'])) {
-						$this->_dest_folder_sync_files(trailingslashit($folder . $file), $levels - 1);
-					} else {
+					$this->_dest_folder_sync_files(trailingslashit($folder . $file), $levels - 1);
+					$testfolder=str_replace($this->jobdata['STATIC']['JOB']['backupdir'], '', $folder . $file);
+					if (!in_array($this->jobdata['WORKING']['REMOVEPATH'].$testfolder,$this->jobdata['WORKING']['FOLDERLIST'])) {
 						rmdir($folder . $file);
 						trigger_error(sprintf(__('Folder deleted %s','backwpup'),$folder . $file));
 					}
 				} elseif ( is_file($folder . $file) ) {
-					$testfile=str_replace($this->jobdata['WORKING']['REMOVEPATH'], '', $folder . $file);
-					if (in_array($this->jobdata['STATIC']['JOB']['backupdir'].$testfile,$filestosync)) {
-						if (filesize($this->jobdata['STATIC']['JOB']['backupdir'].$testfile)!=flezise($folder . $file))
-							copy($this->jobdata['STATIC']['JOB']['backupdir'].$testfile,$folder . $file);
+					$testfile=str_replace($this->jobdata['STATIC']['JOB']['backupdir'], '', $folder . $file);
+					if (in_array($this->jobdata['WORKING']['REMOVEPATH'].$testfile,$filestosync)) {
+						if (filesize($this->jobdata['WORKING']['REMOVEPATH'].$testfile)!=filesize($folder . $file))
+							copy($this->jobdata['WORKING']['REMOVEPATH'].$testfile,$folder . $file);
 						foreach($filestosync as $key => $keyfile) {
-							if ($keyfile==$this->jobdata['STATIC']['JOB']['backupdir'].$testfile)
+							if ($keyfile==$this->jobdata['WORKING']['REMOVEPATH'].$testfile)
 								unset($filestosync[$key]);
 						}
 					} else {
