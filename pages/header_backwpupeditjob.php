@@ -291,8 +291,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		wp_redirect($response['authurl']);
 	}
 	
-	$backwpupapi=new backwpup_api();
-	
 	//get box.net auth	
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
 		//set boxtype and authkeys
@@ -353,10 +351,12 @@ if (in_array('RSC',$dests))
 add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' . '</p>'
-) );
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' . '</p>'
+	) );
+}
 ?>

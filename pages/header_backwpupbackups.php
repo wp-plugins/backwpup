@@ -322,13 +322,14 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' .__('Here you see a list of backup files. Change the destination to jobname:destination to become a list of backups from other destinations and jobs. Then you can delete or download backup files.','backwpup') . '</p>'
-) );
-
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' .__('Here you see a list of backup files. Change the destination to jobname:destination to become a list of backups from other destinations and jobs. Then you can delete or download backup files.','backwpup') . '</p>'
+	) );
+}
 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpupbackups_per_page') );
 

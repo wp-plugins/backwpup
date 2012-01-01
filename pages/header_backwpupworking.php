@@ -8,10 +8,12 @@ if (!empty($_GET['logfile'])) {
 }
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' .__('Here you see a working jobs or a logfile','backwpup') . '</p>'
-) );
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' .__('Here you see a working jobs or a logfile','backwpup') . '</p>'
+	) );
+}
 ?>

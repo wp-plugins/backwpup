@@ -119,12 +119,14 @@ if (!empty($doaction)) {
 }
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' . __('Here can see some information about the jobs. How many can be switched with the view button. Also you can manage the jobs and abort working. With the links you have direct access to the last log or download.','backwpup') . '</p>'
-) );
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' . __('Here can see some information about the jobs. How many can be switched with the view button. Also you can manage the jobs and abort working. With the links you have direct access to the last log or download.','backwpup') . '</p>'
+	) );
+}
 
 $backwpup_listtable->prepare_items();
 

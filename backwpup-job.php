@@ -793,39 +793,42 @@ class BackWPup_job {
 			return;
 		}
 
-		if ( count($this->jobdata['WORKING']['DB_DUMP']['TABLES']) == 0 ) {
-			$dbdumpheader = "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BACKWPUP_VERSION . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- http://backwpup.com" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Blog Name: " . get_bloginfo('name') . BACKWPUP_LINE_SEPARATOR;
-			if ( defined('WP_SITEURL') )
-				$dbdumpheader .= "-- Blog URL: " . trailingslashit(WP_SITEURL) . BACKWPUP_LINE_SEPARATOR;
-			else
-				$dbdumpheader .= "-- Blog URL: " . trailingslashit(get_option('siteurl')) . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit(str_replace('\\', '/', ABSPATH)) . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Database Name: " . DB_NAME . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Dumped on: " . date_i18n('Y-m-d H:i.s') . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
-			//for better import with mysql client
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $wpdb->get_var("SELECT @@time_zone") . "' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
-			if ( $this->jobdata['STATIC']['JOB']['dbdumpfilecompression'] == 'gz' )
-				gzwrite($file, $dbdumpheader);
-			elseif ( $this->jobdata['STATIC']['JOB']['dbdumpfilecompression'] == 'bz2' )
-				bzwrite($file, $dbdumpheader);
-			else
-				fwrite($file, $dbdumpheader);
-		}
+
+		$dbdumpheader = "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BACKWPUP_VERSION . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- http://backwpup.com" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Blog Name: " . get_bloginfo('name') . BACKWPUP_LINE_SEPARATOR;
+		if ( defined('WP_SITEURL') )
+			$dbdumpheader .= "-- Blog URL: " . trailingslashit(WP_SITEURL) . BACKWPUP_LINE_SEPARATOR;
+		else
+			$dbdumpheader .= "-- Blog URL: " . trailingslashit(get_option('siteurl')) . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit(str_replace('\\', '/', ABSPATH)) . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Database Name: " . DB_NAME . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Database charset: " . DB_CHARSET . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Database collate: " . DB_COLLATE . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- Dumped on: " . date_i18n('Y-m-d H:i.s') . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
+		//for better import with mysql client
+		$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $wpdb->get_var("SELECT @@time_zone") . "' */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . BACKWPUP_LINE_SEPARATOR;
+		$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
+		if ( $this->jobdata['STATIC']['JOB']['dbdumpfilecompression'] == 'gz' )
+			gzwrite($file, $dbdumpheader);
+		elseif ( $this->jobdata['STATIC']['JOB']['dbdumpfilecompression'] == 'bz2' )
+			bzwrite($file, $dbdumpheader);
+		else
+			fwrite($file, $dbdumpheader);
+
 
 		//make table dumps
 		foreach ( $this->jobdata['WORKING']['DB_DUMP']['TABLES'] as $tablekey => $table ) {

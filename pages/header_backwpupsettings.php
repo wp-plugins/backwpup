@@ -63,17 +63,19 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	foreach ($cfgs as $cfg) {
 		$backwpup_cfg[$cfg->name]=maybe_unserialize($cfg->value);
 	}
-	$backwpupapi=new backwpup_api();
+	global $backwpupapi;
 	$backwpupapi->cronupdate();
 	
 	$backwpup_message=__('Settings saved', 'backwpup');
 }
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' . '</p>'
-) );
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' . '</p>'
+	) );
+}
 ?>

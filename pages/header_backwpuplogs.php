@@ -55,12 +55,14 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 }
 
 //add Help
-get_current_screen()->add_help_tab( array(
-	'id'      => 'overview',
-	'title'   => __('Overview'),
-	'content'	=>
-	'<p>' .__('Here you can manage the log files of the jobs. You can download, view, or delete them.','backwpup') . '</p>'
-) );
+if (method_exists(get_current_screen(),'add_help_tab')) {
+	get_current_screen()->add_help_tab( array(
+		'id'      => 'overview',
+		'title'   => __('Overview'),
+		'content'	=>
+		'<p>' .__('Here you can manage the log files of the jobs. You can download, view, or delete them.','backwpup') . '</p>'
+	) );
+}
 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpuplogs_per_page') );
 

@@ -55,7 +55,6 @@ if (!empty($backwpup_manu_page) and in_array($backwpup_manu_page,explode(',',BAC
 class BackWPup {
 
 	public function __construct() {
-
 		register_deactivation_hook(__FILE__, array($this,'plugin_deactivate'));
 		add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>60,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
 		add_action('backwpup_cron',  array($this,'cron_run'),1);
@@ -114,9 +113,12 @@ class BackWPup {
 			delete_option('backwpup_jobs');
 			//Put old cfg to DB
 			$cfg=get_option('backwpup');
+			//if old value switsch it to new
+			if (!empty($cfg['dirtemp']))
+			$cfg['tempfolder']=$cfg['dirtemp'];
+			if (!empty($cfg['dirlogs']))
+				$cfg['logfolder']=$cfg['dirlogs'];
 			// delete old not nedded vars
-			$cfg['tempfolder']=$cfg['dirtemp']; //if old value switsch it to new
-			$cfg['logfolder']=$cfg['dirlogs'];
 			unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
 			if (is_array($cfg)) {
 				foreach ($cfg as $cfgname => $cfgvalue) {
@@ -132,6 +134,7 @@ class BackWPup {
 			//cleanup database
 			$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='job_'");
 			$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='temp'");
+			$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='api'");
 			$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='working'");
 			//remove old cron jobs
 			wp_clear_scheduled_hook('backwpup_cron');
@@ -180,8 +183,6 @@ class BackWPup {
 		}
 
 		//load cfg
-		$backwpupapi=new BackWPup_api();
-		$backwpup_cfg=$backwpupapi->get_apps();
 		$cfgs=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE `main_name`='cfg'");
 		foreach ($cfgs as $cfg) {
 			$backwpup_cfg[$cfg->name]=maybe_unserialize($cfg->value);
@@ -193,12 +194,12 @@ class BackWPup {
 	}
 
 	public function plugin_deactivate() {
-		global $wpdb;
+		global $wpdb,$backwpupapi;
 		wp_clear_scheduled_hook('backwpup_cron');
 		backwpup_update_option('dbversion','dbversion','0.0');
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='temp'");
+		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='api'");
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name='working'");
-		$backwpupapi=new BackWPup_api();
 		$backwpupapi->delete();
 	}
 
@@ -244,20 +245,33 @@ class BackWPup {
 		//check called page exists
 		if (empty($_GET['page']) or !in_array($_GET['page'],explode(',',BACKWPUP_MENU_PAGES)) or !is_file(dirname(__FILE__).'/pages/page_'.$_GET['page'].'.php'))
 			return;
-		get_current_screen()->add_help_tab( array(
-			'id'      => 'plugininfo',
-			'title'   => __('Plugin Info','backwpup'),
-			'content' =>
-			'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.BACKWPUP_VERSION.', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'
-		) );
-		get_current_screen()->set_help_sidebar(
-			'<p><strong>' . __( 'For more information:','backwpup' ) . '</strong></p>' .
-			'<p>' . __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' ) . '</p>' .
-			'<p>' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . '</p>' .
-			'<p>' . __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' ) . '</p>' .
-			'<p>' . __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' ) . '</p>' .
-			'<p>' . __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' ) . '</p>'
-		);
+		if (method_exists(get_current_screen(),'add_help_tab')) {
+			get_current_screen()->add_help_tab( array(
+				'id'      => 'plugininfo',
+				'title'   => __('Plugin Info','backwpup'),
+				'content' =>
+				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.BACKWPUP_VERSION.', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'
+			) );
+			get_current_screen()->set_help_sidebar(
+				'<p><strong>' . __( 'For more information:','backwpup' ) . '</strong></p>' .
+				'<p>' . __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' ) . '</p>' .
+				'<p>' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . '</p>' .
+				'<p>' . __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' ) . '</p>' .
+				'<p>' . __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' ) . '</p>' .
+				'<p>' . __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' ) . '</p>'
+			);
+		} elseif (function_exists('add_contextual_help')) { //for WP < 3.3 help
+			add_contextual_help( get_current_screen(),
+				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.BACKWPUP_VERSION.', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy '.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
+				'<p><strong>' . __( 'For more information:','backwpup' ) . '</strong></p><p>' .
+					' ' . __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' ) . ' |' .
+					' ' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . ' |' .
+					' ' . __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' ) . ' |' .
+					' ' . __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' ) . ' |' .
+					' ' . __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' ) . ' ' .
+					'</p>'
+			);
+		}
 		//add css for Admin Section
 		if (is_file(dirname(__FILE__).'/css/'.$_GET['page'].'.css')) {
 			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
@@ -302,7 +316,7 @@ class BackWPup {
 			$widgets['backwpup_dashboard_logs'] =5;
 		//get log files
 		$logfiles=array();
-		if ( $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
+		if (is_readable($backwpup_cfg['logfolder']) and  $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (is_file($backwpup_cfg['logfolder'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;
@@ -416,7 +430,7 @@ class BackWPup {
 		}
 		//get log files
 		$logfiles=array();
-		if ( $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
+		if ( is_readable($backwpup_cfg['logfolder']) and $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (is_file($backwpup_cfg['logfolder'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;
@@ -466,9 +480,6 @@ class BackWPup {
 			}
 		}
 	}
-
-
 }
-
 new BackWPup();
 ?>

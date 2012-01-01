@@ -23,7 +23,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 			
 		//load logs
 		$logfiles=array();
-		if ( $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
+		if (is_readable($backwpup_cfg['logfolder']) and  $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
 				if (is_file($backwpup_cfg['logfolder'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;

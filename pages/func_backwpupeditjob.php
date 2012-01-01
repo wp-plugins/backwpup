@@ -128,7 +128,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</div>
 			<div id="cron-day-box">
 				<b><?PHP _e('Day of Month:','backwpup'); ?></b><br />
-				<input class="checkbox" type="checkbox"<?PHP checked(in_array("*",$mday,true),true,true); ?> name="cronmday[]" value="*" /> <?PHP_e('Any (*)','backwpup'); ?><br />
+				<input class="checkbox" type="checkbox"<?PHP checked(in_array("*",$mday,true),true,true); ?> name="cronmday[]" value="*" /> <?PHP _e('Any (*)','backwpup'); ?><br />
 				<div id="cron-day">
 				<?PHP
 				for ($i=1;$i<=31;$i++) {
