@@ -121,6 +121,7 @@ echo '</td>';
 				else {
 					$exectime=$times['lasttime']-$times['starttime'];
 					echo '<span>'.sprintf(__('%d sec.','backwpup'),$exectime).' </span> <blink><strong>'.__('In progress').'</strong></blink><br />';
+					echo "<input type=\"submit\" name=\"executionstop\" class=\"button-primary\" value=\"".__('Terminate time test!', 'backwpup')."\" />";
 				}
 				?>
 			</td>

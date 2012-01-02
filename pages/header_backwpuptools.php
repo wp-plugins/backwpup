@@ -46,13 +46,23 @@ if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time t
 	$times['starttime']=current_time('timestamp');
 	$times['lasttime']=current_time('timestamp');
 	backwpup_update_option('temp','exectime',$times);
-	while (true) {
+	$count=0;
+	while ($count<1800) {
 		sleep(1);
+		$stop=backwpup_get_option('temp','exectimestop');
+		if (!empty($stop)) {
+			backwpup_delete_option('temp','exectimestop');
+			backwpup_delete_option('temp','exectime');
+			die();
+		}
 		$times['lasttime']=current_time('timestamp');
 		backwpup_update_option('temp','exectime',$times);
+		$count++;
 	}
 }
-
+if (isset($_POST['executionstop']) and $_POST['executionstop']==__('Terminate time test!', 'backwpup')) {
+	backwpup_update_option('temp','exectimestop',true);
+}
 //add Help
 if (method_exists(get_current_screen(),'add_help_tab')) {
 	get_current_screen()->add_help_tab( array(
