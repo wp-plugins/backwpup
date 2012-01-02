@@ -194,16 +194,31 @@ if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_C
 if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') {
 	$backwpup_admin_message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
 }
-//set cheks ok or not
+//set checks ok or not
 if (!empty($backwpup_admin_message)) 
 	define('BACKWPUP_ENV_CHECK_OK',false);
 else
 	define('BACKWPUP_ENV_CHECK_OK',true);
-//not relevant cheks for job start
+//not relevant checks for job start
 if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
 	if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
 		$backwpup_admin_message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 	}
+}
+if (file_exists(ABSPATH.'backwpup_db_restore.php') or file_exists(ABSPATH.'backwpup_db_restore.zip') or file_exists(ABSPATH.'.backwpup_restore')) {  //for restore file
+	$backwpup_admin_message.=__("- BackWPup DB restore script found in Blog root please delete it, for security!","backwpup") .'<br />';
+}
+//look for sql dumps in blog root
+if ( $dir = opendir(ABSPATH)) {
+	$sqlfiles=array();
+	while (($file = readdir( $dir ) ) !== false ) {
+		if (strtolower(substr($file,-4))==".sql" or strtolower(substr($file,-7))==".sql.gz" or strtolower(substr($file,-7))==".sql.bz2")
+			$sqlfiles[]=$file;
+	}
+	closedir( $dir );
+}
+if (!empty($sqlfiles)) {  //for restore file
+	$backwpup_admin_message.=sprintf(__("- SQL dumps '%s' found in Blog root please delete it, for security!","backwpup"), implode(', ',$sqlfiles) ).'<br />';
 }
 //put massage if one
 if (!empty($backwpup_admin_message))

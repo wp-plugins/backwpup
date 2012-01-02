@@ -12,37 +12,20 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 ?>
 <form id="posts-filter" enctype="multipart/form-data" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpuptools'; ?>" method="post">
 <?PHP wp_nonce_field('backwpup-tools'); ?>
-<input type="hidden" name="action" value="update" />
 <h3><?PHP _e('Database restore','backwpup'); ?></h3> 
 <table class="form-table"> 
 <tr valign="top">
-<th scope="row"><label for="mailsndemail"><?PHP _e('DB Restore','backwpup'); ?></label></th>
+<th scope="row"><?PHP _e('DB Restore','backwpup'); ?></th>
 <td>
 <?PHP
-if (isset($_POST['dbrestore']) and $_POST['dbrestore']==__('Restore', 'backwpup') and is_file(trim($_POST['sqlfile']))) {
-	check_admin_referer('backwpup-tools');
-	$sqlfile=trim($_POST['sqlfile']);
-	require(dirname(__FILE__).'/tools/db_restore.php');
-} else {
-	if ( $dir = @opendir(ABSPATH)) {
-		$sqlfile="";
-		while (($file = readdir( $dir ) ) !== false ) {
-			if (strtolower(substr($file,-4))==".sql") {
-				$sqlfile=$file;
-				break;
-			}	
-		}
-		@closedir( $dir );
-	}
-	if (!empty($sqlfile)) {
-		echo __('SQL File to restore:','backwpup').' '.trailingslashit(ABSPATH).$sqlfile."<br />";
-		?>
-		<input type="hidden" class="regular-text" name="sqlfile" id="sqlfile" value="<?PHP echo trailingslashit(ABSPATH).$sqlfile;?>" />
-		<input type="submit" name="dbrestore" class="button-primary" value="<?php _e('Restore', 'backwpup'); ?>" />
-		<?PHP
-	} else {
-		echo __('Copy SQL file to blog root folder to use for a restoring.', 'backwpup')."<br />";
-	}
+if (!file_exists(ABSPATH.'backwpup_db_restore.php') and is_writeable(ABSPATH)) {
+	_e('Download manually DB restore tool: <a href="http://api.backwpup.com/download/backwpup_db_restore.zip">http://api.backwpup.com/download/backwpup_db_restore.zip</a>','backwpup');
+	echo '<br />';
+	echo '<input type="submit" name="dbrestoretool" class="button-primary" value="'.__('Put DB restore tool to blog root...', 'backwpup').'" /><br />';
+}
+elseif(is_writeable(ABSPATH)) {
+	echo '<input type="submit" name="dbrestoretooldel" class="button-primary" value="'.__('Delete restore tool from blog root...', 'backwpup').'" /><br />';
+	echo sprintf(__('Make a DB restore:  <a href="%1$s/backwpup_db_restore.php">%1$s/backwpup_db_restore.php</a>', 'backwpup'),get_bloginfo('url')).' <br />';
 }
 ?>
 </td>
@@ -118,6 +101,32 @@ echo '</td>';
 ?>
 </tr>
 </table>
+
+	<h3><?PHP _e('Test max. script execution time','backwpup'); ?></h3>
+	<table class="form-table">
+		<tr valign="top">
+			<th scope="row"><?PHP _e('Test result:','backwpup'); ?></th>
+			<td>
+				<?PHP
+				$times=backwpup_get_option('temp','exectime');
+				if (empty($times['starttime']) or empty($times['lasttime'])) {
+					_e('No result');
+					echo "<br /><input type=\"submit\" name=\"executiontime\" class=\"button-primary\" value=\"".__('Start time test...', 'backwpup')."\" />";
+				}
+				elseif ($times['lasttime']<=current_time('timestamp')-5) {
+					$exectime=$times['lasttime']-$times['starttime'];
+					echo '<span>'.sprintf(__('%d sec.','backwpup'),$exectime).' </span><br />';
+					echo "<input type=\"submit\" name=\"executiontime\" class=\"button-primary\" value=\"".__('Start time test...', 'backwpup')."\" />";
+				}
+				else {
+					$exectime=$times['lasttime']-$times['starttime'];
+					echo '<span>'.sprintf(__('%d sec.','backwpup'),$exectime).' </span> <blink><strong>'.__('In progress').'</strong></blink><br />';
+				}
+				?>
+			</td>
+		</tr>
+	</table>
+
 
 </form>
 </div>

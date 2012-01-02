@@ -68,9 +68,9 @@ if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext' )))  {
 }
 //check folders
 if (!is_dir($backwpup_cfg['logfolder']) or !is_writable($backwpup_cfg['logfolder']))
-	die('Log folder not exists or not writable');
+	die('Log folder not exists or is not writable');
 if (!is_dir($backwpup_cfg['tempfolder']) or !is_writable($backwpup_cfg['tempfolder']))
-	die('Temp folder not exists or not writable');
+	die('Temp folder not exists or is not writable');
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');
 if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) and !empty($backwpupjobdata) )
@@ -104,15 +104,9 @@ class BackWPup_job {
 
 	public function __construct() {
 		//get job data
-		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) ) {
+		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) )
 			$this->start((int)$_GET['jobid']);
-			if (!empty($this->jobdata['STATIC']['JOB']['backupdir||']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
-				$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
-			if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
-				$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
-			if (!empty($this->jobdata['STATIC']['CFG']['logfolder']))
-				$this->_checkfolder($this->jobdata['STATIC']['CFG']['logfolder']);
-		} else
+		else
 			$this->jobdata = backwpup_get_option('working', 'data');
 		//set function for PHP user defined error handling
 		$this->jobdata['PHP']['INI']['ERROR_LOG'] = ini_get('error_log');
@@ -122,6 +116,13 @@ class BackWPup_job {
 		@ini_set('display_errors', 'Off');
 		@ini_set('log_errors', 'On');
 		set_error_handler(array( $this, 'errorhandler' ), E_ALL | E_STRICT);
+		//Check Folder
+		if (!empty($this->jobdata['STATIC']['JOB']['backupdir||']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
+			$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
+		if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
+			$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
+		if (!empty($this->jobdata['STATIC']['CFG']['logfolder']))
+			$this->_checkfolder($this->jobdata['STATIC']['CFG']['logfolder']);
 		//Check double running and inactivity
 		if ( $this->jobdata['WORKING']['PID'] != getmypid() and $this->jobdata['WORKING']['TIMESTAMP'] > (current_time('timestamp') - 500) and $_GET['starttype'] == 'restarttime' ) {
 			trigger_error(__('Job restart terminated, because other job runs!', 'backwpup'), E_USER_ERROR);
@@ -919,7 +920,7 @@ class BackWPup_job {
 				}
 			}
 			if ( !empty($querystring) ) //dump rest
-				$tabledata = substr($querystring, 0, -2) . ";" . BACKWPUP_LINE_SEPARATOR;
+				$tabledata = substr($querystring, 0, -strlen(BACKWPUP_LINE_SEPARATOR)-1) . ";" . BACKWPUP_LINE_SEPARATOR;
 
 			if ( $this->jobdata['WORKING']['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
 				$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . BACKWPUP_LINE_SEPARATOR;

@@ -310,7 +310,8 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		}
 	}
 	
-	//make api call to backwpup.com 
+	//make api call to backwpup.com
+	global $backwpupapi;
 	$backwpupapi->cronupdate();
 	
 	$_POST['jobid']=$jobvalues['jobid'];
