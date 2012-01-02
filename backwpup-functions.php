@@ -410,11 +410,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 		}
 	}
 
-	if (!isset($jobsettings['dbshortinsert']))
-		$jobsettings['dbshortinsert']=false;
-	else
-		$jobsettings['dbshortinsert']=(bool)$jobsettings['dbshortinsert'];
-
 	if (!isset($jobsettings['dbdumpfile']) or empty($jobsettings['dbdumpfile']) or !is_string($jobsettings['dbdumpfile']))
 		$jobsettings['dbdumpfile']=DB_NAME;
 

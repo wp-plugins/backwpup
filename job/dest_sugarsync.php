@@ -8,7 +8,7 @@ function backwpup_job_dest_sugarsync() {
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 
 	try {
-		$sugarsync = new SugarSync($backwpupjobrun['STATIC']['JOB']['sugaruser'],base64_decode($backwpupjobrun['STATIC']['JOB']['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+		$sugarsync = new SugarSync($backwpupjobrun['STATIC']['JOB']['sugaruser'],base64_decode($backwpupjobrun['STATIC']['JOB']['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
 		//Check Quota
 		$user=$sugarsync->user();
 		if (!empty($user->nickname)) {

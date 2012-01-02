@@ -3,6 +3,7 @@ if (!defined('ABSPATH'))
 	die();
 
 if (isset($_POST['dbrestoretool']) and $_POST['dbrestoretool']==__('Put DB restore tool to blog root...', 'backwpup')) {
+	check_admin_referer('backwpup-tools');
 	if(copy('http://api.backwpup.com/download/backwpup_db_restore.zip',ABSPATH.'backwpup_db_restore.zip')) {
 		//unzip
 		if (class_exists('ZipArchive')) {
@@ -23,6 +24,7 @@ if (isset($_POST['dbrestoretool']) and $_POST['dbrestoretool']==__('Put DB resto
 }
 
 if (isset($_POST['dbrestoretooldel']) and $_POST['dbrestoretooldel']==__('Delete restore tool from blog root...', 'backwpup')) {
+	check_admin_referer('backwpup-tools');
 	if (file_exists(ABSPATH.'backwpup_db_restore.zip'))
 		unlink(ABSPATH.'backwpup_db_restore.zip');
 	if (file_exists(ABSPATH.'backwpup_db_restore.php'))
@@ -32,17 +34,18 @@ if (isset($_POST['dbrestoretooldel']) and $_POST['dbrestoretooldel']==__('Delete
 }
 
 if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time test...', 'backwpup')) {
-	ob_start();
-	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpuptools');
-	echo ' ';
-	while ( @ob_end_flush() );
-	flush();
+	check_admin_referer('backwpup-tools');
 	//try to disable safe mode
 	@ini_set('safe_mode', '0');
 	// Now user abort
 	@ini_set('ignore_user_abort', '0');
 	ignore_user_abort(true);
 	@set_time_limit(1800);
+	//ob_start();
+	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpuptools');
+	//echo ' ';
+	//while ( @ob_end_flush() );
+	//flush();
 	$times['starttime']=current_time('timestamp');
 	$times['lasttime']=current_time('timestamp');
 	backwpup_update_option('temp','exectime',$times);
@@ -61,6 +64,7 @@ if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time t
 	}
 }
 if (isset($_POST['executionstop']) and $_POST['executionstop']==__('Terminate time test!', 'backwpup')) {
+	check_admin_referer('backwpup-tools');
 	backwpup_update_option('temp','exectimestop',true);
 }
 //add Help

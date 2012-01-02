@@ -5,7 +5,7 @@ define('DONOTMINIFY', true);
 define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY', false); //W3TC will not loaded
-define('BACKWPUP_LINE_SEPARATOR', (strstr(PHP_OS, "WIN") or strtr(PHP_OS, "OS/2")) ? "\r\n" : "\n");
+define('BACKWPUP_LINE_SEPARATOR', (false !== strpos(PHP_OS, "WIN") or false !== strpos(PHP_OS, "OS/2")) ? "\r\n" : "\n");
 //define E_DEPRECATED if PHP lower than 5.3
 if ( !defined('E_DEPRECATED') )
 	define('E_DEPRECATED', 8192);
@@ -88,11 +88,11 @@ if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'r
 	flush();
 }
 elseif ( $_GET['starttype'] == 'runnow' ) {
-	ob_start();
-	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpupworking');
-	echo ' ';
-	while ( @ob_end_flush() );
-	flush();
+	//ob_start();
+	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpupworking&runlogjobid='.$_GET['jobid']);
+	//echo ' ';
+	//while ( @ob_end_flush() );
+	//flush();
 }
 //unload translation
 if ( $backwpup_cfg['unloadtranslations'] )
@@ -117,7 +117,7 @@ class BackWPup_job {
 		@ini_set('log_errors', 'On');
 		set_error_handler(array( $this, 'errorhandler' ), E_ALL | E_STRICT);
 		//Check Folder
-		if (!empty($this->jobdata['STATIC']['JOB']['backupdir||']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
+		if (!empty($this->jobdata['STATIC']['JOB']['backupdir']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
 			$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
 		if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
 			$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
@@ -261,6 +261,7 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['TIMESTAMP'] = current_time('timestamp');
 		$this->jobdata['WORKING']['ENDINPROGRESS'] = false;
 		$this->jobdata['WORKING']['EXTRAFILESTOBACKUP'] = array();
+		$this->jobdata['WORKING']['FOLDERLIST'] = array();
 		$this->jobdata['WORKING']['FILEEXCLUDES']=explode(',',trim($this->jobdata['STATIC']['JOB']['fileexclude']));
 		$this->jobdata['WORKING']['FILEEXCLUDES'][] ='.tmp';
 		$this->jobdata['WORKING']['FILEEXCLUDES']=array_unique($this->jobdata['WORKING']['FILEEXCLUDES']);
@@ -869,9 +870,7 @@ class BackWPup_job {
 			$keys = $wpdb->get_col_info('name', -1);
 
 			//build key string
-			$keystring = '';
-			if ( !$this->jobdata['STATIC']['JOB']['dbshortinsert'] )
-				$keystring = " (`" . implode("`, `", $keys) . "`)";
+			$keystring = " (`" . implode("`, `", $keys) . "`)";
 			//colem infos
 			for ( $i = 0; $i < count($keys); $i++ ) {
 				$colinfo[$i]['numeric'] = $wpdb->get_col_info('numeric', $i);

@@ -141,53 +141,50 @@ if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
 	$backwpup_admin_message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 	$checks=false;
 }
-if (!backwpup_check_open_basedir($backwpup_cfg['logfolder'])) { // check logs folder
+// check logs folder
+if (!backwpup_check_open_basedir($backwpup_cfg['logfolder'])) //check open basedir
 	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
-	if (!empty($backwpup_cfg['logfolder']) and !is_dir($backwpup_cfg['logfolder'])) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($backwpup_cfg['logfolder']),FS_CHMOD_DIR,true);
-	}
-	if (!is_dir($backwpup_cfg['logfolder'])) { // check logs folder
-		$backwpup_admin_message.=printf(__("- Log folder '%s' not exists!",'backwpup'),$backwpup_cfg['logfolder']);
-	}
-	if (!is_writable($backwpup_cfg['logfolder'])) { // check logs folder
-		$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
+if (!empty($backwpup_cfg['logfolder']) and !is_dir($backwpup_cfg['logfolder']))  // create logs folder if it not exists
+	@mkdir(untrailingslashit($backwpup_cfg['logfolder']),FS_CHMOD_DIR,true);
+if (!is_dir($backwpup_cfg['logfolder']))  // check logs folder
+	$backwpup_admin_message.=sprintf(__("- Log folder '%s' not exists!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
+if (!is_writable($backwpup_cfg['logfolder'])) { // check logs folder
+	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not writable!",'backwpup'),$backwpup_cfg['logfolder']).'<br />';
+} else {
+	//create .htaccess for apache and index.html for other
+	if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+		if (!is_file($backwpup_cfg['logfolder'].'.htaccess'))
+			file_put_contents($backwpup_cfg['logfolder'].'.htaccess',"Order allow,deny\ndeny from all");
 	} else {
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_cfg['logfolder'].'.htaccess'))
-				file_put_contents($backwpup_cfg['logfolder'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpup_cfg['logfolder'].'index.html'))
-				file_put_contents($backwpup_cfg['logfolder'].'index.html',"\n");
-			if (!is_file($backwpup_cfg['logfolder'].'index.php'))
-				file_put_contents($backwpup_cfg['logfolder'].'index.php',"\n");
-		}
+		if (!is_file($backwpup_cfg['logfolder'].'index.html'))
+			file_put_contents($backwpup_cfg['logfolder'].'index.html',"\n");
+		if (!is_file($backwpup_cfg['logfolder'].'index.php'))
+			file_put_contents($backwpup_cfg['logfolder'].'index.php',"\n");
 	}
 }
 
-if (!backwpup_check_open_basedir($backwpup_cfg['tempfolder'])) { // check temp folder
+// check temp folder
+if (!backwpup_check_open_basedir($backwpup_cfg['tempfolder'])) //check open basedir
 	$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not in open_basedir path!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
-	if (!is_dir($backwpup_cfg['tempfolder'])) { // create logs folder if it not exists
-		@mkdir(untrailingslashit($backwpup_cfg['tempfolder']),FS_CHMOD_DIR,true);
-	}
-	if (!is_dir($backwpup_cfg['tempfolder'])) {
-		$backwpup_admin_message.=printf(__("- Temp folder '%s' not exists!",'backwpup'),$backwpup_cfg['tempfolder']);
-	}
-	if (!is_writable($backwpup_cfg['tempfolder'])) {
-		$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not writeable!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
+if (!is_dir($backwpup_cfg['tempfolder']))  // create logs folder if it not exists
+	@mkdir(untrailingslashit($backwpup_cfg['tempfolder']),FS_CHMOD_DIR,true);
+if (!is_dir($backwpup_cfg['tempfolder']))
+	$backwpup_admin_message.=sprintf(__("- Temp folder '%s' not exists!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
+if (!is_writable($backwpup_cfg['tempfolder'])) {
+	$backwpup_admin_message.=sprintf(__("- Temp folder '%s' is not writable!",'backwpup'),$backwpup_cfg['tempfolder']).'<br />';
+} else {
+	//create .htaccess for apache and index.html for other
+	if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
+		if (!is_file($backwpup_cfg['tempfolder'].'.htaccess'))
+			file_put_contents($backwpup_cfg['tempfolder'].'.htaccess',"Order allow,deny\ndeny from all");
 	} else {
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_cfg['tempfolder'].'.htaccess'))
-				file_put_contents($backwpup_cfg['tempfolder'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpup_cfg['tempfolder'].'index.html'))
-				file_put_contents($backwpup_cfg['tempfolder'].'index.html',"\n");
-			if (!is_file($backwpup_cfg['tempfolder'].'index.php'))
-				file_put_contents($backwpup_cfg['tempfolder'].'index.php',"\n");
-		}
+		if (!is_file($backwpup_cfg['tempfolder'].'index.html'))
+			file_put_contents($backwpup_cfg['tempfolder'].'index.html',"\n");
+		if (!is_file($backwpup_cfg['tempfolder'].'index.php'))
+			file_put_contents($backwpup_cfg['tempfolder'].'index.php',"\n");
 	}
 }
+
 if (strtolower(substr(WP_CONTENT_URL,0,7))!='http://' and strtolower(substr(WP_CONTENT_URL,0,8))!='https://') {
 	$backwpup_admin_message.=sprintf(__("- WP_CONTENT_URL '%s' must set as a full URL!",'backwpup'),WP_CONTENT_URL).'<br />';
 }

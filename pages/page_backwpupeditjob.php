@@ -79,9 +79,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 					else
 						echo ' <input class="radio" type="radio"'.checked('bz2',$jobvalue['dbdumpfilecompression'],false).' name="dbdumpfilecompression" value="bz2" disabled="disabled" />'.__('BZip2','backwpup');	
 					?>
-					<br />
-					<input class="checkbox" type="checkbox"<?php checked($jobvalue['dbshortinsert'],true,true);?> name="dbshortinsert" value="1"/> <?php _e('Use short INSERTs instead of full (with keys)','backwpup');?><br />
-					</span>
+					</span><br />
 					<input class="checkbox" type="checkbox"<?php checked($jobvalue['maintenance'],true,true);?> name="maintenance" value="1"/> <?php _e('Set Blog Maintenance Mode on Database Operations','backwpup');?><br />
 				</div>
 			</div>
@@ -107,10 +105,10 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 			
 			
 			<div id="filebackup" class="stuffbox"<?PHP if (!in_array("FILE",$jobvalue['type'])) echo ' style="display:none;"';?>>
-				<h3><label for="backuproot"><?PHP _e('File Backup','backwpup'); ?></label></h3>
+				<h3><label for="filebackup"><?PHP _e('File Backup','backwpup'); ?></label></h3>
 				<div class="inside">
 					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b><br />&nbsp;<br />
-					<div>
+					<div id="filebackup">
 						<div style="width:20%; float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobvalue['backuproot'],true,true);?> name="backuproot" value="1"/> <?php _e('root','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">

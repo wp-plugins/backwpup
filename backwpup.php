@@ -38,6 +38,8 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE,BOXNET');
 }
+if ( ! defined('FS_CHMOD_DIR') )
+	define('FS_CHMOD_DIR', 0755 );
 //Load textdomain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
 //Load some file
@@ -99,7 +101,7 @@ class BackWPup {
 			$wpdb->query($query);
 			//Put old jobs to DB
 			$jobs=get_option('backwpup_jobs');
-			if (is_array($jobs)) {
+			if (!empty($jobs) and is_array($jobs)) {
 				foreach ($jobs as $jobid => $jobvalue) {
 					if (empty($jobvalue['jobid']))
 						$jobvalue['jobid']=$jobid;
@@ -109,23 +111,25 @@ class BackWPup {
 						backwpup_update_option('job_'.$jobvalue['jobid'],$jobvaluename,$jobvaluevalue);
 					}
 				}
+				delete_option('backwpup_jobs');
 			}
-			delete_option('backwpup_jobs');
 			//Put old cfg to DB
 			$cfg=get_option('backwpup');
-			//if old value switsch it to new
-			if (!empty($cfg['dirtemp']))
-			$cfg['tempfolder']=$cfg['dirtemp'];
-			if (!empty($cfg['dirlogs']))
-				$cfg['logfolder']=$cfg['dirlogs'];
-			// delete old not nedded vars
-			unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
-			if (is_array($cfg)) {
-				foreach ($cfg as $cfgname => $cfgvalue) {
-					backwpup_update_option('cfg',$cfgname,$cfgvalue);
+			if (!empty($cfg)) {
+				//if old value switsch it to new
+				if (!empty($cfg['dirtemp']))
+					$cfg['tempfolder']=$cfg['dirtemp'];
+				if (!empty($cfg['dirlogs']))
+					$cfg['logfolder']=$cfg['dirlogs'];
+				// delete old not nedded vars
+				unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
+				if (is_array($cfg)) {
+					foreach ($cfg as $cfgname => $cfgvalue) {
+						backwpup_update_option('cfg',$cfgname,$cfgvalue);
+					}
 				}
+				delete_option('backwpup');
 			}
-			delete_option('backwpup');
 		}
 
 		// on version updates
@@ -438,8 +442,13 @@ class BackWPup {
 			closedir( $dir );
 			rsort($logfiles);
 		}
-		if (count($logfiles)>0) {
-			for ($i=0;$i<5;$i++) {
+		$logfilenum=count($logfiles);
+		if ($logfilenum>0) {
+			//show only 5 logs
+			$max=5;
+			if ($logfilenum<5)
+				$max=$logfilenum;
+			for ($i=0;$i<$max;$i++) {
 				$logdata=backwpup_read_logheader($backwpup_cfg['logfolder'].'/'.$logfiles[$i]);
 				$title = date_i18n(get_option('date_format').' @ '.get_option('time_format'),$logdata['logtime']).' ';
 				$title.= $logdata['name'];

@@ -141,15 +141,15 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					if (!empty($jobvalue['lastrun'])) {
 						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['lastrun']);
 						if (!empty($jobvalue['lastruntime']))
-							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup').'<br />';
+							$r .=  '<br />'.__('Runtime:','backwpup').' '.$jobvalue['lastruntime'].' '.__('sec.','backwpup');
 					} else {
-						$r .= __('None','backwpup').'<br />';
+						$r .= __('None','backwpup');
 					}
+					$r .=  "<br />";
 					if (!empty($jobvalue['lastbackupdownloadurl']))
 						$r .="<a href=\"" . wp_nonce_url($jobvalue['lastbackupdownloadurl'], 'download-backup') . "\" title=\"".__('Download last Backup','backwpup')."\">" . __('Download','backwpup') . "</a> | ";
 					if (!empty($jobvalue['logfile']))
-						$r .="<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$jobvalue['logfile'], 'view-log_'.basename($jobvalue['logfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a><br />";
-
+						$r .="<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$jobvalue['logfile'], 'view-log_'.basename($jobvalue['logfile'])) . "\" title=\"".__('View last Log','backwpup')."\">" . __('Log','backwpup') . "</a>";
 					$r .=  "</td>";
 					break;
 			}
