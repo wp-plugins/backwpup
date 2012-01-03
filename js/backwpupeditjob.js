@@ -53,18 +53,39 @@ jQuery(document).ready( function($) {
 	$('input[name="backuptype"]').change(function() {
 		if ($(this).val()=='sync') {
 			$('.nosync').hide();
+            $('.sync').show();
 			$('#backwpup_jobedit_destmail').hide();
 		} else {
 			$('.nosync').show();
+            $('.sync').hide();
 			$('#backwpup_jobedit_destmail').show();
 		}
 	});
 	
 	if ($('input[name="backuptype"]:checked').val()=='sync') {
 		$('.nosync').hide();
+        $('.sync').show();
 		$('#backwpup_jobedit_destmail').hide();	
-	}
-	
+	} else {
+        $('.nosync').show();
+        $('.sync').hide();
+        $('#backwpup_jobedit_destmail').show();
+    }
+
+    $('input[name="activetype"]').change(function() {
+        if ($(this).val()=='') {
+            $('#schedulecron').hide();
+        } else {
+            $('#schedulecron').show();
+        }
+    });
+
+    if ($('input[name="activetype"]:checked').val()=='') {
+        $('#schedulecron').hide();
+    } else {
+        $('#schedulecron').show();
+    }
+
 	$('input[name="cronselect"]').change(function() {
 		if ( 'basic' == $('input[name="cronselect"]:checked').val()) {
 			$('#schedadvanced').hide();

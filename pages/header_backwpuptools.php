@@ -20,6 +20,7 @@ if (isset($_POST['dbrestoretool']) and $_POST['dbrestoretool']==__('Put DB resto
 			unset($zip);
 			unlink(ABSPATH.'backwpup_db_restore.zip');
 		}
+		$backwpup_message=__('Files for restore transferred!', 'backwpup');
 	}
 }
 
@@ -31,6 +32,17 @@ if (isset($_POST['dbrestoretooldel']) and $_POST['dbrestoretooldel']==__('Delete
 		unlink(ABSPATH.'backwpup_db_restore.php');
 	if (file_exists(ABSPATH.'.backwpup_restore'))
 		unlink(ABSPATH.'.backwpup_restore');
+	$backwpup_message=__('Files for restore deleted!', 'backwpup');
+}
+
+if (isset($_POST['executionsave']) and $_POST['executionsave']==__('Save to config!', 'backwpup')) {
+	check_admin_referer('backwpup-tools');
+	$times=backwpup_get_option('temp','exectime');
+	if ($times['lasttime']<=current_time('timestamp')-5) {
+		$exectime=$times['lasttime']-$times['starttime'];
+		backwpup_update_option('cfg','jobrunmaxexectime',$exectime);
+		$backwpup_message=sprintf(__('Max. execution time saved with %d sec.', 'backwpup'),$exectime);
+	}
 }
 
 if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time test...', 'backwpup')) {
@@ -66,6 +78,7 @@ if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time t
 if (isset($_POST['executionstop']) and $_POST['executionstop']==__('Terminate time test!', 'backwpup')) {
 	check_admin_referer('backwpup-tools');
 	backwpup_update_option('temp','exectimestop',true);
+	$backwpup_message=__('Execution Time test terminated!', 'backwpup');
 }
 //add Help
 if (method_exists(get_current_screen(),'add_help_tab')) {

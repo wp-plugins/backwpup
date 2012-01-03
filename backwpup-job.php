@@ -42,9 +42,9 @@ if ( defined('STDIN') ) {
 	}
 } else { //normal start from webservice
 	//check get vars
-	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restarttime', 'restart', 'runnow', 'cronrun', 'runext' )) )
+	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )) )
 		die('Starttype check');
-	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext' )) )
+	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )) )
 		die('JOBID check');
 	$_GET['_wpnonce'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_GET['_wpnonce']));
 	if ( empty($_GET['_wpnonce']) or !is_string($_GET['_wpnonce']) )
@@ -54,15 +54,18 @@ if ( defined('STDIN') ) {
 	} else {
 		$_GET['ABSPATH'] = preg_replace('/[^a-zA-Z0-9:.\/_\-]/', '', trim(urldecode($_GET['ABSPATH'])));
 		$_GET['ABSPATH'] = str_replace(array( '../', '\\', '//' ), '', $_GET['ABSPATH']);
-		if ( file_exists($_GET['ABSPATH'] . 'wp-load.php') )
-			require_once($_GET['ABSPATH'] . 'wp-load.php');
+		if ( realpath($_GET['ABSPATH'])  and file_exists(realpath($_GET['ABSPATH'] . 'wp-load.php')) )
+			require_once(realpath($_GET['ABSPATH'] . 'wp-load.php'));
 		else
 			die('ABSPATH check');
 	}
 	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow','runext' )) and $_GET['_wpnonce']!=$backwpup_cfg['jobrunauthkey'])
 		die('Nonce check');
+	if ( $_GET['starttype']=='apirun' and $_GET['_wpnonce']!=$backwpup_cfg['apicronservicekey'])
+		die('Nonce check');
+
 }
-if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext' )))  {
+if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )))  {
 	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
 		die('Wrong JOBID check');
 }
@@ -73,13 +76,13 @@ if (!is_dir($backwpup_cfg['tempfolder']) or !is_writable($backwpup_cfg['tempfold
 	die('Temp folder not exists or is not writable');
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');
-if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) and !empty($backwpupjobdata) )
+if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) and !empty($backwpupjobdata) )
 	die('A job already running');
 if ( in_array($_GET['starttype'], array( 'restart', 'restarttime' )) and (empty($backwpupjobdata) or !is_array($backwpupjobdata)) )
 	die('No job running');
 unset($backwpupjobdata);
 //disconnect or redirect
-if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runext' )) ) {
+if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runext','apirun' )) ) {
 	ob_end_clean();
 	header("Connection: close");
 	ob_start();
@@ -104,7 +107,7 @@ class BackWPup_job {
 
 	public function __construct() {
 		//get job data
-		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd' )) )
+		if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) )
 			$this->start((int)$_GET['jobid']);
 		else
 			$this->jobdata = backwpup_get_option('working', 'data');
@@ -207,7 +210,10 @@ class BackWPup_job {
 		$httpauthheader = '';
 		if ( !empty($this->jobdata['STATIC']['CFG']['httpauthuser']) and !empty($this->jobdata['STATIC']['CFG']['httpauthpassword']) )
 			$httpauthheader = array( 'Authorization' => 'Basic ' . base64_encode($this->jobdata['STATIC']['CFG']['httpauthuser'] . ':' . backwpup_decrypt($this->jobdata['STATIC']['CFG']['httpauthpassword'])) );
-		$raw_response=@wp_remote_get(BACKWPUP_PLUGIN_BASEURL . '/backwpup-job.php?ABSPATH=' . urlencode(str_replace('\\', '/', ABSPATH)) . '&_wpnonce=' . $this->jobdata['STATIC']['CFG']['jobrunauthkey'] . '&starttype=restart', array( 'timeout' => 5, 'blocking' => true, 'sslverify' => false, 'headers' => $httpauthheader, 'user-agent' => 'BackWPup' ));
+		$abspath='';
+		if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+			$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
+		$raw_response=@wp_remote_get(BACKWPUP_PLUGIN_BASEURL . '/backwpup-job.php?'.$abspath.'_wpnonce=' . $this->jobdata['STATIC']['CFG']['jobrunauthkey'] . '&starttype=restart', array( 'timeout' => 5, 'blocking' => true, 'sslverify' => false, 'headers' => $httpauthheader, 'user-agent' => 'BackWPup' ));
 		$body=wp_remote_retrieve_body($raw_response);
 		if (200 == wp_remote_retrieve_response_code($raw_response) and !empty($body))
 			$this->errorhandler(E_USER_ERROR, $body, __FILE__, __LINE__,false);
@@ -340,7 +346,7 @@ class BackWPup_job {
 		fwrite($fd, sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright &copy; %2$s %3$s'), BACKWPUP_VERSION, date_i18n('Y'), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version) . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, __('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, __('[INFO]: BackWPup job:', 'backwpup') . ' ' . $this->jobdata['STATIC']['JOB']['jobid'] . '. ' . $this->jobdata['STATIC']['JOB']['name'] . '; ' . implode('+', $this->jobdata['STATIC']['JOB']['type']) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		if ( $this->jobdata['STATIC']['JOB']['activated'] )
+		if ( !empty($this->jobdata['STATIC']['JOB']['activetype']) )
 			fwrite($fd, __('[INFO]: BackWPup cron:', 'backwpup') . ' ' . $this->jobdata['STATIC']['JOB']['cron'] . '; ' . date_i18n('D, j M Y @ H:i', $this->jobdata['STATIC']['JOB']['cronnextrun']) . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		if ( $_GET['starttype'] == 'cronrun' )
 			fwrite($fd, __('[INFO]: BackWPup job started from wp-cron', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
@@ -348,6 +354,8 @@ class BackWPup_job {
 			fwrite($fd, __('[INFO]: BackWPup job started manually', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		elseif ( $_GET['starttype'] == 'runext' )
 			fwrite($fd, __('[INFO]: BackWPup job started external from url', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
+		elseif ( $_GET['starttype'] == 'apirun' )
+			fwrite($fd, __('[INFO]: BackWPup job started by its API', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		elseif ( $_GET['starttype'] == 'runcmd' )
 			fwrite($fd, __('[INFO]: BackWPup job started form commandline', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, __('[INFO]: PHP ver.:', 'backwpup') . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . BACKWPUP_LINE_SEPARATOR);

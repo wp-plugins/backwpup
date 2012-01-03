@@ -62,7 +62,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['jobid']=(int) $_POST['jobid'];
 	$jobvalues['type']=(array)$_POST['type'];
 	$jobvalues['name']= esc_html($_POST['name']);
-	$jobvalues['activated']= (isset($_POST['activated']) && $_POST['activated']==1) ? true : false;
+	$jobvalues['activetype']=$_POST['activetype'];
 	$jobvalues['cronselect']= $_POST['cronselect']=='basic' ? 'basic':'advanced';
 	if ($jobvalues['cronselect']=='advanced') {
 		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
@@ -149,6 +149,15 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['mailefilesize']=isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0;
 	$jobvalues['backupdir']=isset($_POST['backupdir']) ? stripslashes($_POST['backupdir']) : '';
 	$jobvalues['maxbackups']=isset($_POST['maxbackups']) ? (int)$_POST['maxbackups'] : 0;
+	$jobvalues['backupsyncnodelete']= (isset($_POST['backupsyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false;
+	$jobvalues['ftpsyncnodelete']= (isset($_POST['ftpsyncnodelete']) && $_POST['ftpsyncnodelete']==1) ? true : false;
+	$jobvalues['awssyncnodelete']= (isset($_POST['awssyncnodelete']) && $_POST['awssyncnodelete']==1) ? true : false;
+	$jobvalues['GStoragesyncnodelete']= (isset($_POST['GStoragesyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false;
+	$jobvalues['msazuresyncnodelete']= (isset($_POST['msazuresyncnodelete']) && $_POST['msazuresyncnodelete']==1) ? true : false;
+	$jobvalues['rscsyncnodelete']= (isset($_POST['rscsyncnodelete']) && $_POST['rscsyncnodelete']==1) ? true : false;
+	$jobvalues['dropesyncnodelete']= (isset($_POST['dropesyncnodelete']) && $_POST['dropesyncnodelete']==1) ? true : false;
+	$jobvalues['boxnetsyncnodelete']= (isset($_POST['boxnetsyncnodelete']) && $_POST['boxnetsyncnodelete']==1) ? true : false;
+	$jobvalues['sugarsyncnodelete']= (isset($_POST['sugarsyncnodelete']) && $_POST['sugarsyncnodelete']==1) ? true : false;
 	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
 	$jobvalues['ftphostport']=!empty($_POST['ftphostport']) ? (int)$_POST['ftphostport'] : 21;
 	$jobvalues['ftpuser']=isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '';
@@ -265,13 +274,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
 		backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
 	}
-	
-	//activate/deactivate seduling if not needed
-	$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' LIMIT 1",0,0);
-	if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
-		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
-	if (empty($activejobs))
-		wp_clear_scheduled_hook('backwpup_cron');
 
 	//get dropbox auth	
 	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Dropbox authenticate!', 'backwpup')) {

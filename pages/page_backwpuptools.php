@@ -64,7 +64,7 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 	foreach ( $_POST['importtype'] as $id => $type ) {
 		if ($type=='over') {
 			$import[$id]['jobid']=$id;
-			$import[$id]['activated']=false;
+			$import[$id]['activetype']='';
 			$import[$id]['cronnextrun']='';
 			$import[$id]['starttime']='';
 			$import[$id]['logfile']='';
@@ -80,7 +80,7 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 			}					
 		} elseif ($type=='append') {
 			unset($import[$id]['jobid']);
-			$import[$id]['activated']=false;
+			$import[$id]['activetype']='';
 			$import[$id]['cronnextrun']='';
 			$import[$id]['starttime']='';
 			$import[$id]['logfile']='';
@@ -116,12 +116,13 @@ echo '</td>';
 				elseif ($times['lasttime']<=current_time('timestamp')-5) {
 					$exectime=$times['lasttime']-$times['starttime'];
 					echo '<span>'.sprintf(__('%d sec.','backwpup'),$exectime).' </span><br />';
-					echo "<input type=\"submit\" name=\"executiontime\" class=\"button-primary\" value=\"".__('Start time test...', 'backwpup')."\" />";
+					echo "<input type=\"submit\" name=\"executiontime\" class=\"button\" value=\"".__('Start time test...', 'backwpup')."\" />";
+					echo "<input type=\"submit\" name=\"executionsave\" class=\"button-primary\" value=\"".__('Save to config!', 'backwpup')."\" />";
 				}
 				else {
 					$exectime=$times['lasttime']-$times['starttime'];
 					echo '<span>'.sprintf(__('%d sec.','backwpup'),$exectime).' </span> <blink><strong>'.__('In progress').'</strong></blink><br />';
-					echo "<input type=\"submit\" name=\"executionstop\" class=\"button-primary\" value=\"".__('Terminate time test!', 'backwpup')."\" />";
+					echo "<input type=\"submit\" name=\"executionstop\" class=\"button\" value=\"".__('Terminate time test!', 'backwpup')."\" />";
 				}
 				?>
 			</td>

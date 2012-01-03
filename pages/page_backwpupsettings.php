@@ -51,7 +51,12 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <h3><?PHP _e('Jobs','backwpup'); ?></h3> 
 <p><?PHP _e('Here you can set Job related options.','backwpup'); ?></p>
 <table class="form-table">
-<tr valign="top"> 
+	<tr valign="top">
+		<th scope="row"><label for="jobrunmaxexectime"><?PHP _e('Max. Script Execution time','backwpup'); ?></label></th>
+		<td><input name="jobrunmaxexectime" type="text" id="jobrunmaxexectime" value="<?PHP echo $backwpup_cfg['jobrunmaxexectime'];?>" class="small-text code" />
+			<span class="description"><?PHP _e('(0 = endless; Default. You can test the time under Tools. The job will be automatic restarted after this time.)','backwpup');?></span>
+		</td>
+	<tr valign="top">
 <th scope="row"><label for="jobstepretry"><?PHP _e('Max. retrys for job steps','backwpup'); ?></label></th> 
 <td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo $backwpup_cfg['jobstepretry'];?>" class="small-text code" />
 </td> 
@@ -73,6 +78,12 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 		<td><input name="tempfolder" type="text" id="tempfolder" value="<?PHP echo $backwpup_cfg['tempfolder'];?>" class="regular-text code" />
 		</td>
 	</tr>
+	<tr valign="top">
+		<th scope="row"><label for="jobrunauthkey"><?PHP _e('Key for start jobs external with a URL','backwpup'); ?></label></th>
+		<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
+			<span><?PHP _e('A sample key is:','backwpup'); echo ' '.wp_create_nonce('BackWPupJobRun'); ?> </span><br />
+		</td>
+	</tr>
 </table>
 
 <h3><?PHP _e('WP Admin Bar','backwpup'); ?></h3>
@@ -88,7 +99,7 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 </table>
 
 <h3><?PHP _e('Http basic authentication','backwpup'); ?></h3>
-<p><?PHP _e('Is your blog behind a http basic authentication (.htaccess)? Then you must set the username and password for authentication to get jobs working.','backwpup'); ?></p>
+<p><?PHP _e('Is your blog behind a http basic authentication (.htaccess)? Only then you must set the username and password for authentication to get jobs working.','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top">
 <th scope="row"><label for="httpauthuser"><?PHP _e('Username:','backwpup'); ?></label></th> 
@@ -100,34 +111,25 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo $backwpup_cfg['httpauthpassword'];?>" class="regular-text" />
 </tr>
 </table>
-
-	<h3><?PHP _e('Nonce Key for runing jobs','backwpup'); ?></h3>
-	<table class="form-table">
-		<tr valign="top">
-			<th scope="row"><label for="jobrunauthkey"><?PHP _e('Set auth key:','backwpup'); ?></label></th>
-			<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
-				<span><?PHP _e('A sample key is:','backwpup'); echo wp_create_nonce('BackWPupJobRun'); ?> </span><br />
-			</td>
-		</tr>
-		<tr valign="top">
-			<th scope="row"><?PHP _e('URL to manually run job from external','backwpup'); ?></th>
-			<td><?PHP echo BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=runext&jobid=<em>JOBID</em>'; ?><br />
-				<span><?PHP _e('replace <em>JOBID</em> with the ID of job to start','backwpup'); ?></span>
-		</tr>
-	</table>
-
-<h3><?PHP _e('WP-Cron','backwpup'); ?></h3>
-<p><?PHP _e('If you would use the cron job of your hoster you must point it to the url:','backwpup'); echo ' <i>'.get_option('siteurl').'/wp-cron.php</i>'; ?></p>
+<h3><?PHP _e('Cron service of BackWPup.com','backwpup'); ?></h3>
+<p><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></p>
 <table class="form-table"> 
 <tr valign="top"> 
-<th scope="row"><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
-<input name="apicronservice" type="checkbox" id="apicronservice" value="1" <?php checked($backwpup_cfg['apicronservice'],true); ?> />
-<?PHP _e('If you check this, the job schedule will submited to backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start cron behind a basic authentication, on that the http authentication data will transferd too! Please make a little donation for the plugin if you use this servcie. The service can be removed by me without a massage.','backwpup'); ?><br />
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
-</label> 
+<th scope="row"><?PHP _e('Key for cron service','backwpup'); ?></th>
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Key for cron service','backwpup'); ?></span></legend><label for="apicronservicekey">
+<input name="apicronservicekey" type="text" id="apicronservicekey" value="<?PHP echo $backwpup_cfg['apicronservicekey'];?>" class="text code" />
+<span class="description"><?PHP _e('(Will be used for that nobody else can use the job start URLs.)','backwpup');?></span>
+</label>
 </fieldset>
 </td>
+</tr>
+	<tr valign="top">
+	<th scope="row"><?PHP _e('Terms of service','backwpup'); ?></th>
+	<td>
+		<?PHP _e('If you use this service in jobs, the schedule will submitted to api.backwpup.com. The api.backwpup.com will call the script to start the job directly. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start a job behind a basic authentication (.htaccess), on that the http authentication data will transferred too! Please make a little donation for the plugin if you use this service. The service can be removed by me without a massage.','backwpup'); ?><br />
+		<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
+	</td>
+	</tr>
 </table>
 <p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
 </form>

@@ -95,13 +95,16 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 				case 'jobname':
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job')."\" title=\"".__('Edit:','backwpup').esc_html($jobvalue['name'])."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
+					$abspath='';
+					if (!is_file('../wp-load.php'))
+						$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
 					if (empty($backupdata)) {
 						$actions['edit'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=copy&jobid='.$jobvalue["jobid"], 'copy-job_'.$jobvalue["jobid"]) . "\">" . __('Copy','backwpup') . "</a>";
 						$actions['export'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
 						if (BACKWPUP_ENV_CHECK_OK)
-							$actions['runnow'] = "<a href=\"" .BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&starttype=runnow&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&jobid='.(int)$jobvalue["jobid"] . "\">" . __('Run Now','backwpup') . "</a>";
+							$actions['runnow'] = "<a href=\"" .BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?'.$abspath.'starttype=runnow&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&jobid='.(int)$jobvalue["jobid"] . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 							$actions['working'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking', '') . "\">" . __('View!','backwpup') . "</a>";
@@ -126,8 +129,10 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobvalue["jobid"]) {
 						$runtime=current_time('timestamp')-$jobvalue['starttime'];
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
-					} elseif ($jobvalue['activated']) {
-						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['cronnextrun']);
+					} elseif ($jobvalue['activetype']=='wpcron') {
+						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['cronnextrun']).' by WP-Cron';
+					} elseif ($jobvalue['activetype']=='backwpupapi') {
+						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$jobvalue['cronnextrun']).' by BackWPup Cron Service';
 					} else {
 						$r .= __('Inactive','backwpup');
 					}

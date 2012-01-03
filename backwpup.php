@@ -109,6 +109,10 @@ class BackWPup {
 						$jobvalue['ftppass']=backwpup_encrypt(base64_decode($jobvalue['ftppass']));
 					if (!empty($jobvalue['sugarpass']))
 						$jobvalue['sugarpass']=backwpup_encrypt(base64_decode($jobvalue['sugarpass']));
+					if (empty($jobvalue['activated']))
+						$jobvalue['activetype']='';
+					else
+						$jobvalue['activetype']='wpcron';
 					$jobvalue['type']=explode('+',$jobvalue['type']); //save as array
 					unset($jobvalue['scheduleintervaltype'],$jobvalue['scheduleintervalteimes'],$jobvalue['scheduleinterval'],$jobvalue['dropemail'],$jobvalue['dropepass'],$jobvalue['dropesignmethod'],$jobvalue['dbtables']);
 					foreach ($jobvalue as $jobvaluename => $jobvaluevalue) {
@@ -127,8 +131,10 @@ class BackWPup {
 					$cfg['logfolder']=$cfg['dirlogs'];
 				if (!empty($cfg['sugarpass']))
 					$cfg['httpauthpassword']=backwpup_encrypt(base64_decode($cfg['httpauthpassword']));
+				if (!empty($cfg['apicronservice']))
+					$wpdb->query("UPDATE ".$wpdb->prefix."backwpup SET value='backwpupapi' WHERE name='activetype' AND main_name LIKE 'job_%' AND value='wpcron'");
 				// delete old not needed vars
-				unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
+				unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip'],$cfg['apicronservice']);
 				if (is_array($cfg)) {
 					foreach ($cfg as $cfgname => $cfgvalue) {
 						backwpup_update_option('cfg',$cfgname,$cfgvalue);
@@ -149,9 +155,7 @@ class BackWPup {
 			//remove old cron jobs
 			wp_clear_scheduled_hook('backwpup_cron');
 			//make new schedule
-			$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' LIMIT 1",0,0);
-			if (!empty($activejobs))
-				wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
+			wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 			//check cfg
 			//Set settings defaults
 			$mailsndemail=backwpup_get_option('cfg','mailsndemail');
@@ -167,7 +171,6 @@ class BackWPup {
 			if (empty($maxlogs) or !is_numeric($maxlogs)) backwpup_update_option('cfg','maxlogs',50);
 			if (!function_exists('gzopen') or !backwpup_get_option('cfg','gzlogs')) backwpup_add_option('cfg','gzlogs',false);
 			if (!backwpup_get_option('cfg','unloadtranslations')) backwpup_add_option('cfg','unloadtranslations',false);
-			if (!backwpup_get_option('cfg','apicronservice')) backwpup_add_option('cfg','apicronservice',false);
 			$logfolder=backwpup_get_option('cfg','logfolder');
 			if (!isset($logfolder) or empty($logfolder) or !is_dir($logfolder)) {
 				$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
@@ -177,6 +180,9 @@ class BackWPup {
 			if (!backwpup_get_option('cfg','httpauthpassword')) backwpup_update_option('cfg','httpauthpassword','');
 			if (!backwpup_get_option('cfg','jobrunauthkey'))
 				backwpup_update_option('cfg','jobrunauthkey', wp_create_nonce('BackWPupJobRun'));
+			if (!backwpup_get_option('cfg','apicronservicekey'))
+				backwpup_update_option('cfg','apicronservicekey', wp_create_nonce('BackWPupJobRunAPI'));
+			if (!backwpup_get_option('cfg','jobrunmaxexectime')) backwpup_update_option('cfg','jobrunmaxexectime',0);
 			if (!backwpup_get_option('cfg','tempfolder')) {
 				if (defined('WP_TEMP_DIR'))
 					$tempfolder=trim(WP_TEMP_DIR);
@@ -382,7 +388,7 @@ class BackWPup {
 
 	public function dashboard_activejobs() {
 		global $wpdb;
-		$main_namesactive=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1'");
+		$main_namesactive=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activetype' AND value!=''");
 		if (empty($main_namesactive)) {
 			echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
 			return;
@@ -432,11 +438,14 @@ class BackWPup {
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs' ,'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_backups' ,'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
 		//add jobs
+		$abspath='';
+		if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+			$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
 		$jobs=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value DESC");
 		foreach ($jobs as $job) {
 			$name=backwpup_get_option('job_'.$job,'name');
 			$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_'.$job, 'parent' => 'backwpup_jobs', 'title' => $name, 'href' => wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$job, 'edit-job')));
-			$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_runnow_'.$job, 'parent' => 'backwpup_jobs_'.$job, 'title' => __('Run Now','backwpup'), 'href' => wp_nonce_url(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(ABSPATH).'&starttype=runnow&jobid='.(int)$job, 'backwpup-job-running')));
+			$wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs_runnow_'.$job, 'parent' => 'backwpup_jobs_'.$job, 'title' => __('Run Now','backwpup'), 'href' => BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?'.$abspath.'starttype=runnow&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&jobid='.(int)$job, 'backwpup-job-running'));
 		}
 		//get log files
 		$logfiles=array();
@@ -475,20 +484,24 @@ class BackWPup {
 		$httpauthheader='';
 		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword'])));
+		$abspath='';
+		if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+			$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
 		$backupdata=backwpup_get_option('working','data');
 		if (!empty($backupdata)) {
 			$revtime=current_time('timestamp')-600; //10 min no progress.
 			if (!empty($backupdata['working']['TIMESTAMP']) and $backupdata['working']['TIMESTAMP']<$revtime)
-				wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=restarttime', array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
+				wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?'.$abspath.'_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=restarttime', array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
 		} else {
-			$main_names=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND vlaue='1'");
+
+			$main_names=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activetype' AND vlaue='wpcron'");
 			if (!empty($main_names)) {
 				foreach ($main_names as $main_name) {
 					$cronnextrun=backwpup_get_option($main_name,'cronnextrun');
 					if ($cronnextrun<=current_time('timestamp')) {
 						$jobstartid=backwpup_get_option($main_name,'jobid');
 						backwpup_update_option('job_' . $jobstartid, 'cronnextrun', backwpup_cron_next(backwpup_get_option('job_' . $jobstartid, 'cron'))); //update next run time
-						wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=cronrun&jobid='.(int)$jobstartid, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
+						wp_remote_get(BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?'.$abspath.'_wpnonce='.$backwpup_cfg['jobrunauthkey'].'&starttype=cronrun&jobid='.(int)$jobstartid, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader, 'user-agent'=>'BackWPup'));
 						exit;
 					}
 				}

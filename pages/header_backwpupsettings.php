@@ -30,6 +30,15 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$_POST['jobrunauthkey']=wp_create_nonce('BackWPupJobRun');
 	$_POST['jobrunauthkey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['jobrunauthkey']));
 	backwpup_update_option('cfg','jobrunauthkey',$_POST['jobrunauthkey']);
+	if (empty($_POST['apicronservicekey']))
+		$_POST['apicronservicekey']=wp_create_nonce('BackWPupJobRunAPI');
+	$_POST['apicronservicekey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['apicronservicekey']));
+	backwpup_update_option('cfg','apicronservicekey',$_POST['apicronservicekey']);
+	if (7200>$_POST['jobrunmaxexectime'] and 0<$_POST['jobrunmaxexectime'])
+		$_POST['jobrunmaxexectime']=(int)$_POST['jobrunmaxexectime'];
+	if (empty($_POST['jobrunmaxexectime']) or !is_int($_POST['jobrunmaxexectime']))
+		$_POST['jobrunmaxexectime']=0;
+	backwpup_update_option('cfg','jobrunmaxexectime',$_POST['jobrunmaxexectime']);
 	$_POST['logfolder']=rtrim(str_replace('\\','/',$_POST['logfolder']),'/').'/';
 	//set def. folders
 	if (!isset($_POST['logfolder']) or $_POST['logfolder']=='/' or empty($_POST['logfolder'])) {

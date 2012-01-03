@@ -74,6 +74,11 @@ function backwpup_jobedit_metabox_sendlog($jobvalue) {
 }
 
 function backwpup_jobedit_metabox_schedule($jobvalue) {
+		echo "<br /><strong>".__('Run job with:','backwpup')."<br />";
+		echo '<input class="radio" type="radio"'.checked('',$jobvalue['activetype'],false).' name="activetype" value="" />'.__('Manually','backwpup').'<br />';
+		echo '<input class="radio" type="radio"'.checked('wpcron',$jobvalue['activetype'],false).' name="activetype" value="wpcron" />'.__('WordPress Cron','backwpup').'<br />';
+		echo '<input class="radio" type="radio"'.checked('backwpupapi',$jobvalue['activetype'],false).' name="activetype" value="backwpupapi" />'.__('BackWPup external cron service','backwpup').'<br />';
+		echo "</strong><br /><div id=\"schedulecron\">";
 		list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$jobvalue['cron'],5);
 		if (strstr($cronstr['minutes'],'*/'))
 			$minutes=explode('/',$cronstr['minutes']);
@@ -98,7 +103,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 		backwpup_get_cron_text(array('cronstamp'=>$jobvalue['cron']));
 		?>
 		<br />
-		<b><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['activated'],true); ?> name="activated" /> <?PHP _e('Activate scheduling', 'backwpup'); ?></b><br /><br />
+
 		<?PHP 	echo '<input class="radio" type="radio"'.checked("advanced",$jobvalue['cronselect'],false).' name="cronselect" value="advanced" />'.__('advanced','backwpup').'&nbsp;';
 				echo '<input class="radio" type="radio"'.checked("basic",$jobvalue['cronselect'],false).' name="cronselect" value="basic" />'.__('basic','backwpup');?>
 		<br /><br />
@@ -140,22 +145,22 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			<div id="cron-month-box">
 				<b><?PHP _e('Month:','backwpup'); ?></b><br />
 				<?PHP 	
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mday,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("*",$mon,true),true,false).' name="cronmon[]" value="*" /> '.__('Any (*)','backwpup').'<br />';
 				?>
 				<div id="cron-month">
 				<?PHP
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mday,true),true,false).' name="cronmon[]" value="1" /> '.__('January','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mday,true),true,false).' name="cronmon[]" value="2" /> '.__('February','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mday,true),true,false).' name="cronmon[]" value="3" /> '.__('March','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mday,true),true,false).' name="cronmon[]" value="4" /> '.__('April','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mday,true),true,false).' name="cronmon[]" value="5" /> '.__('May','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mday,true),true,false).' name="cronmon[]" value="6" /> '.__('June','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mday,true),true,false).' name="cronmon[]" value="7" /> '.__('July','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mday,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mday,true),true,false).' name="cronmon[]" value="9" /> '.__('September','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mday,true),true,false).' name="cronmon[]" value="10" /> '.__('October','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mday,true),true,false).' name="cronmon[]" value="11" /> '.__('November','backwpup').'<br />';
-				echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mday,true),true,false).' name="cronmon[]" value="12" /> '.__('December','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("1",$mon,true),true,false).' name="cronmon[]" value="1" /> '.__('January','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("2",$mon,true),true,false).' name="cronmon[]" value="2" /> '.__('February','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("3",$mon,true),true,false).' name="cronmon[]" value="3" /> '.__('March','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("4",$mon,true),true,false).' name="cronmon[]" value="4" /> '.__('April','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("5",$mon,true),true,false).' name="cronmon[]" value="5" /> '.__('May','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("6",$mon,true),true,false).' name="cronmon[]" value="6" /> '.__('June','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("7",$mon,true),true,false).' name="cronmon[]" value="7" /> '.__('July','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("8",$mon,true),true,false).' name="cronmon[]" value="8" /> '.__('Augest','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("9",$mon,true),true,false).' name="cronmon[]" value="9" /> '.__('September','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("10",$mon,true),true,false).' name="cronmon[]" value="10" /> '.__('October','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("11",$mon,true),true,false).' name="cronmon[]" value="11" /> '.__('November','backwpup').'<br />';
+				echo '<input class="checkbox" type="checkbox"'.checked(in_array("12",$mon,true),true,false).' name="cronmon[]" value="12" /> '.__('December','backwpup').'<br />';
 				?>
 				</div>
 			</div>
@@ -227,6 +232,7 @@ function backwpup_jobedit_metabox_schedule($jobvalue) {
 			</tr>
 			</table>
 		</div>
+		</div>
 		<?PHP
 }
 
@@ -234,8 +240,9 @@ function backwpup_jobedit_metabox_destfolder($jobvalue) {
 	?>
 	<b><?PHP _e('Full Path to folder for Backup Files:','backwpup'); ?></b><br />
 	<input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobvalue['backupdir'];?>" class="large-text" /><br />
-	<span class="description"><?PHP _e('Your WordPress dir is:','backwpup'); echo ' '.trailingslashit(str_replace('\\','/',ABSPATH));?></span><br />&nbsp;<br />
-	<span class="nosync"><?PHP _e('Max. backup files in folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span></span>
+	<span class="description"><?PHP _e('Your WordPress dir is:','backwpup'); echo ' '.trailingslashit(str_replace('\\','/',ABSPATH));?></span><br />
+	<span class="nosync"><?PHP _e('Max. backup files in folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span><br /></span>
+	<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['backupsyncnodelete'],true); ?> name="backupsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	<?PHP
 }
 
@@ -251,8 +258,9 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
 	<input name="ftppass" type="password" value="<?PHP echo $jobvalue['ftppass'];?>" class="password large-text" /><br />
 	<b><?PHP _e('Folder on Server:','backwpup'); ?></b><br />
 	<input name="ftpdir" type="text" value="<?PHP echo $jobvalue['ftpdir'];?>" class="large-text" /><br />
-	<span class="nosync"><?PHP _e('Max. backup files in FTP folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
-	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftpssl'],true); ?> name="ftpssl"<?php if (!function_exists('ftp_ssl_connect')) echo " disabled=\"disabled\""; ?> /> <?PHP _e('Use SSL-FTP Connection.','backwpup'); ?><br />
+	<span class="nosync"><?PHP _e('Max. backup files in FTP folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['ftpmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+	<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftpsyncnodelete'],true); ?> name="ftpsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
+    <input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftpssl'],true); ?> name="ftpssl"<?php if (!function_exists('ftp_ssl_connect')) echo " disabled=\"disabled\""; ?> /> <?PHP _e('Use SSL-FTP Connection.','backwpup'); ?><br />
 	<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['ftppasv'],true); ?> name="ftppasv" /> <?PHP _e('Use FTP Passiv mode.','backwpup'); ?><br />			
 	<?PHP
 }
@@ -270,7 +278,8 @@ function backwpup_jobedit_metabox_dests3($jobvalue) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value="s3.amazonaws.com"><?php _e('US-Standard (Northern Virginia & Washington State)', 'backwpup'); ?></option><option value="s3-us-west-1.amazonaws.com"><?php _e('US-West 1 (Northern California)', 'backwpup'); ?></option><option value="s3-us-west-2.amazonaws.com"><?php _e('US-West 2 (Oregon)', 'backwpup'); ?></option><option value="s3-eu-west-1.amazonaws.com"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="s3-ap-southeast-1.amazonaws.com"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="s3-ap-northeast-1.amazonaws.com"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option><option value="s3-sa-east-1.amazonaws.com"><?php _e('South America (Sao Paulo)', 'backwpup'); ?></option><option value="s3-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud', 'backwpup'); ?></option><option value="s3-fips-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud FIPS 140-2', 'backwpup'); ?></option></select><br />
 		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 		<input name="awsdir" type="text" value="<?PHP echo $jobvalue['awsdir'];?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
+		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="awsmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['awsmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awssyncnodelete'],true); ?> name="awssyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 		<input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['awsrrs'],true); ?> name="awsrrs" /> <?PHP _e('Save Files with reduced redundancy!','backwpup'); ?><br />
 		<input class="checkbox" value="AES256" type="checkbox" <?php checked($jobvalue['awsssencrypt'],'AES256'); ?> name="awsssencrypt" />  <?PHP _e('Save Files Server Side Encrypted!','backwpup'); ?><br />
 	</div>
@@ -296,7 +305,8 @@ function backwpup_jobedit_metabox_destgstorage($jobvalue) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newGStorageBucket" type="text" value="" class="text" /><br />
 		<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 		<input name="GStoragedir" type="text" value="<?PHP echo $jobvalue['GStoragedir'];?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['GStoragemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
+		<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['GStoragemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['GStoragesyncnodelete'],true); ?> name="GStoragesyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	</div>
 	<div class="destlinks">
 		<a href="http://code.google.com/apis/storage/docs/signup.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -323,7 +333,8 @@ function backwpup_jobedit_metabox_destazure($jobvalue) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newmsazureContainer" type="text" value="" class="text" /> <br />
 		<b><?PHP _e('Folder in Container:','backwpup'); ?></b><br />
 		<input name="msazuredir" type="text" value="<?PHP echo $jobvalue['msazuredir'];?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />	
+		<span class="nosync"><?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="msazuremaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['msazuremaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['msazuresyncnodelete'],true); ?> name="msazuresyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	</div>
 	<div class="destlinks">
 		<a href="http://www.microsoft.com/windowsazure/offers/" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -346,7 +357,8 @@ function backwpup_jobedit_metabox_destrsc($jobvalue) {
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create Container:','backwpup'); ?><input name="newrscContainer" type="text" value="" class="text" /> <br />
 		<b><?PHP _e('Folder in container:','backwpup'); ?></b><br />
 		<input name="rscdir" type="text" value="<?PHP echo $jobvalue['rscdir'];?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />	
+		<span class="nosync"><?PHP _e('Max. backup files in container folder:','backwpup'); ?><input name="rscmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['rscmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['rscsyncnodelete'],true); ?> name="rscsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span><br />
 	</div>
 	<div class="destlinks">
 		<a href="http://www.rackspacecloud.com/2073.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -376,7 +388,8 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
 		<?PHP } ?><br />
 		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
 		<input name="dropedir" type="text" value="<?PHP echo $jobvalue['dropedir'];?>" class="user large-text" /><br />			
-		<span class="nosync"><?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
+		<span class="nosync"><?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['dropesyncnodelete'],true); ?> name="dropesyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	</div>
 	<div class="destlinks">
 		<a href="http://db.tt/Bm0l8dfn" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -398,7 +411,8 @@ function backwpup_jobedit_metabox_destboxnet($jobvalue) {
 		<?PHP } ?><br />
 		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
 		<input name="boxnetdir" type="text" value="<?PHP echo $jobvalue['boxnetdir'];?>" class="user large-text" /><br />			
-		<span class="nosync"><?PHP _e('Max. backup files in Box.net folder:','backwpup'); ?><input name="boxnetbackups" type="text" size="3" value="<?PHP echo $jobvalue['boxnetbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
+		<span class="nosync"><?PHP _e('Max. backup files in Box.net folder:','backwpup'); ?><input name="boxnetbackups" type="text" size="3" value="<?PHP echo $jobvalue['boxnetbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['boxnetsyncnodelete'],true); ?> name="boxnetsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	</div>
 	<div class="destlinks">
 		<a href="https://www.box.net/signup/h" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -420,7 +434,8 @@ function backwpup_jobedit_metabox_destsugarsync($jobvalue) {
 		<?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>backwpup_decrypt($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
 		<b><?PHP _e('Folder:','backwpup'); ?></b><br />
 		<input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span></span><br />
+		<span class="nosync"><?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked($jobvalue['sugarsyncnodelete'],true); ?> name="sugarsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 	</div>
 	<div class="destlinks">
 		<a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />

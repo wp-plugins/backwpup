@@ -18,12 +18,6 @@ if (!empty($doaction)) {
 				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'job_'.$jobid));
 			}
 		}
-		//activate/deactivate seduling if not needed
-		$activejobs=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' LIMIT 1",0,0);
-		if (!empty($activejobs) and false === wp_next_scheduled('backwpup_cron'))
-			wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
-		if (empty($activejobs)) 
-			wp_clear_scheduled_hook('backwpup_cron');
 		break;
 	case 'copy': //Copy Job
 		$jobid = (int) $_GET['jobid'];
@@ -33,7 +27,7 @@ if (!empty($doaction)) {
 		unset($oldjob['jobid']);
 		$jobvalues=backwpup_get_job_vars(0,$oldjob);
 		$jobvalues['name']=__('Copy of','backwpup').' '.$jobvalues['name'];
-		$jobvalues['activated']='';
+		$jobvalues['activetype']='';
 		$jobvalues['fileprefix']=str_replace($jobid,$jobvalues['jobid'],$jobvalues['fileprefix']);
 		unset($jobvalues['logfile']);
 		unset($jobvalues['starttime']);
@@ -49,7 +43,7 @@ if (!empty($doaction)) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
 				$jobsexport[$jobid]=backwpup_get_job_vars($jobid);
-				$jobsexport[$jobid]['activated']=false;
+				$jobsexport[$jobid]['activetype']='';
 				unset($jobsexport[$jobid]['logfile']);
 				unset($jobsexport[$jobid]['starttime']);
 				unset($jobsexport[$jobid]['lastbackupdownloadurl']);

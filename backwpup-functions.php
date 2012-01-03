@@ -402,11 +402,9 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 
 	if (empty($jobsettings['name']) or !is_string($jobsettings['name']))
 		$jobsettings['name']= __('New', 'backwpup');
-	
-	if (!isset($jobsettings['activated']))
-		$jobsettings['activated']=false;
-	else
-		$jobsettings['activated']=(bool)$jobsettings['activated'];
+
+	if (!empty($jobsettings['activetype']) and $jobsettings['activetype']!='wpcron' and $jobsettings['activetype']!='backwpupapi')
+		$jobsettings['activetype']='';
 		
 	if (!isset($jobsettings['cronselect']) and !isset($jobsettings['cron']))
 		$jobsettings['cronselect']='basic';
@@ -581,6 +579,51 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 
 	if (!isset($jobsettings['maxbackups']) or !is_numeric($jobsettings['maxbackups']))
 		$jobsettings['maxbackups']=0;
+
+	if (!isset($jobsettings['backupsyncnodelete']))
+		$jobsettings['backupsyncnodelete']=true;
+	else
+		$jobsettings['backupsyncnodelete']=(bool)$jobsettings['backupsyncnodelete'];
+
+	if (!isset($jobsettings['ftpsyncnodelete']))
+		$jobsettings['ftpsyncnodelete']=true;
+	else
+		$jobsettings['ftpsyncnodelete']=(bool)$jobsettings['ftpsyncnodelete'];
+
+	if (!isset($jobsettings['awssyncnodelete']))
+		$jobsettings['awssyncnodelete']=true;
+	else
+		$jobsettings['awssyncnodelete']=(bool)$jobsettings['awssyncnodelete'];
+
+	if (!isset($jobsettings['GStoragesyncnodelete']))
+		$jobsettings['GStoragesyncnodelete']=true;
+	else
+		$jobsettings['GStoragesyncnodelete']=(bool)$jobsettings['GStoragesyncnodelete'];
+
+	if (!isset($jobsettings['msazuresyncnodelete']))
+		$jobsettings['msazuresyncnodelete']=true;
+	else
+		$jobsettings['msazuresyncnodelete']=(bool)$jobsettings['msazuresyncnodelete'];
+
+	if (!isset($jobsettings['rscsyncnodelete']))
+		$jobsettings['rscsyncnodelete']=true;
+	else
+		$jobsettings['rscsyncnodelete']=(bool)$jobsettings['rscsyncnodelete'];
+
+	if (!isset($jobsettings['dropesyncnodelete']))
+		$jobsettings['dropesyncnodelete']=true;
+	else
+		$jobsettings['dropesyncnodelete']=(bool)$jobsettings['dropesyncnodelete'];
+
+	if (!isset($jobsettings['boxnetsyncnodelete']))
+		$jobsettings['boxnetsyncnodelete']=true;
+	else
+		$jobsettings['boxnetsyncnodelete']=(bool)$jobsettings['boxnetsyncnodelete'];
+
+	if (!isset($jobsettings['sugarsyncnodelete']))
+		$jobsettings['sugarsyncnodelete']=true;
+	else
+		$jobsettings['sugarsyncnodelete']=(bool)$jobsettings['sugarsyncnodelete'];
 
 	if (!empty($jobsettings['ftphost']) and false !== strpos($jobsettings['ftphost'],':'))
 		list($jobsettings['ftphost'],$jobsettings['ftphostport'])=explode(':',$jobsettings['ftphost'],2);
