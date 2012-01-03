@@ -8,9 +8,10 @@ class BackWPup_api {
 		global $wp_version,$backwpup_cfg;
 		if (!defined('BACKWPUP_VERSION'))
 			define('BACKWPUP_VERSION','0.0');
+		$blogurl=trim(get_bloginfo('url'));
 		$this->headers['User-Agent']='BackWPup/'.BACKWPUP_VERSION.' WordPress/'.$wp_version;
-		$this->headers['Authorization']='Basic '.base64_encode(BACKWPUP_VERSION.':'.md5(trim(get_bloginfo('url'))));
-		$this->headers['Referer']=trim(get_bloginfo('url'));
+		$this->headers['Authorization']='Basic '.base64_encode(BACKWPUP_VERSION.':'.md5($blogurl));
+		$this->headers['Referer']=$blogurl;
 		//Add filter for Plugin Updates
 		add_filter('pre_set_site_transient_update_plugins', array($this,'plugin_update_check'));
 		//Add filter to take over the Plugin info screen
@@ -23,7 +24,7 @@ class BackWPup_api {
 				$data->checked = true;
 				$this->plugin_update_check($data);
 			}
-			$apiapp=unserialize(base64_decode(backwpup_get_option('api','apiapp')));
+			$apiapp=unserialize(backwpup_decrypt(backwpup_get_option('api','apiapp'),md5($blogurl)));
 			if (!is_array($backwpup_cfg))
 				$backwpup_cfg=array();
 			if (!empty($apiapp) and is_array($apiapp))
@@ -40,7 +41,7 @@ class BackWPup_api {
 		$post['ACTION']='cronupdate';
 		$post['OFFSET']=get_option('gmt_offset');
 		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
-			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword']));
+			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword']));
 		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activated' AND value='1' ORDER BY main_name");
 		if (!empty($activejobs)) {
 			foreach ($activejobs as $mainname) {

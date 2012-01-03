@@ -206,7 +206,7 @@ class BackWPup_job {
 		$this->errorhandler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['WORKING']['RESTART']), __FILE__, __LINE__,false);
 		$httpauthheader = '';
 		if ( !empty($this->jobdata['STATIC']['CFG']['httpauthuser']) and !empty($this->jobdata['STATIC']['CFG']['httpauthpassword']) )
-			$httpauthheader = array( 'Authorization' => 'Basic ' . base64_encode($this->jobdata['STATIC']['CFG']['httpauthuser'] . ':' . base64_decode($this->jobdata['STATIC']['CFG']['httpauthpassword'])) );
+			$httpauthheader = array( 'Authorization' => 'Basic ' . base64_encode($this->jobdata['STATIC']['CFG']['httpauthuser'] . ':' . backwpup_decrypt($this->jobdata['STATIC']['CFG']['httpauthpassword'])) );
 		$raw_response=@wp_remote_get(BACKWPUP_PLUGIN_BASEURL . '/backwpup-job.php?ABSPATH=' . urlencode(str_replace('\\', '/', ABSPATH)) . '&_wpnonce=' . $this->jobdata['STATIC']['CFG']['jobrunauthkey'] . '&starttype=restart', array( 'timeout' => 5, 'blocking' => true, 'sslverify' => false, 'headers' => $httpauthheader, 'user-agent' => 'BackWPup' ));
 		$body=wp_remote_retrieve_body($raw_response);
 		if (200 == wp_remote_retrieve_response_code($raw_response) and !empty($body))

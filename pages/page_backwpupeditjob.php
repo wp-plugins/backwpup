@@ -60,7 +60,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						<?php
 						$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 						foreach ($tables as $table) {
-							echo '	<input class="checkbox" type="checkbox"'.checked(!in_array($table,$jobvalue['dbexclude']),true,false).' name="jobtabs[]" value="'.base64_encode($table).'"/> '.$table.'<br />';
+							echo '	<input class="checkbox" type="checkbox"'.checked(!in_array($table,$jobvalue['dbexclude']),true,false).' name="jobtabs[]" value="'.rawurlencode($table).'"/> '.$table.'<br />';
 						}
 						?>
 						</div>

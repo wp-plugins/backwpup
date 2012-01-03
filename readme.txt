@@ -52,7 +52,7 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
-= 2.5 =
+= 3.0 =
 * Added: file sync with destination for backups
 * Added: support for Box.net
 * Added: own database table for backwpup
@@ -62,8 +62,9 @@ Do backups and more for your WordPress Blog.
 * Improved: zipping
 * Improved: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
 * Improved: don't look for file extensions on deletion and use file time not name
-* Improved: the job runs now in the WordPress envoerment again
-* Updated: AWS lib to 1.5.0
+* Improved: the job runs now in the WordPress environment again
+* Improved: Password encryption/security
+* Updated: AWS lib to 1.5.0.1
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
 * Fixed: many bugs
 
@@ -75,7 +76,7 @@ Do backups and more for your WordPress Blog.
 
 = 2.1.6 =
 * fixed Dropbox with no path problem
-* fixed Dropbox path with witespace
+* fixed Dropbox path with whitespace
 * Updated AWS lib to 1.4.5
 * 2. fix for security vulnerability
 

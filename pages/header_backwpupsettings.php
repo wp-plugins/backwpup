@@ -25,7 +25,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	backwpup_update_option('cfg','unloadtranslations',isset($_POST['unloadtranslations']) ? true : false);
 	backwpup_update_option('cfg','apicronservice',isset($_POST['apicronservice']) ? true : false);
 	backwpup_update_option('cfg','httpauthuser',$_POST['httpauthuser']);
-	backwpup_update_option('cfg','httpauthpassword',base64_encode($_POST['httpauthpassword']));
+	backwpup_update_option('cfg','httpauthpassword',backwpup_encrypt($_POST['httpauthpassword']));
 	if (empty($_POST['jobrunauthkey']))
 		$_POST['jobrunauthkey']=wp_create_nonce('BackWPupJobRun');
 	$_POST['jobrunauthkey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['jobrunauthkey']));

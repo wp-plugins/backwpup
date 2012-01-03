@@ -90,7 +90,7 @@ if (!empty($doaction)) {
 				if (class_exists('SugarSync')) {
 					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
 						try {
-							$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+							$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
 							$sugarsync->delete(urldecode($backupfile));
 							unset($sugarsync);
 						} catch (Exception $e) {
@@ -130,11 +130,11 @@ if (!empty($doaction)) {
 					$loginok=false;
 					if ($ftp_conn_id) {
 						//FTP Login
-						if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], base64_decode($jobvalue['ftppass']))) {
+						if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], backwpup_decrypt($jobvalue['ftppass']))) {
 							$loginok=true;
 						} else { //if PHP ftp login don't work use raw login
 							ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser']);
-							$return=ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']));
+							$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_decrypt($jobvalue['ftppass']));
 							if (substr(trim($return[0]),0,3)<=400)
 								$loginok=true;
 						}
@@ -227,7 +227,7 @@ if (!empty($doaction)) {
 		$jobid=$_GET['jobid'];
 		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
+			$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
 			$response=$sugarsync->get(urldecode($_GET['file']));
 			header("Pragma: public");
 			header("Expires: 0");

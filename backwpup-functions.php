@@ -328,6 +328,45 @@ function backwpup_admin_url($url) {
 	}
 }
 
+function backwpup_encrypt($string, $key='') {
+	if (empty($key))
+		$key=md5(ABSPATH);
+	if (empty($string))
+		return $string;
+	//only encrypt if needed
+	if (strpos($string,'$BackWPup$ENC1$')!==false)
+		return $string;
+	$result = '';
+	for($i=0; $i<strlen ($string); $i++) {
+		$char = substr($string, $i, 1);
+		$keychar = substr($key, ($i % strlen($key))-1, 1);
+		$char = chr(ord($char)+ord($keychar));
+		$result.=$char;
+	}
+	return '$BackWPup$ENC1$'.base64_encode($result);
+}
+
+function backwpup_decrypt($string, $key='') {
+	if (empty($key))
+		$key=md5(ABSPATH);
+	if (empty($string))
+		return $string;
+	//only decrypt if encrypted
+	if (strpos($string,'$BackWPup$ENC1$')!==false)
+		$string=str_replace('$BackWPup$ENC1$','',$string);
+	else
+		return $string;
+	$result = '';
+	$string = base64_decode($string);
+	for($i=0; $i<strlen($string); $i++) {
+		$char = substr($string, $i, 1);
+		$keychar = substr($key, ($i % strlen($key))-1, 1);
+		$char = chr(ord($char)-ord($keychar));
+		$result.=$char;
+	}
+	return $result;
+}
+
 function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	global $wpdb;
 	//get job data

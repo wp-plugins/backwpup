@@ -116,7 +116,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$checedtables=array();
 	if (isset($_POST['jobtabs'])) {
 		foreach ($_POST['jobtabs'] as $dbtable) {
-			$checedtables[]=base64_decode($dbtable);
+			$checedtables[]=rawurldecode($dbtable);
 		}
 	}
 	global $wpdb;
@@ -152,7 +152,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
 	$jobvalues['ftphostport']=!empty($_POST['ftphostport']) ? (int)$_POST['ftphostport'] : 21;
 	$jobvalues['ftpuser']=isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '';
-	$jobvalues['ftppass']=isset($_POST['ftppass']) ? base64_encode($_POST['ftppass']) : '';
+	$jobvalues['ftppass']=isset($_POST['ftppass']) ? backwpup_encrypt($_POST['ftppass']) : '';
 	$jobvalues['ftpdir']=isset($_POST['ftpdir']) ? stripslashes($_POST['ftpdir']) : '';
 	$jobvalues['ftpmaxbackups']=isset($_POST['ftpmaxbackups']) ? (int)$_POST['ftpmaxbackups'] : 0;
 	$jobvalues['ftpssl']= (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false;
@@ -181,7 +181,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['msazuredir']=isset($_POST['msazuredir']) ? stripslashes($_POST['msazuredir']) : '';
 	$jobvalues['msazuremaxbackups']=isset($_POST['msazuremaxbackups']) ? (int)$_POST['msazuremaxbackups'] : 0;
 	$jobvalues['sugaruser']=isset($_POST['sugaruser']) ? $_POST['sugaruser'] : '';
-	$jobvalues['sugarpass']=isset($_POST['sugarpass']) ? base64_encode($_POST['sugarpass']) : '';
+	$jobvalues['sugarpass']=isset($_POST['sugarpass']) ? backwpup_encrypt($_POST['sugarpass']) : '';
 	$jobvalues['sugardir']=isset($_POST['sugardir']) ? stripslashes($_POST['sugardir']) : '';
 	$jobvalues['sugarroot']=isset($_POST['sugarroot']) ? $_POST['sugarroot'] : '';
 	$jobvalues['sugarmaxbackups']=isset($_POST['sugarmaxbackups']) ? (int)$_POST['sugarmaxbackups'] : 0;

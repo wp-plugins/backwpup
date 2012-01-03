@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: WordPress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.5-Dev
+Version: 3.0-Dev
 Author URI: http://danielhuesken.de
 License: GPL2
 */
@@ -28,7 +28,7 @@ License: GPL2
 //define some things
 define('BACKWPUP_PLUGIN_BASENAME',dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
-define('BACKWPUP_VERSION', '2.5-Dev');
+define('BACKWPUP_VERSION', '3.0-Dev');
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
 define('BACKWPUP_USER_CAPABILITY', 'export');
 define('BACKWPUP_MENU_PAGES', 'backwpup,backwpupeditjob,backwpupworking,backwpuplogs,backwpupbackups,backwpuptools,backwpupsettings');
@@ -38,7 +38,7 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE,BOXNET');
 }
-if ( ! defined('FS_CHMOD_DIR') )
+if (!defined('FS_CHMOD_DIR'))
 	define('FS_CHMOD_DIR', 0755 );
 //Load textdomain
 load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
@@ -105,6 +105,10 @@ class BackWPup {
 				foreach ($jobs as $jobid => $jobvalue) {
 					if (empty($jobvalue['jobid']))
 						$jobvalue['jobid']=$jobid;
+					if (!empty($jobvalue['ftppass']))
+						$jobvalue['ftppass']=backwpup_encrypt(base64_decode($jobvalue['ftppass']));
+					if (!empty($jobvalue['sugarpass']))
+						$jobvalue['sugarpass']=backwpup_encrypt(base64_decode($jobvalue['sugarpass']));
 					$jobvalue['type']=explode('+',$jobvalue['type']); //save as array
 					unset($jobvalue['scheduleintervaltype'],$jobvalue['scheduleintervalteimes'],$jobvalue['scheduleinterval'],$jobvalue['dropemail'],$jobvalue['dropepass'],$jobvalue['dropesignmethod'],$jobvalue['dbtables']);
 					foreach ($jobvalue as $jobvaluename => $jobvaluevalue) {
@@ -116,12 +120,14 @@ class BackWPup {
 			//Put old cfg to DB
 			$cfg=get_option('backwpup');
 			if (!empty($cfg)) {
-				//if old value switsch it to new
+				//if old value switch it to new
 				if (!empty($cfg['dirtemp']))
 					$cfg['tempfolder']=$cfg['dirtemp'];
 				if (!empty($cfg['dirlogs']))
 					$cfg['logfolder']=$cfg['dirlogs'];
-				// delete old not nedded vars
+				if (!empty($cfg['sugarpass']))
+					$cfg['httpauthpassword']=backwpup_encrypt(base64_decode($cfg['httpauthpassword']));
+				// delete old not needed vars
 				unset($cfg['mailmethod'],$cfg['mailsendmail'],$cfg['mailhost'],$cfg['mailhostport'],$cfg['mailsecure'],$cfg['mailuser'],$cfg['mailpass'],$cfg['dirtemp'],$cfg['dirlogs'],$cfg['logfilelist'],$cfg['jobscriptruntime'],$cfg['jobscriptruntimelong'],$cfg['last_activate'],$cfg['disablewpcron'],$cfg['phpzip']);
 				if (is_array($cfg)) {
 					foreach ($cfg as $cfgname => $cfgvalue) {
@@ -468,7 +474,7 @@ class BackWPup {
 		global $backwpup_cfg,$wpdb;
 		$httpauthheader='';
 		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
-			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.base64_decode($backwpup_cfg['httpauthpassword'])));
+			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword'])));
 		$backupdata=backwpup_get_option('working','data');
 		if (!empty($backupdata)) {
 			$revtime=current_time('timestamp')-600; //10 min no progress.

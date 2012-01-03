@@ -97,7 +97,7 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 </tr>
 <tr valign="top"> 
 <th scope="row"><label for="httpauthpassword"><?PHP _e('Password:','backwpup'); ?></label></th>
-<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo base64_decode($backwpup_cfg['httpauthpassword']);?>" class="regular-text" />
+<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo $backwpup_cfg['httpauthpassword'];?>" class="regular-text" />
 </tr>
 </table>
 
