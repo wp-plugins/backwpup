@@ -41,11 +41,11 @@ if (isset($_POST['executiontime']) and $_POST['executiontime']==__('Start time t
 	@ini_set('ignore_user_abort', '0');
 	ignore_user_abort(true);
 	@set_time_limit(1800);
-	//ob_start();
+	ob_start();
 	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpuptools');
-	//echo ' ';
-	//while ( @ob_end_flush() );
-	//flush();
+	echo ' ';
+	while ( @ob_end_flush() );
+	flush();
 	$times['starttime']=current_time('timestamp');
 	$times['lasttime']=current_time('timestamp');
 	backwpup_update_option('temp','exectime',$times);

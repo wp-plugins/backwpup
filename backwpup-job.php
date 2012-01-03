@@ -88,11 +88,11 @@ if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'r
 	flush();
 }
 elseif ( $_GET['starttype'] == 'runnow' ) {
-	//ob_start();
+	ob_start();
 	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpupworking&runlogjobid='.$_GET['jobid']);
-	//echo ' ';
-	//while ( @ob_end_flush() );
-	//flush();
+	echo ' ';
+	while ( @ob_end_flush() );
+	flush();
 }
 //unload translation
 if ( $backwpup_cfg['unloadtranslations'] )
