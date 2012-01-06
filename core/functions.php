@@ -80,7 +80,7 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 
 	if ($starttype=='apirun')
 		$query_args['_nonce']=$backwpup_cfg['apicronservicekey'];
-	elseif ($starttype=='runnow')
+	elseif ($starttype=='runext')
 		$query_args['_nonce']=$backwpup_cfg['jobrunauthkey'];
 	else
 		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun'.$jobid.$starttype);
