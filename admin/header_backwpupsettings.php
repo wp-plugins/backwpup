@@ -26,12 +26,8 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	backwpup_update_option('cfg','apicronservice',isset($_POST['apicronservice']) ? true : false);
 	backwpup_update_option('cfg','httpauthuser',$_POST['httpauthuser']);
 	backwpup_update_option('cfg','httpauthpassword',backwpup_encrypt($_POST['httpauthpassword']));
-	if (empty($_POST['jobrunauthkey']))
-		$_POST['jobrunauthkey']=wp_create_nonce('BackWPupJobRun');
 	$_POST['jobrunauthkey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['jobrunauthkey']));
 	backwpup_update_option('cfg','jobrunauthkey',$_POST['jobrunauthkey']);
-	if (empty($_POST['apicronservicekey']))
-		$_POST['apicronservicekey']=wp_create_nonce('BackWPupJobRunAPI');
 	$_POST['apicronservicekey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['apicronservicekey']));
 	backwpup_update_option('cfg','apicronservicekey',$_POST['apicronservicekey']);
 	if (7200>$_POST['jobrunmaxexectime'] and 0<$_POST['jobrunmaxexectime'])

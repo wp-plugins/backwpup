@@ -1,4 +1,7 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
+
 class BackWPup_api {
 
 	private $apiurl='https://api.backwpup.com/1/';
@@ -23,8 +26,9 @@ class BackWPup_api {
 				$data = new stdClass;
 				$data->checked = true;
 				$this->plugin_update_check($data);
+				$apiapp=backwpup_get_option('api','apiapp');
 			}
-			$apiapp=unserialize(backwpup_decrypt(backwpup_get_option('api','apiapp'),md5($blogurl)));
+			$apiapp=unserialize(backwpup_decrypt($apiapp,md5($blogurl)));
 			if (!is_array($backwpup_cfg))
 				$backwpup_cfg=array();
 			if (!empty($apiapp) and is_array($apiapp))
@@ -43,16 +47,14 @@ class BackWPup_api {
 		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
 			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword']));
 		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activetype' AND value='backwpupapi' ORDER BY main_name");
-		if (!empty($activejobs)) {
+		if (!empty($activejobs) and !empty($backwpup_cfg['apicronservicekey'])) {
 			foreach ($activejobs as $mainname) {
 				$jobid=backwpup_get_option($mainname,'jobid');
 				$cron=backwpup_get_option($mainname,'cron');
-				$abspath='';
-				if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
-					$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
 				if (!empty($cron)) {
 					$post["JOBCRON[".$jobid."]"]=$cron;
-					$post["RUNURL[".$jobid."]"]=BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php?'.$abspath.'_wpnonce='.$backwpup_cfg['apicronservicekey'].'&starttype=apirun&jobid='.$jobid;
+					$url=backwpup_jobrun_url('apirun',$jobid);
+					$post["RUNURL[".$jobid."]"]=$url['url'];
 				}
 			}
 		}

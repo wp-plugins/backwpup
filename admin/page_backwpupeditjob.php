@@ -5,8 +5,8 @@ if (!defined('ABSPATH'))
 global $wpdb,$screen_layout_columns;
 
 //may be needed to ensure that a special box is always available
-add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), 'backwpup_jobedit_metabox_save', get_current_screen()->id, 'side', 'high');
-add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), 'backwpup_jobedit_metabox_schedule', get_current_screen()->id, 'side', 'core');
+add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), array('BackWPup_editjob_metaboxes','save'), get_current_screen()->id, 'side', 'high');
+add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), array('BackWPup_editjob_metaboxes','schedule'), get_current_screen()->id, 'side', 'core');
 
 //get and check job id
 if (isset($_REQUEST['jobid']) and !empty($_REQUEST['jobid'])) {

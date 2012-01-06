@@ -63,6 +63,34 @@ function backwpup_delete_option($mainname,$name) {
 		return false;
 }
 
+function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
+	global $backwpup_cfg;
+	$url=BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php';
+	$query_args['jobid']=$jobid;
+	$header='';
+
+	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )))
+		$query_args['starttype']=$starttype;
+
+	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
+		$header=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword'])));
+
+	if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+		$query_args['ABSPATH']=urlencode(str_replace('\\','/',ABSPATH));
+
+	if ($starttype=='apirun')
+		$query_args['_nonce']=$backwpup_cfg['apicronservicekey'];
+	elseif ($starttype=='runnow')
+		$query_args['_nonce']=$backwpup_cfg['jobrunauthkey'];
+	else
+		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun'.$jobid.$starttype);
+
+	if ($run)
+		return @wp_remote_get(add_query_arg($query_args, $url), array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$header, 'user-agent'=>'BackWPup'));
+	else
+		return array('url'=>add_query_arg($query_args, $url),'header'=>$header);
+}
+
 function backwpup_check_open_basedir($dir) {
 	if (!ini_get('open_basedir'))
 		return true;
@@ -76,7 +104,6 @@ function backwpup_check_open_basedir($dir) {
 	} 
 	return false;
 }
-
 
 function backwpup_formatBytes($bytes, $precision = 2) {
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
@@ -373,9 +400,8 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (!empty($jobid) and is_numeric($jobid)) {
 		//load jobvalues
 		$jobvars=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main_name='job_".$jobid."'");
-		foreach ($jobvars as $vars) {
+		foreach ($jobvars as $vars)
 			$jobsettings[$vars->name]=maybe_unserialize($vars->value);
-		}
 	}
 	if (empty($jobsettings['jobid'])) {  //generate jobid if not exists
 		$jobsettings['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value ASC LIMIT 1",0,0);
@@ -403,7 +429,7 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (empty($jobsettings['name']) or !is_string($jobsettings['name']))
 		$jobsettings['name']= __('New', 'backwpup');
 
-	if (!empty($jobsettings['activetype']) and $jobsettings['activetype']!='wpcron' and $jobsettings['activetype']!='backwpupapi')
+	if (!isset($jobsettings['activetype']) or ( $jobsettings['activetype']!='' and $jobsettings['activetype']!='wpcron' and $jobsettings['activetype']!='backwpupapi'))
 		$jobsettings['activetype']='';
 		
 	if (!isset($jobsettings['cronselect']) and !isset($jobsettings['cron']))

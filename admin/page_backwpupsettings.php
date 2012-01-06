@@ -81,7 +81,8 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 	<tr valign="top">
 		<th scope="row"><label for="jobrunauthkey"><?PHP _e('Key for start jobs external with a URL','backwpup'); ?></label></th>
 		<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
-			<span><?PHP _e('A sample key is:','backwpup'); echo ' '.wp_create_nonce('BackWPupJobRun'); ?> </span><br />
+			<span><?PHP echo sprintf(__('A unique key is: %s','backwpup'),wp_create_nonce('BackWPupJobRun')); ?></span>
+			<span class="description"><?PHP _e('(empty = deactivated. Will be used for, that nobody else can use the job start URLs.)','backwpup');?></span>
 		</td>
 	</tr>
 </table>
@@ -116,9 +117,12 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><?PHP _e('Key for cron service','backwpup'); ?></th>
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Key for cron service','backwpup'); ?></span></legend><label for="apicronservicekey">
-<input name="apicronservicekey" type="text" id="apicronservicekey" value="<?PHP echo $backwpup_cfg['apicronservicekey'];?>" class="text code" />
-<span class="description"><?PHP _e('(Will be used for that nobody else can use the job start URLs.)','backwpup');?></span>
+<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Key for cron service','backwpup'); ?></span></legend>
+	<label for="apicronservicekey">
+		<input name="apicronservicekey" type="text" id="apicronservicekey" value="<?PHP echo $backwpup_cfg['apicronservicekey'];?>" class="text code" />
+	</label>
+	<span><?PHP echo sprintf(__('A unique key is: %s','backwpup'),wp_create_nonce('BackWPupJobRunAPI')); ?></span>
+	<span class="description"><?PHP _e('(empty = deactivated. Will be used for, that nobody else can use the job start URLs.)','backwpup');?></span>
 </label>
 </fieldset>
 </td>
