@@ -14,9 +14,11 @@ class BackWPup_Admin {
 			add_action('admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(BACKWPUP_USER_CAPABILITY)) echo $backwpup_admin_message;'));
 			add_action('admin_menu', array($this,'admin_menu'));
 			add_action('wp_dashboard_setup', array($this,'dashboard_setup'));
-			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASENAME.'/backwpup.php', create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
+			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE, create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
 			add_filter('plugin_row_meta', array($this,'plugin_links'),10,2);
 		}
+		//make backwpup first plugin
+		add_filter('pre_update_option_active_plugins', array($this,'first_plugin'),1,2);
 	}
 
 	public function admin_menu() {
@@ -111,7 +113,7 @@ class BackWPup_Admin {
 	}
 
 	public function plugin_links($links, $file) {
-		if ($file == BACKWPUP_PLUGIN_BASENAME.'/backwpup.php') {
+		if ($file == BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE) {
 			$links[] = __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' );
@@ -221,6 +223,17 @@ class BackWPup_Admin {
 			}
 		}
 		echo '</ul>';
+	}
+
+	public function first_plugin($newvalue, $oldvalue) {
+		if (!is_array($newvalue))
+			return $newvalue;
+		for ($i=0; $i<count($newvalue);$i++) {
+			if ($newvalue[$i]==BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE)
+				unset($newvalue[$i]);
+		}
+		array_unshift($newvalue,BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE);
+		return $newvalue;
 	}
 }
 new BackWPup_Admin();

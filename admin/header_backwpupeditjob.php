@@ -316,7 +316,8 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$backwpupapi->cronupdate();
 	
 	$_POST['jobid']=$jobvalues['jobid'];
-	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';
+	$url=backwpup_jobrun_url('runnow',$jobvalues['jobid'],false);
+	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>'.' <a href="'.$url['url'].'">'.__('Run now.', 'backwpup').'</a>';
 }
 
 

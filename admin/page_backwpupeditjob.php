@@ -50,6 +50,23 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 					<input type="text" name="name" size="30" tabindex="1" value="<?PHP echo $jobvalue['name'];?>" id="title" autocomplete="off" />
 				</div>
 			</div>
+
+			<div class="inside">
+				<div>
+					<?PHP
+					if (!empty($backwpup_cfg['jobrunauthkey'])) {
+						echo '<strong>'. __('External start link:','backwpup').'</strong> ';
+						$url=backwpup_jobrun_url('runext',$jobvalue['jobid'],false);
+						echo '<span><a href="'.$url['url'].'">'.$url['url'].'</a></span><br />';
+					}
+					echo '<strong>'. __('System start call:','backwpup').'</strong> ';
+					$abspath='';
+					if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+						$abspath='-abspath='.str_replace('\\','/',ABSPATH);
+					echo "<span>".sprintf('php %1$s -jobid=%2$d %3$s',realpath(dirname(__FILE__).'/../backwpup-job.php'),$jobvalue['jobid'],$abspath)."</span><br />";
+					?>
+				</div>
+			</div>
 						
 			<div id="databasejobs" class="stuffbox"<?PHP if (!in_array("CHECK",$jobvalue['type']) and !in_array("DB",$jobvalue['type']) and !in_array("OPTIMIZE",$jobvalue['type'])) echo ' style="display:none;"';?>>
 				<h3><label for="dbtables"><?PHP _e('Database Jobs','backwpup'); ?></label></h3>

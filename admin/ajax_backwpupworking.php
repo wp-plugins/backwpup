@@ -1,4 +1,6 @@
 <?PHP
+include_once(dirname(__FILE__).'/func_backwpupworking.php');
+
 function backwpup_get_logfile_ajax() {
     check_ajax_referer('backwpupworking_ajax_nonce');
     if (is_file(trim($_POST['logfile']).'.gz'))

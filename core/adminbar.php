@@ -6,6 +6,8 @@ function backwpup_add_adminbar() {
 	global $wp_admin_bar,$backwpup_cfg,$wpdb;
 	if (!$backwpup_cfg['showadminbar'] || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
 		return;
+	if (!is_admin()) //load text domain if not in admin area ther it is loaded in main plugin file
+		load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
 	$backupdata=backwpup_get_option('working','data');
 	$menutitle='<span class="ab-icon"></span><span class="ab-label"></span>';
 	if (!empty($backupdata))

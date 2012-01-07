@@ -4,8 +4,11 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: WordPress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 3.0-Dev
 Author URI: http://danielhuesken.de
+Version: 3.0-Dev
+Text Domain: backwpup
+Domain Path: /lang/
+Network: true
 License: GPL2
 */
 
@@ -27,6 +30,7 @@ License: GPL2
 
 //define some things
 define('BACKWPUP_PLUGIN_BASENAME',dirname(plugin_basename(__FILE__)));
+define('BACKWPUP_PLUGIN_FILE',basename(__FILE__));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 define('BACKWPUP_VERSION', '3.0-Dev');
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
@@ -41,9 +45,14 @@ if (!defined('BACKWPUP_DESTS')) {
 if (!defined('FS_CHMOD_DIR'))
 	define('FS_CHMOD_DIR', 0755 );
 
-if (is_main_site()) {
-	//Load textdomain
+//not load translations for other text domains reduces memory and load time
+if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
+	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
+//Load text domain if needed
+if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
 	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
+//load thins only on main sites (MU)
+if (is_main_site()) {
 	//deactivation hook
 	register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 	if (current_filter('deactivate_'.BACKWPUP_PLUGIN_BASENAME))
@@ -58,15 +67,11 @@ if (is_main_site()) {
 	//load menus and pages
 	if (!defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and !defined("DOING_AJAX") and !defined('XMLRPC_REQUEST') and !defined('APP_REQUEST') and is_admin())
 		include_once(dirname(__FILE__).'/core/admin.php');
-
 }
 //load doing job class
 if (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB)
 	include_once(dirname(__FILE__).'/core/job.php');
 //include ajax functions
-if (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])) {
-	$backwpup_manu_page=trim($_POST['backwpupajaxpage']);
-	if (!empty($backwpup_manu_page) and in_array($backwpup_manu_page,explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$backwpup_manu_page.'.php'))
-		include_once(dirname(__FILE__).'/admin/ajax_'.$backwpup_manu_page.'.php');
-}
+if (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php'))
+	include_once(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php');
 ?>

@@ -80,7 +80,7 @@ class BackWPup_api {
 				unset($response->apiapps);
 			}
 			if (is_object($response) && !empty($response->slug))
-				$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/backwpup.php'] = $response;
+				$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $response;
 		}
 		return $checked_data;
 	}

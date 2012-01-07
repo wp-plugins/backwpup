@@ -13,7 +13,7 @@ if ( !defined('E_DEPRECATED') )
 if ( !defined('E_USER_DEPRECATED') )
 	define('E_USER_DEPRECATED', 16384);
 if ( !defined('DOING_CRON') )
-	define("DOING_CRON",true);
+	define('DOING_CRON',true);
 //try to disable safe mode
 @ini_set('safe_mode', '0');
 // Now user abort
@@ -33,6 +33,7 @@ if ( defined('STDIN') ) {
 	}
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) )
 		die('JOBID check');
+	@chdir(dirname(__FILE__));
 	if ( is_file('../../../wp-load.php') ) {
 		require_once('../../../wp-load.php');
 	} else {
@@ -53,6 +54,7 @@ if ( defined('STDIN') ) {
 	$_GET['_nonce'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_GET['_nonce']));
 	if ( empty($_GET['_nonce']) or !is_string($_GET['_nonce']) )
 		die('Nonce pre check');
+	@chdir(dirname(__FILE__));
 	if ( is_file('../../../wp-load.php') ) {
 		require_once('../../../wp-load.php');
 	} else {
@@ -63,11 +65,11 @@ if ( defined('STDIN') ) {
 		else
 			die('ABSPATH check');
 	}
-	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and wp_verify_nonce('BackWPupJobRun'.$jobid.$_GET['jobid'],$_GET['_nonce']))
+	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and wp_verify_nonce('BackWPupJobRun'.$_GET['jobid'],$_GET['_nonce']))
 		die('Nonce check');
-	elseif ( $_GET['starttype']=='apirun' and $_GET['_nonce']!=$backwpup_cfg['apicronservicekey'])
+	elseif ( $_GET['starttype']=='apirun' and (empty($backwpup_cfg['apicronservicekey']) or $_GET['_nonce']!=$backwpup_cfg['apicronservicekey']))
 		die('Nonce check');
-	elseif ( $_GET['starttype']=='runext' and $_GET['_nonce']!=$backwpup_cfg['jobrunauthkey'])
+	elseif ( $_GET['starttype']=='runext' and (empty($backwpup_cfg['jobrunauthkey']) or $_GET['_nonce']!=$backwpup_cfg['jobrunauthkey']))
 		die('Nonce check');
 	@set_time_limit($backwpup_cfg['jobrunmaxexectime']);
 }
@@ -103,9 +105,6 @@ elseif ( $_GET['starttype'] == 'runnow' ) {
 	while ( @ob_end_flush() );
 	flush();
 }
-//unload translation
-if ( $backwpup_cfg['unloadtranslations'] )
-	unset($l10n);
 //start class
 $backwpup_job_object = new BackWPup_job($_GET['starttype'],(int)$_GET['jobid']);
 ?>

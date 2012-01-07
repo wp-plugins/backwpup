@@ -68,21 +68,28 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	$url=BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php';
 	$query_args['jobid']=$jobid;
 	$header='';
+	$authurl='';
 
 	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
 
-	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
+	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword'])) {
 		$header=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword'])));
+		$authurl=$backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword']).'@';
+	}
 
 	if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
 		$query_args['ABSPATH']=urlencode(str_replace('\\','/',ABSPATH));
 
 	if ($starttype=='apirun')
 		$query_args['_nonce']=$backwpup_cfg['apicronservicekey'];
-	elseif ($starttype=='runext')
+	elseif ($starttype=='runext') {
 		$query_args['_nonce']=$backwpup_cfg['jobrunauthkey'];
-	else
+		if (!empty($authurl)) {
+			$url=str_replace('https://','https://'.$authurl,$url);
+			$url=str_replace('http://','http://'.$authurl,$url);
+		}
+	} else
 		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun'.$jobid.$starttype);
 
 	if ($run)

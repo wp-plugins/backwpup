@@ -5,11 +5,14 @@ if (!defined('ABSPATH'))
 <div class="wrap">
 <?php screen_icon(); ?>
 <h2><?php echo esc_html( __('BackWPup Working', 'backwpup') ); ?></h2>
-
-<?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>
-	<div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
-<?php endif;
+<?php
 	$backupdata=backwpup_get_option('working','data');
+	if (!empty($backupdata)) {
+		$backwpup_message.=sprintf(__('Job "%s" is running.','backwpup'),$backupdata['STATIC']['JOB']['name']);
+		$backwpup_message.=" <a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
+	}
+	if (isset($backwpup_message) and !empty($backwpup_message))
+		echo '<div id="message" class="updated"><p>'.$backwpup_message.'</p></div>';
 	if (!empty($backupdata)) {
 		wp_nonce_field('backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 		$logfilarray=backwpup_read_logfile($backupdata['LOGFILE']);

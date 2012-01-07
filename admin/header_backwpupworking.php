@@ -2,7 +2,8 @@
 if (!defined('ABSPATH'))
 	die();
 
-nocache_headers(); //no chache
+nocache_headers(); //no cache
+
 if (!empty($_GET['logfile']))
 	check_admin_referer('view-log_'.basename(trim($_GET['logfile'])));
 

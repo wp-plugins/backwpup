@@ -66,13 +66,6 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo $backwpup_cfg['jobscriptretry'];?>" class="small-text code" <?php if (defined('ALTERNATE_WP_CRON') and ALTERNATE_WP_CRON) echo " disabled=\"disabled\""; ?> />
 </td> 
 </tr>
-<tr valign="top"> 
-<th scope="row"><?PHP _e('Unload Translation','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Unload Translation','backwpup'); ?></span></legend><label for="unloadtranslations"> 
-<input name="unloadtranslations" type="checkbox" id="unloadtranslations" value="1" <?php checked($backwpup_cfg['unloadtranslations'],true); ?> /> 
-<?PHP _e('Unload all WordPress Translations on Job run to reduce Memory.','backwpup'); ?></label> 
-</fieldset></td>
-</tr>
 	<tr valign="top">
 		<th scope="row"><label for="tempfolder"><?PHP _e('Temp file Folder','backwpup'); ?></label></th>
 		<td><input name="tempfolder" type="text" id="tempfolder" value="<?PHP echo $backwpup_cfg['tempfolder'];?>" class="regular-text code" />

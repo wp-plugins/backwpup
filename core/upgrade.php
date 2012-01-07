@@ -86,7 +86,6 @@ function backwpup_upgrade() {
 	if (!isset($backwpup_cfg['jobscriptretry']) or!is_numeric($backwpup_cfg['jobscriptretry']) or 100<$backwpup_cfg['jobscriptretry'] or empty($backwpup_cfg['jobscriptretry'])) backwpup_update_option('cfg','jobscriptretry',5);
 	if (empty($backwpup_cfg['maxlogs']) or !is_numeric($backwpup_cfg['maxlogs'])) backwpup_update_option('cfg','maxlogs',50);
 	if (!function_exists('gzopen') or !isset($backwpup_cfg['gzlogs'])) backwpup_update_option('cfg','gzlogs',false);
-	if (!isset($backwpup_cfg['unloadtranslations'])) backwpup_update_option('cfg','unloadtranslations',false);
 	if (!isset($backwpup_cfg['logfolder']) or empty($backwpup_cfg['logfolder']) or !is_dir($backwpup_cfg['logfolder'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		backwpup_update_option('cfg','logfolder',str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/');
