@@ -21,14 +21,14 @@ class BackWPup_job {
 		@ini_set('error_log', $this->jobdata['LOGFILE']);
 		@ini_set('display_errors', 'Off');
 		@ini_set('log_errors', 'On');
-		set_error_handler(array( $this, 'errorhandler' ), E_ALL | E_STRICT);
+		set_error_handler(array( $this, '_error_handler' ), E_ALL | E_STRICT);
 		//Check Folder
 		if (!empty($this->jobdata['STATIC']['JOB']['backupdir']) and $this->jobdata['STATIC']['JOB']['backupdir']!=$this->jobdata['STATIC']['CFG']['tempfolder'] )
-			$this->_checkfolder($this->jobdata['STATIC']['JOB']['backupdir']);
+			$this->_check_folder($this->jobdata['STATIC']['JOB']['backupdir']);
 		if (!empty($this->jobdata['STATIC']['CFG']['tempfolder']))
-			$this->_checkfolder($this->jobdata['STATIC']['CFG']['tempfolder']);
+			$this->_check_folder($this->jobdata['STATIC']['CFG']['tempfolder']);
 		if (!empty($this->jobdata['STATIC']['CFG']['logfolder']))
-			$this->_checkfolder($this->jobdata['STATIC']['CFG']['logfolder']);
+			$this->_check_folder($this->jobdata['STATIC']['CFG']['logfolder']);
 		//Check double running and inactivity
 		if ( $this->jobdata['WORKING']['PID'] != getmypid() and $this->jobdata['WORKING']['TIMESTAMP'] > (current_time('timestamp') - 500) and $this->jobstarttype == 'restarttime' ) {
 			trigger_error(__('Job restart terminated, because other job runs!', 'backwpup'), E_USER_ERROR);
@@ -88,17 +88,17 @@ class BackWPup_job {
 		//Put last error to log if one
 		$lasterror = error_get_last();
 		if ( $lasterror['type'] == E_ERROR or $lasterror['type'] == E_PARSE or $lasterror['type'] == E_CORE_ERROR or $lasterror['type'] == E_CORE_WARNING or $lasterror['type'] == E_COMPILE_ERROR or $lasterror['type'] == E_COMPILE_WARNING )
-			$this->errorhandler($lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line'],false);
+			$this->_error_handler($lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line'],false);
 		//Put sigterm to log
 		if ( !empty($args[0]) )
-			$this->errorhandler(E_USER_ERROR, sprintf(__('Signal %d send to script!', 'backwpup')), __FILE__, __LINE__,false);
+			$this->_error_handler(E_USER_ERROR, sprintf(__('Signal %d send to script!', 'backwpup')), __FILE__, __LINE__,false);
 		//no more restarts
 		$this->jobdata['WORKING']['RESTART']++;
 		if ( (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) or $this->jobdata['WORKING']['RESTART'] >= $this->jobdata['STATIC']['CFG']['jobscriptretry'] ) { //only x restarts allowed
 			if ( defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON )
-				$this->errorhandler(E_USER_ERROR, __('Can not restart on alternate cron....', 'backwpup'), __FILE__, __LINE__,false);
+				$this->_error_handler(E_USER_ERROR, __('Can not restart on alternate cron....', 'backwpup'), __FILE__, __LINE__,false);
 			else
-				$this->errorhandler(E_USER_ERROR, __('To many restarts....', 'backwpup'), __FILE__, __LINE__,false);
+				$this->_error_handler(E_USER_ERROR, __('To many restarts....', 'backwpup'), __FILE__, __LINE__,false);
 			$this->end();
 			exit;
 		}
@@ -109,13 +109,13 @@ class BackWPup_job {
 		$this->jobdata['WORKING']['PID'] = 0;
 		//Restart job
 		$this->_update_working_data(true);
-		$this->errorhandler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['WORKING']['RESTART']), __FILE__, __LINE__,false);
+		$this->_error_handler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['WORKING']['RESTART']), __FILE__, __LINE__,false);
 		$raw_response=backwpup_jobrun_url('restart','',true);
 		$body=wp_remote_retrieve_body($raw_response);
 		if (200 == wp_remote_retrieve_response_code($raw_response) and !empty($body))
-			$this->errorhandler(E_USER_ERROR, $body, __FILE__, __LINE__,false);
+			$this->_error_handler(E_USER_ERROR, $body, __FILE__, __LINE__,false);
 		if (is_wp_error($raw_response) or 200 != wp_remote_retrieve_response_code($raw_response))
-			$this->errorhandler(E_USER_ERROR, json_encode($raw_response), __FILE__, __LINE__,false);
+			$this->_error_handler(E_USER_ERROR, json_encode($raw_response), __FILE__, __LINE__,false);
 		exit;
 	}
 
@@ -281,11 +281,11 @@ class BackWPup_job {
 				}
 			}
 			if ( !$desttest )
-				$this->errorhandler(E_USER_ERROR, __('No destination defined for backup!!! Please correct job settings', 'backwpup'), __FILE__, __LINE__);
+				$this->_error_handler(E_USER_ERROR, __('No destination defined for backup!!! Please correct job settings', 'backwpup'), __FILE__, __LINE__);
 		}
 	}
 
-	private function _checkfolder($folder) {
+	private function _check_folder($folder) {
 		$folder = untrailingslashit($folder);
 		//check that is not home of WP
 		if ( is_file($folder . '/wp-load.php') )
@@ -315,7 +315,7 @@ class BackWPup_job {
 		return true;
 	}
 
-	public function errorhandler() {
+	public function _error_handler() {
 		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
 		// if error has been suppressed with an @
 		if ( error_reporting() == 0 )
@@ -602,7 +602,7 @@ class BackWPup_job {
 		}
 	}
 
-	private function _job_inbytes($value) {
+	private function _job_in_bytes($value) {
 		$multi = strtoupper(substr(trim($value), -1));
 		$bytes = abs(intval(trim($value)));
 		if ( $multi == 'G' )
@@ -618,9 +618,9 @@ class BackWPup_job {
 		if ( !function_exists('memory_get_usage') )
 			return;
 		//need memory
-		$needmemory = @memory_get_usage(true) + $this->_job_inbytes($memneed);
+		$needmemory = @memory_get_usage(true) + $this->_job_in_bytes($memneed);
 		// increase Memory
-		if ( $needmemory > $this->_job_inbytes(ini_get('memory_limit')) ) {
+		if ( $needmemory > $this->_job_in_bytes(ini_get('memory_limit')) ) {
 			$newmemory = round($needmemory / 1024 / 1024) + 1 . 'M';
 			if ( $needmemory >= 1073741824 )
 				$newmemory = round($needmemory / 1024 / 1024 / 1024) . 'G';
@@ -1157,6 +1157,8 @@ class BackWPup_job {
 					if (false !== stripos($folder.$file,trim($exclusion)) and !empty($exclusion))
 						continue 2;
 				}
+				if ($this->jobdata['STATIC']['JOB']['backupexcludethumbs'] and strpos($folder,backwpup_get_upload_dir()) !== false and  preg_match("/\-[0-9]{2,4}x[0-9]{2,4}\.(jpg|png|gif)$/i",$file))
+					continue;
 				if ( !is_readable($folder . $file) )
 					trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
 				elseif ( is_link($folder . $file) )

@@ -191,7 +191,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 							</div>
 						</div>
 						<div style="width:20%; float: left;">
-							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobvalue['backupuploads'],true,true);?> name="backupuploads" value="1"/> <?php _e('Blog Uploads','backwpup');?></b><br />
+							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked($jobvalue['backupuploads'],true,true);?> name="backupuploads" value="1"/> <?php _e('Blog uploads','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
 							<?PHP
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
@@ -207,6 +207,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 							</div>
 						</div>
 					</div>
+					<input class="checkbox" type="checkbox"<?php checked($jobvalue['backupexcludethumbs'],true,true);?> name="backupexcludethumbs" value="1"/> <?php _e('Don\'t backup Thumbnails in uploads folder','backwpup');?>
 					<br />&nbsp;<br />
 					<b><?PHP _e('Include Folders to Backup:','backwpup'); ?></b><br />
 					<?PHP _e('Example:','backwpup'); ?> <?PHP echo str_replace('\\','/',ABSPATH); ?>,...<br />

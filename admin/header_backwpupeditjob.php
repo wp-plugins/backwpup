@@ -133,6 +133,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['wpexportfilecompression']=$_POST['wpexportfilecompression'];
 	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';
 	$jobvalues['dirinclude']=isset($_POST['dirinclude']) ? stripslashes($_POST['dirinclude']) : '';
+	$jobvalues['backupexcludethumbs']= (isset($_POST['backupexcludethumbs']) && $_POST['backupexcludethumbs']==1) ? true : false;
 	$jobvalues['backuproot']= (isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false;
 	$jobvalues['backuprootexcludedirs']=!empty($_POST['backuprootexcludedirs']) ? (array)$_POST['backuprootexcludedirs'] : array();
 	$jobvalues['backupcontent']= (isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false;
@@ -319,6 +320,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$url=backwpup_jobrun_url('runnow',$jobvalues['jobid'],false);
 	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview', 'backwpup').'</a> | <a href="'.$url['url'].'">'.__('Run now', 'backwpup').'</a>';
 }
+
 
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
 

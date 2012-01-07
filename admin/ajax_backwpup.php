@@ -3,7 +3,7 @@ if (!defined('ABSPATH'))
 	die();
 
 //helper functions for detecting file size
-function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array()) {
+function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array(),$nothumbs=false) {
 	global $backwpup_temp_files;
 	if ( !empty($folder) and $levels and $dir = @opendir( $folder )) {
 		while (($file = readdir( $dir ) ) !== false ) {
@@ -13,9 +13,11 @@ function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100,
 				if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 					continue 2;
 			}
+			if ($nothumbs and strpos($folder,backwpup_get_upload_dir()) !== false and  preg_match("/\-[0-9]{2,4}x[0-9]{2,4}\.(jpg|png|gif)$/i",$file))
+				continue;
 			if ( @is_dir( $folder.$file )) {
 				if (!in_array(trailingslashit($folder.$file),$excludedirs))
-					_backwpup_calc_file_size_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes);
+					_backwpup_calc_file_size_file_list_folder( trailingslashit($folder.$file), $levels - 1, $excludes,$excludedirs,$nothumbs);
 			} elseif ((@is_file( $folder.$file ) or @is_executable($folder.$file)) and @is_readable($folder.$file)) {
 				$backwpup_temp_files['num']++;
 				$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize($folder.$file);
@@ -36,15 +38,15 @@ function backwpup_calc_file_size($jobvalues) {
 
 	//File list for blog folders
 	if ($jobvalues['backuproot'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge($jobvalues['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)));
+		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge($jobvalues['backuprootexcludedirs'],backwpup_get_exclude_wp_dirs(ABSPATH)),$jobvalues['backupexcludethumbs']);
 	if ($jobvalues['backupcontent'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge($jobvalues['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
+		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge($jobvalues['backupcontentexcludedirs'],backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)),$jobvalues['backupexcludethumbs']);
 	if ($jobvalues['backupplugins'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge($jobvalues['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
+		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge($jobvalues['backuppluginsexcludedirs'],backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)),$jobvalues['backupexcludethumbs']);
 	if ($jobvalues['backupthemes'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)).'themes'),100,$backwpup_exclude,array_merge($jobvalues['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')));
+		_backwpup_calc_file_size_file_list_folder(trailingslashit(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)).'themes'),100,$backwpup_exclude,array_merge($jobvalues['backupthemesexcludedirs'],backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes')),$jobvalues['backupexcludethumbs']);
 	if ($jobvalues['backupuploads'])
-		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',backwpup_get_upload_dir())),100,$backwpup_exclude,array_merge($jobvalues['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
+		_backwpup_calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',backwpup_get_upload_dir())),100,$backwpup_exclude,array_merge($jobvalues['backupuploadsexcludedirs'],backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())),$jobvalues['backupexcludethumbs']);
 
 	//include dirs
 	if (!empty($jobvalues['dirinclude'])) {
@@ -56,9 +58,7 @@ function backwpup_calc_file_size($jobvalues) {
 				_backwpup_calc_file_size_file_list_folder(trailingslashit($dirincludevalue),100,$backwpup_exclude);
 		}
 	}
-
 	return $backwpup_temp_files;
-
 }
 
 //ajax show info div for jobs

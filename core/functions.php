@@ -519,6 +519,11 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	sort($dirinclude);
 	$jobsettings['dirinclude']=implode(',',$dirinclude);
 
+	if (!isset($jobsettings['backupexcludethumbs']))
+		$jobsettings['backupexcludethumbs']=false;
+	else
+		$jobsettings['backupexcludethumbs']=(bool)$jobsettings['backupexcludethumbs'];
+
 	if (!isset($jobsettings['backuproot']))
 		$jobsettings['backuproot']=true;
 	else
