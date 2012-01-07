@@ -1,4 +1,7 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
+
 //ajax/normal get cron text
 function backwpup_get_cron_text($args='') {
 	if (is_array($args)) {

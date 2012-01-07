@@ -1,4 +1,7 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
+
 class BackWPup_editjob_metaboxes {
 	public function save($jobvalue) {
 		?>

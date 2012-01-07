@@ -57,13 +57,13 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 					if (!empty($backwpup_cfg['jobrunauthkey'])) {
 						echo '<strong>'. __('External start link:','backwpup').'</strong> ';
 						$url=backwpup_jobrun_url('runext',$jobvalue['jobid'],false);
-						echo '<span><a href="'.$url['url'].'">'.$url['url'].'</a></span><br />';
+						echo '<span>'.$url['url'].'</span><br />';
 					}
-					echo '<strong>'. __('System start call:','backwpup').'</strong> ';
+					echo '<strong>'. __('Commandline start:','backwpup').'</strong> ';
 					$abspath='';
 					if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
 						$abspath='-abspath='.str_replace('\\','/',ABSPATH);
-					echo "<span>".sprintf('php %1$s -jobid=%2$d %3$s',realpath(dirname(__FILE__).'/../backwpup-job.php'),$jobvalue['jobid'],$abspath)."</span><br />";
+					echo "<span>".sprintf('php %1$s -jobid=%2$d %3$s',realpath(dirname(__FILE__).'/../job.php'),$jobvalue['jobid'],$abspath)."</span><br />";
 					?>
 				</div>
 			</div>

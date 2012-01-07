@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
-Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
+Tags: backup, admin, file, Database, mysql, dump, cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
 Requires at least: 3.2
 Tested up to: 3.3
 Stable tag: 2.1.7
@@ -41,9 +41,15 @@ Do backups and more for your WordPress Blog.
 3. Activate the Plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
+= EN =
 * FAQ: http://backwpup.com/faq
 * Manual:  http://backwpup.com/manual
 * Support: http://backwpup.com/forums
+
+= DE =
+* FAQ: http://de.backwpup.com/faq
+* Manual:  http://de.backwpup.com/manual
+* Support: http://de.backwpup.com/forums
 
 == Screenshots ==
 1. Job Page
@@ -56,16 +62,25 @@ Do backups and more for your WordPress Blog.
 * Added: file sync with destination for backups
 * Added: support for Box.net
 * Added: own database table for backwpup
-* Improved: mysql dump restore
+* Added: new methods to start a job link/commandline
+* Added: Extra compression for dump and xml files
+* Added: changeable file name for dump and xml files
+* Added: not load text domains on job or ajax working for better performance and lower memory usage
+* Added: tool for script execution time test
+* Added: many little thinks
 * Improved: mysql dump
 * Improved: XML export
 * Improved: zipping
-* Improved: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
 * Improved: don't look for file extensions on deletion and use file time not name
-* Improved: the job runs now in the WordPress environment again
 * Improved: Password encryption/security
+* Improved: Performance on Plugin load
+* Improved:  many little thinks
+* Changed: the job runs now in the WordPress environment again
+* Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
+* Changed: Many code recode and added to classes
 * Updated: AWS lib to 1.5.0.1
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
+* Removed: dump restore is now a extra file
 * Fixed: many bugs
 
 = 2.1.7 =
@@ -121,7 +136,7 @@ Do backups and more for your WordPress Blog.
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)
-* Uses now �WP_TEMP_DIR� for getting temp folder
+* Uses now WP_TEMP_DIR for getting temp folder
 * Updated AWS lib to 1.3.6
 * Job runs now in UTC time. Time outputs will convert.
 * Many languge strings changed for better translation

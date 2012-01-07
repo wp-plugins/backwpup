@@ -1,4 +1,6 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
 //Remove header and footer form logfile
 function backwpup_read_logfile($logfile) {
 	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')

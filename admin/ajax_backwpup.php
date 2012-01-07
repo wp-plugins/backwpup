@@ -1,4 +1,7 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
+
 //helper functions for detecting file size
 function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array()) {
 	global $backwpup_temp_files;

@@ -1,4 +1,7 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
+
 include_once(dirname(__FILE__).'/func_backwpupworking.php');
 
 function backwpup_get_logfile_ajax() {

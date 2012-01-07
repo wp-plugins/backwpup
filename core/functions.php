@@ -65,7 +65,7 @@ function backwpup_delete_option($mainname,$name) {
 
 function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	global $backwpup_cfg;
-	$url=BACKWPUP_PLUGIN_BASEURL.'/backwpup-job.php';
+	$url=BACKWPUP_PLUGIN_BASEURL.'/job.php';
 	$query_args['jobid']=$jobid;
 	$header='';
 	$authurl='';
