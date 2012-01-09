@@ -48,7 +48,7 @@ class BackWPup_Admin {
 	}
 
 	public function admin_page() {
-		global $backwpup_message,$backwpup_cfg,$backwpup_listtable;
+		global $backwpup_message,$backwpup_listtable;
 		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 			return;
 		if (!empty($_GET['page']) and in_array($_GET['page'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php'))
@@ -56,7 +56,7 @@ class BackWPup_Admin {
 	}
 
 	public function admin_page_load() {
-		global $backwpup_message,$backwpup_cfg,$backwpup_listtable;
+		global $backwpup_message,$backwpup_listtable;
 		//check user premessions
 		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 			return;
@@ -131,15 +131,14 @@ class BackWPup_Admin {
 	}
 
 	public function dashboard_logs() {
-		global $backwpup_cfg;
 		$widgets = get_option('dashboard_widget_options');
 		if (!isset($widgets['backwpup_dashboard_logs']) or $widgets['backwpup_dashboard_logs']<1 or $widgets['backwpup_dashboard_logs']>20)
 			$widgets['backwpup_dashboard_logs'] =5;
 		//get log files
 		$logfiles=array();
-		if (is_readable($backwpup_cfg['logfolder']) and  $dir = @opendir( $backwpup_cfg['logfolder'] ) ) {
+		if (is_readable(backwpup_get_option('cfg','logfolder')) and  $dir = @opendir( backwpup_get_option('cfg','logfolder') ) ) {
 			while (($file = readdir( $dir ) ) !== false ) {
-				if (is_file($backwpup_cfg['logfolder'].'/'.$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
+				if (is_file(backwpup_get_option('cfg','logfolder').$file) and 'backwpup_log_' == substr($file,0,strlen('backwpup_log_')) and  ('.html' == substr($file,-5) or '.html.gz' == substr($file,-8)))
 					$logfiles[]=$file;
 			}
 			closedir( $dir );
@@ -149,10 +148,10 @@ class BackWPup_Admin {
 		if (count($logfiles)>0) {
 			$count=0;
 			foreach ($logfiles as $logfile) {
-				$logdata=backwpup_read_logheader($backwpup_cfg['logfolder'].'/'.$logfile);
+				$logdata=backwpup_read_logheader(backwpup_get_option('cfg','logfolder').$logfile);
 				echo '<li>';
 				echo '<span>'.date_i18n(get_option('date_format').' @ '.get_option('time_format'),$logdata['logtime']).'</span> ';
-				echo '<a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$backwpup_cfg['logfolder'].'/'.$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
+				echo '<a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.backwpup_get_option('cfg','logfolder').$logfile, 'view-log_'.$logfile).'" title="'.__('View Log:','backwpup').' '.basename($logfile).'">'.$logdata['name'].'</i></a>';
 				if ($logdata['errors']>0)
 					printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
 				if ($logdata['warnings']>0)
@@ -193,22 +192,22 @@ class BackWPup_Admin {
 
 	public function dashboard_activejobs() {
 		global $wpdb;
-		$main_namesactive=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activetype' AND value!=''");
-		if (empty($main_namesactive)) {
+		$mainsactive=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value!=''");
+		if (empty($mainsactive)) {
 			echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
 			return;
 		}
 		$backupdata=backwpup_get_option('working','data');
 		//get ordering
-		$main_namescronnextrun=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='cronnextrun' ORDER BY value ASC");
+		$mainscronnextrun=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='cronnextrun' ORDER BY value ASC");
 		echo '<ul>';
-		foreach ($main_namescronnextrun as $main_name) {
-			if (!in_array($main_name,$main_namesactive))
+		foreach ($mainscronnextrun as $main) {
+			if (!in_array($main,$mainsactive))
 				continue;
-			$name=backwpup_get_option($main_name,'name');
-			$jobid=backwpup_get_option($main_name,'jobid');
+			$name=backwpup_get_option($main,'name');
+			$jobid=backwpup_get_option($main,'jobid');
 			if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobid) {
-				$startime=backwpup_get_option($main_name,'starttime');
+				$startime=backwpup_get_option($main,'starttime');
 				$runtime=current_time('timestamp')-$startime;
 				echo '<li><span style="font-weight:bold;">'.$jobid.'. '.$name.': </span>';
 				printf('<span style="color:#e66f00;">'.__('working since %d sec.','backwpup').'</span>',$runtime);
@@ -216,7 +215,7 @@ class BackWPup_Admin {
 				echo " <a style=\"color:red;\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";
 				echo "</li>";
 			} else {
-				$cronnextrun=backwpup_get_option($main_name,'cronnextrun');
+				$cronnextrun=backwpup_get_option($main,'cronnextrun');
 				echo '<li><span>'.date_i18n(get_option('date_format'),$cronnextrun).' @ '.date_i18n(get_option('time_format'),$cronnextrun).'</span>';
 				echo ' <a href="'.wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobid, 'edit-job').'" title="'.__('Edit Job','backwpup').'">'.$name.'</a><br />';
 				echo "</li>";

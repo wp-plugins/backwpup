@@ -20,7 +20,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function prepare_items() {
 		global $mode,$wpdb;
-		$jobsids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value ASC");
+		$jobsids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC");
 		if (!empty($jobsids)) {
 			foreach ($jobsids as $jobid) {
 				$this->items[$jobid]=backwpup_get_job_vars($jobid);
@@ -75,7 +75,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 
 	function single_row($jobvalue, $backupdata, $style = '' ) {
-		global $mode,$backwpup_cfg;
+		global $mode;
 
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id=\"jodid-".$jobvalue["jobid"]."\"".$style.">";

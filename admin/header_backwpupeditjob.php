@@ -3,68 +3,54 @@ if (!defined('ABSPATH'))
 	die();
 
 //Save Dropbox auth
-if (isset($_GET['auth']) and $_GET['auth']=='Dropbox')  { 
+if (isset($_GET['auth']) and $_GET['auth']=='DropBox')  {
 	$jobid = (int) $_GET['jobid'];
-	check_admin_referer('edit-job');
+	if (!wp_verify_nonce('edit-job')) {
+		wp_nonce_ays('edit-job');
+		die();
+	}
 	$backwpup_message='';
 	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
-		$reqtoken=backwpup_get_option('TEMP','DROPBOXAUTH');
+		$reqtoken=backwpup_get_option('temp','dropboxauth');
 		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
-			//set boxtype and authkeys
-			$root=backwpup_get_option('job_'.$jobid,'droperoot');
-			if ($root=='sandbox')
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
-			else
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
-
+			$dropbox = new backwpup_Dropbox(backwpup_get_option('job_'.$jobid,'droperoot'));
 			$oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
 			//Save Tokens
 			backwpup_update_option('job_'.$jobid,'dropetoken',$oAuthStuff['oauth_token']);
 			backwpup_update_option('job_'.$jobid,'dropesecret',$oAuthStuff['oauth_token_secret']);
 			$backwpup_message.=__('Dropbox authentication complete!','backwpup').'<br />';
 		} else {
-			$backwpup_message.=__('Wrong Token for Dropbox authentication received!','backwpup').'<br />';
+			$backwpup_message.=__('Wrong Token for DropBox authentication received!','backwpup').'<br />';
 		}
 	} else {
-		$backwpup_message.=__('No Dropbox authentication received!','backwpup').'<br />';	
+		$backwpup_message.=__('No DropBox authentication received!','backwpup').'<br />';
 	}
-	backwpup_delete_option('TEMP','DROPBOXAUTH');
+	backwpup_delete_option('temp','dropboxauth');
 	$_POST['jobid']=$jobid;
 }
 
-//Save Boxnet auth
-if (isset($_GET['auth']) and $_GET['auth']=='Boxnet')  { 
-	$jobid = (int) $_GET['jobid'];
-	check_admin_referer('edit-job');
-	$backwpup_message='';
-	if (!empty($_REQUEST['auth_token'])) {
-		$reqtoken=backwpup_get_option('TEMP','BOXNETTICKET');
-		if ($reqtoken==$_REQUEST['ticket'] and !empty($_REQUEST['ticket'])) {
-			//Save Auth
-			backwpup_update_option('job_'.$jobid,'boxnetauth',$_REQUEST['auth_token']);
-			$backwpup_message.=__('Box.net authentication complete!','backwpup').'<br />';
-		} else {
-			$backwpup_message.=__('Wrong ticket for Box.net authentication received!','backwpup').'<br />';
-		}
-	} else {
-		$backwpup_message.=__('No Box.net authentication received!','backwpup').'<br />';	
-	}
-	backwpup_delete_option('TEMP','BOXNETTICKET');
-	$_POST['jobid']=$jobid;
-}
-
-
-//Save Job settings
+//Save and check Job settings
 if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
+	global $wpdb;
 	check_admin_referer('edit-job');
-	$jobvalues['jobid']=(int) $_POST['jobid'];
-	$jobvalues['type']=(array)$_POST['type'];
-	$jobvalues['name']= esc_html($_POST['name']);
-	$jobvalues['activetype']=$_POST['activetype'];
-	$jobvalues['cronselect']= $_POST['cronselect']=='basic' ? 'basic':'advanced';
-	if ($jobvalues['cronselect']=='advanced') {
+	$main='job_'.(int)$_POST['jobid'];
+	backwpup_update_option($main,'jobid',(int) $_POST['jobid']);
+
+	foreach((array)$_POST['type'] as $key => $value) {
+		$_POST['type'][$key]=strtoupper($_POST['type'][$key]);
+		$value=strtoupper($value);
+		if (!in_array($value,backwpup_backup_types()))
+			unset($_POST['type'][$key]);
+	}
+	sort($_POST['type']);
+	backwpup_update_option($main,'type',(array)$_POST['type']);
+	backwpup_update_option($main,'name',sanitize_title($_POST['name'],__('New','backwpup')));
+	if ($_POST['activetype']=='' or $_POST['activetype']=='wpcron' or $_POST['activetype']=='backwpupapi')
+		backwpup_update_option($main,'type',$_POST['activetype']);
+	backwpup_update_option($main,'cronselect',$_POST['cronselect']=='advanced' ? 'advanced':'basic');
+	if ($_POST['cronselect']=='advanced') {
 		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
 			if (!empty($_POST['cronminutes'][1]))
 				$_POST['cronminutes']=array('*/'.$_POST['cronminutes'][1]);
@@ -95,46 +81,62 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 			else
 				$_POST['cronwday']=array('*');
 		}
-		$jobvalues['cron']=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
+		$cron=implode(",",$_POST['cronminutes']).' '.implode(",",$_POST['cronhours']).' '.implode(",",$_POST['cronmday']).' '.implode(",",$_POST['cronmon']).' '.implode(",",$_POST['cronwday']);
+		backwpup_update_option($main,'cron',$cron);
 	} else {
-		if ($_POST['cronbtype']=='mon') {
-			$jobvalues['cron']=$_POST['moncronminutes'].' '.$_POST['moncronhours'].' '.$_POST['moncronmday'].' * *';
-		}
-		if ($_POST['cronbtype']=='week') {
-			$jobvalues['cron']=$_POST['weekcronminutes'].' '.$_POST['weekcronhours'].' * * '.$_POST['weekcronwday'];
-		}
-		if ($_POST['cronbtype']=='day') {
-			$jobvalues['cron']=$_POST['daycronminutes'].' '.$_POST['daycronhours'].' * * *';
-		}
-		if ($_POST['cronbtype']=='hour') {
-			$jobvalues['cron']=$_POST['hourcronminutes'].' * * * *';
-		}
+		if ($_POST['cronbtype']=='mon')
+			backwpup_update_option($main,'cron',$_POST['moncronminutes'].' '.$_POST['moncronhours'].' '.$_POST['moncronmday'].' * *');
+		if ($_POST['cronbtype']=='week')
+			backwpup_update_option($main,'cron',$_POST['weekcronminutes'].' '.$_POST['weekcronhours'].' * * '.$_POST['weekcronwday']);
+		if ($_POST['cronbtype']=='day')
+			backwpup_update_option($main,'cron',$_POST['daycronminutes'].' '.$_POST['daycronhours'].' * * *');
+		if ($_POST['cronbtype']=='hour')
+			backwpup_update_option($main,'cron',$_POST['hourcronminutes'].' * * * *');
 	}
-	$jobvalues['cronnextrun']=backwpup_cron_next($jobvalues['cron']);
-	$jobvalues['mailaddresslog']= isset($_POST['mailaddresslog']) ? sanitize_email($_POST['mailaddresslog']) : '';
-	$jobvalues['mailerroronly']= (isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false;
-	$checedtables=array();
+	$cronnextrun=backwpup_cron_next(backwpup_get_option($main,'cron'));
+	backwpup_update_option($main,'cronnextrun',$cronnextrun);
+	backwpup_update_option($main,'mailaddresslog',sanitize_email($_POST['mailaddresslog']));
+	backwpup_update_option($main,'mailerroronly',(isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false);
+	$check_db_tables=array();
 	if (isset($_POST['jobtabs'])) {
 		foreach ($_POST['jobtabs'] as $dbtable) {
-			$checedtables[]=rawurldecode($dbtable);
+			$check_db_tables[]=rawurldecode($dbtable);
 		}
 	}
-	global $wpdb;
 	$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-	$jobvalues['dbexclude']=array();
+	$dbexclude=array();
 	foreach ($tables as $dbtable) {
-		if (!in_array($dbtable,$checedtables))
-			$jobvalues['dbexclude'][]=$dbtable;
-	}	
-	$jobvalues['dbdumpfile']=$_POST['dbdumpfile'];
-	$jobvalues['dbdumpfilecompression']=$_POST['dbdumpfilecompression'];
-	$jobvalues['maintenance']= (isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false;
-	$jobvalues['wpexportfile']=$_POST['wpexportfile'];
-	$jobvalues['wpexportfilecompression']=$_POST['wpexportfilecompression'];
-	$jobvalues['fileexclude']=isset($_POST['fileexclude']) ? stripslashes($_POST['fileexclude']) : '';
-	$jobvalues['dirinclude']=isset($_POST['dirinclude']) ? stripslashes($_POST['dirinclude']) : '';
-	$jobvalues['backupexcludethumbs']= (isset($_POST['backupexcludethumbs']) && $_POST['backupexcludethumbs']==1) ? true : false;
-	$jobvalues['backuproot']= (isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false;
+		if (!in_array($dbtable,$check_db_tables))
+			$dbexclude[]=$dbtable;
+	}
+	backwpup_update_option($main,'dbexclude',$dbexclude);
+	backwpup_update_option($main,'dbdumpfile',$_POST['dbdumpfile']);
+	if ($_POST['dbdumpfilecompression']=='' or $_POST['dbdumpfilecompression']=='gz' or $_POST['dbdumpfilecompression']=='bz2')
+		backwpup_update_option($main,'dbdumpfilecompression',$_POST['dbdumpfilecompression']);
+	backwpup_update_option($main,'maintenance',(isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false);
+	backwpup_update_option($main,'wpexportfile',$_POST['wpexportfile']);
+	if ($_POST['wpexportfilecompression']=='' or $_POST['wpexportfilecompression']=='gz' or $_POST['wpexportfilecompression']=='bz2')
+		backwpup_update_option($main,'wpexportfilecompression',$_POST['wpexportfilecompression']);
+	$fileexclude=explode(',',stripslashes($_POST['fileexclude']));
+	foreach($fileexclude as $key => $value) {
+		$fileexclude[$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($fileexclude[$key]))
+			unset($fileexclude[$key]);
+	}
+	sort($fileexclude);
+	backwpup_update_option($main,'fileexclude',implode(',',$fileexclude));
+	$dirinclude=explode(',',stripslashes($_POST['dirinclude']));
+	foreach($dirinclude as $key => $value) {
+		$dirinclude[$key]=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($value))));
+		if ($dirinclude[$key]=='/' or empty($dirinclude[$key]) or !is_dir($dirinclude[$key]))
+			unset($dirinclude[$key]);
+	}
+	sort($dirinclude);
+	backwpup_update_option($main,'dirinclude',implode(',',$dirinclude));
+	backwpup_update_option($main,'backupexcludethumbs',(isset($_POST['backupexcludethumbs']) && $_POST['backupexcludethumbs']==1) ? true : false);
+	backwpup_update_option($main,'backuproot',(isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false);
+
+
 	$jobvalues['backuprootexcludedirs']=!empty($_POST['backuprootexcludedirs']) ? (array)$_POST['backuprootexcludedirs'] : array();
 	$jobvalues['backupcontent']= (isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false;
 	$jobvalues['backupcontentexcludedirs']=!empty($_POST['backupcontentexcludedirs']) ? (array)$_POST['backupcontentexcludedirs'] : array();
@@ -157,7 +159,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['msazuresyncnodelete']= (isset($_POST['msazuresyncnodelete']) && $_POST['msazuresyncnodelete']==1) ? true : false;
 	$jobvalues['rscsyncnodelete']= (isset($_POST['rscsyncnodelete']) && $_POST['rscsyncnodelete']==1) ? true : false;
 	$jobvalues['dropesyncnodelete']= (isset($_POST['dropesyncnodelete']) && $_POST['dropesyncnodelete']==1) ? true : false;
-	$jobvalues['boxnetsyncnodelete']= (isset($_POST['boxnetsyncnodelete']) && $_POST['boxnetsyncnodelete']==1) ? true : false;
 	$jobvalues['sugarsyncnodelete']= (isset($_POST['sugarsyncnodelete']) && $_POST['sugarsyncnodelete']==1) ? true : false;
 	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
 	$jobvalues['ftphostport']=!empty($_POST['ftphostport']) ? (int)$_POST['ftphostport'] : 21;
@@ -170,8 +171,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
 	$jobvalues['droperoot']=$_POST['droperoot'];
 	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
-	$jobvalues['boxnetbackups']=isset($_POST['boxnetbackups']) ? (int)$_POST['boxnetbackups'] : 0;	
-	$jobvalues['boxnetdir']=isset($_POST['boxnetdir']) ? $_POST['boxnetdir'] : '';
 	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
 	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
 	$jobvalues['awsrrs']= (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false;
@@ -209,7 +208,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		try {
 			$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
 			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
-			$jobvalues['awsBucket']=$_POST['newawsBucket'];
+			backwpup_update_option($main,'awsBucket',$_POST['newawsBucket']);
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
@@ -259,66 +258,31 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	}
 	
 	
-	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Delete Dropbox authentication!', 'backwpup')) {
-		$jobvalues['dropetoken']='';
-		$jobvalues['dropesecret']='';
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Delete DropBox authentication!', 'backwpup')) {
+		backwpup_update_option($main,'dropetoken','');
+		backwpup_update_option($main,'dropesecret','');
 		$backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
 	}
 
-	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Delete Box.net authentication!', 'backwpup')) {
-		$jobvalues['boxnetauth']='';
-		$backwpup_message.=__('Box.net authentication deleted!','backwpup').'<br />';
-	}
-	
-	//save chages
-	$jobvalues=backwpup_get_job_vars($jobvalues['jobid'],$jobvalues);
-	foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
-		backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
-	}
-
-	//get dropbox auth	
-	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Dropbox authenticate!', 'backwpup')) {
+	//get DropBox auth
+	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('DropBox authenticate!', 'backwpup')) {
 		require_once (dirname(__FILE__).'/../libs/dropbox.php');
-		//set boxtype and authkeys
-		if ($jobvalues['droperoot']=='sandbox')
-			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
-		else
-			$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
-
+		$dropbox = new backwpup_Dropbox(backwpup_get_option($main,'droperoot'));
 		// let the user authorize (user will be redirected)
-		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Dropbox&_wpnonce='.wp_create_nonce('edit-job'));
+		$response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.backwpup_get_option($main,'jobid').'&auth=DropBox&_wpnonce='.wp_create_nonce('edit-job'));
 		// save oauth_token_secret 
-		backwpup_update_option('TEMP','DROPBOXAUTH',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
+		backwpup_update_option('temp','dropboxauth',array('oAuthRequestToken'=>$response['oauth_token'],'oAuthRequestTokenSecret' => $response['oauth_token_secret']));
 		//forward to auth page
 		wp_redirect($response['authurl']);
-	}
-	
-	//get box.net auth	
-	if (isset($_POST['authbutton']) and $_POST['authbutton']==__('Box.net authenticate!', 'backwpup')) {
-		//set boxtype and authkeys
-		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_ticket&api_key='.$backwpup_cfg['BOXNET']);
-		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
-			$response = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
-		}
-		if ($response->status=='get_ticket_ok') {
-			$callback=backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&auth=Boxnet&_wpnonce='.wp_create_nonce('edit-job');
-			$authurl=$backwpupapi->boxnetauthproxy((string)$response->ticket,$callback);
-			// save oauth_token_secret 
-			backwpup_update_option('TEMP','BOXNETTICKET',(string)$response->ticket);
-			//forward to auth page
-			wp_redirect($authurl);
-		} else {
-			$backwpup_message.=__('Box.net get authentication faild!','backwpup').'<br />';
-		}
 	}
 	
 	//make api call to backwpup.com
 	global $backwpupapi;
 	$backwpupapi->cronupdate();
 	
-	$_POST['jobid']=$jobvalues['jobid'];
-	$url=backwpup_jobrun_url('runnow',$jobvalues['jobid'],false);
-	$backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview', 'backwpup').'</a> | <a href="'.$url['url'].'">'.__('Run now', 'backwpup').'</a>';
+	$_POST['jobid']=backwpup_get_option($main,'jobid');
+	$url=backwpup_jobrun_url('runnow',backwpup_get_option($main,'jobid'),false);
+	$backwpup_message.=str_replace('%1',backwpup_get_option($main,'name'),__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview', 'backwpup').'</a> | <a href="'.$url['url'].'">'.__('Run now', 'backwpup').'</a>';
 }
 
 
@@ -338,8 +302,6 @@ if (in_array('FTP',$dests))
 	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), array('BackWPup_editjob_metaboxes','destftp'), get_current_screen()->id, 'advanced', 'default');
 if (in_array('DROPBOX',$dests))
 	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), array('BackWPup_editjob_metaboxes','destdropbox'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('BOXNET',$dests))
-	add_meta_box('backwpup_jobedit_destboxnet', __('Backup to Box.net','backwpup'), array('BackWPup_editjob_metaboxes','destboxnet'), get_current_screen()->id, 'advanced', 'default');
 if (in_array('SUGARSYNC',$dests))
 	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), array('BackWPup_editjob_metaboxes','destsugarsync'), get_current_screen()->id, 'advanced', 'default');
 if (in_array('S3',$dests))

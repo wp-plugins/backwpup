@@ -17,12 +17,12 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="mailsndemail"><?PHP _e('Sender email','backwpup'); ?></label></th> 
-<td><input name="mailsndemail" type="text" id="mailsndemail" value="<?PHP echo $backwpup_cfg['mailsndemail'];?>" class="regular-text" />
+<td><input name="mailsndemail" type="text" id="mailsndemail" value="<?PHP echo backwpup_get_option('cfg','mailsndemail');?>" class="regular-text" />
 </td> 
 </tr> 
 <tr valign="top"> 
 <th scope="row"><label for="mailsndname"><?PHP _e('Sender name','backwpup'); ?></label></th> 
-<td><input name="mailsndname" type="text" id="mailsndname" value="<?PHP echo $backwpup_cfg['mailsndname'];?>" class="regular-text" /></td> 
+<td><input name="mailsndname" type="text" id="mailsndname" value="<?PHP echo backwpup_get_option('cfg','mailsndname');?>" class="regular-text" /></td>
 </tr>
 </table> 
 
@@ -31,19 +31,19 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <table class="form-table"> 
 <tr valign="top"> 
 <th scope="row"><label for="logfolder"><?PHP _e('Log file Folder','backwpup'); ?></label></th>
-<td><input name="logfolder" type="text" id="logfolder" value="<?PHP echo $backwpup_cfg['logfolder'];?>" class="regular-text code" />
+<td><input name="logfolder" type="text" id="logfolder" value="<?PHP echo backwpup_get_option('cfg','logfolder');?>" class="regular-text code" />
 </td> 
 </tr>
 <tr valign="top"> 
 <th scope="row"><label for="maxlogs"><?PHP _e('Max. Log Files in Folder','backwpup'); ?></label></th> 
-<td><input name="maxlogs" type="text" id="maxlogs" value="<?PHP echo $backwpup_cfg['maxlogs'];?>" class="small-text code" />
+<td><input name="maxlogs" type="text" id="maxlogs" value="<?PHP echo backwpup_get_option('cfg','maxlogs');?>" class="small-text code" />
 <span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
 </td> 
 </tr>
 <tr valign="top"> 
 <th scope="row"><?PHP _e('Compression','backwpup'); ?></th> 
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Compression','backwpup'); ?></span></legend><label for="gzlogs"> 
-<input name="gzlogs" type="checkbox" id="gzlogs" value="1" <?php checked($backwpup_cfg['gzlogs'],true); ?><?php if (!function_exists('gzopen')) echo " disabled=\"disabled\""; ?> /> 
+<input name="gzlogs" type="checkbox" id="gzlogs" value="1" <?php checked(backwpup_get_option('cfg','gzlogs'),true); ?><?php if (!function_exists('gzopen')) echo " disabled=\"disabled\""; ?> />
 <?PHP _e('Gzip Log files!','backwpup'); ?></label> 
 </fieldset></td>
 </tr>
@@ -53,27 +53,27 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <table class="form-table">
 	<tr valign="top">
 		<th scope="row"><label for="jobrunmaxexectime"><?PHP _e('Max. Script Execution time','backwpup'); ?></label></th>
-		<td><input name="jobrunmaxexectime" type="text" id="jobrunmaxexectime" value="<?PHP echo $backwpup_cfg['jobrunmaxexectime'];?>" class="small-text code" />
+		<td><input name="jobrunmaxexectime" type="text" id="jobrunmaxexectime" value="<?PHP echo backwpup_get_option('cfg','jobrunmaxexectime');?>" class="small-text code" />
 			<span class="description"><?PHP _e('(0 = endless; Default. You can test the time under Tools. The job will be automatic restarted after this time.)','backwpup');?></span>
 		</td>
 	<tr valign="top">
 <th scope="row"><label for="jobstepretry"><?PHP _e('Max. retrys for job steps','backwpup'); ?></label></th> 
-<td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo $backwpup_cfg['jobstepretry'];?>" class="small-text code" />
+<td><input name="jobstepretry" type="text" id="jobstepretry" value="<?PHP echo backwpup_get_option('cfg','jobstepretry');?>" class="small-text code" />
 </td> 
 </tr>
 <tr valign="top"> 
 <th scope="row"><label for="jobscriptretry"><?PHP _e('Max. retrys for job script retries','backwpup'); ?></label></th> 
-<td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo $backwpup_cfg['jobscriptretry'];?>" class="small-text code" <?php if (defined('ALTERNATE_WP_CRON') and ALTERNATE_WP_CRON) echo " disabled=\"disabled\""; ?> />
+<td><input name="jobscriptretry" type="text" id="jobscriptretry" value="<?PHP echo backwpup_get_option('cfg','jobscriptretry');?>" class="small-text code" <?php if (defined('ALTERNATE_WP_CRON') and ALTERNATE_WP_CRON) echo " disabled=\"disabled\""; ?> />
 </td> 
 </tr>
 	<tr valign="top">
 		<th scope="row"><label for="tempfolder"><?PHP _e('Temp file Folder','backwpup'); ?></label></th>
-		<td><input name="tempfolder" type="text" id="tempfolder" value="<?PHP echo $backwpup_cfg['tempfolder'];?>" class="regular-text code" />
+		<td><input name="tempfolder" type="text" id="tempfolder" value="<?PHP echo backwpup_get_option('cfg','tempfolder');?>" class="regular-text code" />
 		</td>
 	</tr>
 	<tr valign="top">
 		<th scope="row"><label for="jobrunauthkey"><?PHP _e('Key for start jobs external with a URL','backwpup'); ?></label></th>
-		<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo $backwpup_cfg['jobrunauthkey'];?>" class="text code" />
+		<td><input name="jobrunauthkey" type="text" id="jobrunauthkey" value="<?PHP echo backwpup_get_option('cfg','jobrunauthkey');?>" class="text code" />
 			<span><?PHP echo sprintf(__('A unique key is: %s','backwpup'),wp_create_nonce('BackWPupJobRun')); ?></span>
 			<span class="description"><?PHP _e('(empty = deactivated. Will be used for, that nobody else can use the job start URLs.)','backwpup');?></span>
 		</td>
@@ -86,7 +86,7 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <tr valign="top"> 
 <th scope="row"><?PHP _e('Admin Bar','backwpup'); ?></th> 
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Admin Bar','backwpup'); ?></span></legend><label for="showadminbar"> 
-<input name="showadminbar" type="checkbox" id="showadminbar" value="1" <?php checked($backwpup_cfg['showadminbar'],true); ?> /> 
+<input name="showadminbar" type="checkbox" id="showadminbar" value="1" <?php checked(backwpup_get_option('cfg','showadminbar'),true); ?> />
 <?PHP _e('Show BackWPup Links in Admin Bar.','backwpup'); ?></label> 
 </fieldset></td>
 </tr>
@@ -97,12 +97,12 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <table class="form-table"> 
 <tr valign="top">
 <th scope="row"><label for="httpauthuser"><?PHP _e('Username:','backwpup'); ?></label></th> 
-<td><input name="httpauthuser" type="text" id="httpauthuser" value="<?PHP echo $backwpup_cfg['httpauthuser'];?>" class="regular-text" />
+<td><input name="httpauthuser" type="text" id="httpauthuser" value="<?PHP echo backwpup_get_option('cfg','httpauthuser');?>" class="regular-text" />
 </td> 
 </tr>
 <tr valign="top"> 
 <th scope="row"><label for="httpauthpassword"><?PHP _e('Password:','backwpup'); ?></label></th>
-<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo $backwpup_cfg['httpauthpassword'];?>" class="regular-text" />
+<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo backwpup_get_option('cfg','httpauthpassword');?>" class="regular-text" />
 </tr>
 </table>
 <h3><?PHP _e('Cron service of BackWPup.com','backwpup'); ?></h3>
@@ -112,7 +112,7 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <th scope="row"><?PHP _e('Key for cron service','backwpup'); ?></th>
 <td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Key for cron service','backwpup'); ?></span></legend>
 	<label for="apicronservicekey">
-		<input name="apicronservicekey" type="text" id="apicronservicekey" value="<?PHP echo $backwpup_cfg['apicronservicekey'];?>" class="text code" />
+		<input name="apicronservicekey" type="text" id="apicronservicekey" value="<?PHP echo backwpup_get_option('cfg','apicronservicekey');?>" class="text code" />
 	</label>
 	<span><?PHP echo sprintf(__('A unique key is: %s','backwpup'),wp_create_nonce('BackWPupJobRunAPI')); ?></span>
 	<span class="description"><?PHP _e('(empty = deactivated. Will be used for, that nobody else can use the job start URLs.)','backwpup');?></span>

@@ -71,9 +71,9 @@ if (!empty($doaction)) {
 				if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
 					try {
 						if ($jobvalue['droperoot']=='sandbox')
-							$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
+							$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'),false);
 						else
-							$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
+							$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_APP_SECRET'),true);
 						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 						$dropbox->fileopsDelete($backupfile);
 						unset($dropbox);
@@ -83,14 +83,14 @@ if (!empty($doaction)) {
 				}	
 			} elseif ($dest=='BOXNET') {
 				if (!empty($jobvalue['boxnetauth'])) 
-					wp_remote_get('http://www.box.net/api/1.0/rest?action=delete&target=file&target_id='.$backupfile.'&api_key='.$backwpup_cfg['BOXNET'].'&auth_token='.$jobvalue['boxnetauth']);
+					wp_remote_get('http://www.box.net/api/1.0/rest?action=delete&target=file&target_id='.$backupfile.'&api_key='.backwpup_get_option('cfg','BOXNET').'&auth_token='.$jobvalue['boxnetauth']);
 			} elseif ($dest=='SUGARSYNC') {
 				if (!class_exists('SugarSync'))
 					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 				if (class_exists('SugarSync')) {
 					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
 						try {
-							$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
+							$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'), backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
 							$sugarsync->delete(urldecode($backupfile));
 							unset($sugarsync);
 						} catch (Exception $e) {
@@ -208,9 +208,9 @@ if (!empty($doaction)) {
 		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
 			if ($jobvalue['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
+				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'),false);
 			else
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
+				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_APP_SECRET'),true);
 			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 			$media=$dropbox->media($_GET['file']);
 			if (!empty($media['url']))
@@ -227,7 +227,7 @@ if (!empty($doaction)) {
 		$jobid=$_GET['jobid'];
 		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
+			$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'), backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
 			$response=$sugarsync->get(urldecode($_GET['file']));
 			header("Pragma: public");
 			header("Expires: 0");

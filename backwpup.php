@@ -60,7 +60,6 @@ if (is_main_site()) {
 		include_once(dirname(__FILE__).'/core/deactivate.php');
 	//Load some file
 	include_once(dirname(__FILE__).'/core/functions.php');
-	include_once(dirname(__FILE__).'/core/init.php');
 	//WP-Cron
 	add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>300,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
 	if (defined('DOING_CRON')and !defined('DOING_BACKWPUP_JOB') and DOING_CRON )

@@ -12,7 +12,7 @@ function backwpup_job_dest_rsc() {
 		if ($auth->authenticate())
 			trigger_error(__('Connected to Rackspase ...','backwpup'),E_USER_NOTICE);
 		$conn = new CF_Connection($auth);
-		$conn->ssl_use_cabundle();
+		$conn->ssl_use_cabundle(dirname(__FILE__).'/../libs/cacert.pem');
 		$is_container=false;
 		$containers=$conn->get_containers();
 		foreach ($containers as $container) {
@@ -41,15 +41,6 @@ function backwpup_job_dest_rsc() {
 		//if (!empty($backwpupjobrun['STATIC']['JOB']['rscdir'])) //make the foldder
 		//	$backwpupcontainer->create_paths($backwpupjobrun['STATIC']['JOB']['rscdir']);
 		$backwpupbackup = $backwpupcontainer->create_object($backwpupjobrun['STATIC']['JOB']['rscdir'].$backwpupjobrun['STATIC']['backupfile']);
-		//set content Type
-		if ($backwpupjobrun['STATIC']['JOB']['fileformart']=='.zip')
-			$backwpupbackup->content_type='application/zip';
-		if ($backwpupjobrun['STATIC']['JOB']['fileformart']=='.tar')
-			$backwpupbackup->content_type='application/x-ustar';
-		if ($backwpupjobrun['STATIC']['JOB']['fileformart']=='.tar.gz')
-			$backwpupbackup->content_type='application/x-compressed';
-		if ($backwpupjobrun['STATIC']['JOB']['fileformart']=='.tar.bz2')
-			$backwpupbackup->content_type='application/x-compressed';
 		trigger_error(__('Upload to RSC now started ... ','backwpup'),E_USER_NOTICE);
 		if ($backwpupbackup->load_from_filename($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])) {
 			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];

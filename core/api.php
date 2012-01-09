@@ -8,7 +8,7 @@ class BackWPup_api {
 	private $headers=array();
 
 	public function __construct() {
-		global $wp_version,$backwpup_cfg;
+		global $wp_version;
 		if (!defined('BACKWPUP_VERSION'))
 			define('BACKWPUP_VERSION','0.0');
 		$blogurl=trim(get_bloginfo('url'));
@@ -22,32 +22,36 @@ class BackWPup_api {
 		//move appapi to config
 		if (function_exists('backwpup_get_option')) {
 			$apiapp=backwpup_get_option('api','apiapp');
-			if (empty($apiapp)) {
+			if (!$apiapp) {
 				$data = new stdClass;
 				$data->checked = true;
 				$this->plugin_update_check($data);
 				$apiapp=backwpup_get_option('api','apiapp');
 			}
 			$apiapp=unserialize(backwpup_decrypt($apiapp,md5($blogurl)));
-			if (!is_array($backwpup_cfg))
-				$backwpup_cfg=array();
-			if (!empty($apiapp) and is_array($apiapp))
-				$backwpup_cfg=array_merge($backwpup_cfg,$apiapp);
+			if ($apiapp and is_array($apiapp)) {
+				$alloptions=wp_cache_get( 'options', 'backwpup' );
+				foreach ($apiapp as $app => $appvalue) {
+					if (!isset($alloptions['cfg'][$app]))
+						$alloptions['cfg'][$app]=$appvalue;
+				}
+				wp_cache_set( 'options', $alloptions, 'backwpup' );
+			}
 		}
 	}
 	
 	//API for cron trigger
 	public function cronupdate() {
-		global $wpdb,$backwpup_cfg;
-		if (empty($backwpup_cfg['apicronservice']))
+		global $wpdb;
+		if (backwpup_get_option('cfg','apicronservicekey'))
 			return;
 		$post=array();
 		$post['ACTION']='cronupdate';
 		$post['OFFSET']=get_option('gmt_offset');
-		if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword']))
-			$post['httpauth']=base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword']));
-		$activejobs=$wpdb->get_col("SELECT main_name FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='activetype' AND value='backwpupapi' ORDER BY main_name");
-		if (!empty($activejobs) and !empty($backwpup_cfg['apicronservicekey'])) {
+		if (backwpup_get_option('cfg','httpauthuser') and backwpup_get_option('cfg','httpauthpassword'))
+			$post['httpauth']=base64_encode(backwpup_get_option('cfg','httpauthuser').':'.backwpup_decrypt(backwpup_get_option('cfg','httpauthpassword')));
+		$activejobs=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='backwpupapi' ORDER BY main");
+		if (!empty($activejobs)) {
 			foreach ($activejobs as $mainname) {
 				$jobid=backwpup_get_option($mainname,'jobid');
 				$cron=backwpup_get_option($mainname,'cron');
@@ -72,6 +76,9 @@ class BackWPup_api {
 		// Start checking for an update
 		$post=array();
 		$post['ACTION']='updatecheck';
+		$saved=backwpup_get_option('api','updatecheck');
+		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200)
+			return $checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $saved['response'];
 		$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 			$response = unserialize(wp_remote_retrieve_body($raw_response));
@@ -79,8 +86,10 @@ class BackWPup_api {
 				backwpup_update_option('api','apiapp',$response->apiapps);
 				unset($response->apiapps);
 			}
-			if (is_object($response) && !empty($response->slug))
+			if (is_object($response) && !empty($response->slug)) {
 				$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $response;
+				backwpup_update_option('api','updatecheck',array('time'=>time(),'version'=>BACKWPUP_VERSION,'response'=>$response));
+			}
 		}
 		return $checked_data;
 	}
@@ -91,13 +100,18 @@ class BackWPup_api {
 			return false;
 		$post=array();
 		$post['ACTION']='updateinfo';
+		$saved=backwpup_get_option('api','updateinfo');
+		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200)
+			return $saved['return'];
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (is_wp_error($request)) {
 			$res = new WP_Error('plugins_api_failed', __('An Unexpected HTTP Error occurred during the API request.</p> <p><a href="?" onclick="document.location.reload(); return false;">Try again</a>'), $request->get_error_message());
 		} else {
-			$res = unserialize(wp_remote_retrieve_body($request));	
+			$res = unserialize(wp_remote_retrieve_body($request));
 			if ($res === false)
 				$res = new WP_Error('plugins_api_failed', __('An unknown error occurred'), $request['body']);
+			else
+				backwpup_update_option('api','updateinfo',array('time'=>time(),'version'=>BACKWPUP_VERSION,'return'=>$res));
 		}
 		return $res;
 	}
@@ -112,19 +126,7 @@ class BackWPup_api {
 		else
 			return false;
 	}
-	
-	//box.net Proxy
-	public function boxnetauthproxy($ticket,$callback) {
-		$post=array();
-		$post['ACTION']='boxnetproxy';
-		$post['TICKET']=$ticket;
-		$post['CALLBACK']=$callback;
-		$raw_response=wp_remote_post($this->apiurl, array('sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
-		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response))
-			return base64_decode(wp_remote_retrieve_body($raw_response));
-		else
-			return false;
-	}
 }
+global $backwpupapi;
 $backwpupapi=new BackWPup_api();
 ?>

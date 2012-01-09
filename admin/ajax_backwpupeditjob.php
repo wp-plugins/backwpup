@@ -337,7 +337,6 @@ function backwpup_get_msazure_container($args='') {
 
 //ajax/normal get SugarSync roots select box
 function backwpup_get_sugarsync_root($args='') {
-	global $backwpup_cfg;
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -369,7 +368,7 @@ function backwpup_get_sugarsync_root($args='') {
 	}
 
 	try {
-		$sugarsync = new SugarSync($sugaruser,$sugarpass,$backwpup_cfg['SUGARSYNC_ACCESSKEY'],$backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
+		$sugarsync = new SugarSync($sugaruser,$sugarpass,backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'),backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
 		$user=$sugarsync->user();
 		$syncfolders=$sugarsync->get($user->syncfolders);
 	} catch (Exception $e) {

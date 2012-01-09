@@ -45,7 +45,7 @@ elseif(is_writeable(ABSPATH)) {
 if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
 	echo "<th scope=\"row\"><label for=\"maxlogs\">".__('Select jobs to import','backwpup')."</label></th><td>";
 	$import=file_get_contents($_FILES['importfile']['tmp_name']);
-	$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value DESC");
+	$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC");
 	foreach ( unserialize($import) as $jobid => $jobvalue ) {
 		echo "<select name=\"importtype[".$jobid."]\" title=\"".__('Import Type', 'backwpup')."\"><option value=\"not\">".__('No Import', 'backwpup')."</option>";
 		if (in_array($jobid,$jobids))
@@ -72,8 +72,8 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 			$import[$id]['lastrun']='';
 			$import[$id]['lastruntime']='';
 			$import[$id]['lastbackupdownloadurl']='';
-			//delte old
-			$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s",'job_'.$id));
+			//delete old
+			$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main=%s",'job_'.$id));
 			//save
 			foreach ($import[$id] as $jobvaluename => $jobvaluevalue) {
 				backwpup_update_option('job_'.$import[$id]['jobid'],$jobvaluename,$jobvaluevalue);

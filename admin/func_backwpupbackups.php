@@ -148,7 +148,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	function get_dest_list() {
 		global $wpdb;
 		$jobdest=array();
-		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value");
+		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value");
 		if (!empty($jobids)) {
 			foreach ($jobids as $jobid) {
 				$jobvalue=backwpup_get_job_vars($jobid);
@@ -261,7 +261,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 
 //get backup files and infos
 function backwpup_get_backup_files($jobid,$dest) {
-	global $backwpup_message,$backwpup_cfg;
+	global $backwpup_message;
 	if (empty($jobid) or (!in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))) and $dest!='FOLDER'))
 		return false;
 	$jobvalue=backwpup_get_job_vars($jobid);
@@ -293,9 +293,9 @@ function backwpup_get_backup_files($jobid,$dest) {
 		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 		try {
 			if ($jobvalue['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_SANDBOX_APP_KEY'], $backwpup_cfg['DROPBOX_SANDBOX_APP_SECRET'],false);
+				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'),false);
 			else
-				$dropbox = new backwpup_Dropbox($backwpup_cfg['DROPBOX_APP_KEY'], $backwpup_cfg['DROPBOX_APP_SECRET'],true);
+				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_APP_KEY'),backwpup_get_option('cfg','DROPBOX_APP_SECRET'),true);
 			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
 			$contents = $dropbox->metadata($jobvalue['dropedir']);
 			if (is_array($contents)) {
@@ -324,7 +324,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 		if ($jobvalue['boxnetdir']!='/' and !empty($jobvalue['boxnetdir'])) {
 			$folders=split('/',trim($jobvalue['boxnetdir'],'/'));
 			foreach ($folders as $folder) {
-				$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=create_folder&share=0&name='.urlencode($folder).'&parent_id='.$boxnetfolderid.'&api_key='.$backwpup_cfg['BOXNET'].'&auth_token='.$jobvalue['boxnetauth']);
+				$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=create_folder&share=0&name='.urlencode($folder).'&parent_id='.$boxnetfolderid.'&api_key='.backwpup_get_option('cfg','BOXNET').'&auth_token='.$jobvalue['boxnetauth']);
 				if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 					$folder = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
 				} elseif(is_wp_error($raw_response)) {
@@ -338,7 +338,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 				}
 			}
 		}
-		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_tree&folder_id='.$boxnetfolderid.'&api_key='.$backwpup_cfg['BOXNET'].'&auth_token='.$jobvalue['boxnetauth'].'&params[]=nozip&params[]=onelevel&params[]=simple');
+		$raw_response=wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_tree&folder_id='.$boxnetfolderid.'&api_key='.backwpup_get_option('cfg','BOXNET').'&auth_token='.$jobvalue['boxnetauth'].'&params[]=nozip&params[]=onelevel&params[]=simple');
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 			$contents = simplexml_load_string(wp_remote_retrieve_body($raw_response)); 
 		} elseif(is_wp_error($raw_response)) {
@@ -366,7 +366,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 			require_once (dirname(__FILE__).'/../libs/sugarsync.php');
 		if (class_exists('SugarSync')) {
 			try {
-				$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),$backwpup_cfg['SUGARSYNC_ACCESSKEY'], $backwpup_cfg['SUGARSYNC_PRIVATEACCESSKEY']);
+				$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'), backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
 				$dirid=$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
 				$user=$sugarsync->user();
 				$dir=$sugarsync->showdir($dirid);

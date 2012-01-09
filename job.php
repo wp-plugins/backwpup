@@ -19,9 +19,6 @@ if ( !defined('DOING_CRON') )
 // Now user abort
 @ini_set('ignore_user_abort', '0');
 ignore_user_abort(true);
-$backwpup_cfg = '';
-$backwpup_job_object = '';
-global $l10n, $backwpup_cfg, $backwpup_job_object;
 //phrase commandline args
 if ( defined('STDIN') ) {
 	$_GET['starttype'] = 'runcmd';
@@ -67,20 +64,20 @@ if ( defined('STDIN') ) {
 	}
 	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and wp_verify_nonce('BackWPupJobRun'.$_GET['jobid'],$_GET['_nonce']))
 		die('Nonce check');
-	elseif ( $_GET['starttype']=='apirun' and (empty($backwpup_cfg['apicronservicekey']) or $_GET['_nonce']!=$backwpup_cfg['apicronservicekey']))
+	elseif ( $_GET['starttype']=='apirun' and (!backwpup_get_option('cfg','apicronservicekey') or $_GET['_nonce']!=backwpup_get_option('cfg','apicronservicekey')))
 		die('Nonce check');
-	elseif ( $_GET['starttype']=='runext' and (empty($backwpup_cfg['jobrunauthkey']) or $_GET['_nonce']!=$backwpup_cfg['jobrunauthkey']))
+	elseif ( $_GET['starttype']=='runext' and (backwpup_get_option('cfg','jobrunauthkey') or $_GET['_nonce']!=backwpup_get_option('cfg','jobrunauthkey')))
 		die('Nonce check');
-	@set_time_limit($backwpup_cfg['jobrunmaxexectime']);
+	@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
 }
 if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'apirun', 'runcmd' )))  {
 	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
 		die('Wrong JOBID check');
 }
 //check folders
-if (!is_dir($backwpup_cfg['logfolder']) or !is_writable($backwpup_cfg['logfolder']))
+if (!backwpup_get_option('cfg','logfolder') or !is_dir(backwpup_get_option('cfg','logfolder')) or !is_writable(backwpup_get_option('cfg','logfolder')))
 	die('Log folder not exists or is not writable');
-if (!is_dir($backwpup_cfg['tempfolder']) or !is_writable($backwpup_cfg['tempfolder']))
+if (!backwpup_get_option('cfg','tempfolder') or !is_dir(backwpup_get_option('cfg','tempfolder')) or !is_writable(backwpup_get_option('cfg','tempfolder')))
 	die('Temp folder not exists or is not writable');
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');

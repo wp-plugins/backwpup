@@ -4,7 +4,7 @@ if (!defined('ABSPATH'))
 
 
 if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='update') {
-	global $wpdb,$backwpup_cfg;
+	global $wpdb;
 	check_admin_referer('backwpup-cfg');
 
 	backwpup_update_option('cfg','mailsndemail',sanitize_email($_POST['mailsndemail']));
@@ -34,7 +34,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	if (empty($_POST['jobrunmaxexectime']) or !is_int($_POST['jobrunmaxexectime']))
 		$_POST['jobrunmaxexectime']=0;
 	backwpup_update_option('cfg','jobrunmaxexectime',$_POST['jobrunmaxexectime']);
-	$_POST['logfolder']=rtrim(str_replace('\\','/',$_POST['logfolder']),'/').'/';
+	$_POST['logfolder']=trailingslashit(str_replace('\\','/',$_POST['logfolder']));
 	//set def. folders
 	if (!isset($_POST['logfolder']) or $_POST['logfolder']=='/' or empty($_POST['logfolder'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
@@ -44,7 +44,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 		$_POST['logfolder']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['logfolder'];
 	backwpup_update_option('cfg','logfolder',$_POST['logfolder']);
 
-	$_POST['tempfolder']=rtrim(str_replace('\\','/',$_POST['tempfolder']),'/').'/';
+	$_POST['tempfolder']=trailingslashit(str_replace('\\','/',$_POST['tempfolder']));
 	if (substr($_POST['tempfolder'],0,1)!='/' and substr($_POST['tempfolder'],1,1)!=':') //add abspath if not absolute
 		$_POST['tempfolder']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['tempfolder'];
 	if (empty($_POST['tempfolder']) or backwpup_check_open_basedir($_POST['tempfolder'])) {
@@ -62,11 +62,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	}
 	backwpup_update_option('cfg','tempfolder',$_POST['tempfolder']);
 
-	//load cfg
-	$cfgs=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main_name='cfg'");
-	foreach ($cfgs as $cfg) {
-		$backwpup_cfg[$cfg->name]=maybe_unserialize($cfg->value);
-	}
 	global $backwpupapi;
 	$backwpupapi->cronupdate();
 	

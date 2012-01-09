@@ -1,7 +1,6 @@
 <?PHP
 if (!defined('ABSPATH')) 
 	die();
-global $backwpup_cfg;
 
 //Create Table
 $backwpup_listtable = new BackWPup_Logs_Table;
@@ -16,8 +15,8 @@ if (!empty($doaction)) {
 			check_admin_referer('bulk-logs');
 			$num=0;
 			foreach ($_GET['logfiles'] as $logfile) {
-				if (is_file($backwpup_cfg['logfolder'].'/'.$logfile))
-					unlink($backwpup_cfg['logfolder'].'/'.$logfile);
+				if (is_file(backwpup_get_option('cfg','logfolder').$logfile))
+					unlink(backwpup_get_option('cfg','logfolder').$logfile);
 				$num++;
 			}
 		}

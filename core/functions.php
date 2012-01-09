@@ -1,70 +1,249 @@
 <?PHP
+if (!defined('ABSPATH'))
+	die();
 
-function backwpup_update_option($mainname,$name,$value) {
-	global $wpdb;
-	$mainname=sanitize_key(trim($mainname));
+function backwpup_plugin_init() {
+	//start upgrade if needed
+	if (backwpup_get_option('cfg','dbversion')!=BACKWPUP_VERSION) {
+		require_once(dirname(__FILE__).'/upgrade.php');
+		backwpup_upgrade();
+	}
+	//add admin bar. Works only in init
+	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can(BACKWPUP_USER_CAPABILITY) and is_admin_bar_showing()) {
+		wp_enqueue_style("backwpupadmin",BACKWPUP_PLUGIN_BASEURL."/css/adminbar.css","",BACKWPUP_VERSION,"screen");
+		include_once(dirname(__FILE__).'/adminbar.php');
+	}
+	//load Api for update checks and so on
+	include_once(dirname(__FILE__).'/api.php');
+}
+add_action('init','backwpup_plugin_init');
+
+function backwpup_default_option_settings($main,$name) {
+	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
-	if (empty($mainname) or empty($name))
+	//set defaults
+	if ($main=='cfg') { //for settings
+		$default['cfg']['dbversion']='0.0';
+		$default['cfg']['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
+		$default['cfg']['mailsndname']='BackWPup '.get_bloginfo('name');
+		$default['cfg']['showadminbar']=true;
+		$default['cfg']['jobstepretry']=3;
+		$default['cfg']['jobscriptretry']=5;
+		$default['cfg']['maxlogs']=50;
+		$default['cfg']['gzlogs']=false;
+		$default['cfg']['logfolder']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.substr(md5(md5(SECURE_AUTH_KEY)), -5).'-logs/';
+		$default['cfg']['httpauthuser']='';
+		$default['cfg']['httpauthpassword']='';
+		$default['cfg']['jobrunauthkey']='';
+		$default['cfg']['apicronservicekey']='';
+		$default['cfg']['jobrunmaxexectime']=0;
+		if (defined('WP_TEMP_DIR')) //get temp folder
+			$default['cfg']['tempfolder']=trim(WP_TEMP_DIR);
+		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+			$default['cfg']['tempfolder']=sys_get_temp_dir();									//normal temp dir
+		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+			$default['cfg']['tempfolder']=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
+		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+			$default['cfg']['tempfolder']=WP_CONTENT_DIR.'/';
+		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+			$default['cfg']['tempfolder']=get_temp_dir();
+		$default['cfg']['tempfolder']=trailingslashit(str_replace('\\','/',realpath($default['cfg']['tempfolder'])));
+		$default['cfg']['DROPBOX_CREATE_ACCOUNT']='http://db.tt/Bm0l8dfn';
+	}
+	if (substr($main,0,4)=='job_') { //for job settings
+		$default[$main]['type']=array('DB','FILE');
+		$default[$main]['name']= __('New', 'backwpup');
+		$default[$main]['activetype']='';
+		$default[$main]['cronselect']='basic';
+		$default[$main]['cron']='0 3 * * *';
+		$default[$main]['cronnextrun']=backwpup_cron_next('0 3 * * *');
+		$default[$main]['mailaddresslog']=get_option('admin_email');
+		$default[$main]['mailerroronly']=true;
+		$default[$main]['dbexclude']=array();
+		global $wpdb;
+		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+		foreach ($tables as $table) {
+			if (strpos($table,$wpdb->prefix) !== false)
+				$default[$main]['dbexclude'][]=$table;
+		}
+		$default[$main]['dbdumpfile']=DB_NAME;
+		$default[$main]['dbdumpfilecompression']='';
+		$default[$main]['maintenance']=false;
+		$default[$main]['wpexportfile']=sanitize_key(get_bloginfo('name')).'.wordpress.%Y-%m-%d';
+		$default[$main]['wpexportfilecompression']='';
+		$default[$main]['fileexclude']='';
+		$default[$main]['dirinclude']='';
+		$default[$main]['backupexcludethumbs']=false;
+		$default[$main]['backuproot']=true;
+		$default[$main]['backupcontent']=true;
+		$default[$main]['backupplugins']=true;
+		$default[$main]['backupthemes']=true;
+		$default[$main]['backupuploads']=true;
+		$default[$main]['backuprootexcludedirs']=array();
+		$default[$main]['backupcontentexcludedirs']=array();
+		$default[$main]['backuppluginsexcludedirs']=array();
+		$default[$main]['backupthemesexcludedirs']=array();
+		$default[$main]['backupuploadsexcludedirs']=array();
+		$default[$main]['backuptype']='archive';
+		$default[$main]['fileformart']='.zip';
+		$default[$main]['fileprefix']='backwpup_'.substr($main,4).'_';
+		$default[$main]['mailefilesize']=0;
+		$default[$main]['backupdir']='';
+		$default[$main]['maxbackups']=0;
+		$default[$main]['backupsyncnodelete']=true;
+		$default[$main]['ftphost']='';
+		$default[$main]['ftphostport']=21;
+		$default[$main]['ftptimeout']=10;
+		$default[$main]['ftpuser']='';
+		$default[$main]['ftpdir']='';
+		$default[$main]['ftpmaxbackups']=0;
+		$default[$main]['ftppasv']=true;
+		$default[$main]['ftpssl']=false;
+		$default[$main]['ftpsyncnodelete']=true;
+		$default[$main]['awsAccessKey']='';
+		$default[$main]['awsSecretKey']='';
+		$default[$main]['awsssencrypt']='';
+		$default[$main]['awsrrs']=false;
+		$default[$main]['awsBucket']='';
+		$default[$main]['awsdir']='';
+		$default[$main]['awsmaxbackups']=0;
+		$default[$main]['awssyncnodelete']=true;
+		$default[$main]['GStorageAccessKey']='';
+		$default[$main]['GStorageSecret']='';
+		$default[$main]['GStorageBucket']='';
+		$default[$main]['GStoragedir']='';
+		$default[$main]['GStoragemaxbackups']=0;
+		$default[$main]['GStoragesyncnodelete']=true;
+		$default[$main]['msazureHost']='blob.core.windows.net';
+		$default[$main]['msazureAccName']='';
+		$default[$main]['msazureKey']='';
+		$default[$main]['msazureContainer']='';
+		$default[$main]['msazuredir']='';
+		$default[$main]['msazuremaxbackups']=0;
+		$default[$main]['msazuresyncnodelete']=true;
+		$default[$main]['rscUsername']='';
+		$default[$main]['rscAPIKey']='';
+		$default[$main]['rscContainer']='';
+		$default[$main]['rscdir']='';
+		$default[$main]['rscmaxbackups']=0;
+		$default[$main]['rscsyncnodelete']=true;
+		$default[$main]['droperoot']='sandbox';
+		$default[$main]['dropetoken']='';
+		$default[$main]['dropesecret']='';
+		$default[$main]['dropedir']='';
+		$default[$main]['dropemaxbackups']=0;
+		$default[$main]['dropesyncnodelete']=true;
+		$default[$main]['sugaruser']='';
+		$default[$main]['sugarpass']='';
+		$default[$main]['sugarroot']='';
+		$default[$main]['sugardir']='';
+		$default[$main]['sugarmaxbackups']=0;
+		$default[$main]['sugarsyncnodelete']=true;
+		$default[$main]['mailaddress']='';
+	}
+	if ($main=='working') {
+		$default['working']['data']=false;
+	}
+	if ($main=='api') {
+		$default['api']['apiapp']=false;
+	}
+	//return defaults
+	if(isset($default[$main][$name]))
+		return maybe_serialize($default[$main][$name]);
+	else
+		return false;
+}
+
+function backwpup_update_option($main,$name,$value) {
+	global $wpdb;
+	$main=sanitize_key(trim($main));
+	$name=sanitize_key(trim($name));
+	$oldvalue='';
+	$alloptions=wp_cache_get( 'options', 'backwpup' );
+	if (empty($main) or empty($name))
 		return false;
 	if (is_object($value))
 		$value = clone $value;
-	$oldvalue=backwpup_get_option($mainname,$name);
-	if ($value===$oldvalue)
-		return false;
-	if (false===$oldvalue)
-		return backwpup_add_option($mainname,$name,$value);
 	$value=maybe_serialize($value);
-	$result=$wpdb->update($wpdb->prefix.'backwpup', array('value'=>$value), array('main_name'=>$mainname,'name'=>$name),array('%s'));
-	if ($result)
-		return true;
+	//unset if it a default option value
+	if (isset($alloptions[$main][$name]) and $alloptions[$main][$name]==backwpup_default_option_settings($main,$name))
+		unset($alloptions[$main][$name]);
+	//is value same as old do nothing
+	if (isset($alloptions[$main][$name]) and $alloptions[$main][$name]==$value)
+		return false;
+	if (!isset($alloptions[$main][$name])) { //sql if not in cache
+		$oldvalue=$wpdb->get_row($wpdb->prepare("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main=%s AND name=%s LIMIT 1",$main,$name));
+		if (is_object($oldvalue) and $oldvalue->value==$value)
+			return false;
+	}
+	//Update or insert
+	if (isset($alloptions[$main][$name]) or is_object($oldvalue))
+		$result=$wpdb->update( $wpdb->prefix.'backwpup', array( 'value' => $value ), array( 'main' => $main, 'name' => $name ),array('%s'),array('%s','%s') );
 	else
+		$result=$wpdb->insert( $wpdb->prefix.'backwpup', array( 'main' => $main, 'name' => $name, 'value' => $value ), '%s' );
+	if ($result) {
+		$alloptions[$main][$name]=$value;
+		wp_cache_set( 'options', $alloptions, 'backwpup' );
+		return true;
+	} else
 		return false;
 }
 
-function backwpup_get_option($mainname,$name,$default=false) {
+function backwpup_get_option($main,$name,$default=false) {
 	global $wpdb;
-	$mainname=sanitize_key(trim($mainname));
+	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
-	if (empty($mainname) or empty($name))
+	if (empty($main) or empty($name))
 		return false;
-	$value=$wpdb->get_row($wpdb->prepare("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE `main_name`=%s AND `name`=%s LIMIT 1",$mainname,$name));
-	if (is_object($value)) 
-		return maybe_unserialize($value->value);
-	else
-		return $default;
+	$alloptions=wp_cache_get( 'options', 'backwpup' );
+	//load options to cache if empty
+	if ($alloptions==false) {
+		$option_cache_req = $wpdb->get_results( "SELECT main,name,value FROM ".$wpdb->prefix."backwpup ORDER BY main,name" );
+		if (is_array($option_cache_req)) {
+			foreach ($option_cache_req as $option)
+				$alloptions[$option->main][$option->name]=$option->value;
+		}
+		wp_cache_set( 'options', $alloptions, 'backwpup' );
+	}
+	// output from cache or db
+	if (isset($alloptions[$main][$name])) {
+		return maybe_unserialize($alloptions[$main][$name]);
+	} else {
+		$value=$wpdb->get_row($wpdb->prepare("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main=%s AND name=%s LIMIT 1",$main,$name));
+		if (is_object($value)) {
+			$otionvalue=maybe_unserialize($value->value);
+		} else {
+			if ($default)
+				$otionvalue=$default;
+			else
+				$otionvalue=maybe_unserialize(backwpup_default_option_settings($main,$name));
+		}
+		$alloptions[$main][$name]=$otionvalue;
+		wp_cache_set( 'options', $alloptions, 'backwpup' );
+		return $otionvalue;
+	}
 }
 
-function backwpup_add_option($mainname,$name,$value='') {
+function backwpup_delete_option($main,$name) {
 	global $wpdb;
-	$mainname=sanitize_key(trim($mainname));
+	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
-	if (empty($mainname) or empty($name))
+	$alloptions=wp_cache_get( 'options', 'backwpup' );
+	if (empty($main) or empty($name))
 		return false;
-	if (is_object($value))
-		$value = clone $value;
-	$value=maybe_serialize($value);
-	$result=$wpdb->query( $wpdb->prepare( "INSERT INTO `".$wpdb->prefix."backwpup` (`main_name`, `name`, `value`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `main_name` = VALUES(`name`), `main_name` = VALUES(`name`), `value` = VALUES(`value`)", $mainname, $name, $value ) );
-	if ($result)
+	$result=$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main=%s AND name=%s LIMIT 1",$main,$name));
+	if ($result) {
+		if (isset($alloptions[$main][$name])) {
+			unset($alloptions[$main][$name]);
+			wp_cache_set( 'options', $alloptions, 'backwpup' );
+		}
 		return true;
-	else
+	} else
 		return false;
 }
 
-function backwpup_delete_option($mainname,$name) {	
-	global $wpdb;
-	$mainname=sanitize_key(trim($mainname));
-	$name=sanitize_key(trim($name));
-	if (empty($mainname) or empty($name))
-		return false;
-	$result=$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main_name=%s AND name=%s LIMIT 1",$mainname,$name));
-	if ($result)
-		return true;
-	else
-		return false;
-}
 
 function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
-	global $backwpup_cfg;
 	$url=BACKWPUP_PLUGIN_BASEURL.'/job.php';
 	$query_args['jobid']=$jobid;
 	$header='';
@@ -73,18 +252,18 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
 
-	if (!empty($backwpup_cfg['httpauthuser']) and !empty($backwpup_cfg['httpauthpassword'])) {
-		$header=array( 'Authorization' => 'Basic '.base64_encode($backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword'])));
-		$authurl=$backwpup_cfg['httpauthuser'].':'.backwpup_decrypt($backwpup_cfg['httpauthpassword']).'@';
+	if (backwpup_get_option('cfg','httpauthuser') and backwpup_get_option('cfg','httpauthpassword')) {
+		$header=array( 'Authorization' => 'Basic '.base64_encode(backwpup_get_option('cfg','httpauthuser').':'.backwpup_decrypt(backwpup_get_option('cfg','httpauthpassword'))));
+		$authurl=backwpup_get_option('cfg','httpauthuser').':'.backwpup_decrypt(backwpup_get_option('cfg','httpauthpassword')).'@';
 	}
 
 	if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
 		$query_args['ABSPATH']=urlencode(str_replace('\\','/',ABSPATH));
 
 	if ($starttype=='apirun')
-		$query_args['_nonce']=$backwpup_cfg['apicronservicekey'];
+		$query_args['_nonce']=backwpup_get_option('cfg','apicronservicekey');
 	elseif ($starttype=='runext') {
-		$query_args['_nonce']=$backwpup_cfg['jobrunauthkey'];
+		$query_args['_nonce']=backwpup_get_option('cfg','jobrunauthkey');
 		if (!empty($authurl)) {
 			$url=str_replace('https://','https://'.$authurl,$url);
 			$url=str_replace('http://','http://'.$authurl,$url);
@@ -201,11 +380,11 @@ function backwpup_get_upload_dir() {
 }
 
 function backwpup_get_exclude_wp_dirs($folder) {
-	global $backwpup_cfg,$wpdb;
+	global $wpdb;
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
-	$excludedir[]=$backwpup_cfg['tempfolder']; //exclude temp
-	$excludedir[]=$backwpup_cfg['logfolder']; //exclude logfiles
+	$excludedir[]=backwpup_get_option('cfg','tempfolder'); //exclude temp
+	$excludedir[]=backwpup_get_option('cfg','logfolder'); //exclude logfiles
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
 	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
@@ -217,7 +396,7 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	if (false !== strpos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
 		$excludedir[]=backwpup_get_upload_dir();
 	//Exclude Backup dirs
-	$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
+	$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
 	if (!empty($value)) {
 		foreach($value as $backupdir)
 				$excludedir[]=$backupdir;
@@ -403,151 +582,21 @@ function backwpup_decrypt($string, $key='') {
 
 function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	global $wpdb;
-	//get job data
-	if (!empty($jobid) and is_numeric($jobid)) {
-		//load jobvalues
-		$jobvars=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main_name='job_".$jobid."'");
-		foreach ($jobvars as $vars)
-			$jobsettings[$vars->name]=maybe_unserialize($vars->value);
-	}
-	if (empty($jobsettings['jobid'])) {  //generate jobid if not exists
-		$jobsettings['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main_name LIKE 'job_%' AND name='jobid' ORDER BY value ASC LIMIT 1",0,0);
+
+	//generate jobid if not exists
+	if (empty($jobid)) {
+		$jobsettings['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC LIMIT 1",0,0);
 		$jobsettings['jobid']++;
 	}
-	unset($jobid);
-	
+	//set main name
+	$main='job_'.$jobid;
+
 	//overwrite with new settings
-	if (!empty($jobnewsettings) && is_array($jobnewsettings)) {
+	if (!empty($jobnewsettings) && is_array($jobnewsettings))
 		$jobsettings=array_merge($jobsettings,$jobnewsettings);
-	}
 
-	//check job type
-	if (!isset($jobsettings['type']) or !is_array($jobsettings['type']))
-		$jobsettings['type']=array('DB','FILE');
-	//Check existing types
-	foreach($jobsettings['type'] as $key => $value) {
-		$jobsettings['type'][$key]=strtoupper($jobsettings['type'][$key]);
-		$value=strtoupper($value);
-		if (!in_array($value,backwpup_backup_types()))
-			unset($jobsettings['type'][$key]);
-	}
-	sort($jobsettings['type']);
 
-	if (empty($jobsettings['name']) or !is_string($jobsettings['name']))
-		$jobsettings['name']= __('New', 'backwpup');
 
-	if (!isset($jobsettings['activetype']) or ( $jobsettings['activetype']!='' and $jobsettings['activetype']!='wpcron' and $jobsettings['activetype']!='backwpupapi'))
-		$jobsettings['activetype']='';
-		
-	if (!isset($jobsettings['cronselect']) and !isset($jobsettings['cron']))
-		$jobsettings['cronselect']='basic';
-	elseif (!isset($jobsettings['cronselect']) and isset($jobsettings['cron']))
-		$jobsettings['cronselect']='advanced';
-
-	if ($jobsettings['cronselect']!='advanced' and $jobsettings['cronselect']!='basic')
-		$jobsettings['cronselect']='advanced';
-
-	if (!isset($jobsettings['cron']) or !is_string($jobsettings['cron']))
-		$jobsettings['cron']='0 3 * * *';
-
-	if (!isset($jobsettings['cronnextrun']) or !is_numeric($jobsettings['cronnextrun']))
-		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);
-
-	if (!isset($jobsettings['mailaddresslog']) or !is_string($jobsettings['mailaddresslog']))
-		$jobsettings['mailaddresslog']=get_option('admin_email');
-
-	if (!isset($jobsettings['mailerroronly']))
-		$jobsettings['mailerroronly']=true;
-	else
-		$jobsettings['mailerroronly']=(bool)$jobsettings['mailerroronly'];
-
-	//Tables to backup (old)
-	if (isset($jobsettings['dbtables']) and is_array($jobsettings['dbtables'])) {
-		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-		foreach ($tables as $table) {
-			if (!in_array($table,$jobsettings['dbtables']))
-				$jobsettings['dbexclude'][]=$table;
-		}
-	}
-
-	//don not backup tables
-	if (!isset($jobsettings['dbexclude']) or !is_array($jobsettings['dbexclude'])) {
-		$jobsettings['dbexclude']=array();
-		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-		foreach ($tables as $table) {
-			if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
-				$jobsettings['dbexclude'][]=$table;
-		}
-	}
-
-	if (!isset($jobsettings['dbdumpfile']) or empty($jobsettings['dbdumpfile']) or !is_string($jobsettings['dbdumpfile']))
-		$jobsettings['dbdumpfile']=DB_NAME;
-
-	if (!isset($jobsettings['dbdumpfilecompression']) or ($jobsettings['dbdumpfilecompression']!='gz' and $jobsettings['dbdumpfilecompression']!='bz2' and $jobsettings['dbdumpfilecompression']!=''))
-		$jobsettings['dbdumpfilecompression']='';
-
-	if (!isset($jobsettings['maintenance']))
-		$jobsettings['maintenance']=false;
-	else
-		$jobsettings['maintenance']=(bool)$jobsettings['maintenance'];
-
-	if (!isset($jobsettings['wpexportfile']) or empty($jobsettings['wpexportfile']) or !is_string($jobsettings['wpexportfile']))
-		$jobsettings['wpexportfile']=sanitize_key(get_bloginfo('name')).'.wordpress.%Y-%m-%d';
-
-	if (!isset($jobsettings['wpexportfilecompression']) or ($jobsettings['wpexportfilecompression']!='gz' and $jobsettings['wpexportfilecompression']!='bz2' and $jobsettings['dbdumpfilecompression']!=''))
-		$jobsettings['wpexportfilecompression']='';		
-		
-	if (!isset($jobsettings['fileexclude']) or !is_string($jobsettings['fileexclude']))
-		$jobsettings['fileexclude']='';
-	$fileexclude=explode(',',$jobsettings['fileexclude']);
-	foreach($fileexclude as $key => $value) {
-		$fileexclude[$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($fileexclude[$key]))
-			unset($fileexclude[$key]);
-	}
-	sort($fileexclude);
-	$jobsettings['fileexclude']=implode(',',$fileexclude);
-
-	if (!isset($jobsettings['dirinclude']) or !is_string($jobsettings['dirinclude']))
-		$jobsettings['dirinclude']='';
-	$dirinclude=explode(',',$jobsettings['dirinclude']);
-	foreach($dirinclude as $key => $value) {
-		$dirinclude[$key]=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($value))));
-		if ($dirinclude[$key]=='/' or empty($dirinclude[$key]) or !is_dir($dirinclude[$key]))
-			unset($dirinclude[$key]);
-	}
-	sort($dirinclude);
-	$jobsettings['dirinclude']=implode(',',$dirinclude);
-
-	if (!isset($jobsettings['backupexcludethumbs']))
-		$jobsettings['backupexcludethumbs']=false;
-	else
-		$jobsettings['backupexcludethumbs']=(bool)$jobsettings['backupexcludethumbs'];
-
-	if (!isset($jobsettings['backuproot']))
-		$jobsettings['backuproot']=true;
-	else
-		$jobsettings['backuproot']=(bool)$jobsettings['backuproot'];
-
-	if (!isset($jobsettings['backupcontent']))
-		$jobsettings['backupcontent']=true;
-	else
-		$jobsettings['backupcontent']=(bool)$jobsettings['backupcontent'];
-
-	if (!isset($jobsettings['backupplugins']))
-		$jobsettings['backupplugins']=true;
-	else
-		$jobsettings['backupplugins']=(bool)$jobsettings['backupplugins'];
-		
-	if (!isset($jobsettings['backupthemes']))
-		$jobsettings['backupthemes']=true;
-	else
-		$jobsettings['backupthemes']=(bool)$jobsettings['backupthemes'];
-
-	if (!isset($jobsettings['backupuploads']))
-		$jobsettings['backupuploads']=true;
-	else
-		$jobsettings['backupuploads']=(bool)$jobsettings['backupuploads'];
 
 	if (!isset($jobsettings['backuprootexcludedirs']) or !is_array($jobsettings['backuprootexcludedirs']))
 		$jobsettings['backuprootexcludedirs']=array();
@@ -601,11 +650,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
 		$jobsettings['fileformart']='.zip';
 
-	if (!isset($jobsettings['fileprefix']) or !is_string($jobsettings['fileprefix']))
-		$jobsettings['fileprefix']='backwpup_'.$jobsettings['jobid'].'_';
-
-	if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
-		$jobsettings['mailefilesize']=0;
 
 	if (!isset($jobsettings['backupdir']))
 		$jobsettings['backupdir']='';
@@ -615,68 +659,10 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if ($jobsettings['backupdir']=='/')
 		$jobsettings['backupdir']='';
 
-	if (!isset($jobsettings['maxbackups']) or !is_numeric($jobsettings['maxbackups']))
-		$jobsettings['maxbackups']=0;
 
-	if (!isset($jobsettings['backupsyncnodelete']))
-		$jobsettings['backupsyncnodelete']=true;
-	else
-		$jobsettings['backupsyncnodelete']=(bool)$jobsettings['backupsyncnodelete'];
 
-	if (!isset($jobsettings['ftpsyncnodelete']))
-		$jobsettings['ftpsyncnodelete']=true;
-	else
-		$jobsettings['ftpsyncnodelete']=(bool)$jobsettings['ftpsyncnodelete'];
 
-	if (!isset($jobsettings['awssyncnodelete']))
-		$jobsettings['awssyncnodelete']=true;
-	else
-		$jobsettings['awssyncnodelete']=(bool)$jobsettings['awssyncnodelete'];
 
-	if (!isset($jobsettings['GStoragesyncnodelete']))
-		$jobsettings['GStoragesyncnodelete']=true;
-	else
-		$jobsettings['GStoragesyncnodelete']=(bool)$jobsettings['GStoragesyncnodelete'];
-
-	if (!isset($jobsettings['msazuresyncnodelete']))
-		$jobsettings['msazuresyncnodelete']=true;
-	else
-		$jobsettings['msazuresyncnodelete']=(bool)$jobsettings['msazuresyncnodelete'];
-
-	if (!isset($jobsettings['rscsyncnodelete']))
-		$jobsettings['rscsyncnodelete']=true;
-	else
-		$jobsettings['rscsyncnodelete']=(bool)$jobsettings['rscsyncnodelete'];
-
-	if (!isset($jobsettings['dropesyncnodelete']))
-		$jobsettings['dropesyncnodelete']=true;
-	else
-		$jobsettings['dropesyncnodelete']=(bool)$jobsettings['dropesyncnodelete'];
-
-	if (!isset($jobsettings['boxnetsyncnodelete']))
-		$jobsettings['boxnetsyncnodelete']=true;
-	else
-		$jobsettings['boxnetsyncnodelete']=(bool)$jobsettings['boxnetsyncnodelete'];
-
-	if (!isset($jobsettings['sugarsyncnodelete']))
-		$jobsettings['sugarsyncnodelete']=true;
-	else
-		$jobsettings['sugarsyncnodelete']=(bool)$jobsettings['sugarsyncnodelete'];
-
-	if (!empty($jobsettings['ftphost']) and false !== strpos($jobsettings['ftphost'],':'))
-		list($jobsettings['ftphost'],$jobsettings['ftphostport'])=explode(':',$jobsettings['ftphost'],2);
-
-	if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
-		$jobsettings['ftphost']='';
-
-	if (!isset($jobsettings['ftphostport']) or !is_numeric($jobsettings['ftphostport']))
-		$jobsettings['ftphostport']=21;
-
-	if (!isset($jobsettings['ftpuser']) or !is_string($jobsettings['ftpuser']))
-		$jobsettings['ftpuser']='';
-
-	if (!isset($jobsettings['ftppass']) or !is_string($jobsettings['ftppass']))
-		$jobsettings['ftppass']='';
 
 	if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']) or $jobsettings['ftpdir']=='/')
 		$jobsettings['ftpdir']='';
@@ -684,35 +670,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (substr($jobsettings['ftpdir'],0,1)!='/')
 		$jobsettings['ftpdir']='/'.$jobsettings['ftpdir'];
 
-	if (!isset($jobsettings['ftpmaxbackups']) or !is_numeric($jobsettings['ftpmaxbackups']))
-		$jobsettings['ftpmaxbackups']=0;
-
-	if (!isset($jobsettings['ftppasv']))
-		$jobsettings['ftppasv']=true;
-	else
-		$jobsettings['ftppasv']=(bool)$jobsettings['ftppasv'];
-
-	if (!isset($jobsettings['ftpssl']) or !function_exists('ftp_ssl_connect'))
-		$jobsettings['ftpssl']=false;
-	else 
-		$jobsettings['ftpssl']=(bool)$jobsettings['ftpssl'];
-
-	if (!isset($jobsettings['awsAccessKey']) or !is_string($jobsettings['awsAccessKey']))
-		$jobsettings['awsAccessKey']='';
-
-	if (!isset($jobsettings['awsSecretKey']) or !is_string($jobsettings['awsSecretKey']))
-		$jobsettings['awsSecretKey']='';
-
-	if (!isset($jobsettings['awsssencrypt']) or ($jobsettings['awsssencrypt']!='' and $jobsettings['awsssencrypt']!='AES256'))
-		$jobsettings['awsssencrypt']='';
-
-	if (!isset($jobsettings['awsrrs']))
-		$jobsettings['awsrrs']=false;
-	else
-		$jobsettings['awsrrs']=(bool)$jobsettings['awsrrs'];
-
-	if (!isset($jobsettings['awsBucket']) or !is_string($jobsettings['awsBucket']))
-		$jobsettings['awsBucket']='';
 
 	if (!isset($jobsettings['awsdir']) or !is_string($jobsettings['awsdir']) or $jobsettings['awsdir']=='/')
 		$jobsettings['awsdir']='';
@@ -720,17 +677,7 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (substr($jobsettings['awsdir'],0,1)=='/')
 		$jobsettings['awsdir']=substr($jobsettings['awsdir'],1);
 
-	if (!isset($jobsettings['awsmaxbackups']) or !is_numeric($jobsettings['awsmaxbackups']))
-		$jobsettings['awsmaxbackups']=0;
 
-	if (!isset($jobsettings['GStorageAccessKey']) or !is_string($jobsettings['GStorageAccessKey']))
-		$jobsettings['GStorageAccessKey']='';
-
-	if (!isset($jobsettings['GStorageSecret']) or !is_string($jobsettings['GStorageSecret']))
-		$jobsettings['GStorageSecret']='';
-
-	if (!isset($jobsettings['GStorageBucket']) or !is_string($jobsettings['GStorageBucket']))
-		$jobsettings['GStorageBucket']='';
 
 	if (!isset($jobsettings['GStoragedir']) or !is_string($jobsettings['GStoragedir']) or $jobsettings['GStoragedir']=='/')
 		$jobsettings['GStoragedir']='';
@@ -738,20 +685,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (substr($jobsettings['GStoragedir'],0,1)=='/')
 		$jobsettings['GStoragedir']=substr($jobsettings['GStoragedir'],1);
 
-	if (!isset($jobsettings['GStoragemaxbackups']) or !is_numeric($jobsettings['GStoragemaxbackups']))
-		$jobsettings['GStoragemaxbackups']=0;
-
-	if (!isset($jobsettings['msazureHost']) or !is_string($jobsettings['msazureHost']))
-		$jobsettings['msazureHost']='blob.core.windows.net';
-
-	if (!isset($jobsettings['msazureAccName']) or !is_string($jobsettings['msazureAccName']))
-		$jobsettings['msazureAccName']='';
-
-	if (!isset($jobsettings['msazureKey']) or !is_string($jobsettings['msazureKey']))
-		$jobsettings['msazureKey']='';
-
-	if (!isset($jobsettings['msazureContainer']) or !is_string($jobsettings['msazureContainer']))
-		$jobsettings['msazureContainer']='';
 
 	if (!isset($jobsettings['msazuredir']) or !is_string($jobsettings['msazuredir']) or $jobsettings['msazuredir']=='/')
 		$jobsettings['msazuredir']='';
@@ -759,32 +692,13 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (substr($jobsettings['msazuredir'],0,1)=='/')
 		$jobsettings['msazuredir']=substr($jobsettings['msazuredir'],1);
 
-	if (!isset($jobsettings['msazuremaxbackups']) or !is_numeric($jobsettings['msazuremaxbackups']))
-		$jobsettings['msazuremaxbackups']=0;
-
-	if (!isset($jobsettings['rscUsername']) or !is_string($jobsettings['rscUsername']))
-		$jobsettings['rscUsername']='';
-
-	if (!isset($jobsettings['rscAPIKey']) or !is_string($jobsettings['rscAPIKey']))
-		$jobsettings['rscAPIKey']='';
-
-	if (!isset($jobsettings['rscContainer']) or !is_string($jobsettings['rscContainer']))
-		$jobsettings['rscContainer']='';
 
 	if (!isset($jobsettings['rscdir']) or !is_string($jobsettings['rscdir']) or $jobsettings['rscdir']=='/')
 		$jobsettings['rscdir']='';
 	$jobsettings['rscdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['rscdir']))));
 	if (substr($jobsettings['rscdir'],0,1)=='/')
 		$jobsettings['rscdir']=substr($jobsettings['rscdir'],1);
-		
-	if (!isset($jobsettings['rscmaxbackups']) or !is_numeric($jobsettings['rscmaxbackups']))
-		$jobsettings['rscmaxbackups']=0;
 
-	if (!isset($jobsettings['dropetoken']) or !is_string($jobsettings['dropetoken']))
-		$jobsettings['dropetoken']='';
-
-	if (!isset($jobsettings['dropesecret']) or !is_string($jobsettings['dropesecret']))
-		$jobsettings['dropesecret']='';
 
 	if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
 		$jobsettings['dropedir']='';
@@ -795,29 +709,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
 		$jobsettings['droperoot']='sandbox';
 
-	if (!isset($jobsettings['dropemaxbackups']) or !is_numeric($jobsettings['dropemaxbackups']))
-		$jobsettings['dropemaxbackups']=0;
-
-	if (!isset($jobsettings['boxnetauth']) or !is_string($jobsettings['boxnetauth']))
-		$jobsettings['boxnetauth']='';	
-
-	if (!isset($jobsettings['boxnetdir']) or !is_string($jobsettings['boxnetdir']) or $jobsettings['boxnetdir']=='/')
-		$jobsettings['boxnetdir']='';
-	$jobsettings['boxnetdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['boxnetdir']))));
-	if (substr($jobsettings['boxnetdir'],0,1)=='/')
-		$jobsettings['boxnetdir']=substr($jobsettings['boxnetdir'],1);
-
-	if (!isset($jobsettings['boxnetbackups']) or !is_numeric($jobsettings['boxnetbackups']))
-		$jobsettings['boxnetbackups']=0;		
-		
-	if (!isset($jobsettings['sugaruser']) or !is_string($jobsettings['sugaruser']))
-		$jobsettings['sugaruser']='';
-
-	if (!isset($jobsettings['sugarpass']) or !is_string($jobsettings['sugarpass']))
-		$jobsettings['sugarpass']='';
-
-	if (!isset($jobsettings['sugarroot']) or !is_string($jobsettings['sugarroot']))
-		$jobsettings['sugarroot']='';
 
 	if (!isset($jobsettings['sugardir']) or !is_string($jobsettings['sugardir']) or $jobsettings['sugardir']=='/')
 		$jobsettings['sugardir']='';
@@ -825,11 +716,6 @@ function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
 	if (substr($jobsettings['sugardir'],0,1)=='/')
 		$jobsettings['sugardir']=substr($jobsettings['sugardir'],1);
 
-	if (!isset($jobsettings['sugarmaxbackups']) or !is_numeric($jobsettings['sugarmaxbackups']))
-		$jobsettings['sugarmaxbackups']=0;
-
-	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']))
-		$jobsettings['mailaddress']='';
 
 	return $jobsettings;
 }

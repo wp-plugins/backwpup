@@ -57,15 +57,15 @@ class SugarSync {
 	 * @param	string $accessKeyId			The developer access key.
 	 * @param	string $privateAccessKey	The developer access scret.
 	 */
-	public function __construct($email, $password, $accessKeyId, $privateAccessKey)
+	public function __construct($email, $password)
 	{
 		if(!is_string($email) or empty($email)) 
 			throw new SugarSyncException('You must set Account E-Mail!');
 		if(!is_string($password) or empty($password)) 
 			throw new SugarSyncException('You must set Account Password!');
-		if(!is_string($accessKeyId) or empty($accessKeyId)) 
+		if(!backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY')) 
 			throw new SugarSyncException('You must Developer access Key!');
-		if(!is_string($privateAccessKey) or empty($privateAccessKey)) 
+		if(!backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY')) 
 			throw new SugarSyncException('You must  Developer access Secret!');
 		
 		//auth xml
@@ -73,8 +73,8 @@ class SugarSync {
 		$auth.='<authRequest>';
 		$auth.='<username>'.utf8_encode($email).'</username>';
 		$auth.='<password>'.utf8_encode($password).'</password>';
-		$auth.='<accessKeyId>'.utf8_encode($accessKeyId).'</accessKeyId>';
-		$auth.='<privateAccessKey>'.utf8_encode($privateAccessKey).'</privateAccessKey>';
+		$auth.='<accessKeyId>'.utf8_encode(backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY')).'</accessKeyId>';
+		$auth.='<privateAccessKey>'.utf8_encode(backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY')).'</privateAccessKey>';
 		$auth.='</authRequest>';
 		// init
 		$curl = curl_init();

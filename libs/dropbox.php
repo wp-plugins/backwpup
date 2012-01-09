@@ -39,12 +39,14 @@ class backwpup_Dropbox {
 	private $OAuthToken;
 	private $ProgressFunction = false;
 	
-	public function __construct($applicationKey, $applicationSecret,$dropbox=false) {
-		$this->OAuthObject = new backwpup_OAuthSimple($applicationKey, $applicationSecret);
-		if ($dropbox)
+	public function __construct($boxtype='dropbox') {
+		if ($boxtype=='dropbox'){
+			$this->OAuthObject = new backwpup_OAuthSimple(backwpup_get_option('cfg','DROPBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_APP_SECRET'));
 			$this->root = 'dropbox';
-		else
+		} else {
+			$this->OAuthObject = new backwpup_OAuthSimple(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'));
 			$this->root = 'sandbox';
+		}
 	}
 
 	public function setOAuthTokens($token,$secret) {
