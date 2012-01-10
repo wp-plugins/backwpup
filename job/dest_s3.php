@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_s3() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$backwpupjobrun['WORKING']['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$backwpupjobrun['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 	
 	if (!class_exists('AmazonS3'))
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -15,7 +15,7 @@ function backwpup_job_dest_s3() {
 			trigger_error(sprintf(__('Connected to S3 Bucket: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['awsBucket']),E_USER_NOTICE);
 		} else {
 			trigger_error(sprintf(__('S3 Bucket "%s" not exists!','backwpup'),$backwpupjobrun['STATIC']['JOB']['awsBucket']),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_S3'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_S3'; //set done
 			return;
 		}		
 		//create Parameter
@@ -35,10 +35,10 @@ function backwpup_job_dest_s3() {
 		$result=$s3->create_object($backwpupjobrun['STATIC']['JOB']['awsBucket'], $backwpupjobrun['STATIC']['JOB']['awsdir'].$backwpupjobrun['STATIC']['backupfile'],$params);
 		$result=(array)$result;
 		if ($result["status"]=200 and $result["status"]<300)  {
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
 			backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$backwpupjobrun['STATIC']['JOB']['awsdir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid']);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_S3'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_S3'; //set done
 		} else {
 			trigger_error(sprintf(__('Can not transfer backup to S3! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
 		}
@@ -78,6 +78,6 @@ function backwpup_job_dest_s3() {
 		return;
 	}
 
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

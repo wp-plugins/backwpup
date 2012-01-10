@@ -3,9 +3,9 @@ function backwpup_job_dest_gstorage_sync() {
 	global $backwpupjobrun;
 	//get files
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
-	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sync files with Google Storage...','backwpup'),$backwpupjobrun['WORKING']['DEST_GSTORAGE_SYNC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=count($filelist);
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sync files with Google Storage...','backwpup'),$backwpupjobrun['DEST_GSTORAGE_SYNC']['STEP_TRY']),E_USER_NOTICE);
 	
 	if (!class_exists('AmazonS3'))
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -20,7 +20,7 @@ function backwpup_job_dest_gstorage_sync() {
 			trigger_error(sprintf(__('Connected to GStorage Bucket: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['GStorageBucket']),E_USER_NOTICE);
 		} else {
 			trigger_error(sprintf(__('GStorage Bucket "%s" not exists!','backwpup'),$backwpupjobrun['STATIC']['JOB']['GStorageBucket']),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
 			return;
 		}
 		//create general Upload Parameters
@@ -33,7 +33,7 @@ function backwpup_job_dest_gstorage_sync() {
 		$remotefilelist=array();
 		if (($contents = $gstorage->list_objects($backwpupjobrun['STATIC']['JOB']['GStorageBucket'],array('prefix'=>$backwpupjobrun['STATIC']['JOB']['GStoragedir']))) === false) {
 			trigger_error(__('Can not get filelist from GStorage Bucket!','backwpup'),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
 			return;		
 		}
 		foreach ($contents->body->Contents as $object) {
@@ -59,7 +59,7 @@ function backwpup_job_dest_gstorage_sync() {
 						trigger_error(sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 					}
 				}
-				$backwpupjobrun['WORKING']['STEPDONE']++;
+				$backwpupjobrun['STEPDONE']++;
 				unset($filelist[$filekey]);
 				break;
 			} 
@@ -84,10 +84,10 @@ function backwpup_job_dest_gstorage_sync() {
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		}			
-		$backwpupjobrun['WORKING']['STEPDONE']++;
+		$backwpupjobrun['STEPDONE']++;
 		unset($filelist[$filekey]);
 	}
 	if (count($filelist)==0)
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_GSTORAGE_SYNC'; //set done
 }
 ?>

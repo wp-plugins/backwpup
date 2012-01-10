@@ -37,17 +37,19 @@ function backwpup_default_option_settings($main,$name) {
 		$default['cfg']['jobrunauthkey']='';
 		$default['cfg']['apicronservicekey']='';
 		$default['cfg']['jobrunmaxexectime']=0;
-		if (defined('WP_TEMP_DIR')) //get temp folder
-			$default['cfg']['tempfolder']=trim(WP_TEMP_DIR);
-		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
-			$default['cfg']['tempfolder']=sys_get_temp_dir();									//normal temp dir
-		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
-			$default['cfg']['tempfolder']=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
-		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
-			$default['cfg']['tempfolder']=WP_CONTENT_DIR.'/';
-		if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
-			$default['cfg']['tempfolder']=get_temp_dir();
-		$default['cfg']['tempfolder']=trailingslashit(str_replace('\\','/',realpath($default['cfg']['tempfolder'])));
+		if ($name=='tempfolder') {
+			if (defined('WP_TEMP_DIR')) //get temp folder
+				$default['cfg']['tempfolder']=trim(WP_TEMP_DIR);
+			if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+				$default['cfg']['tempfolder']=sys_get_temp_dir();									//normal temp dir
+			if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+				$default['cfg']['tempfolder']=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
+			if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+				$default['cfg']['tempfolder']=WP_CONTENT_DIR.'/';
+			if (empty($default['cfg']['tempfolder']) or !backwpup_check_open_basedir($default['cfg']['tempfolder']) or !@is_writable($default['cfg']['tempfolder']) or !@is_dir($default['cfg']['tempfolder']))
+				$default['cfg']['tempfolder']=get_temp_dir();
+			$default['cfg']['tempfolder']=trailingslashit(str_replace('\\','/',realpath($default['cfg']['tempfolder'])));
+		}
 		$default['cfg']['DROPBOX_CREATE_ACCOUNT']='http://db.tt/Bm0l8dfn';
 	}
 	if (substr($main,0,4)=='job_') { //for job settings
@@ -59,12 +61,14 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['cronnextrun']=backwpup_cron_next('0 3 * * *');
 		$default[$main]['mailaddresslog']=get_option('admin_email');
 		$default[$main]['mailerroronly']=true;
-		$default[$main]['dbexclude']=array();
-		global $wpdb;
-		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
-		foreach ($tables as $table) {
-			if (strpos($table,$wpdb->prefix) !== false)
-				$default[$main]['dbexclude'][]=$table;
+		if ($name=='dbexclude') {
+			$default[$main]['dbexclude']=array();
+			global $wpdb;
+			$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
+			foreach ($tables as $table) {
+				if (strpos($table,$wpdb->prefix) === false)
+					$default[$main]['dbexclude'][]=$table;
+			}
 		}
 		$default[$main]['dbdumpfile']=DB_NAME;
 		$default[$main]['dbdumpfilecompression']='';
@@ -144,8 +148,8 @@ function backwpup_default_option_settings($main,$name) {
 	if ($main=='working') {
 		$default['working']['data']=false;
 	}
-	if ($main=='api') {
-		$default['api']['apiapp']=false;
+	if ($main=='temp') {
+		$default['temp']['apiapp']=false;
 	}
 	//return defaults
 	if(isset($default[$main][$name]))
@@ -179,7 +183,7 @@ function backwpup_update_option($main,$name,$value) {
 	//Update or insert
 	if (isset($alloptions[$main][$name]) or is_object($oldvalue))
 		$result=$wpdb->update( $wpdb->prefix.'backwpup', array( 'value' => $value ), array( 'main' => $main, 'name' => $name ),array('%s'),array('%s','%s') );
-	else
+	 else
 		$result=$wpdb->insert( $wpdb->prefix.'backwpup', array( 'main' => $main, 'name' => $name, 'value' => $value ), '%s' );
 	if ($result) {
 		$alloptions[$main][$name]=$value;
@@ -291,7 +295,7 @@ function backwpup_check_open_basedir($dir) {
 	return false;
 }
 
-function backwpup_formatBytes($bytes, $precision = 2) {
+function backwpup_format_bytes($bytes, $precision = 2) {
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
 	$bytes = max($bytes, 0);
 	$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
@@ -300,11 +304,11 @@ function backwpup_formatBytes($bytes, $precision = 2) {
 	return round($bytes, $precision) . ' ' . $units[$pow];
 }
 
-function backwpup_backup_types($type=array(),$echo=false) {
+function backwpup_job_types($type=array(),$echo=false) {
 	$typename='';
 	$type=(array)$type;
 	if (!empty($type)) {
-		foreach($type as $key => $value) {
+		foreach($type as $value) {
 			switch($value) {
 			case 'WPEXP':
 				$typename.=__('WP XML Export','backwpup')."<br />";
@@ -396,7 +400,11 @@ function backwpup_get_exclude_wp_dirs($folder) {
 	if (false !== strpos(backwpup_get_upload_dir(),$folder) and backwpup_get_upload_dir()!=$folder)
 		$excludedir[]=backwpup_get_upload_dir();
 	//Exclude Backup dirs
-	$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
+	$value=wp_cache_get('exclude','backwpup');
+	if (false==$value) {
+		$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
+		wp_cache_set('exclude',$value,'backwpup');
+	}
 	if (!empty($value)) {
 		foreach($value as $backupdir)
 				$excludedir[]=$backupdir;
@@ -578,145 +586,5 @@ function backwpup_decrypt($string, $key='') {
 		$result.=$char;
 	}
 	return $result;
-}
-
-function backwpup_get_job_vars($jobid=0,$jobnewsettings='') {
-	global $wpdb;
-
-	//generate jobid if not exists
-	if (empty($jobid)) {
-		$jobsettings['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC LIMIT 1",0,0);
-		$jobsettings['jobid']++;
-	}
-	//set main name
-	$main='job_'.$jobid;
-
-	//overwrite with new settings
-	if (!empty($jobnewsettings) && is_array($jobnewsettings))
-		$jobsettings=array_merge($jobsettings,$jobnewsettings);
-
-
-
-
-	if (!isset($jobsettings['backuprootexcludedirs']) or !is_array($jobsettings['backuprootexcludedirs']))
-		$jobsettings['backuprootexcludedirs']=array();
-	foreach($jobsettings['backuprootexcludedirs'] as $key => $value) {
-		$jobsettings['backuprootexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($jobsettings['backuprootexcludedirs'][$key]) or $jobsettings['backuprootexcludedirs'][$key]=='/' or !is_dir($jobsettings['backuprootexcludedirs'][$key]))
-			unset($jobsettings['backuprootexcludedirs'][$key]);
-	}
-	sort($jobsettings['backuprootexcludedirs']);
-
-	if (!isset($jobsettings['backupcontentexcludedirs']) or !is_array($jobsettings['backupcontentexcludedirs']))
-		$jobsettings['backupcontentexcludedirs']=array();
-	foreach($jobsettings['backupcontentexcludedirs'] as $key => $value) {
-		$jobsettings['backupcontentexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($jobsettings['backupcontentexcludedirs'][$key]) or $jobsettings['backupcontentexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupcontentexcludedirs'][$key]))
-			unset($jobsettings['backupcontentexcludedirs'][$key]);
-	}
-	sort($jobsettings['backupcontentexcludedirs']);
-
-	if (!isset($jobsettings['backuppluginsexcludedirs']) or !is_array($jobsettings['backuppluginsexcludedirs']))
-		$jobsettings['backuppluginsexcludedirs']=array();
-	foreach($jobsettings['backuppluginsexcludedirs'] as $key => $value) {
-		$jobsettings['backuppluginsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($jobsettings['backuppluginsexcludedirs'][$key]) or $jobsettings['backuppluginsexcludedirs'][$key]=='/' or !is_dir($jobsettings['backuppluginsexcludedirs'][$key]))
-			unset($jobsettings['backuppluginsexcludedirs'][$key]);
-	}
-	sort($jobsettings['backuppluginsexcludedirs']);
-
-	if (!isset($jobsettings['backupthemesexcludedirs']) or !is_array($jobsettings['backupthemesexcludedirs']))
-		$jobsettings['backupthemesexcludedirs']=array();
-	foreach($jobsettings['backupthemesexcludedirs'] as $key => $value) {
-		$jobsettings['backupthemesexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($jobsettings['backupthemesexcludedirs'][$key]) or $jobsettings['backupthemesexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupthemesexcludedirs'][$key]))
-			unset($jobsettings['backupthemesexcludedirs'][$key]);
-	}
-	sort($jobsettings['backupthemesexcludedirs']);
-
-	if (!isset($jobsettings['backupuploadsexcludedirs']) or !is_array($jobsettings['backupuploadsexcludedirs']))
-		$jobsettings['backupuploadsexcludedirs']=array();
-	foreach($jobsettings['backupuploadsexcludedirs'] as $key => $value) {
-		$jobsettings['backupuploadsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
-		if (empty($jobsettings['backupuploadsexcludedirs'][$key]) or $jobsettings['backupuploadsexcludedirs'][$key]=='/' or !is_dir($jobsettings['backupuploadsexcludedirs'][$key]))
-			unset($jobsettings['backupuploadsexcludedirs'][$key]);
-	}
-	sort($jobsettings['backupuploadsexcludedirs']);
-
-	if (!isset($jobsettings['backuptype']) or ($jobsettings['backuptype']!='archive' and $jobsettings['backuptype']!='sync'))
-		$jobsettings['backuptype']='archive';
-	
-	$fileformarts=array('.zip','.tar.gz','.tar.bz2','.tar');
-	if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
-		$jobsettings['fileformart']='.zip';
-
-
-	if (!isset($jobsettings['backupdir']))
-		$jobsettings['backupdir']='';
-	if (substr($jobsettings['backupdir'],0,1)!='/' and substr($jobsettings['backupdir'],1,1)!=':' and !empty($jobsettings['backupdir'])) //add abspath if not absolute
-		$jobsettings['backupdir']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$jobsettings['backupdir'];
-	$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
-	if ($jobsettings['backupdir']=='/')
-		$jobsettings['backupdir']='';
-
-
-
-
-
-
-	if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']) or $jobsettings['ftpdir']=='/')
-		$jobsettings['ftpdir']='';
-	$jobsettings['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir']))));
-	if (substr($jobsettings['ftpdir'],0,1)!='/')
-		$jobsettings['ftpdir']='/'.$jobsettings['ftpdir'];
-
-
-	if (!isset($jobsettings['awsdir']) or !is_string($jobsettings['awsdir']) or $jobsettings['awsdir']=='/')
-		$jobsettings['awsdir']='';
-	$jobsettings['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['awsdir']))));
-	if (substr($jobsettings['awsdir'],0,1)=='/')
-		$jobsettings['awsdir']=substr($jobsettings['awsdir'],1);
-
-
-
-	if (!isset($jobsettings['GStoragedir']) or !is_string($jobsettings['GStoragedir']) or $jobsettings['GStoragedir']=='/')
-		$jobsettings['GStoragedir']='';
-	$jobsettings['GStoragedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['GStoragedir']))));
-	if (substr($jobsettings['GStoragedir'],0,1)=='/')
-		$jobsettings['GStoragedir']=substr($jobsettings['GStoragedir'],1);
-
-
-	if (!isset($jobsettings['msazuredir']) or !is_string($jobsettings['msazuredir']) or $jobsettings['msazuredir']=='/')
-		$jobsettings['msazuredir']='';
-	$jobsettings['msazuredir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['msazuredir']))));
-	if (substr($jobsettings['msazuredir'],0,1)=='/')
-		$jobsettings['msazuredir']=substr($jobsettings['msazuredir'],1);
-
-
-	if (!isset($jobsettings['rscdir']) or !is_string($jobsettings['rscdir']) or $jobsettings['rscdir']=='/')
-		$jobsettings['rscdir']='';
-	$jobsettings['rscdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['rscdir']))));
-	if (substr($jobsettings['rscdir'],0,1)=='/')
-		$jobsettings['rscdir']=substr($jobsettings['rscdir'],1);
-
-
-	if (!isset($jobsettings['dropedir']) or !is_string($jobsettings['dropedir']) or $jobsettings['dropedir']=='/')
-		$jobsettings['dropedir']='';
-	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['dropedir']))));
-	if (substr($jobsettings['dropedir'],0,1)=='/')
-		$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);
-
-	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
-		$jobsettings['droperoot']='sandbox';
-
-
-	if (!isset($jobsettings['sugardir']) or !is_string($jobsettings['sugardir']) or $jobsettings['sugardir']=='/')
-		$jobsettings['sugardir']='';
-	$jobsettings['sugardir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['sugardir']))));
-	if (substr($jobsettings['sugardir'],0,1)=='/')
-		$jobsettings['sugardir']=substr($jobsettings['sugardir'],1);
-
-
-	return $jobsettings;
 }
 ?>

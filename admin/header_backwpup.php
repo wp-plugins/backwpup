@@ -14,44 +14,54 @@ if (!empty($doaction)) {
 	case 'delete': //Delete Job
 		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
-			foreach ($_GET['jobs'] as $jobid) {
-				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main=%s",'job_'.$jobid));
-			}
+			foreach ($_GET['jobs'] as $jobid)
+				$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main=%s",'job_'.(int)$jobid));
 		}
 		break;
 	case 'copy': //Copy Job
-		$jobid = (int) $_GET['jobid'];
-		check_admin_referer('copy-job_'.$jobid);
-		$oldjob=backwpup_get_job_vars($jobid);
+		$oldmain ='job_'. (int) $_GET['jobid'];
+		check_admin_referer('copy-job_'. $_GET['jobid']);
 		//create new
-		unset($oldjob['jobid']);
-		$jobvalues=backwpup_get_job_vars(0,$oldjob);
-		$jobvalues['name']=__('Copy of','backwpup').' '.$jobvalues['name'];
-		$jobvalues['activetype']='';
-		$jobvalues['fileprefix']=str_replace($jobid,$jobvalues['jobid'],$jobvalues['fileprefix']);
-		unset($jobvalues['logfile']);
-		unset($jobvalues['starttime']);
-		unset($jobvalues['lastbackupdownloadurl']);
-		unset($jobvalues['lastruntime']);
-		unset($jobvalues['lastrun']);	
-		foreach ($jobvalues as $jobvaluename => $jobvaluevalue) {
-			backwpup_update_option('job_'.$jobvalues['jobid'],$jobvaluename,$jobvaluevalue);
+		$newjobid=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC LIMIT 1",0,0);
+		$newjobid++;
+		$newmain='job_'.$newjobid;
+		$old_options=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main='".$oldmain."' ORDER BY name ASC");
+		foreach ($old_options as $option) {
+			$option->value=maybe_unserialize($option->value);
+			if ($option->name=="jobid")
+				$option->value=$newjobid;
+			if ($option->name=="name")
+				$option->value=__('Copy of','backwpup').' '.$option->value;
+			if ($option->name=="activetype")
+				$option->value='';
+			if ($option->name=="fileprefix")
+				$option->value=str_replace($_GET['jobid'],$newjobid,$option->value);
+			if ($option->name=="logfile" or $option->name=="starttime" or
+				$option->name=="lastbackupdownloadurl" or $option->name=="lastruntime" or
+				$option->name=="lastrun" or $option->name=="cronnextrun")
+				continue;
+			backwpup_update_option($newmain,$option->name,$option->value);
 		}
 		break;
 	case 'export': //Copy Job
 		if (is_array($_GET['jobs'])) {
 			check_admin_referer('bulk-jobs');
 			foreach ($_GET['jobs'] as $jobid) {
-				$jobsexport[$jobid]=backwpup_get_job_vars($jobid);
-				$jobsexport[$jobid]['activetype']='';
-				unset($jobsexport[$jobid]['logfile']);
-				unset($jobsexport[$jobid]['starttime']);
-				unset($jobsexport[$jobid]['lastbackupdownloadurl']);
-				unset($jobsexport[$jobid]['lastruntime']);
-				unset($jobsexport[$jobid]['lastrun']);
+				$options=$wpdb->get_results("SELECT name,value FROM `".$wpdb->prefix."backwpup` WHERE main='job_".$jobid."' ORDER BY name ASC");
+				foreach ($options as $option) {
+					if ($option->name=="activetype")
+						$option->value='';
+					if ($option->name=="fileprefix")
+						$option->value=str_replace($_GET['jobid'],$newjobid,$option->value);
+					if ($option->name=="logfile" or $option->name=="starttime" or
+						$option->name=="lastbackupdownloadurl" or $option->name=="lastruntime" or
+						$option->name=="lastrun" or $option->name=="cronnextrun")
+						continue;
+					$jobsexport[$jobid][$option->name]=maybe_unserialize($option->value);
+				}
 			}
 		}
-		$export=serialize($jobsexport);
+		$export=maybe_serialize($jobsexport);
 		header("Pragma: public");
 		header("Expires: 0");
 		header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -68,20 +78,19 @@ if (!empty($doaction)) {
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
 		$backupdata=backwpup_get_option('working','data');
-		if (empty($backupdata))
+		if (!$backupdata)
 			break;
-        $wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
-		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
+		backwpup_delete_option('working','data'); //delete working data
 		if (!empty($backupdata['LOGFILE'])) {
 			file_put_contents($backupdata['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 			//write new log header
-			$backupdata['WORKING']['ERROR']++;
+			$backupdata['ERROR']++;
 			$fd=fopen($backupdata['LOGFILE'],'r+');
 			while (!feof($fd)) {
 				$line=fgets($fd);
 				if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
 					fseek($fd,$filepos);
-					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backupdata['WORKING']['ERROR']."\" />",100)."\n");
+					fwrite($fd,str_pad("<meta name=\"backwpup_errors\" content=\"".$backupdata['ERROR']."\" />",100)."\n");
 					break;
 				}
 				$filepos=ftell($fd);
@@ -89,25 +98,26 @@ if (!empty($doaction)) {
 			fclose($fd);
 		}
 		$backwpup_message=__('Job will be terminated.','backwpup').'<br />';
-		if (!empty($backupdata['WORKING']['PID']) and function_exists('posix_kill')) {
-			if (posix_kill($backupdata['WORKING']['PID'],9))
-				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$backupdata['WORKING']['PID'];
+		if (!empty($backupdata['PID']) and function_exists('posix_kill')) {
+			if (posix_kill($backupdata['PID'],9))
+				$backwpup_message.=__('Process killed with PID:','backwpup').' '.$backupdata['PID'];
 			else
-				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['WORKING']['PID'];
+				$backwpup_message.=__('Can\'t kill process with PID:','backwpup').' '.$runningfile['PID'];
 		}
 		//update job settings
-		if (!empty($backupdata['STATIC']['JOB']['jobid']) and !empty($backupdata['STATIC']['JOB']['starttime'])) {
-			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'starttime','');
-			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'lastrun',$backupdata['STATIC']['JOB']['starttime']);
-			backwpup_update_option('job_'.$backupdata['STATIC']['JOB']['jobid'],'lastruntime',(current_time('timestamp')-$backupdata['STATIC']['JOB']['starttime']));
+		$sarttime=backwpup_get_option($backupdata['JOBMAIN'],'starttime');
+		if (!empty($backupdata['JOBMAIN']) and $sarttime) {
+			backwpup_update_option($backupdata['JOBMAIN'],'starttime','');
+			backwpup_update_option($backupdata['JOBMAIN'],'lastrun',$sarttime);
+			backwpup_update_option($backupdata['JOBMAIN'],'lastruntime',(current_time('timestamp')-$sarttime));
 		}
 		//clean up temp
-		if (!empty($backupdata['STATIC']['backupfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['backupfile']))
-			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['backupfile']);
-		if (!empty($backupdata['STATIC']['JOB']['dbdumpfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['dbdumpfile']))	
-			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['dbdumpfile']);
-		if (!empty($backupdata['STATIC']['JOB']['wpexportfile']) and file_exists($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['wpexportfile']))	
-			unlink($backupdata['STATIC']['CFG']['tempfolder'].$backupdata['STATIC']['JOB']['wpexportfile']);
+		if (!empty($backupdata['BACKUPFILE']) and file_exists(backwpup_get_option('CFG','tempfolder').$backupdata['BACKUPFILE']))
+			unlink(backwpup_get_option('CFG','tempfolder').$backupdata['BACKUPFILE']);
+		if (!empty($backupdata['DBDUMPFILE']) and file_exists(backwpup_get_option('CFG','tempfolder').$backupdata['DBDUMPFILE']))
+			unlink(backwpup_get_option('CFG','tempfolder').$backupdata['DBDUMPFILE']);
+		if (!empty($backupdata['WPEXPORTFILE']) and file_exists(backwpup_get_option('CFG','tempfolder').$backupdata['WPEXPORTFILE']))
+			unlink(backwpup_get_option('CFG','tempfolder').$backupdata['WPEXPORTFILE']);
 		break;
 	}
 }

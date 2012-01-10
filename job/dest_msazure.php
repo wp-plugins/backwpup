@@ -1,8 +1,8 @@
 <?PHP
 function backwpup_job_dest_msazure() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$backwpupjobrun['WORKING']['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$backwpupjobrun['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
 
 	require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 	need_free_memory(4194304*1.5);
@@ -21,10 +21,10 @@ function backwpup_job_dest_msazure() {
 		$result = $storageClient->putBlob($backwpupjobrun['STATIC']['JOB']['msazureContainer'], $backwpupjobrun['STATIC']['JOB']['msazuredir'].$backwpupjobrun['STATIC']['backupfile'], $backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
 
 		if ($result->Name==$backwpupjobrun['STATIC']['JOB']['msazuredir'].$backwpupjobrun['STATIC']['backupfile']) {
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.$backwpupjobrun['STATIC']['JOB']['msazureAccName'].'.'.$backwpupjobrun['STATIC']['JOB']['msazureHost'].'/'.$backwpupjobrun['STATIC']['JOB']['msazuredir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$backwpupjobrun['STATIC']['JOB']['msazuredir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_MSAZURE'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_MSAZURE'; //set done
 		} else {
 			trigger_error(__('Can not transfer backup to Microsoft Azure!','backwpup'),E_USER_ERROR);
 		}
@@ -55,6 +55,6 @@ function backwpup_job_dest_msazure() {
 		trigger_error(sprintf(__('Microsoft Azure API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 	}
 
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

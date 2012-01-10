@@ -17,10 +17,10 @@ function backwpup_get_logfile_ajax() {
     if (is_file(trim($_POST['logfile']))) {
 		$backupdata=backwpup_get_option('working','data');
         if (!empty($backupdata)) {
-            $warnings=$backupdata['WORKING']['WARNING'];
-            $errors=$backupdata['WORKING']['ERROR'];
-            $stepspersent=$backupdata['WORKING']['STEPSPERSENT'];
-            $steppersent=$backupdata['WORKING']['STEPPERSENT'];
+            $warnings=$backupdata['WARNING'];
+            $errors=$backupdata['ERROR'];
+            $stepspersent=$backupdata['STEPSPERSENT'];
+            $steppersent=$backupdata['STEPPERSENT'];
         } else {
             $logheader=backwpup_read_logheader(trim($_POST['logfile']));
             $warnings=$logheader['warnings'];

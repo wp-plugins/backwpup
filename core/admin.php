@@ -206,7 +206,7 @@ class BackWPup_Admin {
 				continue;
 			$name=backwpup_get_option($main,'name');
 			$jobid=backwpup_get_option($main,'jobid');
-			if (!empty($backupdata) and $backupdata['STATIC']['JOB']['jobid']==$jobid) {
+			if (!empty($backupdata) and $backupdata['JOBID']==$jobid) {
 				$startime=backwpup_get_option($main,'starttime');
 				$runtime=current_time('timestamp')-$startime;
 				echo '<li><span style="font-weight:bold;">'.$jobid.'. '.$name.': </span>';

@@ -87,7 +87,6 @@ function backwpup_upgrade() {
 	//cleanup database
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='job_'");
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
-	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='api'");
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
 	//remove old schedule
 	wp_clear_scheduled_hook('backwpup_cron');

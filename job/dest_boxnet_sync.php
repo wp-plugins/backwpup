@@ -4,9 +4,9 @@ function backwpup_job_dest_boxnet_sync() {
 	//get files
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
 	$folderlist=backwpup_get_option('WORKING','FOLDERLIST'); //get folder list
-	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sync files with Box.net...','backwpup'),$backwpupjobrun['WORKING']['DEST_BOXNET_SYNC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=count($filelist);
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sync files with Box.net...','backwpup'),$backwpupjobrun['DEST_BOXNET_SYNC']['STEP_TRY']),E_USER_NOTICE);
 
 	//get account info
 	$raw_response=@wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_info&api_key='.$backwpup_cfg['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth']);
@@ -22,17 +22,17 @@ function backwpup_job_dest_boxnet_sync() {
 	}
 	//Check Quota
 	$boxfreespase=(float)$info->user->space_amount-(float)$info->user->space_used;
-	trigger_error(sprintf(__('%s free on Box.net.','backwpup'),backwpup_formatBytes($boxfreespase)),E_USER_NOTICE);
+	trigger_error(sprintf(__('%s free on Box.net.','backwpup'),backwpup_format_bytes($boxfreespase)),E_USER_NOTICE);
 
 	
 	
 	//check filesize
-	if ($backwpupjobrun['WORKING']['backupfilesize']>(float)$info->user->max_upload_size) {
-		trigger_error(sprintf(__('Filesize to big max. %s allowed with your Box.net account!!!','backwpup'),backwpup_formatBytes((float)$info->user->max_upload_size)),E_USER_ERROR);
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET_SYNC'; //set done
+	if ($backwpupjobrun['backupfilesize']>(float)$info->user->max_upload_size) {
+		trigger_error(sprintf(__('Filesize to big max. %s allowed with your Box.net account!!!','backwpup'),backwpup_format_bytes((float)$info->user->max_upload_size)),E_USER_ERROR);
+		$backwpupjobrun['STEPSDONE'][]='DEST_BOXNET_SYNC'; //set done
 		return;
 	}
-	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
+	backwpup_job_need_free_memory($backwpupjobrun['backupfilesize']*1.5);
 	
 	//create folder if needed
 	$boxnetfolderid=0;
@@ -83,7 +83,7 @@ function backwpup_job_dest_boxnet_sync() {
 
 	
 	if (count($filelist)==0) {
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET_SYNC'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_BOXNET_SYNC'; //set done
 		remove_action('http_api_curl','backwpup_job_curl_progressfunction');
 	}
 

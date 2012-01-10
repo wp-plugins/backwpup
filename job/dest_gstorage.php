@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_gstorage() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try sending backup to Google Storage...','backwpup'),$backwpupjobrun['WORKING']['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try sending backup to Google Storage...','backwpup'),$backwpupjobrun['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
 
 	if (!class_exists('AmazonS3'))
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -18,7 +18,7 @@ function backwpup_job_dest_gstorage() {
 			trigger_error(sprintf(__('Connected to GStorage Bucket: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['GStorageBucket']),E_USER_NOTICE);
 		} else {
 			trigger_error(sprintf(__('GStorage Bucket "%s" not exists!','backwpup'),$backwpupjobrun['STATIC']['JOB']['GStorageBucket']),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_GSTORAGE'; //set done
 			return;
 		}
 			
@@ -33,10 +33,10 @@ function backwpup_job_dest_gstorage() {
 		$result=$gstorage->create_object($backwpupjobrun['STATIC']['JOB']['GStorageBucket'], $backwpupjobrun['STATIC']['JOB']['GStoragedir'].$backwpupjobrun['STATIC']['backupfile'],$param);
 		$result=(array)$result;
 		if ($result["status"]=200 and $result["status"]<300)  {
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),"https://sandbox.google.com/storage/".$backwpupjobrun['STATIC']['JOB']['GStorageBucket']."/".$backwpupjobrun['STATIC']['JOB']['GStoragedir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$backwpupjobrun['STATIC']['JOB']['GStoragedir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_GSTORAGE'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_GSTORAGE'; //set done
 		} else {
 			trigger_error(sprintf(__('Can not transfer backup to GStorage! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
 		}
@@ -77,6 +77,6 @@ function backwpup_job_dest_gstorage() {
 		return;
 	}
 
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

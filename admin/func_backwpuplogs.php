@@ -117,7 +117,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					break;
 				case 'type':
 					$r .= "<td $attributes>";
-					$r .= backwpup_backup_types(explode('+',$logdata['type']),false);
+					$r .= backwpup_job_types(explode('+',$logdata['type']),false);
 					$r .= "</td>"; 
 					break;
 				case 'log':				
@@ -142,7 +142,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 				case 'size':
 					$r .= "<td $attributes>";
 					if (!empty($logdata['backupfilesize'])) {
-						$r .= backwpup_formatBytes($logdata['backupfilesize']);
+						$r .= backwpup_format_bytes($logdata['backupfilesize']);
 					} else {
 						$r .= __('only Log','backwpup');
 					}

@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_sugarsync() {
 	global $backwpupjobrun,$backwpup_cfg;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sending backup to SugarSync...','backwpup'),$backwpupjobrun['WORKING']['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sending backup to SugarSync...','backwpup'),$backwpupjobrun['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);
 
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 
@@ -15,13 +15,13 @@ function backwpup_job_dest_sugarsync() {
 			trigger_error(sprintf(__('Authed to SugarSync with Nick %s','backwpup'),$user->nickname),E_USER_NOTICE);
 		}
 		$sugarsyncfreespase=(float)$user->quota->limit-(float)$user->quota->usage; //float fixes bug for display of no free space
-		if ($backwpupjobrun['WORKING']['backupfilesize']>$sugarsyncfreespase) {
+		if ($backwpupjobrun['backupfilesize']>$sugarsyncfreespase) {
 			trigger_error(__('No free space left on SugarSync!!!','backwpup'),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
+			$backwpupjobrun['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 			return;
 		} else {
-			trigger_error(sprintf(__('%s free on SugarSync','backwpup'),backwpup_formatBytes($sugarsyncfreespase)),E_USER_NOTICE);
+			trigger_error(sprintf(__('%s free on SugarSync','backwpup'),backwpup_format_bytes($sugarsyncfreespase)),E_USER_NOTICE);
 		}
 		//Create and change folder
 		$sugarsync->mkdir($backwpupjobrun['STATIC']['JOB']['sugardir'],$backwpupjobrun['STATIC']['JOB']['sugarroot']);
@@ -32,8 +32,8 @@ function backwpup_job_dest_sugarsync() {
 		$reponse=$sugarsync->upload($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
 		if (is_object($reponse)) {
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
-			$backwpupjobrun['WORKING']['STEPDONE']++;
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
+			$backwpupjobrun['STEPDONE']++;
+			$backwpupjobrun['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
 			trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.$user->nickname.'.sugarsync.com/'.$sugarsync->showdir($dirid).$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
 		} else {
 			trigger_error(__('Can not transfer backup to SugarSync!','backwpup'),E_USER_ERROR);
@@ -66,6 +66,6 @@ function backwpup_job_dest_sugarsync() {
 		trigger_error(sprintf(__('SugarSync API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 	}
 
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

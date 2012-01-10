@@ -2,17 +2,17 @@
 function backwpup_job_file_list() {
 	global $backwpupjobrun,$tempfilelist;
 	//Make filelist
-	trigger_error(sprintf(__('%d. Trying for make list of files to backup....','backwpup'),$backwpupjobrun['WORKING']['FILE_LIST']['STEP_TRY']),E_USER_NOTICE);
-	$backwpupjobrun['WORKING']['STEPTODO']=2;
+	trigger_error(sprintf(__('%d. Trying for make list of files to backup....','backwpup'),$backwpupjobrun['FILE_LIST']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2;
 
 	//Check free memory for file list
 	backwpup_job_need_free_memory(2097152); //2MB free memory for filelist
 	//empty filelist
 	$tempfilelist=array();
 	//exlude of job
-	$backwpupjobrun['WORKING']['FILEEXCLUDES']=explode(',',trim($backwpupjobrun['STATIC']['JOB']['fileexclude']));
-	$backwpupjobrun['WORKING']['FILEEXCLUDES'][]='.tmp';  //do not backup .tmp files
-	$backwpupjobrun['WORKING']['FILEEXCLUDES']=array_unique($backwpupjobrun['WORKING']['FILEEXCLUDES']);
+	$backwpupjobrun['FILEEXCLUDES']=explode(',',trim($backwpupjobrun['STATIC']['JOB']['fileexclude']));
+	$backwpupjobrun['FILEEXCLUDES'][]='.tmp';  //do not backup .tmp files
+	$backwpupjobrun['FILEEXCLUDES']=array_unique($backwpupjobrun['FILEEXCLUDES']);
 
 	//File list for blog folders
 	if ($backwpupjobrun['STATIC']['JOB']['backuproot'])
@@ -38,7 +38,7 @@ function backwpup_job_file_list() {
 	}
 	$tempfilelist=array_unique($tempfilelist); //all files only one time in list
 	sort($tempfilelist);
-	$backwpupjobrun['WORKING']['STEPDONE']=1; //Step done
+	$backwpupjobrun['STEPDONE']=1; //Step done
 	backwpup_job_update_working_data();
 
 	//Check abs path
@@ -50,7 +50,7 @@ function backwpup_job_file_list() {
 	$filelist=array();
 	for ($i=0; $i<count($tempfilelist); $i++) {
 		$filestat=stat($tempfilelist[$i]);
-		$backwpupjobrun['WORKING']['ALLFILESIZE']+=$filestat['size'];
+		$backwpupjobrun['ALLFILESIZE']+=$filestat['size'];
 		$outfile=str_replace($removepath,'',$tempfilelist[$i]);
 		if (substr($outfile,0,1)=='/') //remove first /
 			$outfile=substr($outfile,1);
@@ -60,15 +60,15 @@ function backwpup_job_file_list() {
 		$filelist[]=array('FILE'=>$tempfilelist[$i],'OUTFILE'=>$outfile,'SIZE'=>$filestat['size'],'ATIME'=>$filestat['atime'],'MTIME'=>$filestat['mtime'],'CTIME'=>$filestat['ctime'],'UID'=>$filestat['uid'],'GID'=>$filestat['gid'],'MODE'=>$filestat['mode']);
 	}
 	backwpup_job_add_file($filelist); //add files to list
-	$backwpupjobrun['WORKING']['STEPDONE']=2;
-	$backwpupjobrun['WORKING']['STEPSDONE'][]='FILE_LIST'; //set done
+	$backwpupjobrun['STEPDONE']=2;
+	$backwpupjobrun['STEPSDONE'][]='FILE_LIST'; //set done
 	unset($tempfilelist);
 
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get files
 	if (empty($filelist)) {
 		trigger_error(__('No files to backup','backwpup'),E_USER_ERROR);
 	} else {
-		trigger_error(sprintf(__('%1$d files with %2$s to backup','backwpup'),count($filelist),backwpup_formatBytes($backwpupjobrun['WORKING']['ALLFILESIZE'])),E_USER_NOTICE);
+		trigger_error(sprintf(__('%1$d files with %2$s to backup','backwpup'),count($filelist),backwpup_format_bytes($backwpupjobrun['ALLFILESIZE'])),E_USER_NOTICE);
 	}
 }
 
@@ -86,7 +86,7 @@ function _backwpup_job_file_list( $folder = '', $levels = 100, $excludedirs=arra
 		while (($file = readdir( $dir ) ) !== false ) {
 			if ( in_array($file, array('.', '..','.svn') ) )
 				continue;
-			foreach ($backwpupjobrun['WORKING']['FILEEXCLUDES'] as $exclusion) { //exclude dirs and files
+			foreach ($backwpupjobrun['FILEEXCLUDES'] as $exclusion) { //exclude dirs and files
 				$exclusion=trim($exclusion);
 				if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
 					continue 2;

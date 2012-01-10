@@ -148,7 +148,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	function get_dest_list() {
 		global $wpdb;
 		$jobdest=array();
-		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value");
+		$jobids=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC");
 		if (!empty($jobids)) {
 			foreach ($jobids as $jobid) {
 				$jobvalue=backwpup_get_job_vars($jobid);
@@ -240,7 +240,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				case 'size':
 					$r .= "<td $attributes>";
 					if (!empty($backup['filesize']) and $backup['filesize']!=-1) {
-						$r .= backwpup_formatBytes($backup['filesize']);
+						$r .= backwpup_format_bytes($backup['filesize']);
 					} else {
 						$r .= __('?','backwpup');
 					}

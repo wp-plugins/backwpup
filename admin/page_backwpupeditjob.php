@@ -12,7 +12,7 @@ add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), array('
 
 //generate jobid if not exists
 if (empty($_REQUEST['jobid'])) {
-	$_REQUEST['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC LIMIT 1",0,0);
+	$_REQUEST['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC LIMIT 1",0,0);
 	$_REQUEST['jobid']++;
 }
 $main='job_'.(int)$_REQUEST['jobid'];
@@ -31,7 +31,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 <?php endif; ?>
 
 <form name="editjob" id="editjob" method="post" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpupeditjob';?>">
-<input type="hidden" name="jobid" value="<?PHP echo backwpup_get_option($main,'jobid');?>" />
+<input type="hidden" name="jobid" value="<?PHP echo (int)$_REQUEST['jobid'];?>" />
 <?php wp_nonce_field('edit-job'); ?>
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
 <?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
@@ -70,7 +70,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 
-			<div id="databasejobs" class="stuffbox"<?PHP if (!in_array(array("OPTIMIZE","DB","CHECK"),backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
+			<div id="databasejobs" class="stuffbox"<?PHP if (!in_array("OPTIMIZE",backwpup_get_option($main,'type')) and !in_array("DB",backwpup_get_option($main,'type')) and !in_array("CHECK",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
 				<h3><label for="dbtables"><?PHP _e('Database Jobs','backwpup'); ?></label></h3>
 				<div class="inside">
 					<div>

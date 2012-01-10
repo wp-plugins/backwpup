@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_rsc() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sending backup file to Rackspace Cloud...','backwpup'),$backwpupjobrun['WORKING']['DEST_RSC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sending backup file to Rackspace Cloud...','backwpup'),$backwpupjobrun['DEST_RSC']['STEP_TRY']),E_USER_NOTICE);
 	require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 
 	$auth = new CF_Authentication($backwpupjobrun['STATIC']['JOB']['rscUsername'], $backwpupjobrun['STATIC']['JOB']['rscAPIKey']);
@@ -43,10 +43,10 @@ function backwpup_job_dest_rsc() {
 		$backwpupbackup = $backwpupcontainer->create_object($backwpupjobrun['STATIC']['JOB']['rscdir'].$backwpupjobrun['STATIC']['backupfile']);
 		trigger_error(__('Upload to RSC now started ... ','backwpup'),E_USER_NOTICE);
 		if ($backwpupbackup->load_from_filename($backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'])) {
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
 			trigger_error(__('Backup File transferred to RSC://','backwpup').$backwpupjobrun['STATIC']['JOB']['rscContainer'].'/'.$backwpupjobrun['STATIC']['JOB']['rscdir'].$backwpupjobrun['STATIC']['backupfile'],E_USER_NOTICE);
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.$backwpupjobrun['STATIC']['JOB']['rscdir'].$backwpupjobrun['STATIC']['backupfile'].'&jobid='.$backwpupjobrun['STATIC']['JOB']['jobid'];
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_RSC'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_RSC'; //set done
 		} else {
 			trigger_error(__('Can not transfer backup to RSC.','backwpup'),E_USER_ERROR);
 		}
@@ -83,6 +83,6 @@ function backwpup_job_dest_rsc() {
 		trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
 	}
 
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

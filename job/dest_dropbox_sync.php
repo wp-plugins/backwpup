@@ -4,9 +4,9 @@ function backwpup_job_dest_dropbox_sync() {
 	//get files
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
 	$folderlist=backwpup_get_option('WORKING','FOLDERLIST'); //get folder list
-	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sync files with DropBox...','backwpup'),$backwpupjobrun['WORKING']['DEST_DROPBOX_SYNC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=count($filelist);
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sync files with DropBox...','backwpup'),$backwpupjobrun['DEST_DROPBOX_SYNC']['STEP_TRY']),E_USER_NOTICE);
 	require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 	try {
 		//set boxtype and authkeys
@@ -23,7 +23,7 @@ function backwpup_job_dest_dropbox_sync() {
 		}
 		//Quota
 		$dropboxfreespase=$info['quota_info']['quota']-$info['quota_info']['shared']-$info['quota_info']['normal'];
-		trigger_error(sprintf(__('%s free on DropBox','backwpup'),backwpup_formatBytes($dropboxfreespase)),E_USER_NOTICE);
+		trigger_error(sprintf(__('%s free on DropBox','backwpup'),backwpup_format_bytes($dropboxfreespase)),E_USER_NOTICE);
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		return false;
@@ -80,7 +80,7 @@ function backwpup_job_dest_dropbox_sync() {
 						trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 					}
 				}
-				$backwpupjobrun['WORKING']['STEPDONE']++;
+				$backwpupjobrun['STEPDONE']++;
 				unset($filelist[$filekey]);
 				break;
 			} 
@@ -104,11 +104,11 @@ function backwpup_job_dest_dropbox_sync() {
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		}			
-		$backwpupjobrun['WORKING']['STEPDONE']++;
+		$backwpupjobrun['STEPDONE']++;
 		unset($filelist[$filekey]);
 	}
 	if (count($filelist)==0)
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_DROPBOX_SYNC'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_DROPBOX_SYNC'; //set done
 }
 
 function backwpup_job_dest_dropbox_sync_get_remote_files($folder,&$dropbox,&$remotefilelist,&$remotefolderlist) {

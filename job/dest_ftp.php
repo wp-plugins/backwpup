@@ -2,13 +2,13 @@
 function backwpup_job_dest_ftp() {
 	global $backwpupjobrun;
 	if (empty($backwpupjobrun['STATIC']['JOB']['ftphost']) or empty($backwpupjobrun['STATIC']['JOB']['ftpuser']) or empty($backwpupjobrun['STATIC']['JOB']['ftppass'])) {
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_FTP'; //set done
 		return;
 	}
-	$backwpupjobrun['WORKING']['STEPTODO']=2;
-	trigger_error(sprintf(__('%d. Try to sending backup file to a FTP Server...','backwpup'),$backwpupjobrun['WORKING']['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2;
+	trigger_error(sprintf(__('%d. Try to sending backup file to a FTP Server...','backwpup'),$backwpupjobrun['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
 
-	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
+	backwpup_job_need_free_memory($backwpupjobrun['backupfilesize']*1.5);
 
 	if ($backwpupjobrun['STATIC']['JOB']['ftpssl']) { //make SSL FTP connection
 		if (function_exists('ftp_ssl_connect')) {
@@ -21,7 +21,7 @@ function backwpup_job_dest_ftp() {
 			}
 		} else {
 			trigger_error(__('PHP function to connect with SSL-FTP to server not exists!','backwpup'),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_FTP'; //set done
 			return;
 		}
 	} else { //make normal FTP conection if SSL not work
@@ -75,7 +75,7 @@ function backwpup_job_dest_ftp() {
 	else
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
 
-	if ($backwpupjobrun['WORKING']['STEPDONE']==0) {
+	if ($backwpupjobrun['STEPDONE']==0) {
 		//test ftp dir and create it f not exists
 		$ftpdirs=explode("/", rtrim($backwpupjobrun['STATIC']['JOB']['ftpdir'],'/'));
 		foreach ($ftpdirs as $ftpdir) {
@@ -93,10 +93,10 @@ function backwpup_job_dest_ftp() {
 		}
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 		if (ftp_put($ftp_conn_id, $backwpupjobrun['STATIC']['JOB']['ftpdir'].$backwpupjobrun['STATIC']['backupfile'], $backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile'], FTP_BINARY)) { //transfere file
-			$backwpupjobrun['WORKING']['STEPTODO']=1+$backwpupjobrun['WORKING']['backupfilesize'];
+			$backwpupjobrun['STEPTODO']=1+$backwpupjobrun['backupfilesize'];
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['ftpdir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
 			$backwpupjobrun['STATIC']['JOB']['lastbackupdownloadurl']="ftp://".$backwpupjobrun['STATIC']['JOB']['ftpuser'].":".base64_decode($backwpupjobrun['STATIC']['JOB']['ftppass'])."@".$backwpupjobrun['STATIC']['JOB']['ftphost'].$backwpupjobrun['STATIC']['JOB']['ftpdir'].$backwpupjobrun['STATIC']['backupfile'];
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FTP'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_FTP'; //set done
 		} else
 			trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
 	}
@@ -126,7 +126,7 @@ function backwpup_job_dest_ftp() {
 	}
 
 	ftp_close($ftp_conn_id);
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 
 }
 ?>

@@ -21,12 +21,12 @@ class BackWPup_api {
 		add_filter('plugins_api',  array($this,'plugin_infoscreen'), 10, 3);
 		//move appapi to config
 		if (function_exists('backwpup_get_option')) {
-			$apiapp=backwpup_get_option('api','apiapp');
+			$apiapp=backwpup_get_option('temp','apiapp');
 			if (!$apiapp) {
 				$data = new stdClass;
 				$data->checked = true;
 				$this->plugin_update_check($data);
-				$apiapp=backwpup_get_option('api','apiapp');
+				$apiapp=backwpup_get_option('temp','apiapp');
 			}
 			$apiapp=unserialize(backwpup_decrypt($apiapp,md5($blogurl)));
 			if ($apiapp and is_array($apiapp)) {
@@ -76,19 +76,21 @@ class BackWPup_api {
 		// Start checking for an update
 		$post=array();
 		$post['ACTION']='updatecheck';
-		$saved=backwpup_get_option('api','updatecheck');
-		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200)
-			return $checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $saved['response'];
+		$saved=backwpup_get_option('temp','updatecheck');
+		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200) {
+			$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $saved['response'];
+			return $checked_data;
+		}
 		$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 			$response = unserialize(wp_remote_retrieve_body($raw_response));
 			if (is_object($response) && !empty($response->apiapps)) {
-				backwpup_update_option('api','apiapp',$response->apiapps);
+				backwpup_update_option('temp','apiapp',$response->apiapps);
 				unset($response->apiapps);
 			}
 			if (is_object($response) && !empty($response->slug)) {
 				$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $response;
-				backwpup_update_option('api','updatecheck',array('time'=>time(),'version'=>BACKWPUP_VERSION,'response'=>$response));
+				backwpup_update_option('temp','updatecheck',array('time'=>time(),'version'=>BACKWPUP_VERSION,'response'=>$response));
 			}
 		}
 		return $checked_data;
@@ -100,7 +102,7 @@ class BackWPup_api {
 			return false;
 		$post=array();
 		$post['ACTION']='updateinfo';
-		$saved=backwpup_get_option('api','updateinfo');
+		$saved=backwpup_get_option('temp','updateinfo');
 		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200)
 			return $saved['return'];
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
@@ -111,7 +113,7 @@ class BackWPup_api {
 			if ($res === false)
 				$res = new WP_Error('plugins_api_failed', __('An unknown error occurred'), $request['body']);
 			else
-				backwpup_update_option('api','updateinfo',array('time'=>time(),'version'=>BACKWPUP_VERSION,'return'=>$res));
+				backwpup_update_option('temp','updateinfo',array('time'=>time(),'version'=>BACKWPUP_VERSION,'return'=>$res));
 		}
 		return $res;
 	}

@@ -1,8 +1,8 @@
 <?PHP
 function backwpup_job_dest_folder() {
 	global $backwpupjobrun;
-	$backwpupjobrun['WORKING']['STEPTODO']=1;
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
+	$backwpupjobrun['STEPTODO']=1;
+	$backwpupjobrun['STEPDONE']=0;
 	backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$backwpupjobrun['STATIC']['JOB']['backupdir'].$backwpupjobrun['STATIC']['backupfile']);
 	//Delete old Backupfiles
 	$backupfilelist=array();
@@ -26,8 +26,8 @@ function backwpup_job_dest_folder() {
 				trigger_error(sprintf(_n('One backup file deleted','%d backup files deleted',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 		}
 	}
-	$backwpupjobrun['WORKING']['STEPDONE']++;
-	$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_FOLDER'; //set done
+	$backwpupjobrun['STEPDONE']++;
+	$backwpupjobrun['STEPSDONE'][]='DEST_FOLDER'; //set done
 }
 
 ?>

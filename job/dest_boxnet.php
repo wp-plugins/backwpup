@@ -1,9 +1,9 @@
 <?PHP
 function backwpup_job_dest_boxnet() {
 	global $backwpupjobrun,$backwpup_cfg;
-	$backwpupjobrun['WORKING']['STEPTODO']=2+$backwpupjobrun['WORKING']['backupfilesize'];
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sending backup file to Box.net...','backwpup'),$backwpupjobrun['WORKING']['DEST_BOXNET']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=2+$backwpupjobrun['backupfilesize'];
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sending backup file to Box.net...','backwpup'),$backwpupjobrun['DEST_BOXNET']['STEP_TRY']),E_USER_NOTICE);
 	//get account info
 	$raw_response=@wp_remote_get('http://www.box.net/api/1.0/rest?action=get_account_info&api_key='.$backwpup_cfg['BOXNET'].'&auth_token='.$backwpupjobrun['STATIC']['JOB']['boxnetauth']);
 	if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
@@ -18,21 +18,21 @@ function backwpup_job_dest_boxnet() {
 	}
 	//Check Quota
 	$boxfreespase=(float)$info->user->space_amount-(float)$info->user->space_used;
-	if ($backwpupjobrun['WORKING']['backupfilesize']>$boxfreespase) {
+	if ($backwpupjobrun['backupfilesize']>$boxfreespase) {
 		trigger_error(__('No free space left on Box.nat Account!!!','backwpup'),E_USER_ERROR);
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_BOXNET'; //set done
 		return;
 	} else {
-		trigger_error(sprintf(__('%s free on Box.net.','backwpup'),backwpup_formatBytes($boxfreespase)),E_USER_NOTICE);
+		trigger_error(sprintf(__('%s free on Box.net.','backwpup'),backwpup_format_bytes($boxfreespase)),E_USER_NOTICE);
 	}
 	//check filesize
-	if ($backwpupjobrun['WORKING']['backupfilesize']>(float)$info->user->max_upload_size) {
-		trigger_error(sprintf(__('Filesize to big max. %s allowed with your Box.net account!!!','backwpup'),backwpup_formatBytes((float)$info->user->max_upload_size)),E_USER_ERROR);
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+	if ($backwpupjobrun['backupfilesize']>(float)$info->user->max_upload_size) {
+		trigger_error(sprintf(__('Filesize to big max. %s allowed with your Box.net account!!!','backwpup'),backwpup_format_bytes((float)$info->user->max_upload_size)),E_USER_ERROR);
+		$backwpupjobrun['STEPSDONE'][]='DEST_BOXNET'; //set done
 		return;
 	}
 	
-	backwpup_job_need_free_memory($backwpupjobrun['WORKING']['backupfilesize']*1.5);
+	backwpup_job_need_free_memory($backwpupjobrun['backupfilesize']*1.5);
 	
 	//create folder if needed
 	$boxnetfolderid=0;
@@ -74,8 +74,8 @@ function backwpup_job_dest_boxnet() {
 	
 	if ($response->status=='upload_ok') {
 		backwpup_update_option('job_'.$backwpupjobrun['STATIC']['JOB']['jobid'],'lastbackupdownloadurl','https://www.box.net/api/1.0/download/'.$backwpupjobrun['STATIC']['JOB']['boxnetauth'].'/'.$response->files->file->attributes()->id);
-		$backwpupjobrun['WORKING']['STEPDONE']++;
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_BOXNET'; //set done
+		$backwpupjobrun['STEPDONE']++;
+		$backwpupjobrun['STEPSDONE'][]='DEST_BOXNET'; //set done
 		trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://www.box.net/'.$backwpupjobrun['STATIC']['JOB']['boxnetdir'].$backwpupjobrun['STATIC']['backupfile']),E_USER_NOTICE);
 	} else {
 		trigger_error(sprintf(__('Error on transfere backup to box.net: %s','backwpup'),$response->status),E_USER_ERROR);
@@ -119,6 +119,6 @@ function backwpup_job_dest_boxnet() {
 				trigger_error(sprintf(_n('One file deleted on Box.net','%d files deleted on Box.net',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 		}
 	}
-	$backwpupjobrun['WORKING']['STEPDONE']++;
+	$backwpupjobrun['STEPDONE']++;
 }
 ?>

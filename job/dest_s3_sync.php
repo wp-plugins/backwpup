@@ -3,9 +3,9 @@ function backwpup_job_dest_s3_sync() {
 	global $backwpupjobrun;
 	//get files
 	$filelist=backwpup_get_option('WORKING','FILELIST'); //get file list
-	$backwpupjobrun['WORKING']['STEPTODO']=count($filelist);
-	$backwpupjobrun['WORKING']['STEPDONE']=0;
-	trigger_error(sprintf(__('%d. Try to sync files with Amazon S3...','backwpup'),$backwpupjobrun['WORKING']['DEST_S3_SYNC']['STEP_TRY']),E_USER_NOTICE);
+	$backwpupjobrun['STEPTODO']=count($filelist);
+	$backwpupjobrun['STEPDONE']=0;
+	trigger_error(sprintf(__('%d. Try to sync files with Amazon S3...','backwpup'),$backwpupjobrun['DEST_S3_SYNC']['STEP_TRY']),E_USER_NOTICE);
 	
 	if (!class_exists('AmazonS3'))
 		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -17,7 +17,7 @@ function backwpup_job_dest_s3_sync() {
 			trigger_error(sprintf(__('Connected to S3 Bucket: %s','backwpup'),$backwpupjobrun['STATIC']['JOB']['awsBucket']),E_USER_NOTICE);
 		} else {
 			trigger_error(sprintf(__('S3 Bucket "%s" not exists!','backwpup'),$backwpupjobrun['STATIC']['JOB']['awsBucket']),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_S3_SYNC'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_S3_SYNC'; //set done
 			return;
 		}
 		//create general Upload Parameters
@@ -36,7 +36,7 @@ function backwpup_job_dest_s3_sync() {
 		$remotefilelist=array();
 		if (($contents = $s3->list_objects($backwpupjobrun['STATIC']['JOB']['awsBucket'],array('prefix'=>$backwpupjobrun['STATIC']['JOB']['awsdir']))) === false) {
 			trigger_error(__('Can not get filelist from S3 Bucket!','backwpup'),E_USER_ERROR);
-			$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_S3_SYNC'; //set done
+			$backwpupjobrun['STEPSDONE'][]='DEST_S3_SYNC'; //set done
 			return;		
 		}
 		foreach ($contents->body->Contents as $object) {
@@ -62,7 +62,7 @@ function backwpup_job_dest_s3_sync() {
 						trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 					}
 				}
-				$backwpupjobrun['WORKING']['STEPDONE']++;
+				$backwpupjobrun['STEPDONE']++;
 				unset($filelist[$filekey]);
 				break;
 			} 
@@ -87,10 +87,10 @@ function backwpup_job_dest_s3_sync() {
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		}			
-		$backwpupjobrun['WORKING']['STEPDONE']++;
+		$backwpupjobrun['STEPDONE']++;
 		unset($filelist[$filekey]);
 	}
 	if (count($filelist)==0)
-		$backwpupjobrun['WORKING']['STEPSDONE'][]='DEST_S3_SYNC'; //set done
+		$backwpupjobrun['STEPSDONE'][]='DEST_S3_SYNC'; //set done
 }
 ?>

@@ -37,18 +37,16 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	check_admin_referer('edit-job');
 	$main='job_'.(int)$_POST['jobid'];
 	backwpup_update_option($main,'jobid',(int) $_POST['jobid']);
-
 	foreach((array)$_POST['type'] as $key => $value) {
-		$_POST['type'][$key]=strtoupper($_POST['type'][$key]);
 		$value=strtoupper($value);
-		if (!in_array($value,backwpup_backup_types()))
+		if (!in_array($value,backwpup_job_types()))
 			unset($_POST['type'][$key]);
 	}
 	sort($_POST['type']);
-	backwpup_update_option($main,'type',(array)$_POST['type']);
-	backwpup_update_option($main,'name',sanitize_title($_POST['name'],__('New','backwpup')));
+	backwpup_update_option($main,'type',$_POST['type']);
+	backwpup_update_option($main,'name',esc_html($_POST['name']));
 	if ($_POST['activetype']=='' or $_POST['activetype']=='wpcron' or $_POST['activetype']=='backwpupapi')
-		backwpup_update_option($main,'type',$_POST['activetype']);
+		backwpup_update_option($main,'activetype',$_POST['activetype']);
 	backwpup_update_option($main,'cronselect',$_POST['cronselect']=='advanced' ? 'advanced':'basic');
 	if ($_POST['cronselect']=='advanced') {
 		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
@@ -135,71 +133,150 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	backwpup_update_option($main,'dirinclude',implode(',',$dirinclude));
 	backwpup_update_option($main,'backupexcludethumbs',(isset($_POST['backupexcludethumbs']) && $_POST['backupexcludethumbs']==1) ? true : false);
 	backwpup_update_option($main,'backuproot',(isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false);
-
-
-	$jobvalues['backuprootexcludedirs']=!empty($_POST['backuprootexcludedirs']) ? (array)$_POST['backuprootexcludedirs'] : array();
-	$jobvalues['backupcontent']= (isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false;
-	$jobvalues['backupcontentexcludedirs']=!empty($_POST['backupcontentexcludedirs']) ? (array)$_POST['backupcontentexcludedirs'] : array();
-	$jobvalues['backupplugins']= (isset($_POST['backupplugins']) && $_POST['backupplugins']==1) ? true : false;
-	$jobvalues['backuppluginsexcludedirs']=!empty($_POST['backuppluginsexcludedirs']) ? (array)$_POST['backuppluginsexcludedirs'] : array();
-	$jobvalues['backupthemes']= (isset($_POST['backupthemes']) && $_POST['backupthemes']==1) ? true : false;
-	$jobvalues['backupthemesexcludedirs']=!empty($_POST['backupthemesexcludedirs']) ? (array)$_POST['backupthemesexcludedirs'] : array();
-	$jobvalues['backupuploads']= (isset($_POST['backupuploads']) && $_POST['backupuploads']==1) ? true : false;
-	$jobvalues['backupuploadsexcludedirs']=!empty($_POST['backupuploadsexcludedirs']) ? (array)$_POST['backupuploadsexcludedirs'] : array();
-	$jobvalues['backuptype']=$_POST['backuptype'];
-	$jobvalues['fileprefix']= isset($_POST['fileprefix']) ? $_POST['fileprefix'] : '';
-	$jobvalues['fileformart']=$_POST['fileformart'];
-	$jobvalues['mailefilesize']=isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0;
-	$jobvalues['backupdir']=isset($_POST['backupdir']) ? stripslashes($_POST['backupdir']) : '';
-	$jobvalues['maxbackups']=isset($_POST['maxbackups']) ? (int)$_POST['maxbackups'] : 0;
-	$jobvalues['backupsyncnodelete']= (isset($_POST['backupsyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false;
-	$jobvalues['ftpsyncnodelete']= (isset($_POST['ftpsyncnodelete']) && $_POST['ftpsyncnodelete']==1) ? true : false;
-	$jobvalues['awssyncnodelete']= (isset($_POST['awssyncnodelete']) && $_POST['awssyncnodelete']==1) ? true : false;
-	$jobvalues['GStoragesyncnodelete']= (isset($_POST['GStoragesyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false;
-	$jobvalues['msazuresyncnodelete']= (isset($_POST['msazuresyncnodelete']) && $_POST['msazuresyncnodelete']==1) ? true : false;
-	$jobvalues['rscsyncnodelete']= (isset($_POST['rscsyncnodelete']) && $_POST['rscsyncnodelete']==1) ? true : false;
-	$jobvalues['dropesyncnodelete']= (isset($_POST['dropesyncnodelete']) && $_POST['dropesyncnodelete']==1) ? true : false;
-	$jobvalues['sugarsyncnodelete']= (isset($_POST['sugarsyncnodelete']) && $_POST['sugarsyncnodelete']==1) ? true : false;
-	$jobvalues['ftphost']=isset($_POST['ftphost']) ? $_POST['ftphost'] : '';
-	$jobvalues['ftphostport']=!empty($_POST['ftphostport']) ? (int)$_POST['ftphostport'] : 21;
-	$jobvalues['ftpuser']=isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '';
-	$jobvalues['ftppass']=isset($_POST['ftppass']) ? backwpup_encrypt($_POST['ftppass']) : '';
-	$jobvalues['ftpdir']=isset($_POST['ftpdir']) ? stripslashes($_POST['ftpdir']) : '';
-	$jobvalues['ftpmaxbackups']=isset($_POST['ftpmaxbackups']) ? (int)$_POST['ftpmaxbackups'] : 0;
-	$jobvalues['ftpssl']= (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false;
-	$jobvalues['ftppasv']= (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false;
-	$jobvalues['dropemaxbackups']=isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0;
-	$jobvalues['droperoot']=$_POST['droperoot'];
-	$jobvalues['dropedir']=isset($_POST['dropedir']) ? $_POST['dropedir'] : '';
-	$jobvalues['awsAccessKey']=isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '';
-	$jobvalues['awsSecretKey']=isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '';
-	$jobvalues['awsrrs']= (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false;
-	$jobvalues['awsssencrypt']= (isset($_POST['awsssencrypt']) && $_POST['awsssencrypt']=='AES256') ? 'AES256' : '';
-	$jobvalues['awsBucket']=isset($_POST['awsBucket']) ? $_POST['awsBucket'] : '';
-	$jobvalues['awsdir']=isset($_POST['awsdir']) ? stripslashes($_POST['awsdir']) : '';
-	$jobvalues['awsmaxbackups']=isset($_POST['awsmaxbackups']) ? (int)$_POST['awsmaxbackups'] : 0;
-	$jobvalues['GStorageAccessKey']=isset($_POST['GStorageAccessKey']) ? $_POST['GStorageAccessKey'] : '';
-	$jobvalues['GStorageSecret']=isset($_POST['GStorageSecret']) ? $_POST['GStorageSecret'] : '';
-	$jobvalues['GStorageBucket']=isset($_POST['GStorageBucket']) ? $_POST['GStorageBucket'] : '';
-	$jobvalues['GStoragedir']=isset($_POST['GStoragedir']) ? stripslashes($_POST['GStoragedir']) : '';
-	$jobvalues['GStoragemaxbackups']=isset($_POST['GStoragemaxbackups']) ? (int)$_POST['GStoragemaxbackups'] : 0;
-	$jobvalues['msazureHost']=isset($_POST['msazureHost']) ? $_POST['msazureHost'] : 'blob.core.windows.net';
-	$jobvalues['msazureAccName']=isset($_POST['msazureAccName']) ? $_POST['msazureAccName'] : '';
-	$jobvalues['msazureKey']=isset($_POST['msazureKey']) ? $_POST['msazureKey'] : '';
-	$jobvalues['msazureContainer']=isset($_POST['msazureContainer']) ? $_POST['msazureContainer'] : '';
-	$jobvalues['msazuredir']=isset($_POST['msazuredir']) ? stripslashes($_POST['msazuredir']) : '';
-	$jobvalues['msazuremaxbackups']=isset($_POST['msazuremaxbackups']) ? (int)$_POST['msazuremaxbackups'] : 0;
-	$jobvalues['sugaruser']=isset($_POST['sugaruser']) ? $_POST['sugaruser'] : '';
-	$jobvalues['sugarpass']=isset($_POST['sugarpass']) ? backwpup_encrypt($_POST['sugarpass']) : '';
-	$jobvalues['sugardir']=isset($_POST['sugardir']) ? stripslashes($_POST['sugardir']) : '';
-	$jobvalues['sugarroot']=isset($_POST['sugarroot']) ? $_POST['sugarroot'] : '';
-	$jobvalues['sugarmaxbackups']=isset($_POST['sugarmaxbackups']) ? (int)$_POST['sugarmaxbackups'] : 0;
-	$jobvalues['rscUsername']=isset($_POST['rscUsername']) ? $_POST['rscUsername'] : '';
-	$jobvalues['rscAPIKey']=isset($_POST['rscAPIKey']) ? $_POST['rscAPIKey'] : '';
-	$jobvalues['rscContainer']=isset($_POST['rscContainer']) ? $_POST['rscContainer'] : '';
-	$jobvalues['rscdir']=isset($_POST['rscdir']) ? stripslashes($_POST['rscdir']) : '';
-	$jobvalues['rscmaxbackups']=isset($_POST['rscmaxbackups']) ? (int)$_POST['rscmaxbackups'] : 0;
-	$jobvalues['mailaddress']=isset($_POST['mailaddress']) ? sanitize_email($_POST['mailaddress']) : '';
+	if (!isset($_POST['backuprootexcludedirs']) or !is_array($_POST['backuprootexcludedirs']))
+		$_POST['backuprootexcludedirs']=array();
+	foreach($_POST['backuprootexcludedirs'] as $key => $value) {
+		$_POST['backuprootexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($_POST['backuprootexcludedirs'][$key]) or $_POST['backuprootexcludedirs'][$key]=='/' or !is_dir($_POST['backuprootexcludedirs'][$key]))
+			unset($_POST['backuprootexcludedirs'][$key]);
+	}
+	sort($_POST['backuprootexcludedirs']);
+	backwpup_update_option($main,'backuprootexcludedirs',$_POST['backuprootexcludedirs']);
+	backwpup_update_option($main,'backupcontent',(isset($_POST['backupcontent']) && $_POST['backupcontent']==1) ? true : false);
+	if (!isset($_POST['backupcontentexcludedirs']) or !is_array($_POST['backupcontentexcludedirs']))
+		$_POST['backupcontentexcludedirs']=array();
+	foreach($_POST['backupcontentexcludedirs'] as $key => $value) {
+		$_POST['backupcontentexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($_POST['backupcontentexcludedirs'][$key]) or $_POST['backupcontentexcludedirs'][$key]=='/' or !is_dir($_POST['backupcontentexcludedirs'][$key]))
+			unset($_POST['backupcontentexcludedirs'][$key]);
+	}
+	sort($_POST['backupcontentexcludedirs']);
+	backwpup_update_option($main,'backupcontentexcludedirs',$_POST['backupcontentexcludedirs']);
+	backwpup_update_option($main,'backupplugins', (isset($_POST['backupplugins']) && $_POST['backupplugins']==1) ? true : false);
+	if (!isset($_POST['backuppluginsexcludedirs']) or !is_array($_POST['backuppluginsexcludedirs']))
+		$_POST['backuppluginsexcludedirs']=array();
+	foreach($_POST['backuppluginsexcludedirs'] as $key => $value) {
+		$_POST['backuppluginsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($_POST['backuppluginsexcludedirs'][$key]) or $_POST['backuppluginsexcludedirs'][$key]=='/' or !is_dir($_POST['backuppluginsexcludedirs'][$key]))
+			unset($_POST['backuppluginsexcludedirs'][$key]);
+	}
+	sort($_POST['backuppluginsexcludedirs']);
+	backwpup_update_option($main,'backuppluginsexcludedirs',$_POST['backuppluginsexcludedirs']);
+	backwpup_update_option($main,'backupthemes',(isset($_POST['backupthemes']) && $_POST['backupthemes']==1) ? true : false);
+	if (!isset($_POST['backupthemesexcludedirs']) or !is_array($_POST['backupthemesexcludedirs']))
+		$_POST['backupthemesexcludedirs']=array();
+	foreach($_POST['backupthemesexcludedirs'] as $key => $value) {
+		$_POST['backupthemesexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($_POST['backupthemesexcludedirs'][$key]) or $_POST['backupthemesexcludedirs'][$key]=='/' or !is_dir($_POST['backupthemesexcludedirs'][$key]))
+			unset($_POST['backupthemesexcludedirs'][$key]);
+	}
+	sort($_POST['backupthemesexcludedirs']);
+	backwpup_update_option($main,'backupthemesexcludedirs',$_POST['backupthemesexcludedirs']);
+	backwpup_update_option($main,'backupuploads', (isset($_POST['backupuploads']) && $_POST['backupuploads']==1) ? true : false);
+	if (!isset($_POST['backupuploadsexcludedirs']) or !is_array($_POST['backupuploadsexcludedirs']))
+		$_POST['backupuploadsexcludedirs']=array();
+	foreach($_POST['backupuploadsexcludedirs'] as $key => $value) {
+		$_POST['backupuploadsexcludedirs'][$key]=str_replace('//','/',str_replace('\\','/',trim($value)));
+		if (empty($_POST['backupuploadsexcludedirs'][$key]) or $_POST['backupuploadsexcludedirs'][$key]=='/' or !is_dir($_POST['backupuploadsexcludedirs'][$key]))
+			unset($_POST['backupuploadsexcludedirs'][$key]);
+	}
+	sort($_POST['backupuploadsexcludedirs']);
+	backwpup_update_option($main,'backupuploadsexcludedirs',$_POST['backupuploadsexcludedirs']);
+	backwpup_update_option($main,'backuptype',$_POST['backuptype']);
+	backwpup_update_option($main,'fileformart',$_POST['fileformart']);
+	backwpup_update_option($main,'mailefilesize',isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0);
+	$_POST['backupdir']=stripslashes($_POST['backupdir']);
+	if (substr($_POST['backupdir'],0,1)!='/' and substr($_POST['backupdir'],1,1)!=':' and !empty($_POST['backupdir'])) //add abspath if not absolute
+		$_POST['backupdir']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['backupdir'];
+	$_POST['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($_POST['backupdir']))));
+	if ($_POST['backupdir']=='/')
+		$_POST['backupdir']='';
+	backwpup_update_option($main,'backupdir',$_POST['backupdir']);
+	backwpup_update_option($main,'maxbackups',isset($_POST['maxbackups']) ? (int)$_POST['maxbackups'] : 0);
+	backwpup_update_option($main,'backupsyncnodelete', (isset($_POST['backupsyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'ftpsyncnodelete', (isset($_POST['ftpsyncnodelete']) && $_POST['ftpsyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'awssyncnodelete', (isset($_POST['awssyncnodelete']) && $_POST['awssyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'GStoragesyncnodelete', (isset($_POST['GStoragesyncnodelete']) && $_POST['backupsyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'msazuresyncnodelete', (isset($_POST['msazuresyncnodelete']) && $_POST['msazuresyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'rscsyncnodelete', (isset($_POST['rscsyncnodelete']) && $_POST['rscsyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'dropesyncnodelete', (isset($_POST['dropesyncnodelete']) && $_POST['dropesyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'sugarsyncnodelete', (isset($_POST['sugarsyncnodelete']) && $_POST['sugarsyncnodelete']==1) ? true : false);
+	backwpup_update_option($main,'ftphost',isset($_POST['ftphost']) ? $_POST['ftphost'] : '');
+	backwpup_update_option($main,'ftphostport',!empty($_POST['ftphostport']) ? (int)$_POST['ftphostport'] : 21);
+	backwpup_update_option($main,'ftptimeout',!empty($_POST['ftptimeout']) ? (int)$_POST['ftptimeout'] : 10);
+	backwpup_update_option($main,'ftpuser',isset($_POST['ftpuser']) ? $_POST['ftpuser'] : '');
+	backwpup_update_option($main,'ftppass',isset($_POST['ftppass']) ? backwpup_encrypt($_POST['ftppass']) : '');
+	$_POST['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['ftpdir'])))));
+	if (substr($_POST['ftpdir'],0,1)!='/')
+		$_POST['ftpdir']='/'.$_POST['ftpdir'];
+	if ($_POST['ftpdir']=='/')
+		$_POST['ftpdir']='';
+	backwpup_update_option($main,'ftpdir',$_POST['ftpdir']);
+	backwpup_update_option($main,'ftpmaxbackups',isset($_POST['ftpmaxbackups']) ? (int)$_POST['ftpmaxbackups'] : 0);
+	backwpup_update_option($main,'ftpssl', (isset($_POST['ftpssl']) && $_POST['ftpssl']==1) ? true : false);
+	backwpup_update_option($main,'ftppasv', (isset($_POST['ftppasv']) && $_POST['ftppasv']==1) ? true : false);
+	backwpup_update_option($main,'dropemaxbackups',isset($_POST['dropemaxbackups']) ? (int)$_POST['dropemaxbackups'] : 0);
+	backwpup_update_option($main,'droperoot', (isset($_POST['droperoot']) and $_POST['droperoot']=='dropbox') ? 'dropbox' : 'sandbox');
+	$_POST['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['dropedir'])))));
+	if (substr($_POST['dropedir'],0,1)=='/')
+		$_POST['dropedir']=substr($_POST['dropedir'],1);
+	if ($_POST['dropedir']=='/')
+		$_POST['dropedir']='';
+	backwpup_update_option($main,'dropedir',$_POST['dropedir']);
+	backwpup_update_option($main,'awsAccessKey',isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '');
+	backwpup_update_option($main,'awsSecretKey',isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '');
+	backwpup_update_option($main,'awsrrs', (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false);
+	backwpup_update_option($main,'awsssencrypt', (isset($_POST['awsssencrypt']) && $_POST['awsssencrypt']=='AES256') ? 'AES256' : '');
+	backwpup_update_option($main,'awsBucket',isset($_POST['awsBucket']) ? $_POST['awsBucket'] : '');
+	$_POST['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['awsdir'])))));
+	if (substr($_POST['awsdir'],0,1)=='/')
+		$_POST['awsdir']=substr($_POST['awsdir'],1);
+	if ($_POST['awsdir']=='/')
+		$_POST['awsdir']='';
+	backwpup_update_option($main,'awsdir',$_POST['awsdir']);
+	backwpup_update_option($main,'awsmaxbackups',isset($_POST['awsmaxbackups']) ? (int)$_POST['awsmaxbackups'] : 0);
+	backwpup_update_option($main,'GStorageAccessKey',isset($_POST['GStorageAccessKey']) ? $_POST['GStorageAccessKey'] : '');
+	backwpup_update_option($main,'GStorageSecret',isset($_POST['GStorageSecret']) ? $_POST['GStorageSecret'] : '');
+	backwpup_update_option($main,'GStorageBucket',isset($_POST['GStorageBucket']) ? $_POST['GStorageBucket'] : '');
+	$_POST['GStoragedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['GStoragedir'])))));
+	if (substr($_POST['GStoragedir'],0,1)=='/')
+		$_POST['GStoragedir']=substr($_POST['GStoragedir'],1);
+	if ($_POST['GStoragedir']=='/')
+		$_POST['GStoragedir']='';
+	backwpup_update_option($main,'GStoragedir',$_POST['GStoragedir']);
+	backwpup_update_option($main,'GStoragemaxbackups',isset($_POST['GStoragemaxbackups']) ? (int)$_POST['GStoragemaxbackups'] : 0);
+	backwpup_update_option($main,'msazureHost',isset($_POST['msazureHost']) ? $_POST['msazureHost'] : 'blob.core.windows.net');
+	backwpup_update_option($main,'msazureAccName',isset($_POST['msazureAccName']) ? $_POST['msazureAccName'] : '');
+	backwpup_update_option($main,'msazureKey',isset($_POST['msazureKey']) ? $_POST['msazureKey'] : '');
+	backwpup_update_option($main,'msazureContainer',isset($_POST['msazureContainer']) ? $_POST['msazureContainer'] : '');
+	$_POST['msazuredir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['msazuredir'])))));
+	if (substr($_POST['msazuredir'],0,1)=='/')
+		$_POST['msazuredir']=substr($_POST['msazuredir'],1);
+	if ($_POST['msazuredir']=='/')
+		$_POST['msazuredir']='';
+	backwpup_update_option($main,'msazuredir',$_POST['msazuredir']);
+	backwpup_update_option($main,'msazuremaxbackups',isset($_POST['msazuremaxbackups']) ? (int)$_POST['msazuremaxbackups'] : 0);
+	backwpup_update_option($main,'sugaruser',isset($_POST['sugaruser']) ? $_POST['sugaruser'] : '');
+	backwpup_update_option($main,'sugarpass',isset($_POST['sugarpass']) ? backwpup_encrypt($_POST['sugarpass']) : '');
+	$_POST['sugardir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['sugardir'])))));
+	if (substr($_POST['sugardir'],0,1)=='/')
+		$_POST['sugardir']=substr($_POST['sugardir'],1);
+	if ($_POST['sugardir']=='/')
+		$_POST['sugardir']='';
+	backwpup_update_option($main,'sugardir',$_POST['sugardir']);
+	backwpup_update_option($main,'sugarroot',isset($_POST['sugarroot']) ? $_POST['sugarroot'] : '');
+	backwpup_update_option($main,'sugarmaxbackups',isset($_POST['sugarmaxbackups']) ? (int)$_POST['sugarmaxbackups'] : 0);
+	backwpup_update_option($main,'rscUsername',isset($_POST['rscUsername']) ? $_POST['rscUsername'] : '');
+	backwpup_update_option($main,'rscAPIKey',isset($_POST['rscAPIKey']) ? $_POST['rscAPIKey'] : '');
+	backwpup_update_option($main,'rscContainer',isset($_POST['rscContainer']) ? $_POST['rscContainer'] : '');
+	$_POST['rscdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['rscdir'])))));
+	if (substr($_POST['rscdir'],0,1)=='/')
+		$_POST['rscdir']=substr($_POST['rscdir'],1);
+	if ($_POST['rscdir']=='/')
+		$_POST['rscdir']='';
+	backwpup_update_option($main,'rscdir',$_POST['rscdir']);
+	backwpup_update_option($main,'rscmaxbackups',isset($_POST['rscmaxbackups']) ? (int)$_POST['rscmaxbackups'] : 0);
+	backwpup_update_option($main,'mailaddress',isset($_POST['mailaddress']) ? sanitize_email($_POST['mailaddress']) : '');
 
 
 	if (!empty($_POST['newawsBucket']) and !empty($_POST['awsAccessKey']) and !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
@@ -222,7 +299,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 			$gstorage->set_hostname('commondatastorage.googleapis.com');
 			$gstorage->allow_hostname_override(false);
 			$gstorage->create_bucket($_POST['newGStorageBucket'],'');
-			$jobvalues['GStorageBucket']=$_POST['newGStorageBucket'];
+			backwpup_update_option($main,'GStorageBucket',$_POST['newGStorageBucket']);
 			sleep(1); //creation take a moment
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
@@ -236,7 +313,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		try {
 			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($_POST['msazureHost'],$_POST['msazureAccName'],$_POST['msazureKey']);
 			$result = $storageClient->createContainer($_POST['newmsazureContainer']);
-			$jobvalues['msazureContainer']=$result->Name;
+			backwpup_update_option($main,'msazureContainer',$result->Name);
 		} catch (Exception $e) {
 			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
 		}
