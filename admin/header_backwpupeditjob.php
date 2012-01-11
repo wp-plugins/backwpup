@@ -135,6 +135,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	sort($dirinclude);
 	backwpup_update_option($main,'dirinclude',implode(',',$dirinclude));
 	backwpup_update_option($main,'backupexcludethumbs',(isset($_POST['backupexcludethumbs']) && $_POST['backupexcludethumbs']==1) ? true : false);
+	backwpup_update_option($main,'backupspecialfiles',(isset($_POST['backupspecialfiles']) && $_POST['backupspecialfiles']==1) ? true : false);
 	backwpup_update_option($main,'backuproot',(isset($_POST['backuproot']) && $_POST['backuproot']==1) ? true : false);
 	if (!isset($_POST['backuprootexcludedirs']) or !is_array($_POST['backuprootexcludedirs']))
 		$_POST['backuprootexcludedirs']=array();

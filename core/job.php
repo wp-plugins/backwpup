@@ -1096,6 +1096,33 @@ class BackWPup_job {
 		$this->jobdata['FOLDERLIST'] = array_unique($this->jobdata['FOLDERLIST']); //all files only one time in list
 		sort($this->jobdata['FOLDERLIST']);
 
+		//add extra files if selected
+		if (backwpup_get_option($this->jobdata['JOBMAIN'],'backupspecialfiles')) {
+			if ( file_exists( ABSPATH . 'wp-config.php') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'wp-config.php');
+				trigger_error(__('Added wp-config.php to backup file list', 'backwpup'), E_USER_NOTICE);
+			} elseif ( file_exists( dirname(ABSPATH) . '/wp-config.php' ) && ! file_exists( dirname(ABSPATH) . '/wp-settings.php' ) ) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',dirname(ABSPATH) . '/wp-config.php');
+				trigger_error(__('Added "wp-config.php" to backup file list', 'backwpup'), E_USER_NOTICE);
+			}
+			if ( file_exists( ABSPATH . '.htaccess') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . '.htaccess');
+				trigger_error(__('Added ".htaccess" to backup file list', 'backwpup'), E_USER_NOTICE);
+			}
+			if ( file_exists( ABSPATH . '.htpasswd') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . '.htpasswd');
+				trigger_error(__('Added ".htpasswd" to backup file list', 'backwpup'), E_USER_NOTICE);
+			}
+			if ( file_exists( ABSPATH . 'robots.txt') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'robots.txt');
+				trigger_error(__('Added "robots.txt" to backup file list', 'backwpup'), E_USER_NOTICE);
+			}
+			if ( file_exists( ABSPATH . 'favicon.ico') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'favicon.ico');
+				trigger_error(__('Added "favicon.ico" to backup file list', 'backwpup'), E_USER_NOTICE);
+			}
+		}
+
 		if ( empty($this->jobdata['FOLDERLIST']) )
 			trigger_error(__('No Folder to backup', 'backwpup'), E_USER_ERROR);
 		else

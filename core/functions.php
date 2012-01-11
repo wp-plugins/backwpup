@@ -78,6 +78,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['fileexclude']='';
 		$default[$main]['dirinclude']='';
 		$default[$main]['backupexcludethumbs']=false;
+		$default[$main]['backupspecialfiles']=false;
 		$default[$main]['backuproot']=true;
 		$default[$main]['backupcontent']=true;
 		$default[$main]['backupplugins']=true;

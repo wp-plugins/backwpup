@@ -212,13 +212,14 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 							</div>
 						</div>
 					</div>
-					<input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupexcludethumbs'),true,true);?> name="backupexcludethumbs" value="1"/> <?php _e('Don\'t backup Thumbnails in uploads folder','backwpup');?>
+					<input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupexcludethumbs'),true,true);?> name="backupexcludethumbs" value="1"/> <?php _e('Don\'t backup thumbnails in blog uploads folder','backwpup');?><br />
+					<input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupspecialfiles'),true,true);?> name="backupspecialfiles" value="1"/> <?php _e('Backup wp-config.php, robots.txt, .htaccess, .htpasswd and favicon.ico form root if it not selected','backwpup');?>
 					<br />&nbsp;<br />
-					<b><?PHP _e('Include Folders to Backup:','backwpup'); ?></b><br />
+					<b><?PHP _e('Include folders to backup:','backwpup'); ?></b><br />
 					<?PHP _e('Example:','backwpup'); ?> <?PHP echo str_replace('\\','/',ABSPATH); ?>,...<br />
 					<input name="dirinclude" id="dirinclude" type="text" value="<?PHP echo backwpup_get_option($main,'dirinclude');?>" class="large-text" /><br />
 					<br />
-					<b><?PHP _e('Exclude Files/Folders from Backup:','backwpup'); ?></b><br />
+					<b><?PHP _e('Exclude files/folders from backup:','backwpup'); ?></b><br />
 					<?PHP _e('Example:','backwpup'); ?> /logs/,.log,.tmp,/temp/,....<br />
 					<input name="fileexclude" id="fileexclude" type="text" value="<?PHP echo backwpup_get_option($main,'fileexclude');?>" class="large-text" /><br />
 				</div>
