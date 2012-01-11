@@ -72,6 +72,8 @@ if (isset($_POST['import']) and $_POST['import']==__('Import', 'backwpup') and !
 			$import[$id]['jobid']=$wpdb->get_var("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC LIMIT 1",0,0);
 			$import[$id]['jobid']++;
 		}
+		if ($type=='not' or empty($type))
+			continue;
 		$import[$id]['activetype']='';
 		unset($import[$id]['cronnextrun']);
 		unset($import[$id]['starttime']);

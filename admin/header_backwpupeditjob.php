@@ -8,14 +8,14 @@ if (!defined('ABSPATH')) {
 //Save Dropbox auth
 if (isset($_GET['auth']) and $_GET['auth']=='DropBox')  {
 	$jobid = (int) $_GET['jobid'];
-	if (!wp_verify_nonce('edit-job')) {
+	if (!wp_verify_nonce($_GET['_wpnonce'],'edit-job')) {
 		wp_nonce_ays('edit-job');
 		die();
 	}
 	$backwpup_message='';
-	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
+	if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token_backwpup'])) {
 		$reqtoken=backwpup_get_option('temp','dropboxauth');
-		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
+		if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token_backwpup']) {
 			//Get Access Tokens
 			require_once (dirname(__FILE__).'/../libs/dropbox.php');
 			$dropbox = new backwpup_Dropbox(backwpup_get_option('job_'.$jobid,'droperoot'));

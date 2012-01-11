@@ -34,11 +34,11 @@ if (!defined('ABSPATH')) {
 }
 
 //define some things
-define('BACKWPUP_PLUGIN_BASENAME',dirname(plugin_basename(__FILE__)));
-define('BACKWPUP_PLUGIN_FILE',basename(__FILE__));
-define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 define('BACKWPUP_VERSION', '3.0-Dev');
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
+define('BACKWPUP_PLUGIN_BASENAME',plugin_basename(__FILE__));
+define('BACKWPUP_PLUGIN_DIR',dirname(plugin_basename( __FILE__ )));
+define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
 define('BACKWPUP_USER_CAPABILITY', 'export');
 define('BACKWPUP_MENU_PAGES', 'backwpup,backwpupeditjob,backwpupworking,backwpuplogs,backwpupbackups,backwpuptools,backwpupsettings');
 if (!defined('BACKWPUP_DESTS')) {
@@ -55,7 +55,7 @@ if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJ
 	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
 //Load text domain if needed
 if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
-	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
+	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
 //load thins only on main sites (MU)
 if (is_main_site()) {
 	//deactivation hook

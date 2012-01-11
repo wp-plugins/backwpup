@@ -17,11 +17,13 @@ class BackWPup_Admin {
 			add_action('admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(BACKWPUP_USER_CAPABILITY)) echo $backwpup_admin_message;'));
 			add_action('admin_menu', array($this,'admin_menu'));
 			add_action('wp_dashboard_setup', array($this,'dashboard_setup'));
-			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE, create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
+			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASENAME, create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
 			add_filter('plugin_row_meta', array($this,'plugin_links'),10,2);
 		}
 		//make backwpup first plugin
 		add_filter('pre_update_option_active_plugins', array($this,'first_plugin'),1,2);
+		//Oauth bypass if a other Plugin check only for $_REQUEST['oauth_token'];
+		add_action('init',array($this,'oauth_bypass'),1);
 	}
 
 	public function admin_menu() {
@@ -60,7 +62,7 @@ class BackWPup_Admin {
 
 	public function admin_page_load() {
 		global $backwpup_message,$backwpup_listtable;
-		//check user premessions
+		//check user permissions
 		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 			return;
 		//check called page exists
@@ -116,7 +118,7 @@ class BackWPup_Admin {
 	}
 
 	public function plugin_links($links, $file) {
-		if ($file == BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE) {
+		if ($file == BACKWPUP_PLUGIN_BASENAME) {
 			$links[] = __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' );
@@ -231,11 +233,20 @@ class BackWPup_Admin {
 		if (!is_array($newvalue))
 			return $newvalue;
 		for ($i=0; $i<count($newvalue);$i++) {
-			if ($newvalue[$i]==BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE)
+			if ($newvalue[$i]==BACKWPUP_PLUGIN_BASENAME)
 				unset($newvalue[$i]);
 		}
-		array_unshift($newvalue,BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE);
+		array_unshift($newvalue,BACKWPUP_PLUGIN_BASENAME);
 		return $newvalue;
+	}
+
+	function oauth_bypass() {
+		//bypass Google Analytics by Yoast oauth
+		if (isset($_GET['oauth_token']) and $_GET['page']=='backwpupeditjob') {
+			$_GET['oauth_token_backwpup']=$_GET['oauth_token'];
+			unset($_GET['oauth_token']);
+			unset($_REQUEST['oauth_token']);
+		}
 	}
 }
 new BackWPup_Admin();

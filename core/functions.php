@@ -12,10 +12,8 @@ function backwpup_plugin_init() {
 		backwpup_upgrade();
 	}
 	//add admin bar. Works only in init
-	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can(BACKWPUP_USER_CAPABILITY) and is_admin_bar_showing()) {
-		wp_enqueue_style("backwpupadmin",BACKWPUP_PLUGIN_BASEURL."/css/adminbar.css","",BACKWPUP_VERSION,"screen");
+	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can(BACKWPUP_USER_CAPABILITY) and is_admin_bar_showing())
 		include_once(dirname(__FILE__).'/adminbar.php');
-	}
 	//load Api for update checks and so on
 	include_once(dirname(__FILE__).'/api.php');
 }
@@ -53,7 +51,6 @@ function backwpup_default_option_settings($main,$name) {
 				$default['cfg']['tempfolder']=get_temp_dir();
 			$default['cfg']['tempfolder']=trailingslashit(str_replace('\\','/',realpath($default['cfg']['tempfolder'])));
 		}
-		$default['cfg']['DROPBOX_CREATE_ACCOUNT']='http://db.tt/Bm0l8dfn';
 	}
 	if (substr($main,0,4)=='job_') { //for job settings
 		$default[$main]['type']=array('DB','FILE');

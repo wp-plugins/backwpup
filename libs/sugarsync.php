@@ -78,8 +78,8 @@ class SugarSync {
 		$auth.='<authRequest>';
 		$auth.='<username>'.utf8_encode($email).'</username>';
 		$auth.='<password>'.utf8_encode($password).'</password>';
-		$auth.='<accessKeyId>'.utf8_encode(backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY')).'</accessKeyId>';
-		$auth.='<privateAccessKey>'.utf8_encode(backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY')).'</privateAccessKey>';
+		$auth.='<accessKeyId>'.utf8_encode(backwpup_get_option('cfg','sugarsync_accesskey')).'</accessKeyId>';
+		$auth.='<privateAccessKey>'.utf8_encode(backwpup_get_option('cfg','sugarsync_privateaccesskey')).'</privateAccessKey>';
 		$auth.='</authRequest>';
 		// init
 		$curl = curl_init();

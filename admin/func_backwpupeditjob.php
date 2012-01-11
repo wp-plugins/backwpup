@@ -402,7 +402,7 @@ class BackWPup_editjob_metaboxes {
 			<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'dropesyncnodelete'),true); ?> name="dropesyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 		</div>
 		<div class="destlinks">
-			<a href="<?php echo backwpup_get_option('cfg','DROPBOX_CREATE_ACCOUNT'); ?>" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+			<a href="<?php echo backwpup_get_option('cfg','dropbox_create_account','http://db.tt/Bm0l8dfn'); ?>" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
 			<a href="https://www.dropbox.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
 		</div>
 		<br class="clear" />

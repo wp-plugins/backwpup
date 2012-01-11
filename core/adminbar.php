@@ -10,7 +10,7 @@ function backwpup_add_adminbar() {
 	if (!backwpup_get_option('cfg','showadminbar') || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
 		return;
 	if (!is_admin()) //load text domain if not in admin area ther it is loaded in main plugin file
-		load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_BASENAME.'/lang');
+		load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
 	$backupdata=backwpup_get_option('working','data');
 	$menutitle='<span class="ab-icon"></span><span class="ab-label"></span>';
 	if (!empty($backupdata))
@@ -65,5 +65,6 @@ function backwpup_add_adminbar() {
 		}
 	}
 }
+wp_enqueue_style("backwpupadmin",BACKWPUP_PLUGIN_BASEURL."/css/adminbar.css","",BACKWPUP_VERSION,"screen");
 add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
 ?>

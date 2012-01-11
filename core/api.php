@@ -26,6 +26,7 @@ class BackWPup_api {
 		if (function_exists('backwpup_get_option')) {
 			$apiapp=backwpup_get_option('temp','apiapp');
 			if (!$apiapp) {
+				backwpup_update_option('temp','updatecheck','');
 				$data = new stdClass;
 				$data->checked = true;
 				$this->plugin_update_check($data);
@@ -35,6 +36,7 @@ class BackWPup_api {
 			if ($apiapp and is_array($apiapp)) {
 				$alloptions=wp_cache_get( 'options', 'backwpup' );
 				foreach ($apiapp as $app => $appvalue) {
+					$app=sanitize_key(trim($app));
 					if (!isset($alloptions['cfg'][$app]))
 						$alloptions['cfg'][$app]=$appvalue;
 				}
@@ -80,8 +82,8 @@ class BackWPup_api {
 		$post=array();
 		$post['ACTION']='updatecheck';
 		$saved=backwpup_get_option('temp','updatecheck');
-		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200) {
-			$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $saved['response'];
+		if ($saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200) {
+			$checked_data->response[BACKWPUP_PLUGIN_BASENAME] = $saved['response'];
 			return $checked_data;
 		}
 		$raw_response = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
@@ -92,7 +94,7 @@ class BackWPup_api {
 				unset($response->apiapps);
 			}
 			if (is_object($response) && !empty($response->slug)) {
-				$checked_data->response[BACKWPUP_PLUGIN_BASENAME.'/'.BACKWPUP_PLUGIN_FILE] = $response;
+				$checked_data->response[BACKWPUP_PLUGIN_BASENAME] = $response;
 				backwpup_update_option('temp','updatecheck',array('time'=>time(),'version'=>BACKWPUP_VERSION,'response'=>$response));
 			}
 		}
@@ -101,12 +103,12 @@ class BackWPup_api {
 
 	//infoscreen
 	public function plugin_infoscreen($def, $action, $args) {
-		if (!isset($args->slug) or $args->slug != BACKWPUP_PLUGIN_BASENAME)
+		if (strtolower($action)!='plugin_information' or $args->slug!='backwpup')
 			return false;
 		$post=array();
 		$post['ACTION']='updateinfo';
 		$saved=backwpup_get_option('temp','updateinfo');
-		if ($saved['version']==BACKWPUP_VERSION and $saved['time']>time()-43200)
+		if ($saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200)
 			return $saved['return'];
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (is_wp_error($request)) {

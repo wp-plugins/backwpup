@@ -77,7 +77,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				<h3><label for="dbtables"><?PHP _e('Database Jobs','backwpup'); ?></label></h3>
 				<div class="inside">
 					<div>
-					<b><?PHP _e('Database tables to use:','backwpup'); ?></b>
+					<b><?PHP _e('Database tables for use:','backwpup'); ?></b>
 						<div id="dbtables">
 						<?php
 						$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
