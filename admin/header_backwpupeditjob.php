@@ -1,6 +1,9 @@
 <?PHP
-if (!defined('ABSPATH')) 
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 //Save Dropbox auth
 if (isset($_GET['auth']) and $_GET['auth']=='DropBox')  {

@@ -1,6 +1,9 @@
 <?PHP
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 include_once(trailingslashit(ABSPATH).'wp-admin/includes/class-wp-list-table.php');
 

@@ -1,6 +1,10 @@
 <?PHP
-if (!defined('ABSPATH')) 
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
+
 ?>
 <div class="wrap">
 <?PHP

@@ -1,4 +1,10 @@
 <?PHP
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
+	die();
+}
+
 function backwpup_cron_run() {
 	global $wpdb;
 	$backupdata=backwpup_get_option('working','data');

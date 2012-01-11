@@ -1,6 +1,9 @@
 <?PHP
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 //helper functions for detecting file size
 function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array(),$nothumbs=false) {

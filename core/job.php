@@ -1,6 +1,9 @@
 <?PHP
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 class BackWPup_job {
 
@@ -110,10 +113,7 @@ class BackWPup_job {
 		$this->_update_working_data(true);
 		$this->_error_handler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['RESTART']), __FILE__, __LINE__,false);
 		$raw_response=backwpup_jobrun_url('restart','',true);
-		$body=wp_remote_retrieve_body($raw_response);
-		if (200 == wp_remote_retrieve_response_code($raw_response) and !empty($body))
-			$this->_error_handler(E_USER_ERROR, $body, __FILE__, __LINE__,false);
-		if (is_wp_error($raw_response))
+		if (300< wp_remote_retrieve_response_code($raw_response) or is_wp_error($raw_response))
 			$this->_error_handler(E_USER_ERROR, json_encode($raw_response), __FILE__, __LINE__,false);
 		exit;
 	}

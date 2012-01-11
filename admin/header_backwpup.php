@@ -1,12 +1,16 @@
 <?PHP
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
+
 global $wpdb;
 
 //Create Table
 $backwpup_listtable = new BackWPup_Jobs_Table;
 
-//get cuurent action
+//get current action
 $doaction = $backwpup_listtable->current_action();
 
 if (!empty($doaction)) {

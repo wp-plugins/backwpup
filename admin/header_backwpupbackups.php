@@ -1,11 +1,14 @@
 <?PHP
-if (!defined('ABSPATH')) 
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 //Create Table
 $backwpup_listtable = new BackWPup_Backups_Table;
 
-//get cuurent action
+//get current action
 $doaction = $backwpup_listtable->current_action();
 	
 if (!empty($doaction)) {
@@ -13,7 +16,7 @@ if (!empty($doaction)) {
 	case 'delete': //Delete Backup archives
 		check_admin_referer('bulk-backups');
 		list($jobid,$dest)=explode(',',$_GET['jobdest']);
-		$jobvalue=$jobvalue=backwpup_get_job_vars($jobid);
+		$main='job_'.$jobid;
 		foreach ($_GET['backupfiles'] as $backupfile) {
 			if ($dest=='FOLDER') {
 				if (is_file($backupfile))
@@ -22,12 +25,11 @@ if (!empty($doaction)) {
 				if (!class_exists('AmazonS3'))
 					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 				if (class_exists('AmazonS3')) {
-					if (!empty($jobvalue['awsAccessKey']) and !empty($jobvalue['awsSecretKey']) and !empty($jobvalue['awsBucket'])) {
+					if (backwpup_get_option($main,'awsAccessKey') and !backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket')) {
 						try {
-							CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['awsAccessKey'],'secret'=>$jobvalue['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 							$s3 = new AmazonS3();
-							$s3->ssl_verification=false;
-							$s3->delete_object($jobvalue['awsBucket'],$backupfile);
+							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
 							unset($s3);
 						} catch (Exception $e) {
 							$backwpup_message.='Amazon S3: '.$e->getMessage().'<br />';
@@ -38,14 +40,13 @@ if (!empty($doaction)) {
 				if (!class_exists('AmazonS3'))
 					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 				if (class_exists('AmazonS3')) {
-					if (!empty($jobvalue['GStorageAccessKey']) and !empty($jobvalue['GStorageSecret']) and !empty($jobvalue['GStorageBucket'])) {
+					if (backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket')) {
 						try {
-							CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['GStorageAccessKey'],'secret'=>$jobvalue['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 							$gstorage = new AmazonS3();
-							$gstorage->ssl_verification=false;
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
-							$gstorage->delete_object($jobvalue['GStorageBucket'],$backupfile);
+							$gstorage->delete_object(backwpup_get_option($main,'GStorageBucket'),$backupfile);
 							unset($gstorage);
 						} catch (Exception $e) {
 							$backwpup_message.=sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()).'<br />';
@@ -56,10 +57,10 @@ if (!empty($doaction)) {
 				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 					require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-					if (!empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer'])) {
+					if (backwpup_get_option($main,'msazureHost') and backwpup_get_option($main,'msazureAccName') and backwpup_get_option($main,'msazureKey') and backwpup_get_option($main,'msazureContainer')) {
 						try {
-							$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
-							$storageClient->deleteBlob($jobvalue['msazureContainer'],$backupfile);
+							$storageClient = new Microsoft_WindowsAzure_Storage_Blob(backwpup_get_option($main,'msazureHost'),backwpup_get_option($main,'msazureAccName'),backwpup_get_option($main,'msazureKey'));
+							$storageClient->deleteBlob(backwpup_get_option($main,'msazureContainer'),$backupfile);
 							unset($storageClient);
 						} catch (Exception $e) {
 							$backwpup_message.='MS AZURE: '.$e->getMessage().'<br />';
@@ -68,29 +69,23 @@ if (!empty($doaction)) {
 				}
 			} elseif ($dest=='DROPBOX') {
 				require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
-				if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
+				if (backwpup_get_option($main,'dropetoken') and backwpup_get_option($main,'dropesecret')) {
 					try {
-						if ($jobvalue['droperoot']=='sandbox')
-							$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'),false);
-						else
-							$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_APP_SECRET'),true);
-						$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+						$dropbox = new backwpup_Dropbox(backwpup_get_option($main,'droperoot'));
+						$dropbox->setOAuthTokens(backwpup_get_option($main,'dropetoken'),backwpup_get_option($main,'dropesecret'));
 						$dropbox->fileopsDelete($backupfile);
 						unset($dropbox);
 					} catch (Exception $e) {
 						$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
 					}
 				}	
-			} elseif ($dest=='BOXNET') {
-				if (!empty($jobvalue['boxnetauth'])) 
-					wp_remote_get('http://www.box.net/api/1.0/rest?action=delete&target=file&target_id='.$backupfile.'&api_key='.backwpup_get_option('cfg','BOXNET').'&auth_token='.$jobvalue['boxnetauth']);
-			} elseif ($dest=='SUGARSYNC') {
+			}  elseif ($dest=='SUGARSYNC') {
 				if (!class_exists('SugarSync'))
 					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 				if (class_exists('SugarSync')) {
-					if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
+					if (backwpup_get_option($main,'sugaruser') and backwpup_get_option($main,'sugarpass')) {
 						try {
-							$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'), backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
+							$sugarsync = new SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
 							$sugarsync->delete(urldecode($backupfile));
 							unset($sugarsync);
 						} catch (Exception $e) {
@@ -102,45 +97,42 @@ if (!empty($doaction)) {
 				if (!class_exists('CF_Authentication'))
 					require_once(realpath(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 				if (class_exists('CF_Authentication')) {
-					if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey']) and !empty($jobvalue['rscContainer'])) {
+					if (backwpup_get_option($main,'rscUsername') and backwpup_get_option($main,'rscAPIKey') and backwpup_get_option($main,'rscContainer')) {
 						try {
-							$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
+							$auth = new CF_Authentication(backwpup_get_option($main,'rscUsername'), backwpup_get_option($main,'rscAPIKey'));
 							$auth->ssl_use_cabundle();
 							if ($auth->authenticate()) {
 								$conn = new CF_Connection($auth);
 								$conn->ssl_use_cabundle();
-								$backwpupcontainer = $conn->get_container($jobvalue['rscContainer']);
+								$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
 								$backwpupcontainer->delete_object($backupfile);
 							}
-							unset($auth);
-							unset($conn);
-							unset($backwpupcontainer);
 						} catch (Exception $e) {
 							$backwpup_message.='RSC: '.$e->getMessage().'<br />';
 						}
 					}
 				}
 			} elseif ($dest=='FTP') {
-				if (!empty($jobvalue['ftphost']) and !empty($jobvalue['ftpuser']) and !empty($jobvalue['ftppass']) and function_exists('ftp_connect')) {
-					if (function_exists('ftp_ssl_connect') and $jobvalue['ftpssl']) { //make SSL FTP connection
-						$ftp_conn_id = ftp_ssl_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
-					} elseif (!$jobvalue['ftpssl']) { //make normal FTP conection if SSL not work
-						$ftp_conn_id = ftp_connect($jobvalue['ftphost'],$jobvalue['ftphostport'],10);
+				if (backwpup_get_option($main,'ftphost') and backwpup_get_option($main,'ftpuser') and backwpup_get_option($main,'ftppass') and function_exists('ftp_connect')) {
+					if (function_exists('ftp_ssl_connect') and backwpup_get_option($main,'ftpssl')) { //make SSL FTP connection
+						$ftp_conn_id = ftp_ssl_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
+					} elseif (!backwpup_get_option($main,'ftpssl')) { //make normal FTP conection if SSL not work
+						$ftp_conn_id = ftp_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
 					}
 					$loginok=false;
 					if ($ftp_conn_id) {
 						//FTP Login
-						if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], backwpup_decrypt($jobvalue['ftppass']))) {
+						if (@ftp_login($ftp_conn_id, backwpup_get_option($main,'ftpuser'), backwpup_decrypt(backwpup_get_option($main,'ftppass')))) {
 							$loginok=true;
 						} else { //if PHP ftp login don't work use raw login
-							ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser']);
-							$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_decrypt($jobvalue['ftppass']));
+							ftp_raw($ftp_conn_id,'USER '.backwpup_get_option($main,'ftpuser'));
+							$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_decrypt(backwpup_get_option($main,'ftppass')));
 							if (substr(trim($return[0]),0,3)<=400)
 								$loginok=true;
 						}
 					}
 					if ($loginok) {
-						ftp_pasv($ftp_conn_id, $jobvalue['ftppasv']);
+						ftp_pasv($ftp_conn_id, backwpup_get_option($main,'ftppasv'));
 						ftp_delete($ftp_conn_id, $backupfile);
 					} else {
 						$backwpup_message.='FTP: '.__('Login failure!','backwpup').'<br />';
@@ -172,14 +164,13 @@ if (!empty($doaction)) {
 		break;
 	case 'downloads3': //Download S3 Backup
 		check_admin_referer('download-backup');
+		$main='job_'.(int)$_GET['jobid'];
 		if (!class_exists('AmazonS3'))
 			require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
-		$jobid=$_GET['jobid'];
-		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>$jobvalue['awsAccessKey'],'secret'=>$jobvalue['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
-			$s3file=$s3->get_object($jobvalue['awsBucket'], $_GET['file']);
+			$s3file=$s3->get_object(backwpup_get_option($main,'awsBucket'), $_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());
 		} 
@@ -201,17 +192,13 @@ if (!empty($doaction)) {
 			die();
 		}
 		break;
-	case 'downloaddropbox': //Download Dropbox Backup
+	case 'downloaddropbox': //Download DropBox Backup
 		check_admin_referer('download-backup');
-		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
-		$jobid=$_GET['jobid'];
-		$jobvalue=backwpup_get_job_vars($jobid);
+		$main='job_'.(int)$_GET['jobid'];
+		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));;
 		try {
-			if ($jobvalue['droperoot']=='sandbox')
-				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_SANDBOX_APP_SECRET'),false);
-			else
-				$dropbox = new backwpup_Dropbox(backwpup_get_option('cfg','DROPBOX_APP_KEY'), backwpup_get_option('cfg','DROPBOX_APP_SECRET'),true);
-			$dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
+			$dropbox = new backwpup_Dropbox(backwpup_get_option($main,'droperoot'));
+			$dropbox->setOAuthTokens(backwpup_get_option($main,'dropetoken'),backwpup_get_option($main,'dropesecret'));
 			$media=$dropbox->media($_GET['file']);
 			if (!empty($media['url']))
 				header("Location: ".$media['url']);
@@ -220,14 +207,13 @@ if (!empty($doaction)) {
 			die($e->getMessage());
 		} 
 		break;
-	case 'downloadsugarsync': //Download Dropbox Backup
+	case 'downloadsugarsync': //Download SugarSync Backup
 		check_admin_referer('download-backup');
+		$main='job_'.(int)$_GET['jobid'];
 		if (!class_exists('SugarSync'))
 			require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
-		$jobid=$_GET['jobid'];
-		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_decrypt($jobvalue['sugarpass']),backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'), backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
+			$sugarsync = new SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
 			$response=$sugarsync->get(urldecode($_GET['file']));
 			header("Pragma: public");
 			header("Expires: 0");
@@ -247,12 +233,11 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadmsazure': //Download Microsoft Azure Backup
 		check_admin_referer('download-backup');
+		$main='job_'.(int)$_GET['jobid'];
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
-		$jobid=$_GET['jobid'];
-		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($jobvalue['msazureHost'],$jobvalue['msazureAccName'],$jobvalue['msazureKey']);
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob(backwpup_get_option($main,'msazureHost'),backwpup_get_option($main,'msazureAccName'),backwpup_get_option($main,'msazureKey'));
 			header("Pragma: public");
 			header("Expires: 0");
 			header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -263,7 +248,7 @@ if (!empty($doaction)) {
 			header("Content-Disposition: attachment; filename=".basename($_GET['file']).";");
 			header("Content-Transfer-Encoding: binary");
 			//header("Content-Length: ".$s3file->header->_info->size_download);
-			echo $storageClient->getBlobData($jobvalue['msazureContainer'], $_GET['file']);
+			echo $storageClient->getBlobData(backwpup_get_option($main,'msazureContainer'), $_GET['file']);
 			die();
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -271,17 +256,16 @@ if (!empty($doaction)) {
 		break;
 	case 'downloadrsc': //Download RSC Backup
 		check_admin_referer('download-backup');
+		$main='job_'.(int)$_GET['jobid'];
 		if (!class_exists('CF_Authentication'))
 			require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
-		$jobid=$_GET['jobid'];
-		$jobvalue=backwpup_get_job_vars($jobid);
 		try {
-			$auth = new CF_Authentication($jobvalue['rscUsername'], $jobvalue['rscAPIKey']);
+			$auth = new CF_Authentication(backwpup_get_option($main,'rscUsername'), backwpup_get_option($main,'rscAPIKey'));
 			$auth->ssl_use_cabundle();
 			if ($auth->authenticate()) {
 				$conn = new CF_Connection($auth);
 				$conn->ssl_use_cabundle();
-				$backwpupcontainer = $conn->get_container($jobvalue['rscContainer']);
+				$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
 				$backupfile=$backwpupcontainer->get_object($_GET['file']);
 				header("Pragma: public");
 				header("Expires: 0");
@@ -308,6 +292,7 @@ if (!empty($doaction)) {
 		break;
 	}
 }
+
 //Save per page
 if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options']['option']) and isset($_POST['wp_screen_options']['value']) and $_POST['wp_screen_options']['option']=='backwpupbackups_per_page') {
 	check_admin_referer( 'screen-options-nonce', 'screenoptionnonce' );
@@ -318,8 +303,6 @@ if (isset($_POST['screen-options-apply']) and isset($_POST['wp_screen_options'][
 		exit;
 	}
 }
-
-
 
 //add Help
 if (method_exists(get_current_screen(),'add_help_tab')) {

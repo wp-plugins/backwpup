@@ -1,6 +1,10 @@
 <?PHP
-if (!defined('ABSPATH'))
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
+
 //Remove header and footer form logfile
 function backwpup_read_logfile($logfile) {
 	if (is_file($logfile) and strtolower(substr($logfile,-3))=='.gz')

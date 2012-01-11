@@ -1,6 +1,9 @@
 <?PHP
-if (!defined('ABSPATH')) 
+if (!defined('ABSPATH')) {
+	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+	header("Status: 404 Not Found");
 	die();
+}
 
 if (isset($_POST['dbrestoretool']) and $_POST['dbrestoretool']==__('Put DB restore tool to blog root...', 'backwpup')) {
 	check_admin_referer('backwpup-tools');
