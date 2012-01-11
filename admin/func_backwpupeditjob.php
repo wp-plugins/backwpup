@@ -267,8 +267,9 @@ class BackWPup_editjob_metaboxes {
 		<input name="ftppass" type="password" value="<?PHP echo backwpup_get_option($main,'ftppass');?>" class="password large-text" /><br />
 		<b><?PHP _e('Folder on Server:','backwpup'); ?></b><br />
 		<input name="ftpdir" type="text" value="<?PHP echo backwpup_get_option($main,'ftpdir');?>" class="large-text" /><br />
-		<span class="nosync"><?PHP _e('Max. backup files in FTP folder:','backwpup'); ?> <input name="ftpmaxbackups" type="text" size="3" value="<?PHP echo backwpup_get_option($main,'ftpmaxbackups');?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
+		<span class="nosync"><?PHP _e('Max. backup files in FTP folder:','backwpup'); ?> <input name="ftpmaxbackups" class="small-text" type="text" size="3" value="<?PHP echo backwpup_get_option($main,'ftpmaxbackups');?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>
 		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'ftpsyncnodelete'),true); ?> name="ftpsyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
+		<?PHP _e('Timeout for FTP connection:','backwpup'); ?> <input name="ftptimeout" type="text" class="small-text" size="3" value="<?PHP echo backwpup_get_option($main,'ftptimeout');?>" class="small-text" /><?PHP _e('sec.','backwpup'); ?><br />
 		<input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'ftpssl'),true); ?> name="ftpssl"<?php if (!function_exists('ftp_ssl_connect')) echo " disabled=\"disabled\""; ?> /> <?PHP _e('Use SSL-FTP Connection.','backwpup'); ?><br />
 		<input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'ftppasv'),true); ?> name="ftppasv" /> <?PHP _e('Use FTP Passiv mode.','backwpup'); ?><br />
 		<?PHP
