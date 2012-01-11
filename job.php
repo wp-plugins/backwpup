@@ -71,7 +71,7 @@ if ( defined('STDIN') ) {
 		wp_die(__('Starttype check','backwpup').'',array( 'response' => 400 ));
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )) )
 		wp_die(__('JOBID check','backwpup').'',array( 'response' => 400 ));
-	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and !wp_verify_nonce($_GET['_nonce'],'BackWPupJobRun'.$_GET['jobid']))
+	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and !wp_verify_nonce($_GET['_nonce'],'BackWPupJobRun'.$_GET['jobid'].$_GET['starttype']))
 		wp_die(__('Nonce check','backwpup').'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='apirun' and (!backwpup_get_option('cfg','apicronservicekey') or $_GET['_nonce']!=backwpup_get_option('cfg','apicronservicekey')))
 		wp_die(__('Nonce check','backwpup').'',array( 'response' => 403 ));
