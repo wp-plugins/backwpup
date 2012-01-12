@@ -46,10 +46,10 @@ class backwpup_Dropbox {
 	
 	public function __construct($boxtype='dropbox') {
 		if ($boxtype=='dropbox'){
-			$this->OAuthObject = new backwpup_OAuthSimple(backwpup_get_option('cfg','dropbox_app_key'), backwpup_get_option('cfg','dropbox_app_secret'));
+			$this->OAuthObject = new backwpup_OAuthSimple(apply_filters('backwpup_api_appkey','DROPBOX_APP_KEY'), apply_filters('backwpup_api_appkey','DROPBOX_APP_SECRET'));
 			$this->root = 'dropbox';
 		} else {
-			$this->OAuthObject = new backwpup_OAuthSimple(backwpup_get_option('cfg','dropbox_sandbox_app_key'), backwpup_get_option('cfg','dropbox_sandbox_app_secret'));
+			$this->OAuthObject = new backwpup_OAuthSimple(apply_filters('backwpup_api_appkey','DROPBOX_SANDBOX_APP_KEY'), apply_filters('backwpup_api_appkey','DROPBOX_SANDBOX_APP_SECRET'));
 			$this->root = 'sandbox';
 		}
 	}
@@ -59,7 +59,7 @@ class backwpup_Dropbox {
 	}
 	
 	public function setProgressFunction($function) {
-		if (is_string($function) and function_exists($function) or (is_array($function) and method_exists($function[0],$function[1])))
+		if (!empty($function))
 			$this->ProgressFunction = $function;
 		else
 			$this->ProgressFunction = false;

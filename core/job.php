@@ -17,6 +17,7 @@ class BackWPup_job {
 			$this->start((int)$jobid);
 		else
 			$this->jobdata = backwpup_get_option('working', 'data');
+		add_filter('query',array($this,'_count_querys'));
 		//set function for PHP user defined error handling
 		$this->jobdata['PHP']['INI']['ERROR_LOG'] = ini_get('error_log');
 		$this->jobdata['PHP']['INI']['LOG_ERRORS'] = ini_get('log_errors');
@@ -169,6 +170,7 @@ class BackWPup_job {
 		$this->jobdata['FILEEXCLUDES']=array_unique($this->jobdata['FILEEXCLUDES']);
 		$this->jobdata['DBDUMPFILE'] = false;
 		$this->jobdata['WPEXPORTFILE'] = false;
+		$this->jobdata['COUNT']['SQLQUERRYS']=0;
 		$this->jobdata['COUNT']['FILES']=0;
 		$this->jobdata['COUNT']['FILESIZE']=0;
 		$this->jobdata['COUNT']['FOLDER']=0;
@@ -287,6 +289,11 @@ class BackWPup_job {
 		}
 	}
 
+	public function _count_querys($query) {
+		$this->jobdata['COUNT']['SQLQUERRYS']++;
+		$this->jobdata['LASTQUERYTIMESTAMP']=current_time('timestamp');
+		return $query;
+	}
 	private function _check_folder($folder) {
 		$folder = untrailingslashit($folder);
 		//check that is not home of WP
@@ -363,7 +370,7 @@ class BackWPup_job {
 		}
 
 		//log line
-		$timestamp = "<span title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename($args[2]) . "|Mem: " . backwpup_format_bytes(@memory_get_usage(true)) . "|Mem Max: " . backwpup_format_bytes(@memory_get_peak_usage(true)) . "|Mem Limit: " . ini_get('memory_limit') . "|PID: " . getmypid() . "]\">[" . date_i18n('d-M-Y H:i:s') . "]</span> ";
+		$timestamp = "<span title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename($args[2]) . "|Mem: " . backwpup_format_bytes(@memory_get_usage(true)) . "|Mem Max: " . backwpup_format_bytes(@memory_get_peak_usage(true)) . "|Mem Limit: " . ini_get('memory_limit') . "|PID: " . getmypid() . "|Query's: " . $this->jobdata['COUNT']['SQLQUERRYS'] . "]\">[" . date_i18n('d-M-Y H:i:s') . "]</span> ";
 		//write log file
 		file_put_contents($this->jobdata['LOGFILE'], $timestamp . $messagetype . " " . $args[1] . "</span><br />" . BACKWPUP_LINE_SEPARATOR, FILE_APPEND);
 
@@ -404,29 +411,37 @@ class BackWPup_job {
 
 	private function _update_working_data($mustwrite = false) {
 		global $wpdb;
+		//only run every  1 sec.
+		$timetoupdate = current_time('timestamp')-$this->jobdata['TIMESTAMP'];
+		if ( !$mustwrite and $timetoupdate<1 )
+			return true;
+		//check if job already aborted
 		if ( !backwpup_get_option('working', 'data') ) {
 			$this->end();
 			return false;
 		}
-		$timetoupdate = current_time('timestamp') - 1; //only update all 1 sec.
-		if ( $mustwrite or $this->jobdata['TIMESTAMP'] <= $timetoupdate ) {
-			if ( !mysql_ping($wpdb->dbh) ) { //check MySQL connection
+		//check MySQL connection
+		$lastquerytimestamp=current_time('timestamp')-$this->jobdata['LASTQUERYTIMESTAMP'];
+		if ($lastquerytimestamp>=5) {
+			if (!mysql_ping($wpdb->dbh)) {
 				trigger_error(__('Database connection is gone create a new one.', 'backwpup'), E_USER_NOTICE);
 				$wpdb->db_connect();
 			}
-			if ( $this->jobdata['STEPTODO'] > 0 and $this->jobdata['STEPDONE'] > 0 )
-				$this->jobdata['STEPPERSENT'] = round($this->jobdata['STEPDONE'] / $this->jobdata['STEPTODO'] * 100);
-			else
-				$this->jobdata['STEPPERSENT'] = 1;
-			if ( count($this->jobdata['STEPSDONE']) > 0 )
-				$this->jobdata['STEPSPERSENT'] = round(count($this->jobdata['STEPSDONE']) / count($this->jobdata['STEPS']) * 100);
-			else
-				$this->jobdata['STEPSPERSENT'] = 1;
-			$this->jobdata['TIMESTAMP'] = current_time('timestamp');
-			backwpup_update_option('working', 'data', $this->jobdata);
-			if ( defined('STDIN') ) //make dots on cli mode
-				echo ".";
+			$this->jobdata['LASTQUERYTIMESTAMP']=current_time('timestamp');
 		}
+		//Update % data
+		if ( $this->jobdata['STEPTODO'] > 0 and $this->jobdata['STEPDONE'] > 0 )
+			$this->jobdata['STEPPERSENT'] = round($this->jobdata['STEPDONE'] / $this->jobdata['STEPTODO'] * 100);
+		else
+			$this->jobdata['STEPPERSENT'] = 1;
+		if ( count($this->jobdata['STEPSDONE']) > 0 )
+			$this->jobdata['STEPSPERSENT'] = round(count($this->jobdata['STEPSDONE']) / count($this->jobdata['STEPS']) * 100);
+		else
+			$this->jobdata['STEPSPERSENT'] = 1;
+		$this->jobdata['TIMESTAMP'] = current_time('timestamp');
+		backwpup_update_option('working', 'data', $this->jobdata);
+		if ( defined('STDIN') ) //make dots on cli mode
+			echo ".";
 		return true;
 	}
 
@@ -461,9 +476,11 @@ class BackWPup_job {
 					trigger_error(sprintf(_n('One old log deleted', '%d old logs deleted', $numdeltefiles, 'backwpup'), $numdeltefiles), E_USER_NOTICE);
 			}
 		}
+
 		//Display job working time
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'starttime') )
 			trigger_error(sprintf(__('Job done in %s sec.', 'backwpup'), current_time('timestamp') - backwpup_get_option($this->jobdata['JOBMAIN'],'starttime'), E_USER_NOTICE));
+
 
 		if ( empty($this->jobdata['BACKUPFILE']) or !is_file($this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']) or !($filesize = filesize($this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'])) ) //Set the filesize correctly
 			$filesize = 0;
@@ -1026,7 +1043,7 @@ class BackWPup_job {
 		//include WP export function
 		require_once(ABSPATH . 'wp-admin/includes/export.php');
 		error_reporting(0); //disable error reporting
-		ob_start(array( $this, '_wp_export_ob_bufferwrite' ), 1024); //start output buffering
+		ob_start(array( $this, '_wp_export_ob_bufferwrite' ), 512); //start output buffering
 		export_wp(); //WP export
 		ob_end_clean(); //End output buffering
 		error_reporting(E_ALL | E_STRICT); //enable error reporting
@@ -1408,9 +1425,9 @@ class BackWPup_job {
 			trigger_error(sprintf(__('%s archive created', 'backwpup'), substr(backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart'), 1)), E_USER_NOTICE);
 		}
 		$this->jobdata['STEPSDONE'][] = 'CREATE_ARCHIVE'; //set done
-		$this->jobdata['backupfilesize'] = filesize($this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
-		if ( $this->jobdata['backupfilesize'] )
-			trigger_error(sprintf(__('Archive size is %s', 'backwpup'), backwpup_format_bytes($this->jobdata['backupfilesize'])), E_USER_NOTICE);
+		$this->jobdata['BACKUPFILESIZE'] = filesize($this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
+		if ( $this->jobdata['BACKUPFILESIZE'] )
+			trigger_error(sprintf(__('Archive size is %s', 'backwpup'), backwpup_format_bytes($this->jobdata['BACKUPFILESIZE'])), E_USER_NOTICE);
 		trigger_error(sprintf(__(' %1$d Files with %2$s in Archive', 'backwpup'),$this->jobdata['COUNT']['FILES']+$this->jobdata['COUNT']['FILESINFOLDER'] ,backwpup_format_bytes($this->jobdata['COUNT']['FILESIZE']+$this->jobdata['COUNT']['FILESIZEINFOLDER'])), E_USER_NOTICE);
 	}
 
@@ -1804,7 +1821,7 @@ class BackWPup_job {
 			}
 			trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 			if (ftp_put($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$this->jobdata['BACKUPFILE'], $this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'], FTP_BINARY)) { //transfer file
-				$this->jobdata['STEPTODO']=1+$this->jobdata['backupfilesize'];
+				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
 				trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$this->jobdata['BACKUPFILE']),E_USER_NOTICE);
 				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',"ftp://".backwpup_get_option($this->jobdata['JOBMAIN'],'ftpuser').":".backwpup_decrypt(backwpup_get_option($this->jobdata['JOBMAIN'],'ftppass'))."@".backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost').backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$this->jobdata['BACKUPFILE']);
 				$this->jobdata['STEPSDONE'][]='DEST_FTP'; //set done
@@ -1849,7 +1866,7 @@ class BackWPup_job {
 
 
 	private function dest_s3() {
-		$this->jobdata['STEPTODO']=2+$this->jobdata['backupfilesize'];
+		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$this->jobdata['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 
 		if (!class_exists('AmazonS3'))
@@ -1883,7 +1900,7 @@ class BackWPup_job {
 			$result=$s3->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$this->jobdata['BACKUPFILE'],$params);
 			$result=(array)$result;
 			if ($result["status"]=200 and $result["status"]<300)  {
-				$this->jobdata['STEPTODO']=1+$this->jobdata['backupfilesize'];
+				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
 				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
 				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$this->jobdata['BACKUPFILE'].'&jobid='.$this->jobdata['JOBID']);
 				$this->jobdata['STEPSDONE'][]='DEST_S3'; //set done
@@ -1926,6 +1943,41 @@ class BackWPup_job {
 			return;
 		}
 		$this->jobdata['STEPDONE']++;
+	}
+
+	private function dest_mail() {
+		$this->jobdata['STEPTODO']=1;
+		trigger_error(sprintf(__('%d. Try to sending backup with mail...','backwpup'),$this->jobdata['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
+
+		//check file Size
+		if (backwpup_get_option($this->jobdata['JOBMAIN'],'mailefilesize')) {
+			if ($this->jobdata['BACKUPFILESIZE']>backwpup_get_option($this->jobdata['JOBMAIN'],'mailefilesize')*1024*1024) {
+				trigger_error(__('Backup archive too big for sending by mail!','backwpup'),E_USER_ERROR);
+				$this->jobdata['STEPDONE']=1;
+				$this->jobdata['STEPSDONE'][]='DEST_MAIL'; //set done
+				return;
+			}
+		}
+
+		trigger_error(__('Sending mail...','backwpup'),E_USER_NOTICE);
+		if (backwpup_get_option('cfg','mailsndname'))
+			$headers = 'From: '.backwpup_get_option('cfg','mailsndname').' <'.backwpup_get_option('cfg','mailsndemail').'>' . "\r\n";
+		else
+			$headers = 'From: '.backwpup_get_option('cfg','mailsndemail') . "\r\n";
+
+		$this->_need_free_memory($this->jobdata['BACKUPFILESIZE']*5);
+		$mail=wp_mail(backwpup_get_option($this->jobdata['JOBMAIN'],'mailaddress'),
+			sprintf(__('BackWPup archive from %1$s: %2$s','backwpup'),date_i18n('d-M-Y H:i',backwpup_get_option($this->jobdata['JOBMAIN'],'starttime')),backwpup_get_option($this->jobdata['JOBMAIN'],'name')),
+			sprintf(__('Backup archive: %s','backwpup'),$this->jobdata['BACKUPFILE']),
+			$headers,array($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']));
+
+		if (!$mail) {
+			trigger_error(__('Error on sending mail!','backwpup'),E_USER_ERROR);
+		} else {
+			$this->jobdata['STEPTODO']=$this->jobdata['BACKUPFILESIZE'];
+			trigger_error(__('Mail sent.','backwpup'),E_USER_NOTICE);
+		}
+		$this->jobdata['STEPSDONE'][]='DEST_MAIL'; //set done
 	}
 }
 ?>

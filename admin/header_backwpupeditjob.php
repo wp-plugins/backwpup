@@ -370,8 +370,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	}
 	
 	//make api call to backwpup.com
-	global $backwpupapi;
-	$backwpupapi->cronupdate();
+	do_action('backwpup_api_cron_update');
 	
 	$_POST['jobid']=backwpup_get_option($main,'jobid');
 	$url=backwpup_jobrun_url('runnow',backwpup_get_option($main,'jobid'),false);

@@ -14,7 +14,7 @@ function backwpup_plugin_init() {
 	//add admin bar. Works only in init
 	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can(BACKWPUP_USER_CAPABILITY) and is_admin_bar_showing())
 		include_once(dirname(__FILE__).'/adminbar.php');
-	//load Api for update checks and so on
+	//load API for update checks and so on
 	include_once(dirname(__FILE__).'/api.php');
 }
 add_action('init','backwpup_plugin_init');
@@ -164,14 +164,15 @@ function backwpup_update_option($main,$name,$value) {
 	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
 	$oldvalue='';
-	$alloptions=wp_cache_get( 'options', 'backwpup' );
+	if ($main!='working')
+		$alloptions=wp_cache_get( 'options', 'backwpup' );
 	if (empty($main) or empty($name))
 		return false;
 	if (is_object($value))
 		$value = clone $value;
 	$value=maybe_serialize($value);
 	//unset if it a default option value
-	if (isset($alloptions[$main][$name]) and $alloptions[$main][$name]==backwpup_default_option_settings($main,$name))
+	if (isset($alloptions[$main][$name]) and $alloptions[$main][$name]==backwpup_default_option_settings($main,$name) and $main!='working')
 		unset($alloptions[$main][$name]);
 	//is value same as old do nothing
 	if (isset($alloptions[$main][$name]) and $alloptions[$main][$name]==$value)
@@ -187,8 +188,10 @@ function backwpup_update_option($main,$name,$value) {
 	 else
 		$result=$wpdb->insert( $wpdb->prefix.'backwpup', array( 'main' => $main, 'name' => $name, 'value' => $value ), '%s' );
 	if ($result) {
-		$alloptions[$main][$name]=$value;
-		wp_cache_set( 'options', $alloptions, 'backwpup' );
+		if ($main!='working') {
+			$alloptions[$main][$name]=$value;
+			wp_cache_set( 'options', $alloptions, 'backwpup' );
+		}
 		return true;
 	} else
 		return false;
@@ -203,7 +206,7 @@ function backwpup_get_option($main,$name,$default=false) {
 	$alloptions=wp_cache_get( 'options', 'backwpup' );
 	//load options to cache if empty
 	if ($alloptions==false) {
-		$option_cache_req = $wpdb->get_results( "SELECT main,name,value FROM ".$wpdb->prefix."backwpup ORDER BY main,name" );
+		$option_cache_req = $wpdb->get_results( "SELECT main,name,value FROM ".$wpdb->prefix."backwpup WHERE main<>'working' ORDER BY main,name" );
 		if (is_array($option_cache_req)) {
 			foreach ($option_cache_req as $option)
 				$alloptions[$option->main][$option->name]=$option->value;
@@ -211,7 +214,7 @@ function backwpup_get_option($main,$name,$default=false) {
 		wp_cache_set( 'options', $alloptions, 'backwpup' );
 	}
 	// output from cache or db
-	if (isset($alloptions[$main][$name])) {
+	if (isset($alloptions[$main][$name]) and $main!='working') {
 		return maybe_unserialize($alloptions[$main][$name]);
 	} else {
 		$value=$wpdb->get_row($wpdb->prepare("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main=%s AND name=%s LIMIT 1",$main,$name));
@@ -223,8 +226,10 @@ function backwpup_get_option($main,$name,$default=false) {
 			else
 				$otionvalue=maybe_unserialize(backwpup_default_option_settings($main,$name));
 		}
-		$alloptions[$main][$name]=$otionvalue;
-		wp_cache_set( 'options', $alloptions, 'backwpup' );
+		if ($main!='working') {
+			$alloptions[$main][$name]=$otionvalue;
+			wp_cache_set( 'options', $alloptions, 'backwpup' );
+		}
 		return $otionvalue;
 	}
 }
@@ -236,14 +241,12 @@ function backwpup_delete_option($main,$name) {
 	$alloptions=wp_cache_get( 'options', 'backwpup' );
 	if (empty($main) or empty($name))
 		return false;
+	unset($alloptions[$main][$name]);
+	wp_cache_set( 'options', $alloptions, 'backwpup' );
 	$result=$wpdb->query($wpdb->prepare("DELETE FROM ".$wpdb->prefix."backwpup WHERE main=%s AND name=%s LIMIT 1",$main,$name));
-	if ($result) {
-		if (isset($alloptions[$main][$name])) {
-			unset($alloptions[$main][$name]);
-			wp_cache_set( 'options', $alloptions, 'backwpup' );
-		}
+	if ($result)
 		return true;
-	} else
+	else
 		return false;
 }
 

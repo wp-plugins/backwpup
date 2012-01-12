@@ -65,8 +65,7 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	}
 	backwpup_update_option('cfg','tempfolder',$_POST['tempfolder']);
 
-	global $backwpupapi;
-	$backwpupapi->cronupdate();
+	do_action('backwpup_api_cron_update');
 	
 	$backwpup_message=__('Settings saved', 'backwpup');
 }

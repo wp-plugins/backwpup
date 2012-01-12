@@ -22,27 +22,12 @@ class BackWPup_api {
 		add_filter('pre_set_site_transient_update_plugins', array($this,'plugin_update_check'));
 		//Add filter to take over the Plugin info screen
 		add_filter('plugins_api',  array($this,'plugin_infoscreen'), 10, 3);
-		//move appapi to config
-		if (function_exists('backwpup_get_option')) {
-			$apiapp=backwpup_get_option('temp','apiapp');
-			if (!$apiapp) {
-				backwpup_update_option('temp','updatecheck','');
-				$data = new stdClass;
-				$data->checked = true;
-				$this->plugin_update_check($data);
-				$apiapp=backwpup_get_option('temp','apiapp');
-			}
-			$apiapp=unserialize(backwpup_decrypt($apiapp,md5($blogurl)));
-			if ($apiapp and is_array($apiapp)) {
-				$alloptions=wp_cache_get( 'options', 'backwpup' );
-				foreach ($apiapp as $app => $appvalue) {
-					$app=sanitize_key(trim($app));
-					if (!isset($alloptions['cfg'][$app]))
-						$alloptions['cfg'][$app]=$appvalue;
-				}
-				wp_cache_set( 'options', $alloptions, 'backwpup' );
-			}
-		}
+		//Add filter to get api keys
+		add_filter('backwpup_api_appkey',  array($this,'app_keys'), 10, 2);
+		//Add action for cron updates
+		add_action('backwpup_api_cron_update',  array($this,'cronupdate'));
+		//Add action for delte blog from api
+		add_action('backwpup_api_delete',  array($this,'delete'));
 	}
 	
 	//API for cron trigger
@@ -122,7 +107,7 @@ class BackWPup_api {
 		}
 		return $res;
 	}
-	
+
 	//delete blog
 	public function delete() {
 		$post=array();
@@ -133,7 +118,23 @@ class BackWPup_api {
 		else
 			return false;
 	}
+
+	//for api keys
+	public function app_keys($appkey,$defauft=false) {
+		$apiapp=backwpup_get_option('temp','apiapp');
+		if (!$apiapp) {
+			backwpup_update_option('temp','updatecheck','');
+			$data = new stdClass;
+			$data->checked = true;
+			$this->plugin_update_check($data);
+			$apiapp=backwpup_get_option('temp','apiapp');
+		}
+		$apiapp=unserialize(backwpup_decrypt($apiapp,md5(trim(get_bloginfo('url')))));
+		if (!empty($apiapp[$appkey]))
+			return $apiapp[$appkey];
+		else
+			return $defauft;
+	}
 }
-global $backwpupapi;
-$backwpupapi=new BackWPup_api();
+new BackWPup_api();
 ?>

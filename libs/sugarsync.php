@@ -78,8 +78,8 @@ class SugarSync {
 		$auth.='<authRequest>';
 		$auth.='<username>'.utf8_encode($email).'</username>';
 		$auth.='<password>'.utf8_encode($password).'</password>';
-		$auth.='<accessKeyId>'.utf8_encode(backwpup_get_option('cfg','sugarsync_accesskey')).'</accessKeyId>';
-		$auth.='<privateAccessKey>'.utf8_encode(backwpup_get_option('cfg','sugarsync_privateaccesskey')).'</privateAccessKey>';
+		$auth.='<accessKeyId>'.utf8_encode(apply_filters('backwpup_api_appkey','SUGARSYNC_ACCESSKEY')).'</accessKeyId>';
+		$auth.='<privateAccessKey>'.utf8_encode(apply_filters('backwpup_api_appkey','SUGARSYNC_PRIVATEACCESSKEY')).'</privateAccessKey>';
 		$auth.='</authRequest>';
 		// init
 		$curl = curl_init();
@@ -177,6 +177,11 @@ class SugarSync {
 				curl_setopt($curl,CURLOPT_PUT,true);
 				curl_setopt($curl,CURLOPT_INFILE,$datafilefd);
 				curl_setopt($curl,CURLOPT_INFILESIZE,filesize($data));
+				if ($this->ProgressFunction and defined('CURLOPT_PROGRESSFUNCTION')) {
+					curl_setopt($curl, CURLOPT_NOPROGRESS, false);
+					curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+					curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
+				}
 			}  else {
 				throw new SugarSyncException('Is not a readable file:'. $data);
 			}
@@ -189,11 +194,6 @@ class SugarSync {
 		// set headers
 		curl_setopt($curl,CURLOPT_HTTPHEADER,$headers);
 		curl_setopt($curl, CURLINFO_HEADER_OUT, true);
-		if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION') and $method == 'PUT') {
-			curl_setopt($curl, CURLOPT_NOPROGRESS, false);
-			curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-			curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
-		}
 		// execute
 		$response = curl_exec($curl);
 		$curlgetinfo = curl_getinfo($curl);
@@ -370,7 +370,7 @@ class SugarSync {
 	}
 
 	public function setProgressFunction($function) {
-		if (function_exists($function))
+		if (!empty($function))
 			$this->ProgressFunction = $function;
 		else
 			$this->ProgressFunction = false;

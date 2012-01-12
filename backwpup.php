@@ -60,8 +60,7 @@ if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOIN
 if (is_main_site()) {
 	//deactivation hook
 	register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
-	if (current_filter('deactivate_'.BACKWPUP_PLUGIN_BASENAME))
-		include_once(dirname(__FILE__).'/core/deactivate.php');
+	include_once(dirname(__FILE__).'/core/deactivate.php');
 	//Load some file
 	include_once(dirname(__FILE__).'/core/functions.php');
 	//WP-Cron
