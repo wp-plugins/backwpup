@@ -75,7 +75,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['maintenance']=false;
 		$default[$main]['wpexportfile']=sanitize_key(get_bloginfo('name')).'.wordpress.%Y-%m-%d';
 		$default[$main]['wpexportfilecompression']='';
-		$default[$main]['fileexclude']='';
+		$default[$main]['fileexclude']='.tmp,.svn,.git';
 		$default[$main]['dirinclude']='';
 		$default[$main]['backupexcludethumbs']=false;
 		$default[$main]['backupspecialfiles']=false;
@@ -384,12 +384,12 @@ function backwpup_get_upload_dir() {
 	return str_replace('\\','/',trailingslashit($dir));
 }
 
-function backwpup_get_exclude_wp_dirs($folder) {
+function backwpup_get_exclude_wp_dirs($folder,$exclude='') {
 	global $wpdb;
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
 	$excludedir[]=backwpup_get_option('cfg','tempfolder'); //exclude temp
-	$excludedir[]=backwpup_get_option('cfg','logfolder'); //exclude logfiles
+	$excludedir[]=backwpup_get_option('cfg','logfolder'); //exclude log folder
 	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) and trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
 		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
 	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) and trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)

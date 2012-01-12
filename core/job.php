@@ -166,10 +166,14 @@ class BackWPup_job {
 		$this->jobdata['EXTRAFILESTOBACKUP'] = array();
 		$this->jobdata['FOLDERLIST'] = array();
 		$this->jobdata['FILEEXCLUDES']=explode(',',trim(backwpup_get_option($this->jobdata['JOBMAIN'],'fileexclude')));
-		$this->jobdata['FILEEXCLUDES'][] ='.tmp';
 		$this->jobdata['FILEEXCLUDES']=array_unique($this->jobdata['FILEEXCLUDES']);
 		$this->jobdata['DBDUMPFILE'] = false;
 		$this->jobdata['WPEXPORTFILE'] = false;
+		$this->jobdata['COUNT']['FILES']=0;
+		$this->jobdata['COUNT']['FILESIZE']=0;
+		$this->jobdata['COUNT']['FOLDER']=0;
+		$this->jobdata['COUNT']['FILESINFOLDER']=0;
+		$this->jobdata['COUNT']['FILESIZEINFOLDER']=0;
 		//create path to remove
 		if ( trailingslashit(str_replace('\\', '/', ABSPATH)) == '/' or trailingslashit(str_replace('\\', '/', ABSPATH)) == '' )
 			$this->jobdata['REMOVEPATH'] = '';
@@ -857,6 +861,8 @@ class BackWPup_job {
 			//add database file to backup files
 			if ( is_readable(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'];
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']);
 				trigger_error(sprintf(__('Added database dump "%1$s" with %2$s to backup file list', 'backwpup'), $this->jobdata['DBDUMPFILE'], backwpup_format_bytes(filesize(backwpup_get_option('cfg','tempfolder') .$this->jobdata['DBDUMPFILE']))), E_USER_NOTICE);
 			}
 		}
@@ -1029,6 +1035,8 @@ class BackWPup_job {
 		//add XML file to backup files
 		if ( is_readable(backwpup_get_option('cfg','tempfolder') .$this->jobdata['WPEXPORTFILE']) ) {
 			$this->jobdata['EXTRAFILESTOBACKUP'][] = backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE'];
+			$this->jobdata['COUNT']['FILES']++;
+			$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']);
 			trigger_error(sprintf(__('Added XML export "%1$s" with %2$s to backup file list', 'backwpup'), $this->jobdata['WPEXPORTFILE'], backwpup_format_bytes(filesize(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']))), E_USER_NOTICE);
 		}
 		$this->jobdata['STEPDONE'] = 1;
@@ -1059,26 +1067,31 @@ class BackWPup_job {
 				array_merge(backwpup_get_option($this->jobdata['JOBMAIN'],'backuprootexcludedirs'), backwpup_get_exclude_wp_dirs(ABSPATH)));
 		if ( $this->jobdata['STEPDONE'] == 0 )
 			$this->jobdata['STEPDONE'] = 1;
+		$this->_update_working_data();
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backupcontent') and $this->jobdata['STEPDONE'] == 1 )
 			$this->_folder_list(trailingslashit(str_replace('\\', '/', WP_CONTENT_DIR)), 100,
 				array_merge(backwpup_get_option($this->jobdata['JOBMAIN'],'backupcontentexcludedirs'), backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
 		if ( $this->jobdata['STEPDONE'] == 1 )
 			$this->jobdata['STEPDONE'] = 2;
+		$this->_update_working_data();
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backupplugins') and $this->jobdata['STEPDONE'] == 2 )
 			$this->_folder_list(trailingslashit(str_replace('\\', '/', WP_PLUGIN_DIR)), 100,
 				array_merge(backwpup_get_option($this->jobdata['JOBMAIN'],'backuppluginsexcludedirs'), backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
 		if ( $this->jobdata['STEPDONE'] == 2 )
 			$this->jobdata['STEPDONE'] = 3;
+		$this->_update_working_data();
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backupthemes') and $this->jobdata['STEPDONE'] == 3 )
 			$this->_folder_list(trailingslashit(str_replace('\\', '/', trailingslashit(WP_CONTENT_DIR) . 'themes/')), 100,
 				array_merge(backwpup_get_option($this->jobdata['JOBMAIN'],'backupthemesexcludedirs'), backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR) . 'themes/')));
 		if ( $this->jobdata['STEPDONE'] == 3 )
 			$this->jobdata['STEPDONE'] = 4;
+		$this->_update_working_data();
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backupuploads') and $this->jobdata['STEPDONE'] == 4 )
 			$this->_folder_list(backwpup_get_upload_dir(), 100,
 				array_merge(backwpup_get_option($this->jobdata['JOBMAIN'],'backupuploadsexcludedirs'), backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())));
 		if ( $this->jobdata['STEPDONE'] == 4 )
 			$this->jobdata['STEPDONE'] = 5;
+		$this->_update_working_data();
 
 		//include dirs
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dirinclude') and $this->jobdata['STEPDONE'] == 5 ) {
@@ -1092,6 +1105,7 @@ class BackWPup_job {
 		}
 		if ( $this->jobdata['STEPDONE'] == 5 )
 			$this->jobdata['STEPDONE'] = 6;
+		$this->_update_working_data();
 
 		$this->jobdata['FOLDERLIST'] = array_unique($this->jobdata['FOLDERLIST']); //all files only one time in list
 		sort($this->jobdata['FOLDERLIST']);
@@ -1100,33 +1114,47 @@ class BackWPup_job {
 		if (backwpup_get_option($this->jobdata['JOBMAIN'],'backupspecialfiles')) {
 			if ( file_exists( ABSPATH . 'wp-config.php') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'wp-config.php');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(ABSPATH . 'wp-config.php');
 				trigger_error(__('Added wp-config.php to backup file list', 'backwpup'), E_USER_NOTICE);
 			} elseif ( file_exists( dirname(ABSPATH) . '/wp-config.php' ) && ! file_exists( dirname(ABSPATH) . '/wp-settings.php' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',dirname(ABSPATH) . '/wp-config.php');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(dirname(ABSPATH) . '/wp-config.php');
 				trigger_error(__('Added "wp-config.php" to backup file list', 'backwpup'), E_USER_NOTICE);
 			}
 			if ( file_exists( ABSPATH . '.htaccess') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . '.htaccess');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(ABSPATH . '.htaccess');
 				trigger_error(__('Added ".htaccess" to backup file list', 'backwpup'), E_USER_NOTICE);
 			}
 			if ( file_exists( ABSPATH . '.htpasswd') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . '.htpasswd');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(ABSPATH . '.htpasswd');
 				trigger_error(__('Added ".htpasswd" to backup file list', 'backwpup'), E_USER_NOTICE);
 			}
 			if ( file_exists( ABSPATH . 'robots.txt') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'robots.txt');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(ABSPATH . 'robots.txt');
 				trigger_error(__('Added "robots.txt" to backup file list', 'backwpup'), E_USER_NOTICE);
 			}
 			if ( file_exists( ABSPATH . 'favicon.ico') and !backwpup_get_option($this->jobdata['JOBMAIN'],'backuproot')) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][]=str_replace('\\','/',ABSPATH . 'favicon.ico');
+				$this->jobdata['COUNT']['FILES']++;
+				$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(ABSPATH . 'favicon.ico');
 				trigger_error(__('Added "favicon.ico" to backup file list', 'backwpup'), E_USER_NOTICE);
 			}
 		}
 
 		if ( empty($this->jobdata['FOLDERLIST']) )
 			trigger_error(__('No Folder to backup', 'backwpup'), E_USER_ERROR);
-		else
-			trigger_error(sprintf(__('%1$d Folders to backup', 'backwpup'), count($this->jobdata['FOLDERLIST'])), E_USER_NOTICE);
+		else {
+			//$this->jobdata['COUNT']['FOLDER']=count($this->jobdata['FOLDERLIST']);
+			trigger_error(sprintf(__('%1$d Folders to backup', 'backwpup'), $this->jobdata['COUNT']['FOLDER']), E_USER_NOTICE);
+		}
 
 		$this->jobdata['STEPDONE'] = 7;
 		$this->jobdata['STEPSDONE'][] = 'FOLDER_LIST'; //set done
@@ -1138,13 +1166,18 @@ class BackWPup_job {
 			return false;
 		if ( !$levels )
 			return false;
-		$this->_update_working_data();
+		$this->jobdata['COUNT']['FOLDER']++;
 		$folder = trailingslashit($folder);
 		if ( $dir = @opendir($folder) ) {
 			$this->jobdata['FOLDERLIST'][] = str_replace('\\', '/', $folder);
 			while ( ($file = readdir($dir)) !== false ) {
-				if ( in_array($file, array( '.', '..', '.svn' )) )
+				if ( in_array($file, array( '.', '..' )) )
 					continue;
+				foreach ($this->jobdata['FILEEXCLUDES'] as $exclusion) { //exclude files
+					$exclusion=trim($exclusion);
+					if (false !== stripos($folder.$file,trim($exclusion)) and !empty($exclusion))
+						continue 2;
+				}
 				if ( is_dir($folder . $file) and !is_readable($folder . $file) ) {
 					trigger_error(sprintf(__('Folder "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
 				} elseif ( is_dir($folder . $file) ) {
@@ -1161,7 +1194,7 @@ class BackWPup_job {
 		$files=array();
 		if ( $dir = @opendir($folder) ) {
 			while ( ($file = readdir($dir)) !== false ) {
-				if ( in_array($file, array( '.', '..', '.svn' )) )
+				if ( in_array($file, array( '.', '..' )) )
 					continue;
 				foreach ($this->jobdata['FILEEXCLUDES'] as $exclusion) { //exclude files
 					$exclusion=trim($exclusion);
@@ -1174,8 +1207,11 @@ class BackWPup_job {
 					trigger_error(sprintf(__('File "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
 				elseif ( is_link($folder . $file) )
 					trigger_error(sprintf(__('Link "%s" not followed', 'backwpup'),$folder . $file), E_USER_WARNING);
-				elseif ( is_file($folder . $file) )
+				elseif ( is_file($folder . $file) ) {
 					$files[]=$folder . $file;
+					$this->jobdata['COUNT']['FILESINFOLDER']++;
+					$this->jobdata['COUNT']['FILESIZEINFOLDER']=$this->jobdata['COUNT']['FILESIZEINFOLDER']+@filesize($folder . $file);
+				}
 			}
 			@closedir($dir);
 		}
@@ -1368,6 +1404,7 @@ class BackWPup_job {
 		$this->jobdata['backupfilesize'] = filesize($this->jobdata['backupdir'] . $this->jobdata['BACKUPFILE']);
 		if ( $this->jobdata['backupfilesize'] )
 			trigger_error(sprintf(__('Archive size is %s', 'backwpup'), backwpup_format_bytes($this->jobdata['backupfilesize'])), E_USER_NOTICE);
+		trigger_error(sprintf(__(' %1$d Files with %2$s in Archive', 'backwpup'),$this->jobdata['COUNT']['FILES']+$this->jobdata['COUNT']['FILESINFOLDER'] ,backwpup_format_bytes($this->jobdata['COUNT']['FILESIZE']+$this->jobdata['COUNT']['FILESIZEINFOLDER'])), E_USER_NOTICE);
 	}
 
 	private function _tar_file($file, $outfile, $handle) {

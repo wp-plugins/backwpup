@@ -8,9 +8,10 @@ if (!defined('ABSPATH')) {
 //helper functions for detecting file size
 function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array(),$nothumbs=false) {
 	global $backwpup_temp_files;
+	$backwpup_temp_files['folder']++;
 	if ( !empty($folder) and $levels and $dir = @opendir( $folder )) {
 		while (($file = readdir( $dir ) ) !== false ) {
-			if ( in_array($file, array('.', '..','.svn') ) )
+			if ( in_array($file, array('.', '..') ) )
 				continue;
 			foreach ($excludes as $exclusion) { //exclude dirs and files
 				if (false !== stripos($folder.$file,$exclusion) and !empty($exclusion) and $exclusion!='/')
@@ -33,10 +34,9 @@ function _backwpup_calc_file_size_file_list_folder( $folder = '', $levels = 100,
 //helper functions for detecting file size
 function backwpup_calc_file_size($main) {
 	global $backwpup_temp_files;
-	$backwpup_temp_files=array('size'=>0,'num'=>0);
+	$backwpup_temp_files=array('size'=>0,'num'=>0,'folder'=>0);
 	//Exclude Files
 	$backwpup_exclude=explode(',',trim(backwpup_get_option($main,'fileexclude')));
-	$backwpup_exclude[]='.tmp';  //do not backup .tmp files
 	$backwpup_exclude=array_unique($backwpup_exclude);
 
 	//File list for blog folders
@@ -61,6 +61,34 @@ function backwpup_calc_file_size($main) {
 				_backwpup_calc_file_size_file_list_folder(trailingslashit($dirincludevalue),100,$backwpup_exclude);
 		}
 	}
+
+	//add extra files if selected
+	if (backwpup_get_option($main,'backupspecialfiles')) {
+		if ( file_exists( ABSPATH . 'wp-config.php') and !backwpup_get_option($main,'backuproot')) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(ABSPATH . 'wp-config.php');
+			$backwpup_temp_files['num']++;
+		} elseif ( file_exists( dirname(ABSPATH) . '/wp-config.php' ) && ! file_exists( dirname(ABSPATH) . '/wp-settings.php' ) ) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(dirname(ABSPATH) . '/wp-config.php');
+			$backwpup_temp_files['num']++;
+		}
+		if ( file_exists( ABSPATH . '.htaccess') and !backwpup_get_option($main,'backuproot')) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(ABSPATH . '.htaccess');
+			$backwpup_temp_files['num']++;
+		}
+		if ( file_exists( ABSPATH . '.htpasswd') and !backwpup_get_option($main,'backuproot')) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(ABSPATH . '.htpasswd');
+			$backwpup_temp_files['num']++;
+		}
+		if ( file_exists( ABSPATH . 'robots.txt') and !backwpup_get_option($main,'backuproot')) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(ABSPATH . 'robots.txt');
+			$backwpup_temp_files['num']++;
+		}
+		if ( file_exists( ABSPATH . 'favicon.ico') and !backwpup_get_option($main,'backuproot')) {
+			$backwpup_temp_files['size']=$backwpup_temp_files['size']+filesize(ABSPATH . 'favicon.ico');
+			$backwpup_temp_files['num']++;
+		}
+	}
+
 	return $backwpup_temp_files;
 }
 
@@ -91,8 +119,10 @@ function backwpup_show_info_td() {
 	if (in_array('FILE',backwpup_get_option($main,'type'))) {
 		$files=backwpup_calc_file_size($main);
 		echo __("Files Size:","backwpup")." ".backwpup_format_bytes($files['size'])."<br />";
-		if ( 'excerpt' == $mode )
+		if ( 'excerpt' == $mode ) {
+			echo __("Folder count:","backwpup")." ".$files['folder']."<br />";
 			echo __("Files count:","backwpup")." ".$files['num']."<br />";
+		}
 	}
 	die();
 }
