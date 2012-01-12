@@ -106,7 +106,7 @@ class BackWPup_job {
 			$this->end();
 			exit;
 		}
-		if ( !backwpup_get_option('working', 'data') )
+		if ( !backwpup_get_option('working', 'data',false) )
 			exit;
 		//set PID to 0
 		$this->jobdata['PID'] = 0;
@@ -114,8 +114,8 @@ class BackWPup_job {
 		$this->_update_working_data(true);
 		$this->_error_handler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['RESTART']), __FILE__, __LINE__,false);
 		$raw_response=backwpup_jobrun_url('restart','',true);
-		if (300< wp_remote_retrieve_response_code($raw_response) or is_wp_error($raw_response))
-			$this->_error_handler(E_USER_ERROR, json_encode($raw_response), __FILE__, __LINE__,false);
+		if (300<= wp_remote_retrieve_response_code($raw_response) or is_wp_error($raw_response))
+			$this->_error_handler(E_USER_ERROR, strip_tags(json_encode($raw_response)), __FILE__, __LINE__,false);
 		exit;
 	}
 
@@ -240,7 +240,6 @@ class BackWPup_job {
 		fwrite($fd, str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, "<style type=\"text/css\">" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, ".timestamp {background-color:grey;}" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, ".warning {background-color:yellow;}" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, ".error {background-color:red;}" . BACKWPUP_LINE_SEPARATOR);
 		fwrite($fd, "#body {font-family:monospace;font-size:12px;white-space:nowrap;}" . BACKWPUP_LINE_SEPARATOR);
@@ -416,7 +415,7 @@ class BackWPup_job {
 		if ( !$mustwrite and $timetoupdate<1 )
 			return true;
 		//check if job already aborted
-		if ( !backwpup_get_option('working', 'data') ) {
+		if ( !backwpup_get_option('working', 'data',false) ) {
 			$this->end();
 			return false;
 		}

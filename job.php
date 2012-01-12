@@ -46,7 +46,7 @@ if ( defined('STDIN') ) {
 			die('ABSPATH check');
 	}
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) )
-		wp_die(__('JOBID check','backwpup').'',array( 'response' => 400 ));
+		wp_die(__('JOBID check','backwpup'),'',array( 'response' => 400 ));
 	@set_time_limit(0);
 } else { //normal start from webservice
 	//check get vars
@@ -66,34 +66,37 @@ if ( defined('STDIN') ) {
 	if (isset($_GET['_nonce']))
 		$_GET['_nonce'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_GET['_nonce']));
 	if ( empty($_GET['_nonce']) or !is_string($_GET['_nonce']) )
-		wp_die(__('Nonce pre check','backwpup').'',array( 'response' => 403 ));
+		wp_die(__('Nonce pre check','backwpup'),'',array( 'response' => 403 ));
 	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )) )
-		wp_die(__('Starttype check','backwpup').'',array( 'response' => 400 ));
+		wp_die(__('Starttype check','backwpup'),'',array( 'response' => 400 ));
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )) )
-		wp_die(__('JOBID check','backwpup').'',array( 'response' => 400 ));
-	if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runnow' )) and !wp_verify_nonce($_GET['_nonce'],'BackWPupJobRun'.$_GET['jobid'].$_GET['starttype']))
-		wp_die(__('Nonce check','backwpup').'',array( 'response' => 403 ));
+		wp_die(__('JOBID check','backwpup'),'',array( 'response' => 400 ));
+	if ( in_array($_GET['starttype'], array( 'runnow' )) and !wp_verify_nonce($_GET['_nonce'],'BackWPupJobRun'))
+		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403));
+	elseif ( in_array($_GET['starttype'], array( 'cronrun','restarttime', 'restart' )) and backwpup_get_option('temp','restartnonce')!=$_GET['_nonce'])
+		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='apirun' and (!backwpup_get_option('cfg','apicronservicekey') or $_GET['_nonce']!=backwpup_get_option('cfg','apicronservicekey')))
-		wp_die(__('Nonce check','backwpup').'',array( 'response' => 403 ));
+		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='runext' and (backwpup_get_option('cfg','jobrunauthkey') or $_GET['_nonce']!=backwpup_get_option('cfg','jobrunauthkey')))
-		wp_die(__('Nonce check','backwpup').'',array( 'response' => 403 ));
+		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
+	backwpup_delete_option('temp','restartnonce');
 	@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
 }
 if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'apirun', 'runcmd' )))  {
 	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
-		wp_die(__('Wrong JOBID check','backwpup').'',array( 'response' => 400 ));
+		wp_die(__('Wrong JOBID check','backwpup'),'',array( 'response' => 400 ));
 }
 //check folders
 if (!backwpup_get_option('cfg','logfolder') or !is_dir(backwpup_get_option('cfg','logfolder')) or !is_writable(backwpup_get_option('cfg','logfolder')))
-	wp_die(__('Log folder not exists or is not writable').'',array( 'response' => 500 ));
+	wp_die(__('Log folder not exists or is not writable'),'',array( 'response' => 500 ));
 if (!backwpup_get_option('cfg','tempfolder') or !is_dir(backwpup_get_option('cfg','tempfolder')) or !is_writable(backwpup_get_option('cfg','tempfolder')))
-	wp_die(__('Temp folder not exists or is not writable').'',array( 'response' => 500 ));
+	wp_die(__('Temp folder not exists or is not writable'),'',array( 'response' => 500 ));
 //check running job
 $backwpupjobdata = backwpup_get_option('working', 'data');
 if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) and !empty($backwpupjobdata) )
-	wp_die(__('A job already running').'',array( 'response' => 503 ));
+	wp_die(__('A job already running'),'',array( 'response' => 503 ));
 if ( in_array($_GET['starttype'], array( 'restart', 'restarttime' )) and (empty($backwpupjobdata) or !is_array($backwpupjobdata)) )
-	wp_die(__('No job running').'',array( 'response' => 400 ));
+	wp_die(__('No job running'),'',array( 'response' => 400 ));
 unset($backwpupjobdata);
 //disconnect or redirect
 if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runext','apirun' )) ) {

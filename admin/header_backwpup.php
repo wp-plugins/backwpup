@@ -86,7 +86,8 @@ if (!empty($doaction)) {
 			break;
 		backwpup_delete_option('working','data'); //delete working data
 		if (!empty($backupdata['LOGFILE'])) {
-			file_put_contents($backupdata['LOGFILE'], "<span class=\"timestamp\">".date_i18n('Y/m/d H:i.s').":</span> <span class=\"error\">[ERROR]".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
+			$timestamp = "<span title=\"[Type: " .E_USER_ERROR . "|Line: " . __LINE__ . "|File: " . basename(__FILE__) . "|PID: " . $backupdata['PID'] . "|Query's: " . $backupdata['COUNT']['SQLQUERRYS'] . "]\">[" . date_i18n('d-M-Y H:i:s') . "]</span> ";
+			file_put_contents($backupdata['LOGFILE'], $timestamp . "<span class=\"error\">" . __('ERROR:', 'backwpup')." ".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);
 			//write new log header
 			$backupdata['ERROR']++;
 			$fd=fopen($backupdata['LOGFILE'],'r+');

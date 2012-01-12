@@ -253,12 +253,14 @@ function backwpup_delete_option($main,$name) {
 
 function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	$url=BACKWPUP_PLUGIN_BASEURL.'/job.php';
-	$query_args['jobid']=$jobid;
 	$header='';
 	$authurl='';
 
 	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
+
+	if (in_array($starttype, array( 'runnow', 'cronrun', 'runext','apirun' )))
+		$query_args['jobid']=$jobid;
 
 	if (backwpup_get_option('cfg','httpauthuser') and backwpup_get_option('cfg','httpauthpassword')) {
 		$header=array( 'Authorization' => 'Basic '.base64_encode(backwpup_get_option('cfg','httpauthuser').':'.backwpup_decrypt(backwpup_get_option('cfg','httpauthpassword'))));
@@ -276,13 +278,17 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 			$url=str_replace('https://','https://'.$authurl,$url);
 			$url=str_replace('http://','http://'.$authurl,$url);
 		}
+	} elseif ($starttype=='cronrun' or $starttype=='restart' or $starttype=='restarttimenonce') {
+		$query_args['_nonce']=wp_generate_password( 12, false, false );
+		backwpup_update_option('temp','restartnonce',$query_args['_nonce']);
 	} else
-		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun'.$jobid.$starttype);
+		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun');
 
-	if ($run)
-		return @wp_remote_get(add_query_arg($query_args, $url), array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'headers'=>$header, 'user-agent'=>'BackWPup'));
-	else
-		return array('url'=>add_query_arg($query_args, $url),'header'=>$header);
+	$url=array('url'=>add_query_arg($query_args, $url),'header'=>$header);
+	if ($run) {
+		return @wp_remote_get($url['url'], array('timeout' => 5, 'blocking' => true, 'sslverify' => false, 'headers'=>$url['header'], 'user-agent'=>'BackWPup'));
+	} else
+		return $url;
 }
 
 function backwpup_check_open_basedir($dir) {
