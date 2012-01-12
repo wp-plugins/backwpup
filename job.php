@@ -112,5 +112,5 @@ elseif ( $_GET['starttype'] == 'runnow' ) {
 	flush();
 }
 //start class
-$backwpup_job_object = new BackWPup_job($_GET['starttype'],(int)$_GET['jobid']);
+new BackWPup_job($_GET['starttype'],(int)$_GET['jobid']);
 ?>

@@ -98,7 +98,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['backupsyncnodelete']=true;
 		$default[$main]['ftphost']='';
 		$default[$main]['ftphostport']=21;
-		$default[$main]['ftptimeout']=10;
+		$default[$main]['ftptimeout']=90;
 		$default[$main]['ftpuser']='';
 		$default[$main]['ftpdir']='';
 		$default[$main]['ftpmaxbackups']=0;

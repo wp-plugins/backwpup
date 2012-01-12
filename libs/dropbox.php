@@ -59,7 +59,7 @@ class backwpup_Dropbox {
 	}
 	
 	public function setProgressFunction($function) {
-		if (function_exists($function))
+		if (is_string($function) and function_exists($function) or (is_array($function) and method_exists($function[0],$function[1])))
 			$this->ProgressFunction = $function;
 		else
 			$this->ProgressFunction = false;
@@ -227,6 +227,11 @@ class backwpup_Dropbox {
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
+			if ($this->ProgressFunction and defined('CURLOPT_PROGRESSFUNCTION')) {
+				curl_setopt($ch, CURLOPT_NOPROGRESS, false);
+				curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
+				curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+			}
 		} else {
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
@@ -243,11 +248,6 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
-		if (!empty($this->ProgressFunction) and function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION') and $method == 'PUT') {
-			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-		}
 		if ($echo) {
 			echo curl_exec($ch);
 			$output='';
@@ -256,7 +256,7 @@ class backwpup_Dropbox {
 			$output = json_decode($content, true);
 		}
 		$status = curl_getinfo($ch);
-		if ($method == 'PUT')
+		if (isset($datafilefd) and is_resource($datafilefd))
 			fclose($datafilefd);
 		
 		if (isset($output['error']) or $status['http_code']>=300 or $status['http_code']<200 or curl_errno($ch)>0) {

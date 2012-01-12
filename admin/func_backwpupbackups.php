@@ -187,7 +187,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		$main='job_'.$jobid;
 		$filecounter=0;
 		$files=array();
-		//Get files/filinfo in backup folder
+		//Get files/fileinfo in backup folder
 		if ($dest=='FOLDER' and backwpup_get_option($main,'backupdir') and is_dir(backwpup_get_option($main,'backupdir'))) {
 			if ( $dir = opendir( backwpup_get_option($main,'backupdir') ) ) {
 				while (($file = readdir( $dir ) ) !== false ) {
@@ -208,7 +208,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				closedir( $dir );
 			}
 		}
-		//Get files/filinfo from Dropbox
+		//Get files/fileinfo from Dropbox
 		if ($dest=='DROPBOX' and backwpup_get_option($main,'dropetoken') and backwpup_get_option($main,'dropesecret')) {
 			require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 			try {
@@ -234,7 +234,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
 			}
 		}
-		//Get files/filinfo from Sugarsync
+		//Get files/fileinfo from Sugarsync
 		if ($dest=='SUGARSYNC' and backwpup_get_option($main,'sugarpass') and backwpup_get_option($main,'sugarpass')) {
 			if (!class_exists('SugarSync'))
 				require_once (dirname(__FILE__).'/../libs/sugarsync.php');
@@ -263,7 +263,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				}
 			}
 		}
-		//Get files/filinfo from S3
+		//Get files/fileinfo from S3
 		if ($dest=='S3' and backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket'))	{
 			if (!class_exists('AmazonS3'))
 				require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -289,7 +289,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				}
 			}
 		}
-		//Get files/filinfo from Google Storage
+		//Get files/fileinfo from Google Storage
 		if ($dest=='GSTORAGE' and backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket'))	{
 			if (!class_exists('AmazonS3'))
 				require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
@@ -317,7 +317,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				}
 			}
 		}
-		//Get files/filinfo from Microsoft Azure
+		//Get files/fileinfo from Microsoft Azure
 		if ($dest=='MSAZURE' and backwpup_get_option($main,'msazureHost') and backwpup_get_option($main,'msazureAccName') and backwpup_get_option($main,'msazureKey') and backwpup_get_option($main,'msazureContainer')) {
 			if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 				require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
@@ -343,7 +343,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				}
 			}
 		}
-		//Get files/filinfo from RSC
+		//Get files/fileinfo from RSC
 		if ($dest=='RSC' and backwpup_get_option($main,'rscUsername') and backwpup_get_option($main,'rscAPIKey') and backwpup_get_option($main,'rscContainer'))	{
 			if (!class_exists('CF_Authentication'))
 				require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
@@ -373,7 +373,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				}
 			}
 		}
-		//Get files/filinfo from FTP
+		//Get files/fileinfo from FTP
 		if ($dest=='FTP' and backwpup_get_option($main,'ftphost') and function_exists('ftp_connect') and !backwpup_get_option($main,'ftpuser') and backwpup_get_option($main,'ftppass')) {
 			if (function_exists('ftp_ssl_connect') and backwpup_get_option($main,'ftpssl')) { //make SSL FTP connection
 				$ftp_conn_id = ftp_ssl_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));

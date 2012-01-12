@@ -287,11 +287,17 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			$s3 = new AmazonS3($_POST['awsAccessKey'], $_POST['awsSecretKey']);
-			$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
-			backwpup_update_option($main,'awsBucket',$_POST['newawsBucket']);
+			CFCredentials::set(array('backwpup' => array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$s3 = new AmazonS3();
+			$req=$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
+			if (empty($req->body->Message)) {
+				$backwpup_message.=sprintf(__('S3 bucket "%s" created.','backwpup'),$_POST['newawsBucket']).'<br />';
+				backwpup_update_option($main,'awsBucket',$_POST['newawsBucket']);
+			} else {
+				$backwpup_message.=sprintf(__('S3 bucket create: %s','backwpup'),$req->body->Message).'<br />';
+			}
 		} catch (Exception $e) {
-			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
+			$backwpup_message.=sprintf(__('S3 bucket create: %s','backwpup'),$e->getMessage()).'<br />';
 		}
 	}
 	
@@ -299,14 +305,20 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			$gstorage = new AmazonS3($_POST['GStorageAccessKey'], $_POST['GStorageSecret']);
+			CFCredentials::set(array('backwpup' => array('key'=>$_POST['GStorageAccessKey'],'secret'=>$_POST['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$gstorage = new AmazonS3();
 			$gstorage->set_hostname('commondatastorage.googleapis.com');
 			$gstorage->allow_hostname_override(false);
-			$gstorage->create_bucket($_POST['newGStorageBucket'],'');
-			backwpup_update_option($main,'GStorageBucket',$_POST['newGStorageBucket']);
-			sleep(1); //creation take a moment
+			$req=$gstorage->create_bucket($_POST['newGStorageBucket'],'');
+			if (empty($req->body->Message)) {
+				$backwpup_message.=sprintf(__('GStorage bucket "%s" created.','backwpup'),$_POST['newGStorageBucket']).'<br />';
+				backwpup_update_option($main,'GStorageBucket',$_POST['newGStorageBucket']);
+				sleep(1); //creation take a moment
+			} else {
+				$backwpup_message.=sprintf(__('GStorage bucket create: %s','backwpup'),$req->body->Message).'<br />';
+			}
 		} catch (Exception $e) {
-			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
+			$backwpup_message.=sprintf(__('GStorage bucket create: %s','backwpup'),$e->getMessage()).'<br />';
 		}
 	}
 	
