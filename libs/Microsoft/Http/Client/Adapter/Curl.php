@@ -107,7 +107,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
     public function __construct()
     {
         if (!extension_loaded('curl')) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception('cURL extension has to be loaded to use this Microsoft_Http_Client adapter.');
         }
     }
@@ -122,7 +122,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
     public function setConfig($config = array())
     {
         if (! is_array($config)) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception(
                 'Array expected, got ' . gettype($config)
             );
@@ -217,7 +217,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
         if (!$this->_curl) {
             $this->close();
 
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception('Unable to Connect to ' .  $host . ':' . $port);
         }
 
@@ -250,12 +250,12 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
     {
         // Make sure we're properly connected
         if (!$this->_curl) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception("Trying to write but we are not connected");
         }
 
         if ($this->_connected_to[0] != $uri->getHost() || $this->_connected_to[1] != $uri->getPort()) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception("Trying to write but we are connected to the wrong host");
         }
 
@@ -292,7 +292,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
                     }
 
                     if (!isset($this->_config['curloptions'][CURLOPT_INFILESIZE])) {
-                        require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                        //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                         throw new Microsoft_Http_Client_Adapter_Exception("Cannot set a file-handle for cURL option CURLOPT_INFILE without also setting its size in CURLOPT_INFILESIZE.");
                     }
 
@@ -324,12 +324,12 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
 
             default:
                 // For now, through an exception for unsupported request methods
-                require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                 throw new Microsoft_Http_Client_Adapter_Exception("Method currently not supported");
         }
 
         if(is_resource($body) && $curlMethod != CURLOPT_PUT) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception("Streaming requests are allowed only with PUT");
         }
 
@@ -369,7 +369,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
             // Make the setting of this options explicit (rather than setting it through the loop following a bit lower)
             // to group common functionality together.
             curl_setopt($this->_curl, CURLOPT_INFILE, $this->_config['curloptions'][CURLOPT_INFILE]);
-            curl_setopt($this->_curl, CURLOPT_INFILESIZE, $this->_config['curloptions'][CURLOPT_INFILESIZE]);	
+            curl_setopt($this->_curl, CURLOPT_INFILESIZE, $this->_config['curloptions'][CURLOPT_INFILESIZE]);
             unset($this->_config['curloptions'][CURLOPT_INFILE]);
             unset($this->_config['curloptions'][CURLOPT_INFILESIZE]);
         } elseif ($method == Microsoft_Http_Client::PUT) {
@@ -382,7 +382,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
             foreach ((array)$this->_config['curloptions'] as $k => $v) {
                 if (!in_array($k, $this->_invalidOverwritableCurlOptions)) {
                     if (curl_setopt($this->_curl, $k, $v) == false) {
-                        require_once 'Microsoft/Http/Client/Exception.php';
+                        //require_once 'Microsoft/Http/Client/Exception.php';
                         throw new Microsoft_Http_Client_Exception(sprintf("Unknown or erroreous cURL option '%s' set", $k));
                     }
                 }
@@ -401,7 +401,7 @@ class Microsoft_Http_Client_Adapter_Curl implements Microsoft_Http_Client_Adapte
         $request .= $body;
 
         if (empty($this->_response)) {
-            require_once 'Microsoft/Http/Client/Exception.php';
+            //require_once 'Microsoft/Http/Client/Exception.php';
             throw new Microsoft_Http_Client_Exception("Error in cURL request: " . curl_error($this->_curl));
         }
 

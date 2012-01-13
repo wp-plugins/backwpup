@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Management
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: BlobInstance.php 53615 2010-11-16 20:45:11Z unknown $
  */
@@ -42,15 +42,17 @@ require_once dirname(__FILE__) . '/../../AutoLoader.php';
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Management
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * 
- * @property string $operationId The globally unique identifier (GUID) of the operation.
- * @property string $operationObjectId The target object for the operation. 
- * @property string $operationName The name of the performed operation.
- * @property array  $operationParameters The collection of parameters for the performed operation.
- * @property array  $operationCaller A collection of attributes that identifies the source of the operation.
- * @property array  $operationStatus The current status of the operation.
+ * @property string $OperationId The globally unique identifier (GUID) of the operation.
+ * @property string $OperationObjectId The target object for the operation. 
+ * @property string $OperationName The name of the performed operation.
+ * @property array  $OperationParameters The collection of parameters for the performed operation.
+ * @property array  $OperationCaller A collection of attributes that identifies the source of the operation.
+ * @property array  $OperationStatus The current status of the operation.
+ * @property string $OperationStartedTime The time that the operation started to execute.
+ * @property string $OperationCompletedTime The time that the operation finished executing.
  */
 class Microsoft_WindowsAzure_Management_SubscriptionOperationInstance
 	extends Microsoft_WindowsAzure_Management_ServiceEntityAbstract
@@ -64,16 +66,20 @@ class Microsoft_WindowsAzure_Management_SubscriptionOperationInstance
      * @param array  $operationParameters The collection of parameters for the performed operation.
      * @param array  $operationCaller A collection of attributes that identifies the source of the operation.
      * @param array  $operationStatus The current status of the operation.
+     * @param string $operationStartedTime The time that the operation started to execute.
+     * @param string $operationCompletedTime The time that the operation finished executing.
      */
-    public function __construct($operationId, $operationObjectId, $operationName, $operationParameters = array(), $operationCaller = array(), $operationStatus = array()) 
+    public function __construct($operationId, $operationObjectId, $operationName, $operationParameters = array(), $operationCaller = array(), $operationStatus = array(), $operationStartedTime = '', $operationCompletedTime = '') 
     {	        
         $this->_data = array(
-            'operationid'          => $operationId,
-	        'operationobjectid'    => $operationObjectId,
-	        'operationname'        => $operationName,
-	        'operationparameters'  => $operationParameters,
-	        'operationcaller'      => $operationCaller,
-	        'operationstatus'      => $operationStatus
+            'operationid'            => $operationId,
+	        'operationobjectid'      => $operationObjectId,
+	        'operationname'          => $operationName,
+	        'operationparameters'    => $operationParameters,
+	        'operationcaller'        => $operationCaller,
+	        'operationstatus'        => $operationStatus,
+	        'operationstartedtime'   => $operationStartedTime,
+	        'operationcompletedtime' => $operationCompletedTime
         );
     }
     

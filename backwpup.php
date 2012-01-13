@@ -51,7 +51,7 @@ if (!defined('FS_CHMOD_DIR'))
 	define('FS_CHMOD_DIR', 0755 );
 
 //not load translations for other text domains reduces memory and load time
-if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
+if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
 	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
 //Load text domain if needed
 if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
@@ -65,7 +65,7 @@ if (is_main_site()) {
 	include_once(dirname(__FILE__).'/core/functions.php');
 	//WP-Cron
 	add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>300,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
-	if (defined('DOING_CRON')and !defined('DOING_BACKWPUP_JOB') and DOING_CRON )
+	if (defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and DOING_CRON )
 		include_once(dirname(__FILE__).'/core/wp-cron.php');
 	//load menus and pages
 	if (!defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and !defined("DOING_AJAX") and !defined('XMLRPC_REQUEST') and !defined('APP_REQUEST') and is_admin())

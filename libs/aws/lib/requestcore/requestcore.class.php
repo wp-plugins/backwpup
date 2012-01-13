@@ -549,7 +549,6 @@ class RequestCore
 		$this->read_stream_read += strlen($read);
 
 		$out = $read === false ? '' : $read;
-
 		// Execute callback function
 		if ($this->registered_streaming_read_callback)
 		{

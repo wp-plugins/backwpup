@@ -34,13 +34,13 @@ class BackWPup_job {
 		if (backwpup_get_option('cfg','logfolder'))
 			$this->_check_folder(backwpup_get_option('cfg','logfolder'));
 		//Check double running and inactivity
-		if ( $this->jobdata['PID'] != getmypid() and $this->jobdata['TIMESTAMP'] > (current_time('timestamp') - 500) and $this->jobstarttype == 'restarttime' ) {
-			trigger_error(__('Job restart terminated, because other job runs!', 'backwpup'), E_USER_ERROR);
+		if ( $this->jobdata['PID'] != getmypid() and (current_time('timestamp')-$this->jobdata['TIMESTAMP'] < 480) and $this->jobstarttype == 'restarttime' ) {
+			trigger_error(__('Job restart terminated, because job runs!', 'backwpup'), E_USER_ERROR);
 			die();
 		} elseif ( $this->jobstarttype == 'restarttime' ) {
 			trigger_error(__('Job restarted, because of inactivity!', 'backwpup'), E_USER_ERROR);
-		} elseif ( $this->jobdata['PID'] != getmypid() and $this->jobdata['PID'] != 0 and $this->jobdata['timestamp'] > (time() - 500) ) {
-			trigger_error(sprintf(__('Second prozess is running, but old job runs! Start type is %s', 'backwpup'), $this->jobstarttype), E_USER_ERROR);
+		} elseif ( $this->jobdata['PID'] != getmypid() and $this->jobdata['PID'] != 0 and (current_time('timestamp')-$this->jobdata['TIMESTAMP'] >= 480) ) {
+			trigger_error(sprintf(__('Second process is running, but old job runs! Start type is %s', 'backwpup'), $this->jobstarttype), E_USER_ERROR);
 			die();
 		}
 		//set Pid
@@ -140,6 +140,7 @@ class BackWPup_job {
 		backwpup_update_option($this->jobdata['JOBMAIN'], 'starttime', current_time('timestamp')); //set start time for job
 		backwpup_update_option($this->jobdata['JOBMAIN'], 'logfile', $this->jobdata['LOGFILE']); //Set current logfile
 		backwpup_update_option($this->jobdata['JOBMAIN'], 'lastbackupdownloadurl', '');
+		backwpup_update_option($this->jobdata['JOBMAIN'], 'cronnextrun', backwpup_cron_next(backwpup_get_option($this->jobdata['JOBMAIN'], 'cron')));
 		//only for jobs that makes backups
 		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) ) {
 			//make empty file list
@@ -632,19 +633,18 @@ class BackWPup_job {
 		}
 	}
 
-	public function _curl_progresscallback($download_size, $downloaded, $upload_size, $uploaded) {
+	public function _curl_read_callback($bytes_transferred) {
 		if ( $this->jobdata['STEPTODO'] > 10 and backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') != 'sync' )
-			$this->jobdata['STEPDONE'] = $uploaded;
+			$this->jobdata['STEPDONE'] = $this->jobdata['STEPDONE']+$bytes_transferred;
 		$this->_update_working_data();
+		return;
 	}
 
-	public function curl_progressfunction($handle) {
-		if ( defined('CURLOPT_PROGRESSFUNCTION') ) {
-			curl_setopt($handle, CURLOPT_NOPROGRESS, false);
-			curl_setopt($handle, CURLOPT_PROGRESSFUNCTION, array($this,'_curl_progresscallback'));
-			curl_setopt($handle, CURLOPT_BUFFERSIZE, 512);
-		}
+	public function _curl_aws_read_callback($curl_handle, $file_handle, $out) {
+		$this->_curl_read_callback(strlen($out));
+		return;
 	}
+
 	private function db_dump() {
 		global $wpdb, $wp_version;
 
@@ -1569,26 +1569,45 @@ class BackWPup_job {
 		backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl', backwpup_admin_url('admin.php') . '?page=backwpupbackups&action=download&file=' . $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
 		//Delete old Backupfiles
 		$backupfilelist = array();
-		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'maxbackups') > 0 ) {
-			if ( $dir = @opendir($this->jobdata['BACKUPDIR']) ) { //make file list
-				while ( ($file = readdir($dir)) !== false ) {
+		$filecounter=0;
+		if ( $dir = @opendir($this->jobdata['BACKUPDIR']) ) { //make file list
+			while ( ($file = readdir($dir)) !== false ) {
+				if (is_file($this->jobdata['BACKUPDIR'].$file)) {
+					//list for deletion
 					if ( backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file, 0, strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))) )
 						$backupfilelist[filemtime($this->jobdata['BACKUPDIR'] . $file)] = $file;
+					//file list for backups
+					$files[$filecounter]['folder']=$this->jobdata['BACKUPDIR'];
+					$files[$filecounter]['file']=$this->jobdata['BACKUPDIR'].$file;
+					$files[$filecounter]['filename']=$file;
+					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$this->jobdata['BACKUPDIR'].$file;
+					$files[$filecounter]['filesize']=filesize($this->jobdata['BACKUPDIR'].$file);
+					$files[$filecounter]['time']=filemtime($this->jobdata['BACKUPDIR'].$file);
+					$filecounter++;
 				}
-				@closedir($dir);
 			}
+			@closedir($dir);
+
+		}
+		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'maxbackups') > 0 ) {
 			if ( count($backupfilelist) > backwpup_get_option($this->jobdata['JOBMAIN'],'maxbackups') ) {
 				$numdeltefiles = 0;
 				while ( $file = array_shift($backupfilelist) ) {
 					if ( count($backupfilelist) < backwpup_get_option($this->jobdata['JOBMAIN'],'maxbackups') )
 						break;
 					unlink($this->jobdata['BACKUPDIR'] . $file);
+					for ($i=0;$i<count($files);$i++) {
+						if($files[$i]['file']==$this->jobdata['BACKUPDIR'].$file)
+							unset($files[$i]);
+					}
 					$numdeltefiles++;
 				}
 				if ( $numdeltefiles > 0 )
 					trigger_error(sprintf(_n('One backup file deleted', '%d backup files deleted', $numdeltefiles, 'backwpup'), $numdeltefiles), E_USER_NOTICE);
 			}
 		}
+		backwpup_update_option('temp',$this->jobdata['JOBID'].'_FOLDER',$files);
+
 		$this->jobdata['STEPDONE']++;
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER'; //set done
 	}
@@ -1682,7 +1701,7 @@ class BackWPup_job {
 				trigger_error(sprintf(__('%s free on DropBox','backwpup'),backwpup_format_bytes($dropboxfreespase)),E_USER_NOTICE);
 			}
 			//set callback function
-			$dropbox->setProgressFunction(array($this,'_curl_progresscallback'));
+			$dropbox->setProgressFunction(array($this,'_curl_read_callback'));
 			// put the file
 			trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
 			$response = $dropbox->upload($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'],backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir').$this->jobdata['BACKUPFILE']);
@@ -1702,31 +1721,46 @@ class BackWPup_job {
 			trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		}
 		try {
-			if (backwpup_get_option($this->jobdata['JOBMAIN'],'dropemaxbackups')>0 and is_object($dropbox)) { //Delete old backups
-				$backupfilelist=array();
-				$metadata = $dropbox->metadata(backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir'));
-				if (is_array($metadata)) {
-					foreach ($metadata['contents'] as $data) {
+			$backupfilelist=array();
+			$filecounter=0;
+			$metadata = $dropbox->metadata(backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir'));
+			if (is_array($metadata)) {
+				foreach ($metadata['contents'] as $data) {
+					if ($data['is_dir']!=true) {
 						$file=basename($data['path']);
-						if ($data['is_dir']!=true and backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
+						if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
 							$backupfilelist[strtotime($data['modified'])]=$file;
+						$files[$filecounter]['folder']="https://api-content.dropbox.com/1/files/".backwpup_get_option($this->jobdata['JOBMAIN'],'droperoot')."/".dirname($data['path'])."/";
+						$files[$filecounter]['file']=$data['path'];
+						$files[$filecounter]['filename']=basename($data['path']);
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$data['path'].'&jobid='.$this->jobdata['JOBID'];
+						$files[$filecounter]['filesize']=$data['bytes'];
+						$files[$filecounter]['time']=strtotime($data['modified']);
+						$filecounter++;
 					}
 				}
+			}
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'dropemaxbackups')>0 and is_object($dropbox)) { //Delete old backups
 				if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'dropemaxbackups')) {
 					$numdeltefiles=0;
 					while ($file=array_shift($backupfilelist)) {
 						if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'dropemaxbackups'))
 							break;
 						$response=$dropbox->fileopsDelete(backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir').$file); //delete files on Cloud
-						if ($response['is_deleted']=='true')
+						if ($response['is_deleted']=='true') {
+							for ($i=0;$i<count($files);$i++) {
+								if($files[$i]['file']=='/'.backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir').$file)
+									unset($files[$i]);
+							}
 							$numdeltefiles++;
-						else
+						} else
 							trigger_error(sprintf(__('Error on delete file on DropBox: %s','backwpup'),$file),E_USER_ERROR);
 					}
 					if ($numdeltefiles>0)
 						trigger_error(sprintf(_n('One file deleted on DropBox','%d files deleted on DropBox',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 				}
 			}
+			backwpup_update_option('temp',$this->jobdata['JOBID'].'_DROPBOX',$files);
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 		}
@@ -1828,36 +1862,53 @@ class BackWPup_job {
 				trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
 		}
 
-		if (backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups')>0) { //Delete old backups
-			$backupfilelist=array();
-			if ($filelist=ftp_nlist($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir'))) {
-				foreach($filelist as $file) {
-					if ( backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr(basename($file),0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix')))  ) {
-						$time=ftp_mdtm($ftp_conn_id,'"'.basename($file).'"');
-						if (!isset($time) or $time==-1) {
-							$timestring=str_replace(array(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'),'.tar.gz','.tar.bz2','.tar','.zip'),'',basename($file));
-							list($dateex,$timeex)=explode('_',$timestring);
-							$time=strtotime($dateex.' '.str_replace('-',':',$timeex));
-						}
-						$backupfilelist[$time]=basename($file);
-					}
-				}
-				if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups')) {
-					$numdeltefiles=0;
-					while ($file=array_shift($backupfilelist)) {
-						if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups'))
-							break;
-						if (ftp_delete($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$file)) //delete files on ftp
-							$numdeltefiles++;
-						else
-							trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$file),E_USER_ERROR);
 
+		$backupfilelist=array();
+		$filecounter=0;
+		if ($filelist=ftp_nlist($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir'))) {
+			foreach($filelist as $file) {
+				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr(basename($file),0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix')))  ) {
+					$time=ftp_mdtm($ftp_conn_id,$file);
+					if (!isset($time) or $time==-1) {
+						$timestring=str_replace(array(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'),'.tar.gz','.tar.bz2','.tar','.zip'),'',basename($file));
+						list($dateex,$timeex)=explode('_',$timestring);
+						$time=strtotime($dateex.' '.str_replace('-',':',$timeex));
 					}
-					if ($numdeltefiles>0)
-						trigger_error(sprintf(_n('One file deleted on FTP Server','%d files deleted on FTP Server',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+					$backupfilelist[$time]=basename($file);
+				}
+				if (basename($file)!='.' and basename($file)!='..') {
+					$files[$filecounter]['folder']="ftp://".backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost').':'.backwpup_get_option($this->jobdata['JOBMAIN'],'ftphostport').dirname($file)."/";
+					$files[$filecounter]['file']=$file;
+					$files[$filecounter]['filename']=basename($file);
+					$files[$filecounter]['downloadurl']="ftp://".rawurlencode(backwpup_get_option($this->jobdata['JOBMAIN'],'ftpuser')).":".rawurlencode(backwpup_decrypt(backwpup_get_option($this->jobdata['JOBMAIN'],'ftppass')))."@".backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost').':'.backwpup_get_option($this->jobdata['JOBMAIN'],'ftphostport').rawurlencode($file);
+					$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$file);
+					$files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$file);
+					$filecounter++;
 				}
 			}
 		}
+		if (backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups')>0) { //Delete old backups
+			if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups')) {
+				$numdeltefiles=0;
+				while ($file=array_shift($backupfilelist)) {
+					if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'ftpmaxbackups'))
+						break;
+					if (ftp_delete($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$file)) { //delete files on ftp
+						for ($i=0;$i<count($files);$i++) {
+							if($files[$i]['file']==backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$file)
+								unset($files[$i]);
+						}
+						$numdeltefiles++;
+					}
+					else
+						trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir').$file),E_USER_ERROR);
+
+				}
+				if ($numdeltefiles>0)
+					trigger_error(sprintf(_n('One file deleted on FTP Server','%d files deleted on FTP Server',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+			}
+		}
+		backwpup_update_option('temp',$this->jobdata['JOBID'].'_FTP',$files);
 
 		ftp_close($ftp_conn_id);
 		$this->jobdata['STEPDONE']++;
@@ -1874,6 +1925,7 @@ class BackWPup_job {
 		try {
 			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
+			$s3->disable_ssl(backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'));
 			if ($s3->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'))) {
 				$bucketregion=$s3->get_bucket_region(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'));
 				trigger_error(sprintf(__('Connected to S3 Bucket "%1$s" in %2$s','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'),$bucketregion->body),E_USER_NOTICE);
@@ -1892,8 +1944,7 @@ class BackWPup_job {
 				$params['storage']=AmazonS3::STORAGE_REDUCED;
 			else
 				$params['storage']=AmazonS3::STORAGE_STANDARD;
-			if (defined('CURLOPT_PROGRESSFUNCTION'))
-				$params['curlopts']=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>array($this,'_curl_progresscallback'),CURLOPT_BUFFERSIZE=>512);
+			$s3->register_streaming_read_callback(array($this,'_curl_aws_read_callback'));
 			//transfer file to S3
 			trigger_error(__('Upload to Amazon S3 now started... ','backwpup'),E_USER_NOTICE);
 			$result=$s3->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$this->jobdata['BACKUPFILE'],$params);
@@ -1906,29 +1957,43 @@ class BackWPup_job {
 			} else {
 				trigger_error(sprintf(__('Can not transfer backup to S3! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
 			}
+			$s3->register_streaming_read_callback(NULL);
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 			return;
 		}
 		try {
 			if ($s3->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'))) {
-				if (backwpup_get_option($this->jobdata['JOBMAIN'],'awsmaxbackups')>0) { //Delete old backups
-					$backupfilelist=array();
-					if (($contents = $s3->list_objects(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'),array('prefix'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir')))) !== false) {
-						foreach ($contents->body->Contents as $object) {
-							$file=basename($object->Key);
-							$changetime=strtotime($object->LastModified);
-							if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
-								$backupfilelist[$changetime]=$file;
-						}
+				$backupfilelist=array();
+				$filecounter=0;
+				if (($contents = $s3->list_objects(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'),array('prefix'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir')))) !== false) {
+					foreach ($contents->body->Contents as $object) {
+						$file=basename($object->Key);
+						$changetime=strtotime($object->LastModified);
+						if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
+							$backupfilelist[$changetime]=$file;
+						$files[$filecounter]['folder']="https://".backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket').".s3.amazonaws.com/".dirname((string)$object->Key).'/';
+						$files[$filecounter]['file']=(string)$object->Key;
+						$files[$filecounter]['filename']=basename($object->Key);
+						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$this->jobdata['JOBID'];
+						$files[$filecounter]['filesize']=(string)$object->Size;
+						$files[$filecounter]['time']=$changetime;
+						$filecounter++;
 					}
+				}
+				if (backwpup_get_option($this->jobdata['JOBMAIN'],'awsmaxbackups')>0) { //Delete old backups
 					if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'awsmaxbackups')) {
 						$numdeltefiles=0;
 						while ($file=array_shift($backupfilelist)) {
 							if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'awsmaxbackups'))
 								break;
-							if ($s3->delete_object(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$file)) //delte files on S3
+							if ($s3->delete_object(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$file)) {//delete files on S3
+								for ($i=0;$i<count($files);$i++) {
+									if($files[$i]['file']==backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$file)
+										unset($files[$i]);
+								}
 								$numdeltefiles++;
+							}
 							else
 								trigger_error(sprintf(__('Can not delete backup on S3://%s','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket').'/'.backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$file),E_USER_ERROR);
 						}
@@ -1936,9 +2001,99 @@ class BackWPup_job {
 							trigger_error(sprintf(_n('One file deleted on S3 Bucket','%d files deleted on S3 Bucket',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 					}
 				}
+				backwpup_update_option('temp',$this->jobdata['JOBID'].'_S3',$files);
 			}
 		} catch (Exception $e) {
 			trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			return;
+		}
+		$this->jobdata['STEPDONE']++;
+	}
+
+	private function dest_gstorage() {
+		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
+		trigger_error(sprintf(__('%d. Try to sending backup file to Google Storage...','backwpup'),$this->jobdata['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
+
+		if (!class_exists('AmazonS3'))
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
+
+		try {
+			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageSecret'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$gstorage = new AmazonS3();
+			$gstorage->set_hostname('commondatastorage.googleapis.com');
+			$gstorage->allow_hostname_override(false);
+			if ($gstorage->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'))) {
+				trigger_error(sprintf(__('Connected to Google Storage Bucket "%1$s"','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket')),E_USER_NOTICE);
+			} else {
+				trigger_error(sprintf(__('Google Storage Bucket "%s" not exists!','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket')),E_USER_ERROR);
+				$this->jobdata['STEPSDONE'][]='DEST_GSTORAGE'; //set done
+				return;
+			}
+			//create Parameter
+			$params=array();
+			$params['fileUpload']=$this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'];
+			$params['acl']=AmazonS3::ACL_PRIVATE;
+			$gstorage->register_streaming_read_callback(array($this,'_curl_aws_read_callback'));
+			//transfer file to Google Storage
+			trigger_error(__('Upload to Google Storage now started... ','backwpup'),E_USER_NOTICE);
+			$result=$gstorage->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$this->jobdata['BACKUPFILE'],$params);
+			$result=(array)$result;
+			if ($result["status"]=200 and $result["status"]<300)  {
+				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
+				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
+				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',"https://sandbox.google.com/storage/".backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket')."/".backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$this->jobdata['BACKUPFILE']);
+				$this->jobdata['STEPSDONE'][]='DEST_GSTORAGE'; //set done
+			} else {
+				trigger_error(sprintf(__('Can not transfer backup to Google Storage! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);
+			}
+			$gstorage->register_streaming_read_callback(NULL);
+		} catch (Exception $e) {
+			trigger_error(sprintf(__('Google Storage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			return;
+		}
+		try {
+			if ($gstorage->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'))) {
+				$backupfilelist=array();
+				$filecounter=0;
+				if (($contents = $gstorage->list_objects(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'),array('prefix'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir')))) !== false) {
+					foreach ($contents->body->Contents as $object) {
+						$file=basename($object->Key);
+						$changetime=strtotime($object->LastModified);
+						if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
+							$backupfilelist[$changetime]=$file;
+						$files[$filecounter]['folder']="https://sandbox.google.com/storage/".backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket')."/".dirname((string)$object->Key).'/';
+						$files[$filecounter]['file']=(string)$object->Key;
+						$files[$filecounter]['filename']=basename($object->Key);
+						$files[$filecounter]['downloadurl']="https://sandbox.google.com/storage/".backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket')."/".(string)$object->Key;
+						$files[$filecounter]['filesize']=(string)$object->Size;
+						$files[$filecounter]['time']=$changetime;
+						$filecounter++;
+					}
+				}
+				if (backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragemaxbackups')>0) { //Delete old backups
+					if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragemaxbackups')) {
+						$numdeltefiles=0;
+						while ($file=array_shift($backupfilelist)) {
+							if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragemaxbackups'))
+								break;
+							if ($gstorage->delete_object(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$file)) {//delete files on Google Storage
+								for ($i=0;$i<count($files);$i++) {
+									if($files[$i]['file']==backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$file)
+										unset($files[$i]);
+								}
+								$numdeltefiles++;
+							}
+							else
+								trigger_error(sprintf(__('Can not delete backup on Google Storage://%s','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket').'/'.backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$file),E_USER_ERROR);
+						}
+						if ($numdeltefiles>0)
+							trigger_error(sprintf(_n('One file deleted on Google Storage Bucket','%d files deleted on Google Storage Bucket',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+					}
+				}
+				backwpup_update_option('temp',$this->jobdata['JOBID'].'_GSTORAGE',$files);
+			}
+		} catch (Exception $e) {
+			trigger_error(sprintf(__('Google Storage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
 			return;
 		}
 		$this->jobdata['STEPDONE']++;
@@ -1978,5 +2133,188 @@ class BackWPup_job {
 		}
 		$this->jobdata['STEPSDONE'][]='DEST_MAIL'; //set done
 	}
+	
+	private function dest_msazure() {
+		$this->jobdata['STEPTODO']=2;
+		trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$this->jobdata['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
+
+		require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
+
+		try {
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureHost'),backwpup_get_option($this->jobdata['JOBMAIN'],'msazureAccName'),backwpup_get_option($this->jobdata['JOBMAIN'],'msazureKey'));
+
+			if(!$storageClient->containerExists(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer'))) {
+				trigger_error(sprintf(__('Microsoft Azure container "%s" not exists!','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer')),E_USER_ERROR);
+				return;
+			} else {
+				trigger_error(sprintf(__('Connected to Microsoft Azure container "%s"','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer')),E_USER_NOTICE);
+			}
+
+			trigger_error(__('Upload to MS Azure now started... ','backwpup'),E_USER_NOTICE);
+			$this->_need_free_memory($this->jobdata['BACKUPFILESIZE']*2.5);
+			$result = $storageClient->putBlob(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer'), backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$this->jobdata['BACKUPFILE'], $this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']);
+
+			if ($result->Name==backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$this->jobdata['BACKUPFILE']) {
+				$this->jobdata['STEPTODO']++;
+				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.backwpup_get_option($this->jobdata['JOBMAIN'],'msazureAccName').'.'.backwpup_get_option($this->jobdata['JOBMAIN'],'msazureHost').'/'.backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$this->jobdata['BACKUPFILE']),E_USER_NOTICE);
+				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$this->jobdata['BACKUPFILE'].'&jobid='.$this->jobdata['JOBID']);
+				$this->jobdata['STEPSDONE'][]='DEST_MSAZURE'; //set done
+			} else {
+				trigger_error(__('Can not transfer backup to Microsoft Azure!','backwpup'),E_USER_ERROR);
+			}
+
+			$backupfilelist=array();
+			$filecounter=0;
+			$blobs = $storageClient->listBlobs(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer'),untrailingslashit(backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir')));
+			if (is_array($blobs)) {
+				foreach ($blobs as $blob) {
+					$file=basename($blob->Name);
+					if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))) )
+						$backupfilelist[strtotime($blob->lastmodified)]=$file;
+					$files[$filecounter]['folder']="https://".backwpup_get_option($this->jobdata['JOBMAIN'],'msazureAccName').'.'.backwpup_get_option($this->jobdata['JOBMAIN'],'msazureHost')."/".backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer')."/".dirname($blob->Name)."/";
+					$files[$filecounter]['file']=$blob->Name;
+					$files[$filecounter]['filename']=basename($blob->Name);
+					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$this->jobdata['JOBID'];
+					$files[$filecounter]['filesize']=$blob->size;
+					$files[$filecounter]['time']=strtotime($blob->lastmodified);
+					$filecounter++;
+				}
+			}
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'msazuremaxbackups')>0) { //Delete old backups
+				if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'msazuremaxbackups')) {
+					$numdeltefiles=0;
+					while ($file=array_shift($backupfilelist)) {
+						if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'msazuremaxbackups'))
+							break;
+						$storageClient->deleteBlob(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer'),backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$file); //delete files on Google Storage
+						for ($i=0;$i<count($files);$i++) {
+							if($files[$i]['file']==backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir').$file)
+								unset($files[$i]);
+						}
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error(sprintf(_n('One file deleted on Microsoft Azure container','%d files deleted on Microsoft Azure container',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+				}
+			}
+			backwpup_update_option('temp',$this->jobdata['JOBID'].'_MSAZURE',$files);
+		} catch (Exception $e) {
+			trigger_error(sprintf(__('Microsoft Azure API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+		}
+		$this->jobdata['STEPDONE']++;
+	}
+
+
+	private function dest_rsc() {
+		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
+		$this->jobdata['STEPDONE']=0;
+		trigger_error(sprintf(__('%d. Try to sending backup file to Rackspace cloud...','backwpup'),$this->jobdata['DEST_RSC']['STEP_TRY']),E_USER_NOTICE);
+		require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
+
+		$auth = new CF_Authentication(backwpup_get_option($this->jobdata['JOBMAIN'],'rscUsername'), backwpup_get_option($this->jobdata['JOBMAIN'],'rscAPIKey'));
+		if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+			$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
+		try {
+			if ($auth->authenticate())
+				trigger_error(__('Connected to Rackspase cloud ...','backwpup'),E_USER_NOTICE);
+			$conn = new CF_Connection($auth);
+			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+				$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
+			$conn->set_write_progress_function(array($this,'_curl_read_callback'));
+			$is_container=false;
+			$containers=$conn->get_containers();
+			foreach ($containers as $container) {
+				if ($container->name == backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer') )
+					$is_container=true;
+			}
+			if (!$is_container) {
+				$public_container = $conn->create_container(backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer'));
+				$public_container->make_private();
+				if (empty($public_container))
+					$is_container=false;
+			}
+		} catch (Exception $e) {
+			trigger_error(__('Rackspase cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+			return;
+		}
+
+		if (!$is_container) {
+			trigger_error(__('Rackspase cloud Container not exists:','backwpup').' '.backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer'),E_USER_ERROR);
+			$this->jobdata['STEPSDONE'][]='DEST_RSC'; //set done
+			return;
+		}
+
+		try {
+			//Transfer Backup to Rackspace Cloud
+			$backwpupcontainer = $conn->get_container(backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer'));
+			//if (!empty(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir'])) //make the foldder
+			//	$backwpupcontainer->create_paths(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir']);
+			$backwpupbackup = $backwpupcontainer->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$this->jobdata['BACKUPFILE']);
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')=='.zip')
+				$backwpupbackup->content_type='application/zip';
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')=='.tar')
+				$backwpupbackup->content_type='application/x-ustar';
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')=='.tar.gz')
+				$backwpupbackup->content_type='application/x-compressed';
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')=='.tar.bz2')
+				$backwpupbackup->content_type='application/x-compressed';
+			trigger_error(__('Upload to Rackspase cloud now started ... ','backwpup'),E_USER_NOTICE);
+			if ($backwpupbackup->load_from_filename($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'])) {
+				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
+				trigger_error(__('Backup File transferred to RSC://','backwpup').backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer').'/'.backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$this->jobdata['BACKUPFILE'],E_USER_NOTICE);
+				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$this->jobdata['BACKUPFILE'].'&jobid='.$this->jobdata['JOBID']);
+				$this->jobdata['STEPSDONE'][]='DEST_RSC'; //set done
+			} else {
+				trigger_error(__('Can not transfer backup to Rackspase cloud.','backwpup'),E_USER_ERROR);
+			}
+		} catch (Exception $e) {
+			trigger_error(__('Rackspase cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+		}
+		try {
+			$backupfilelist=array();
+			$filecounter=0;
+			$contents = $backwpupcontainer->get_objects(0,NULL,NULL,backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir'));
+			if (is_array($contents)) {
+				foreach ($contents as $object) {
+					$file=basename($object->name);
+					if (backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$file == $object->name) {//only in the folder and not in complete bucket
+						if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($file,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))))
+							$backupfilelist[strtotime($object->last_modified)]=$file;
+					}
+					$files[$filecounter]['folder']="RSC://".backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer')."/".dirname($object->name)."/";
+					$files[$filecounter]['file']=$object->name;
+					$files[$filecounter]['filename']=basename($object->name);
+					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$this->jobdata['JOBID'];
+					$files[$filecounter]['filesize']=$object->content_length;
+					$files[$filecounter]['time']=strtotime($object->last_modified);
+					$filecounter++;
+				}
+			}
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'rscmaxbackups')>0) { //Delete old backups
+				if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'rscmaxbackups')) {
+					$numdeltefiles=0;
+					while ($file=array_shift($backupfilelist)) {
+						if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'rscmaxbackups'))
+							break;
+						if ($backwpupcontainer->delete_object(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$file)) {//delete files on Cloud
+							for ($i=0;$i<count($files);$i++) {
+								if($files[$i]['file']==backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$file)
+									unset($files[$i]);
+							}
+							$numdeltefiles++;
+						} else
+							trigger_error(__('Can not delete file on RSC://','backwpup').backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer').backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$file,E_USER_ERROR);
+					}
+					if ($numdeltefiles>0)
+						trigger_error(sprintf(_n('One file deleted on Rackspase cloud container','%d files deleted on Rackspase cloud container',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+				}
+			}
+			backwpup_update_option('temp',$this->jobdata['JOBID'].'_RSC',$files);
+		} catch (Exception $e) {
+			trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+		}
+		$this->jobdata['STEPDONE']++;
+	}
+
 }
 ?>

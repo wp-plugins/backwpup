@@ -284,7 +284,7 @@ class BackWPup_editjob_metaboxes {
 			<input id="awsSecretKey" name="awsSecretKey" type="password" value="<?PHP echo backwpup_get_option($main,'awsSecretKey');?>" class="large-text" /><br />
 			<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 			<input id="awsBucketselected" name="awsBucketselected" type="hidden" value="<?PHP echo backwpup_get_option($main,'awsBucket');?>" />
-			<?PHP if (backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey')) backwpup_get_aws_buckets(array('awsAccessKey'=>backwpup_get_option($main,'awsAccessKey'),'awsSecretKey'=>backwpup_get_option($main,'awsSecretKey'),'awsselected'=>backwpup_get_option($main,'awsBucket'))); ?>
+			<?PHP if (backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey')) backwpup_get_aws_buckets(array('awsAccessKey'=>backwpup_get_option($main,'awsAccessKey'),'awsSecretKey'=>backwpup_get_option($main,'awsSecretKey'),'awsselected'=>backwpup_get_option($main,'awsBucket'),'awsdisablessl'=>backwpup_get_option($main,'awsdisablessl'))); ?>
 			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newawsBucket" type="text" value="" class="text" /> <select name="awsRegion" title="<?php _e('Bucket Region', 'backwpup'); ?>"><option value="s3.amazonaws.com"><?php _e('US-Standard (Northern Virginia & Washington State)', 'backwpup'); ?></option><option value="s3-us-west-1.amazonaws.com"><?php _e('US-West 1 (Northern California)', 'backwpup'); ?></option><option value="s3-us-west-2.amazonaws.com"><?php _e('US-West 2 (Oregon)', 'backwpup'); ?></option><option value="s3-eu-west-1.amazonaws.com"><?php _e('EU (Ireland)', 'backwpup'); ?></option><option value="s3-ap-southeast-1.amazonaws.com"><?php _e('Asia Pacific (Singapore)', 'backwpup'); ?></option><option value="s3-ap-northeast-1.amazonaws.com"><?php _e('Asia Pacific (Japan)', 'backwpup'); ?></option><option value="s3-sa-east-1.amazonaws.com"><?php _e('South America (Sao Paulo)', 'backwpup'); ?></option><option value="s3-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud', 'backwpup'); ?></option><option value="s3-fips-us-gov-west-1.amazonaws.com"><?php _e('United States GovCloud FIPS 140-2', 'backwpup'); ?></option></select><br />
 			<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 			<input name="awsdir" type="text" value="<?PHP echo backwpup_get_option($main,'awsdir');?>" class="large-text" /><br />
@@ -292,6 +292,7 @@ class BackWPup_editjob_metaboxes {
 			<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'awssyncnodelete'),true); ?> name="awssyncnodelete" /> <?PHP _e('Do not delete files on sync destination!','backwpup'); ?><br /></span>
 			<input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'awsrrs'),true); ?> name="awsrrs" /> <?PHP _e('Save Files with reduced redundancy!','backwpup'); ?><br />
 			<input class="checkbox" value="AES256" type="checkbox" <?php checked(backwpup_get_option($main,'awsssencrypt'),'AES256'); ?> name="awsssencrypt" />  <?PHP _e('Save Files Server Side Encrypted!','backwpup'); ?><br />
+			<input class="checkbox" value="1" type="checkbox" <?php checked(backwpup_get_option($main,'awsdisablessl'),true); ?> name="awsdisablessl" />  <?PHP _e('Disable SSL connection on transfer!','backwpup'); ?><br />
 		</div>
 		<div class="destlinks">
 			<a href="http://www.amazon.de/gp/redirect.html?ie=UTF8&location=http%3A%2F%2Fwww.amazon.com%2Fgp%2Faws%2Fregistration%2Fregistration-form.html&site-redirect=de&tag=hueskennet-21&linkCode=ur2&camp=1638&creative=6742" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
@@ -312,7 +313,7 @@ class BackWPup_editjob_metaboxes {
 			<b><?PHP _e('Bucket:','backwpup'); ?></b><br />
 			<input id="GStorageselected" name="GStorageselected" type="hidden" value="<?PHP echo backwpup_get_option($main,'GStorageBucket');?>" />
 			<?PHP if (backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret')) backwpup_get_gstorage_buckets(array('GStorageAccessKey'=>backwpup_get_option($main,'GStorageAccessKey'),'GStorageSecret'=>backwpup_get_option($main,'GStorageSecret'),'GStorageselected'=>backwpup_get_option($main,'GStorageBucket'))); ?>
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); ?><input name="newGStorageBucket" type="text" value="" class="text" /><br />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<?PHP _e('Create bucket:','backwpup'); echo ' '; _e('Please create it in Webinterface!','backwpup');?><br />
 			<b><?PHP _e('Folder in bucket:','backwpup'); ?></b><br />
 			<input name="GStoragedir" type="text" value="<?PHP echo backwpup_get_option($main,'GStoragedir');?>" class="large-text" /><br />
 			<span class="nosync"><?PHP _e('Max. backup files in bucket folder:','backwpup'); ?><input name="GStoragemaxbackups" type="text" size="3" value="<?PHP echo backwpup_get_option($main,'GStoragemaxbackups');?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br /></span>

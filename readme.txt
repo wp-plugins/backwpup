@@ -79,6 +79,7 @@ Do backups and more for your WordPress Blog.
 * Changed: Many code recode and added to classes
 * Updated: AWS lib to 1.5.0.1
 * Updated: RSC lib to 1.7.10
+* Updated: MS azure lib to 4.1.0
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
 * Removed: dump restore is now a extra file
 * Fixed: many bugs

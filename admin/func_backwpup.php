@@ -106,7 +106,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobid, 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
 						if (BACKWPUP_ENV_CHECK_OK) {
 							$url=backwpup_jobrun_url('runnow',$jobid);
-							$actions['runnow'] = "<a href=\"" .$url['url'] . "\">" . __('Run Now','backwpup') . "</a>";
+							$actions['runnow'] = "<a href=\"" .$url['url'] . "\">" . __('Run now','backwpup') . "</a>";
 						}
 					} else {
 						if (!empty($backupdata) and $backupdata['JOBID']==$jobid) {

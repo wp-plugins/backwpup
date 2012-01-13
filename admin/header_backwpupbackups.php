@@ -29,6 +29,7 @@ if (!empty($doaction)) {
 						try {
 							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 							$s3 = new AmazonS3();
+							$s3->disable_ssl(backwpup_get_option($main,'awsdisablessl'));
 							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
 							unset($s3);
 						} catch (Exception $e) {
@@ -170,6 +171,7 @@ if (!empty($doaction)) {
 		try {
 			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
+			$s3->disable_ssl(backwpup_get_option($main,'awsdisablessl'));
 			$s3file=$s3->get_object(backwpup_get_option($main,'awsBucket'), $_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());
@@ -310,7 +312,7 @@ if (method_exists(get_current_screen(),'add_help_tab')) {
 		'id'      => 'overview',
 		'title'   => __('Overview'),
 		'content'	=>
-		'<p>' .__('Here you see a list of backup files. Change the destination to jobname:destination to become a list of backups from other destinations and jobs. Then you can delete or download backup files.','backwpup') . '</p>'
+		'<p>' .__('Here you see a list of backup files. Change the destination to jobname:destination to become a list of backups from other destinations and jobs. Then you can delete or download backup files. <br />NOTE: The lists will be only generated on backup jobs to reduce traffic.','backwpup') . '</p>'
 	) );
 }
 

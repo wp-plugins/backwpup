@@ -101,7 +101,7 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
     public function setConfig($config = array())
     {
         if (! is_array($config)) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception(
                 'Array expected, got ' . gettype($config)
             );
@@ -145,7 +145,7 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
 
         } else {
             // Invalid parameter
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception(
                 "Expecting either a stream context resource or array, got " . gettype($context)
             );
@@ -194,14 +194,14 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
                 if ($this->config['sslcert'] !== null) {
                     if (! stream_context_set_option($context, 'ssl', 'local_cert',
                                                     $this->config['sslcert'])) {
-                        require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                        //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                         throw new Microsoft_Http_Client_Adapter_Exception('Unable to set sslcert option');
                     }
                 }
                 if ($this->config['sslpassphrase'] !== null) {
                     if (! stream_context_set_option($context, 'ssl', 'passphrase',
                                                     $this->config['sslpassphrase'])) {
-                        require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                        //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                         throw new Microsoft_Http_Client_Adapter_Exception('Unable to set sslpassphrase option');
                     }
                 }
@@ -219,14 +219,14 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
 
             if (! $this->socket) {
                 $this->close();
-                require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                 throw new Microsoft_Http_Client_Adapter_Exception(
                     'Unable to Connect to ' . $host . ':' . $port . '. Error #' . $errno . ': ' . $errstr);
             }
 
             // Set the stream timeout
             if (! stream_set_timeout($this->socket, (int) $this->config['timeout'])) {
-                require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                 throw new Microsoft_Http_Client_Adapter_Exception('Unable to set the connection timeout');
             }
 
@@ -249,14 +249,14 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
     {
         // Make sure we're properly connected
         if (! $this->socket) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception('Trying to write but we are not connected');
         }
 
         $host = $uri->getHost();
         $host = (strtolower($uri->getScheme()) == 'https' ? $this->config['ssltransport'] : 'tcp') . '://' . $host;
         if ($this->connected_to[0] != $host || $this->connected_to[1] != $uri->getPort()) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception('Trying to write but we are connected to the wrong host');
         }
 
@@ -281,13 +281,13 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
         
         // Send the request
         if (! @fwrite($this->socket, $request)) {
-            require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+            //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
             throw new Microsoft_Http_Client_Adapter_Exception('Error writing request to server');
         }
         
         if(is_resource($body)) {
             if(stream_copy_to_stream($body, $this->socket) == 0) {
-                require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                 throw new Microsoft_Http_Client_Adapter_Exception('Error writing request to server');
             }
         }
@@ -354,7 +354,7 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
                     $chunksize = trim($line);
                     if (! ctype_xdigit($chunksize)) {
                         $this->close();
-                        require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                        //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                         throw new Microsoft_Http_Client_Adapter_Exception('Invalid chunk size "' .
                             $chunksize . '" unable to read chunked body');
                     }
@@ -487,7 +487,7 @@ class Microsoft_Http_Client_Adapter_Socket implements Microsoft_Http_Client_Adap
             $timedout = $info['timed_out'];
             if ($timedout) {
                 $this->close();
-                require_once 'Microsoft/Http/Client/Adapter/Exception.php';
+                //require_once 'Microsoft/Http/Client/Adapter/Exception.php';
                 throw new Microsoft_Http_Client_Adapter_Exception(
                     "Read timed out after {$this->config['timeout']} seconds",
                     Microsoft_Http_Client_Adapter_Exception::READ_TIMEOUT

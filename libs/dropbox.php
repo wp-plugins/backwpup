@@ -5,34 +5,6 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
-/**
- * Dropbox class
- *
- * This source file can be used to communicate with DropBox (http://dropbox.com)
- *
- * The class is documented in the file itself. If you find any bugs help me out and report them. 
- * If you report a bug, make sure you give me enough information (include your code).
- *
- *
- *
- * License
- * Copyright (c), Daniel Huesken. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products derived from this software without specific prior written permission.
- *
- * This software is provided by the author "as is" and any express or implied warranties, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose are disclaimed. In no event shall the author be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
- *
- * @author		Daniel Huesken <daniel@huesken-net.de>
- * @version		2.0.0
- *
- * @copyright	Copyright (c), Daniel Huesken. All rights reserved.
- * @license		BSD License
- */
-
 class backwpup_Dropbox {
 	const API_URL = 'https://api.dropbox.com/';
 	const API_CONTENT_URL = 'https://api-content.dropbox.com/';
@@ -73,9 +45,9 @@ class backwpup_Dropbox {
 	public function upload($file, $path = '',$overwrite=true){
 		$file = str_replace("\\", "/",$file);
 		if (!is_readable($file) or !is_file($file))
-			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
+			throw new backwpup_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		if (filesize($file)>157286400)
-			throw new DropboxException("Error: File \"$file\" is too big max. 150 MB.");
+			throw new backwpup_DropboxException("Error: File \"$file\" is too big max. 150 MB.");
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
@@ -85,17 +57,17 @@ class backwpup_Dropbox {
 		if (!$echo)
 			return $this->request($url);
 		else
-			$this->request($url,'','GET','',true);
+			$this->request($url,NULL,'GET','',true);
 	}
 	
 	public function metadata($path = '', $listContents = true, $fileLimit = 10000){
 		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.trim($path,'/');
-		return $this->request($url, array('list' => ($listContents)? 'true' : 'false', 'file_limit' => $fileLimit));
+		return $this->request($url, array('list' => ($listContents) ? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
 	
 	public function search($path = '', $query , $fileLimit = 1000){
 		if (strlen($query)>=3)
-			throw new DropboxException("Error: Query \"$query\" must three characters long.");
+			throw new backwpup_DropboxException("Error: Query \"$query\" must three characters long.");
 		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('query' => $query, 'file_limit' => $fileLimit));
 	}
@@ -149,7 +121,7 @@ class backwpup_Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);		
+			throw new backwpup_DropboxException($message);		
 		}
 		curl_close($ch);
 		$OAuthSign = $this->OAuthObject->sign(array(
@@ -191,12 +163,11 @@ class backwpup_Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);		
+			throw new backwpup_DropboxException($message);		
 		}
-	}	
-	
-	private function request($url, $args = null, $method = 'GET', $file = null, $echo=false){
-		$args = (is_array($args)) ? $args : array();
+	}
+
+	private function request($url, $args = array(), $method = 'GET', $file = NULL, $echo=false){
 		$url = $this->url_encode($url);
 		/* Sign Request*/
 		$this->OAuthObject->reset();
@@ -224,14 +195,10 @@ class backwpup_Dropbox {
 			curl_setopt($ch,CURLOPT_PUT,true);
 			curl_setopt($ch,CURLOPT_INFILE,$datafilefd);
 			curl_setopt($ch,CURLOPT_INFILESIZE,filesize($file));
+			curl_setopt($ch,CURLOPT_READFUNCTION, array(&$this, '_read_cb'));
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
-			if ($this->ProgressFunction and defined('CURLOPT_PROGRESSFUNCTION')) {
-				curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-				curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-				curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-			}
 		} else {
 			$headers[]='Authorization: '.$OAuthSign['header'];
 			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
@@ -275,7 +242,7 @@ class backwpup_Dropbox {
 			elseif ($status['http_code']==503) $message = '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis.';
 			elseif ($status['http_code']==507) $message = '(507) User is over Dropbox storage quota.';
 			else $message = '('.$status['http_code'].') Invalid response.';
-			throw new DropboxException($message);
+			throw new backwpup_DropboxException($message);
 		} else {
 			curl_close($ch);
 			if (!is_array($output))
@@ -283,6 +250,14 @@ class backwpup_Dropbox {
 			else
 				return $output;
 		}
+	}
+
+	private function _read_cb($ch, $fd, $length) {
+		$data = fread($fd, $length);
+		$len = strlen($data);
+		if (isset($this->ProgressFunction))
+			call_user_func($this->ProgressFunction, $len);
+		return $data;
 	}
 	
 	private function url_encode($string) {
@@ -298,425 +273,516 @@ class backwpup_Dropbox {
 
 }
 
-class DropboxException extends Exception {
+class backwpup_DropboxException extends Exception {
 }
 
 
-/* OAuthSimple
-  * A simpler version of OAuth
-  *
-  * author:     jr conlin
-  * mail:       src@jrconlin.com
-  * copyright:  unitedHeroes.net
-  * version:    1.2
-  * url:        http://unitedHeroes.net/OAuthSimple
-  *
-  * Copyright (c) 2010, unitedHeroes.net
-  * All rights reserved.
-  *
-  * Redistribution and use in source and binary forms, with or without
-  * modification, are permitted provided that the following conditions are met:
-  *     * Redistributions of source code must retain the above copyright
-  *       notice, this list of conditions and the following disclaimer.
-  *     * Redistributions in binary form must reproduce the above copyright
-  *       notice, this list of conditions and the following disclaimer in the
-  *       documentation and/or other materials provided with the distribution.
-  *     * Neither the name of the unitedHeroes.net nor the
-  *       names of its contributors may be used to endorse or promote products
-  *       derived from this software without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY UNITEDHEROES.NET ''AS IS'' AND ANY
-  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL UNITEDHEROES.NET BE LIABLE FOR ANY
-  * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-  * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+/**
+ * OAuthSimple - A simpler version of OAuth
+ *
+ * https://github.com/jrconlin/oauthsimple
+ *
+ * @author     jr conlin <src@jrconlin.com>
+ * @copyright  unitedHeroes.net 2011
+ * @version    1.3
+ * @license    See license.txt
+ *
  */
 
-/** Define a custom Exception for easy trap and detection
-*/
-class backwpup_OAuthSimpleException extends Exception {}
-
-
 class backwpup_OAuthSimple {
-    var $_secrets;
-    var $_default_signature_method;
-    var $_action;
-    var $_nonce_chars;
+	private $_secrets;
+	private $_default_signature_method;
+	private $_action;
+	private $_nonce_chars;
 
-    /* Simple OAuth
-     *
-     * This class only builds the OAuth elements, it does not do the actual
-     * transmission or reception of the tokens. It does not validate elements
-     * of the token. It is for client use only.
-     *
-     * api_key is the API key, also known as the OAuth consumer key
-     * shared_secret is the shared secret (duh).
-     *
-     * Both the api_key and shared_secret are generally provided by the site
-     * offering OAuth services. You need to specify them at object creation
-     * because nobody <explative>ing uses OAuth without that minimal set of
-     * signatures.
-     *
-     * If you want to use the higher order security that comes from the
-     * OAuth token (sorry, I don't provide the functions to fetch that because
-     * sites aren't horribly consistent about how they offer that), you need to
-     * pass those in either with .signatures() or as an argument to the
-     * .sign() or .getHeaderString() functions.
-     *
-     * Example:
-       <code>
-       <?php
-        $oauthObject = new OAuthSimple();
-        $result = $oauthObject->sign(Array('path'=>'http://example.com/rest/',
-                                           'parameters'=> 'foo=bar&gorp=banana',
-                                           'signatures'=> Array(
-                                                'api_key'=>'12345abcd',
-                                                'shared_secret'=>'xyz-5309'
-                                             )));
-        ?>
-        <a href="<?php print $result['signed_url']; ?>">Some Link</a>;
-       </code>
-     *
-     * that will sign as a "GET" using "SHA1-MAC" the url. If you need more than
-     * that, read on, McDuff.
-     */
+	/**
+	 * Constructor
+	 *
+	 * @access public
+	 * @param api_key (String) The API Key (sometimes referred to as the consumer key) This value is usually supplied by the site you wish to use.
+	 * @param shared_secret (String) The shared secret. This value is also usually provided by the site you wish to use.
+	 * @return OAuthSimple (Object)
+	 */
+	function __construct ($APIKey = "", $sharedSecret=""){
 
-    /** OAuthSimple creator
-     *
-     * Create an instance of OAuthSimple
-     *
-     * @param api_key {string}       The API Key (sometimes referred to as the consumer key) This value is usually supplied by the site you wish to use.
-     * @param shared_secret (string) The shared secret. This value is also usually provided by the site you wish to use.
-     */
-    function backwpup_OAuthSimple ($APIKey = "",$sharedSecret=""){
-        if (!empty($APIKey))
-            $this->_secrets{'consumer_key'}=$APIKey;
-        if (!empty($sharedSecret))
-            $this->_secrets{'shared_secret'}=$sharedSecret;
-        $this->_default_signature_method="HMAC-SHA1";
-        $this->_action="GET";
-        $this->_nonce_chars="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        return $this;
-    }
+		if (!empty($APIKey))
+		{
+			$this->_secrets['consumer_key'] = $APIKey;
+		}
 
-    /** reset the parameters and url 
-    *
-    */
-    function reset() {
-        $this->_parameters=null;
-        $this->path=null;
-        $this->sbs=null;
-        return $this;    
-    }
+		if (!empty($sharedSecret))
+		{
+			$this->_secrets['shared_secret'] = $sharedSecret;
+		}
 
-    /** set the parameters either from a hash or a string
-    *
-    * @param {string,object} List of parameters for the call, this can either be a URI string (e.g. "foo=bar&gorp=banana" or an object/hash)
-    */
-    function setParameters ($parameters=Array()) {
-        
-        if (is_string($parameters))
-            $parameters = $this->_parseParameterString($parameters);
-        if (empty($this->_parameters))
-            $this->_parameters = $parameters;
-        elseif (!empty($parameters))
-            $this->_parameters = array_merge($this->_parameters,$parameters);
-        if (empty($this->_parameters['oauth_nonce']))
-            $this->_getNonce();
-        if (empty($this->_parameters['oauth_timestamp']))
-            $this->_getTimeStamp();
-        if (empty($this->_parameters['oauth_consumer_key']))
-            $this->_getApiKey();
-        if (empty($this->_parameters['oauth_token']))
-            $this->_getAccessToken();
-        if (empty($this->_parameters['oauth_signature_method']))
-            $this->setSignatureMethod();
-        if (empty($this->_parameters['oauth_version']))
-            $this->_parameters['oauth_version']="1.0";
-        //error_log('parameters: '.print_r($this,1));
-        return $this;
-    }
+		$this->_default_signature_method = "HMAC-SHA1";
+		$this->_action = "GET";
+		$this->_nonce_chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-    // convienence method for setParameters
-    function setQueryString ($parameters) {
-        return $this->setParameters($parameters);
-    }
+		return $this;
+	}
 
-    /** Set the target URL (does not include the parameters)
-    *
-    * @param path {string} the fully qualified URI (excluding query arguments) (e.g "http://example.org/foo")
-    */
-    function setURL ($path) {
-        if (empty($path))
-            throw new backwpup_OAuthSimpleException('No path specified for OAuthSimple.setURL');
-        $this->_path=$path;
-        return $this;
-    }
+	/**
+	 * Reset the parameters and URL
+	 *
+	 * @access public
+	 * @return OAuthSimple (Object)
+	 */
+	public function reset() {
+		$this->_parameters = array();
+		$this->path = NULL;
+		$this->sbs = NULL;
 
-    /** convienence method for setURL
-    *
-    * @param path {string} see .setURL
-    */
-    function setPath ($path) {
-        return $this->_path=$path;
-    }
+		return $this;
+	}
 
-    /** set the "action" for the url, (e.g. GET,POST, DELETE, etc.)
-    *
-    * @param action {string} HTTP Action word.
-    */
-    function setAction ($action) {
-        if (empty($action))
-            $action = 'GET';
-        $action = strtoupper($action);
-        if (preg_match('/[^A-Z]/',$action))
-            throw new backwpup_OAuthSimpleException('Invalid action specified for OAuthSimple.setAction');
-        $this->_action = $action;
-        return $this;
-    }
+	/**
+	 * Set the parameters either from a hash or a string
+	 *
+	 * @access public
+	 * @param(string, object) List of parameters for the call, this can either be a URI string (e.g. "foo=bar&gorp=banana" or an object/hash)
+	 * @return OAuthSimple (Object)
+	 */
+	public function setParameters ($parameters=Array()) {
 
-    /** set the signatures (as well as validate the ones you have)
-    *
-    * @param signatures {object} object/hash of the token/signature pairs {api_key:, shared_secret:, oauth_token: oauth_secret:}
-    */
-    function signatures ($signatures) {
-        if (!empty($signatures) && !is_array($signatures))
-            throw new backwpup_OAuthSimpleException('Must pass dictionary array to OAuthSimple.signatures');
-        if (!empty($signatures)){
-            if (empty($this->_secrets)) {
-                $this->_secrets=Array();
-            }
-            $this->_secrets=array_merge($this->_secrets,$signatures);
-        }
-        // Aliases
-        if (isset($this->_secrets['api_key']))
-            $this->_secrets['consumer_key'] = $this->_secrets['api_key'];
-        if (isset($this->_secrets['access_token']))
-            $this->_secrets['oauth_token'] = $this->_secrets['access_token'];
-        if (isset($this->_secrets['access_secret']))
-            $this->_secrets['oauth_secret'] = $this->_secrets['access_secret'];
-        if (isset($this->_secrets['access_token_secret']))
-            $this->_secrets['oauth_secret'] = $this->_secrets['access_token_secret'];
-        // Gauntlet
-        if (empty($this->_secrets['consumer_key']))
-            throw new backwpup_OAuthSimpleException('Missing required consumer_key in OAuthSimple.signatures');
-        if (empty($this->_secrets['shared_secret']))
-            throw new backwpup_OAuthSimpleException('Missing requires shared_secret in OAuthSimple.signatures');
-        if (!empty($this->_secrets['oauth_token']) && empty($this->_secrets['oauth_secret']))
-            throw new backwpup_OAuthSimpleException('Missing oauth_secret for supplied oauth_token in OAuthSimple.signatures');
-        return $this;
-    }
+		if (is_string($parameters))
+		{
+			$parameters = $this->_parseParameterString($parameters);
+		}
+		if (empty($this->_parameters))
+		{
+			$this->_parameters = $parameters;
+		}
+		else if (!empty($parameters))
+		{
+			$this->_parameters = array_merge($this->_parameters,$parameters);
+		}
+		if (empty($this->_parameters['oauth_nonce']))
+		{
+			$this->_getNonce();
+		}
+		if (empty($this->_parameters['oauth_timestamp']))
+		{
+			$this->_getTimeStamp();
+		}
+		if (empty($this->_parameters['oauth_consumer_key']))
+		{
+			$this->_getApiKey();
+		}
+		if (empty($this->_parameters['oauth_token']))
+		{
+			$this->_getAccessToken();
+		}
+		if (empty($this->_parameters['oauth_signature_method']))
+		{
+			$this->setSignatureMethod();
+		}
+		if (empty($this->_parameters['oauth_version']))
+		{
+			$this->_parameters['oauth_version']="1.0";
+		}
 
-    function setTokensAndSecrets($signatures) {
-        return $this->signatures($signatures);
-    }
+		return $this;
+	}
 
-    /** set the signature method (currently only Plaintext or SHA-MAC1)
-    *
-    * @param method {string} Method of signing the transaction (only PLAINTEXT and SHA-MAC1 allowed for now)
-    */
-    function setSignatureMethod ($method="") {
-        if (empty($method))
-            $method = $this->_default_signature_method;
-        $method = strtoupper($method);
-        switch($method)
-        {
-            case 'PLAINTEXT':
-            case 'HMAC-SHA1':
-                $this->_parameters['oauth_signature_method']=$method;
-                break;
-            default:
-                throw new backwpup_OAuthSimpleException ("Unknown signing method $method specified for OAuthSimple.setSignatureMethod");
-        }
-        return $this;
-    }
+	/**
+	 * Convenience method for setParameters
+	 *
+	 * @access public
+	 * @see setParameters
+	 */
+	public function setQueryString ($parameters)
+	{
+		return $this->setParameters($parameters);
+	}
 
-    /** sign the request
-    *
-    * note: all arguments are optional, provided you've set them using the
-    * other helper functions.
-    *
-    * @param args {object} hash of arguments for the call
-    *                   {action, path, parameters (array), method, signatures (array)}
-    *                   all arguments are optional.
-    */
-    function sign($args=array()) {
-        if (!empty($args['action']))
-            $this->setAction($args['action']);
-        if (!empty($args['path']))
-            $this->setPath($args['path']);
-        if (!empty($args['method']))
-            $this->setSignatureMethod($args['method']);
-        if (!empty($args['signatures']))
-            $this->signatures($args['signatures']);
-        if (empty($args['parameters']))
-            $args['parameters']=array();        // squelch the warning.
-        $this->setParameters($args['parameters']);
-        $normParams = $this->_normalizedParameters();
-        $this->_parameters['oauth_signature'] = $this->_generateSignature($normParams);
-        return Array(
-            'parameters' => $this->_parameters,
-            'signature' => $this->_oauthEscape($this->_parameters['oauth_signature']),
-            'signed_url' => $this->_path . '?' . $this->_normalizedParameters(),
-            'header' => $this->getHeaderString(),
-            'sbs'=> $this->sbs
-            );
-    }
+	/**
+	 * Set the target URL (does not include the parameters)
+	 *
+	 * @param path (String) the fully qualified URI (excluding query arguments) (e.g "http://example.org/foo")
+	 * @return OAuthSimple (Object)
+	 */
+	public function setURL ($path)
+	{
+		if (empty($path))
+		{
+			throw new backwpup_OAuthSimpleException('No path specified for OAuthSimple.setURL');
+		}
+		$this->_path=$path;
 
-    /** Return a formatted "header" string
-    *
-    * NOTE: This doesn't set the "Authorization: " prefix, which is required.
-    * I don't set it because various set header functions prefer different
-    * ways to do that.
-    *
-    * @param args {object} see .sign
-    */
-    function getHeaderString ($args=array()) {
-        if (empty($this->_parameters['oauth_signature']))
-            $this->sign($args);
+		return $this;
+	}
 
-        $result = 'OAuth ';
+	/**
+	 * Convenience method for setURL
+	 *
+	 * @param path (String)
+	 * @see setURL
+	 */
+	public function setPath ($path)
+	{
+		return $this->_path=$path;
+	}
 
-        foreach ($this->_parameters as $pName=>$pValue)
-        {
-            if (strpos($pName,'oauth_') !== 0)
-                continue;
-            if (is_array($pValue))
-            {
-                foreach ($pValue as $val)
-                {
-                    $result .= $pName .'="' . $this->_oauthEscape($val) . '", ';
-                }
-            }
-            else
-            {
-                $result .= $pName . '="' . $this->_oauthEscape($pValue) . '", ';
-            }
-        }
-        return preg_replace('/, $/','',$result);
-    }
+	/**
+	 * Set the "action" for the url, (e.g. GET,POST, DELETE, etc.)
+	 *
+	 * @param action (String) HTTP Action word.
+	 * @return OAuthSimple (Object)
+	 */
+	public function setAction ($action)
+	{
+		if (empty($action))
+		{
+			$action = 'GET';
+		}
+		$action = strtoupper($action);
+		if (preg_match('/[^A-Z]/',$action))
+		{
+			throw new backwpup_OAuthSimpleException('Invalid action specified for OAuthSimple.setAction');
+		}
+		$this->_action = $action;
 
-    // Start private methods. Here be Dragons.
-    // No promises are kept that any of these functions will continue to exist
-    // in future versions.
-    function _parseParameterString ($paramString) {
-        $elements = explode('&',$paramString);
-        $result = array();
-        foreach ($elements as $element)
-        {
-            list ($key,$token) = explode('=',$element);
-            if ($token)
-                $token = urldecode($token);
-            if (!empty($result[$key]))
-            {
-                if (!is_array($result[$key]))
-                    $result[$key] = array($result[$key],$token);
-                else
-                    array_push($result[$key],$token);
-            }
-            else
-                $result[$key]=$token;
-        }
-        //error_log('Parse parameters : '.print_r($result,1));
-        return $result;
-    }
+		return $this;
+	}
 
-    function _oauthEscape($string) {
-        if ($string === 0)
-            return 0;
-        if (empty($string))
-            return '';
-        if (is_array($string))
-            throw new backwpup_OAuthSimpleException('Array passed to _oauthEscape');
-        $string = urlencode($string);
-        $string = str_replace('+','%20',$string);
-        $string = str_replace('!','%21',$string);
-        $string = str_replace('*','%2A',$string);
-        $string = str_replace('\'','%27',$string);
-        $string = str_replace('(','%28',$string);
-        $string = str_replace(')','%29',$string);
-        return $string;
-    }
+	/**
+	 * Set the signatures (as well as validate the ones you have)
+	 *
+	 * @param signatures (object) object/hash of the token/signature pairs {api_key:, shared_secret:, oauth_token: oauth_secret:}
+	 * @return OAuthSimple (Object)
+	 */
+	public function signatures ($signatures)
+	{
+		if (!empty($signatures) && !is_array($signatures))
+		{
+			throw new backwpup_OAuthSimpleException('Must pass dictionary array to OAuthSimple.signatures');
+		}
+		if (!empty($signatures))
+		{
+			if (empty($this->_secrets))
+			{
+				$this->_secrets=Array();
+			}
+			$this->_secrets=array_merge($this->_secrets,$signatures);
+		}
+		if (isset($this->_secrets['api_key']))
+		{
+			$this->_secrets['consumer_key'] = $this->_secrets['api_key'];
+		}
+		if (isset($this->_secrets['access_token']))
+		{
+			$this->_secrets['oauth_token'] = $this->_secrets['access_token'];
+		}
+		if (isset($this->_secrets['access_secret']))
+		{
+			$this->_secrets['oauth_secret'] = $this->_secrets['access_secret'];
+		}
+		if (isset($this->_secrets['access_token_secret']))
+		{
+			$this->_secrets['oauth_secret'] = $this->_secrets['access_token_secret'];
+		}
+		if (empty($this->_secrets['consumer_key']))
+		{
+			throw new backwpup_OAuthSimpleException('Missing required consumer_key in OAuthSimple.signatures');
+		}
+		if (empty($this->_secrets['shared_secret']))
+		{
+			throw new backwpup_OAuthSimpleException('Missing requires shared_secret in OAuthSimple.signatures');
+		}
+		if (!empty($this->_secrets['oauth_token']) && empty($this->_secrets['oauth_secret']))
+		{
+			throw new backwpup_OAuthSimpleException('Missing oauth_secret for supplied oauth_token in OAuthSimple.signatures');
+		}
 
-    function _getNonce($length=5) {
-        $result = '';
-        $cLength = strlen($this->_nonce_chars);
-        for ($i=0; $i < $length; $i++)
-        {
-            $rnum = rand(0,$cLength);
-            $result .= substr($this->_nonce_chars,$rnum,1);
-        }
-        $this->_parameters['oauth_nonce'] = $result;
-        return $result;
-    }
+		return $this;
+	}
 
-    function _getApiKey() {
-        if (empty($this->_secrets['consumer_key']))
-        {
-            throw new backwpup_OAuthSimpleException('No consumer_key set for OAuthSimple');
-        }
-        $this->_parameters['oauth_consumer_key']=$this->_secrets['consumer_key'];
-        return $this->_parameters['oauth_consumer_key'];
-    }
+	public function setTokensAndSecrets($signatures)
+	{
+		return $this->signatures($signatures);
+	}
 
-    function _getAccessToken() {
-        if (!isset($this->_secrets['oauth_secret']))
-            return '';
-        if (!isset($this->_secrets['oauth_token']))
-            throw new OAuthSimpleException('No access token (oauth_token) set for OAuthSimple.');
-        $this->_parameters['oauth_token'] = $this->_secrets['oauth_token'];
-        return $this->_parameters['oauth_token'];
-    }
+	/**
+	 * Set the signature method (currently only Plaintext or SHA-MAC1)
+	 *
+	 * @param method (String) Method of signing the transaction (only PLAINTEXT and SHA-MAC1 allowed for now)
+	 * @return OAuthSimple (Object)
+	 */
+	public function setSignatureMethod ($method="")
+	{
+		if (empty($method))
+		{
+			$method = $this->_default_signature_method;
+		}
+		$method = strtoupper($method);
+		switch($method)
+		{
+			case 'PLAINTEXT':
+			case 'HMAC-SHA1':
+				$this->_parameters['oauth_signature_method']=$method;
+				break;
+			default:
+				throw new backwpup_OAuthSimpleException ("Unknown signing method $method specified for OAuthSimple.setSignatureMethod");
+				break;
+		}
 
-    function _getTimeStamp() {
-        return $this->_parameters['oauth_timestamp'] = time();
-    }
+		return $this;
+	}
 
-    function _normalizedParameters() {
-        $elements = array();
-        $ra = 0;
-        ksort($this->_parameters);
-        foreach ( $this->_parameters as $paramName=>$paramValue) {
-            if (preg_match('/\w+_secret/',$paramName))
-                continue;
-            if (is_array($paramValue))
-            {
-                sort($paramValue);
-                foreach($paramValue as $element)
-                    array_push($elements,$this->_oauthEscape($paramName).'='.$this->_oauthEscape($element));
-                continue;
-            }
-            array_push($elements,$this->_oauthEscape($paramName).'='.$this->_oauthEscape($paramValue));
-        }
-        return join('&',$elements);
-    }
+	/** sign the request
+	 *
+	 * note: all arguments are optional, provided you've set them using the
+	 * other helper functions.
+	 *
+	 * @param args (Array) hash of arguments for the call {action, path, parameters (array), method, signatures (array)} all arguments are optional.
+	 * @return (Array) signed values
+	 */
+	public function sign($args=array())
+	{
+		if (!empty($args['action']))
+		{
+			$this->setAction($args['action']);
+		}
+		if (!empty($args['path']))
+		{
+			$this->setPath($args['path']);
+		}
+		if (!empty($args['method']))
+		{
+			$this->setSignatureMethod($args['method']);
+		}
+		if (!empty($args['signatures']))
+		{
+			$this->signatures($args['signatures']);
+		}
+		if (empty($args['parameters']))
+		{
+			$args['parameters']=array();
+		}
+		$this->setParameters($args['parameters']);
+		$normParams = $this->_normalizedParameters();
+		$this->_parameters['oauth_signature'] = $this->_generateSignature($normParams);
 
-    function _generateSignature () {
-        $secretKey = '';
-	if(isset($this->_secrets['shared_secret']))
-	    $secretKey = $this->_oauthEscape($this->_secrets['shared_secret']);
-	$secretKey .= '&';
-	if(isset($this->_secrets['oauth_secret']))
-            $secretKey .= $this->_oauthEscape($this->_secrets['oauth_secret']);
-        switch($this->_parameters['oauth_signature_method'])
-        {
-            case 'PLAINTEXT':
-                return urlencode($secretKey);
+		return Array (
+			'parameters' => $this->_parameters,
+			'signature' => self::_oauthEscape($this->_parameters['oauth_signature']),
+			'signed_url' => $this->_path . '?' . $this->_normalizedParameters(),
+			'header' => $this->getHeaderString(),
+			'sbs'=> $this->sbs
+		);
+	}
 
-            case 'HMAC-SHA1':
-                $this->sbs = $this->_oauthEscape($this->_action).'&'.$this->_oauthEscape($this->_path).'&'.$this->_oauthEscape($this->_normalizedParameters());
-                //error_log('SBS: '.$sigString);
-                return base64_encode(hash_hmac('sha1',$this->sbs,$secretKey,true));
+	/**
+	 * Return a formatted "header" string
+	 *
+	 * NOTE: This doesn't set the "Authorization: " prefix, which is required.
+	 * It's not set because various set header functions prefer different
+	 * ways to do that.
+	 *
+	 * @param args (Array)
+	 * @return $result (String)
+	 */
+	public function getHeaderString ($args=array())
+	{
+		if (empty($this->_parameters['oauth_signature']))
+		{
+			$this->sign($args);
+		}
+		$result = 'OAuth ';
 
-            default:
-                throw new backwpup_OAuthSimpleException('Unknown signature method for OAuthSimple');
-        }
-    }
+		foreach ($this->_parameters as $pName => $pValue)
+		{
+			if (strpos($pName,'oauth_') !== 0)
+			{
+				continue;
+			}
+			if (is_array($pValue))
+			{
+				foreach ($pValue as $val)
+				{
+					$result .= $pName .'="' . self::_oauthEscape($val) . '", ';
+				}
+			}
+			else
+			{
+				$result .= $pName . '="' . self::_oauthEscape($pValue) . '", ';
+			}
+		}
+
+		return preg_replace('/, $/','',$result);
+	}
+
+	private function _parseParameterString ($paramString)
+	{
+		$elements = explode('&',$paramString);
+		$result = array();
+		foreach ($elements as $element)
+		{
+			list ($key,$token) = explode('=',$element);
+			if ($token)
+			{
+				$token = urldecode($token);
+			}
+			if (!empty($result[$key]))
+			{
+				if (!is_array($result[$key]))
+				{
+					$result[$key] = array($result[$key],$token);
+				}
+				else
+				{
+					array_push($result[$key],$token);
+				}
+			}
+			else
+				$result[$key]=$token;
+		}
+		return $result;
+	}
+
+
+	private static function _oauthEscape($string)
+	{
+		if ($string === 0) { return 0; }
+		if ($string == '0') { return '0'; }
+		if (strlen($string) == 0) { return ''; }
+		if (is_array($string)) {
+			throw new backwpup_OAuthSimpleException('Array passed to _oauthEscape');
+		}
+		$string = rawurlencode($string);
+
+		$string = str_replace('+','%20',$string);
+		$string = str_replace('!','%21',$string);
+		$string = str_replace('*','%2A',$string);
+		$string = str_replace('\'','%27',$string);
+		$string = str_replace('(','%28',$string);
+		$string = str_replace(')','%29',$string);
+
+		return $string;
+	}
+
+	private function _getNonce($length=5)
+	{
+		$result = '';
+		$cLength = strlen($this->_nonce_chars);
+		for ($i=0; $i < $length; $i++)
+		{
+			$rnum = rand(0,$cLength);
+			$result .= substr($this->_nonce_chars,$rnum,1);
+		}
+		$this->_parameters['oauth_nonce'] = $result;
+
+		return $result;
+	}
+
+	private function _getApiKey()
+	{
+		if (empty($this->_secrets['consumer_key']))
+		{
+			throw new backwpup_OAuthSimpleException('No consumer_key set for OAuthSimple');
+		}
+		$this->_parameters['oauth_consumer_key']=$this->_secrets['consumer_key'];
+
+		return $this->_parameters['oauth_consumer_key'];
+	}
+
+	private function _getAccessToken()
+	{
+		if (!isset($this->_secrets['oauth_secret']))
+		{
+			return '';
+		}
+		if (!isset($this->_secrets['oauth_token']))
+		{
+			throw new backwpup_OAuthSimpleException('No access token (oauth_token) set for OAuthSimple.');
+		}
+		$this->_parameters['oauth_token'] = $this->_secrets['oauth_token'];
+
+		return $this->_parameters['oauth_token'];
+	}
+
+	private function _getTimeStamp()
+	{
+		return $this->_parameters['oauth_timestamp'] = time();
+	}
+
+	private function _normalizedParameters()
+	{
+		$normalized_keys = array();
+		$return_array = array();
+
+		foreach ( $this->_parameters as $paramName=>$paramValue) {
+			if (!preg_match('/\w+_secret/',$paramName) OR (strpos($paramValue, '@') !== 0 && !file_exists(substr($paramValue, 1))) )
+			{
+				if (is_array($paramValue))
+				{
+					$normalized_keys[self::_oauthEscape($paramName)] = array();
+					foreach($paramValue as $item)
+					{
+						array_push($normalized_keys[self::_oauthEscape($paramName)],  self::_oauthEscape($item));
+					}
+				}
+				else
+				{
+					$normalized_keys[self::_oauthEscape($paramName)] = self::_oauthEscape($paramValue);
+				}
+			}
+		}
+
+		ksort($normalized_keys);
+
+		foreach($normalized_keys as $key=>$val)
+		{
+			if (is_array($val))
+			{
+				sort($val);
+				foreach($val as $element)
+				{
+					array_push($return_array, $key . "=" . $element);
+				}
+			}
+			else
+			{
+				array_push($return_array, $key .'='. $val);
+			}
+
+		}
+
+		return join("&", $return_array);
+	}
+
+
+	private function _generateSignature ()
+	{
+		$secretKey = '';
+		if(isset($this->_secrets['shared_secret']))
+		{
+			$secretKey = self::_oauthEscape($this->_secrets['shared_secret']);
+		}
+
+		$secretKey .= '&';
+		if(isset($this->_secrets['oauth_secret']))
+		{
+			$secretKey .= self::_oauthEscape($this->_secrets['oauth_secret']);
+		}
+		switch($this->_parameters['oauth_signature_method'])
+		{
+			case 'PLAINTEXT':
+				return urlencode($secretKey);
+			case 'HMAC-SHA1':
+				$this->sbs = self::_oauthEscape($this->_action).'&'.self::_oauthEscape($this->_path).'&'.self::_oauthEscape($this->_normalizedParameters());
+
+				return base64_encode(hash_hmac('sha1',$this->sbs,$secretKey,TRUE));
+			default:
+				throw new backwpup_OAuthSimpleException('Unknown signature method for OAuthSimple');
+				break;
+		}
+	}
+}
+
+class backwpup_OAuthSimpleException extends Exception {
+
 }
 
 ?>

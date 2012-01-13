@@ -135,7 +135,7 @@ jQuery(document).ready( function($) {
 			cronmday: cronmday,
 			cronmon: cronmon,
 			cronwday: cronwday,
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#cron-text').replaceWith(response);
@@ -189,7 +189,7 @@ jQuery(document).ready( function($) {
 			cronmday: cronmday,
 			cronmon: cronmon,
 			cronwday: cronwday,
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
 			$('#cron-text').replaceWith(response);
@@ -208,33 +208,37 @@ jQuery(document).ready( function($) {
 	
 
 	function awsgetbucket() {
-		var data = {
+        var data = {
 			action: 'backwpup_get_aws_buckets',
 			backwpupajaxpage: 'backwpupeditjob',
-			awsAccessKey: jQuery('#awsAccessKey').val(),
-			awsSecretKey: jQuery('#awsSecretKey').val(),
-			awsselected: jQuery('#awsBucketselected').val(),
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			awsAccessKey: $('#awsAccessKey').val(),
+			awsSecretKey: $('#awsSecretKey').val(),
+			awsselected: $('#awsBucketselected').val(),
+            awsdisablessl: $('input[name="awsdisablessl"]:checked').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#awsBucket').remove();
+			$('#awsBucketerror').remove();
+            $('#awsBucket').remove();
 			$('#awsBucketselected').after(response);
 		});		
 	}
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
+    $('input[name="awsdisablessl"]:checked').change(function() {awsgetbucket();});
 
 	function gstoragegetbucket() {
 		var data = {
 			action: 'backwpup_get_gstorage_buckets',
 			backwpupajaxpage: 'backwpupeditjob',
-			GStorageAccessKey: jQuery('#GStorageAccessKey').val(),
-			GStorageSecret: jQuery('#GStorageSecret').val(),
-			GStorageselected: jQuery('#GStorageselected').val(),
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			GStorageAccessKey: $('#GStorageAccessKey').val(),
+			GStorageSecret: $('#GStorageSecret').val(),
+			GStorageselected: $('#GStorageselected').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#GStorageBucket').remove();
+            $('#GStorageBucketerror').remove();
+            $('#GStorageBucket').remove();
 			$('#GStorageselected').after(response);
 		});		
 	}
@@ -245,14 +249,15 @@ jQuery(document).ready( function($) {
 		var data = {
 			action: 'backwpup_get_msazure_container',
 			backwpupajaxpage: 'backwpupeditjob',
-			msazureHost: jQuery('#msazureHost').val(),
-			msazureAccName: jQuery('#msazureAccName').val(),
-			msazureKey: jQuery('#msazureKey').val(),
-			msazureselected: jQuery('#msazureContainerselected').val(),
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			msazureHost: $('#msazureHost').val(),
+			msazureAccName: $('#msazureAccName').val(),
+			msazureKey: $('#msazureKey').val(),
+			msazureselected: $('#msazureContainerselected').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#msazureContainer').remove();
+            $('#msazureContainererror').remove();
+            $('#msazureContainer').remove();
 			$('#msazureContainerselected').after(response);
 		});		
 	}
@@ -264,13 +269,14 @@ jQuery(document).ready( function($) {
 		var data = {
 			action: 'backwpup_get_rsc_container',
 			backwpupajaxpage: 'backwpupeditjob',
-			rscUsername: jQuery('#rscUsername').val(),
-			rscAPIKey: jQuery('#rscAPIKey').val(),
-			rscselected: jQuery('#rscContainerselected').val(),
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			rscUsername: $('#rscUsername').val(),
+			rscAPIKey: $('#rscAPIKey').val(),
+			rscselected: $('#rscContainerselected').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#rscContainer').remove();
+            $('#rscContainererror').remove();
+            $('#rscContainer').remove();
 			$('#rscContainerselected').after(response);
 		});		
 	}
@@ -281,13 +287,14 @@ jQuery(document).ready( function($) {
 		var data = {
 			action: 'backwpup_get_sugarsync_root',
 			backwpupajaxpage: 'backwpupeditjob',
-			sugaruser: jQuery('#sugaruser').val(),
-			sugarpass: jQuery('#sugarpass').val(),
-			sugarrootselected: jQuery('#sugarrootselected').val(),
-			_ajax_nonce: jQuery('#backwpupeditjobajaxnonce').val()
+			sugaruser: $('#sugaruser').val(),
+			sugarpass: $('#sugarpass').val(),
+			sugarrootselected: $('#sugarrootselected').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
 		$.post(ajaxurl, data, function(response) {
-			$('#sugarroot').remove();
+            $('#sugarrooterror').remove();
+            $('#sugarroot').remove();
 			$('#sugarrootselected').after(response);
 		});		
 	}

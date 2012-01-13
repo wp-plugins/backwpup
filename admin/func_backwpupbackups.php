@@ -35,21 +35,16 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		} else {
 			$jobdests=$this->get_dest_list();
 			if (empty($jobdests))
-				$jobdests=array(',');
+				$jobdests=array('_');
 			$jobdest=$jobdests[0];
 			$_GET['jobdest']=$jobdests[0];
 		}
 		
-		list($this->jobid,$this->dest)=explode(',',$jobdest);
-		
-		$backups=backwpup_get_option('temp','backups');
-		if (!empty($backups) or $this->dest!=$backups[0]['DEST'] or $this->jobid!=$backups[0]['JOBID']) {
-			$backups=$this->get_backup_files($this->jobid,$this->dest);
-			backwpup_update_option('temp','backups',$backups);
-		}
-		
+		list($this->jobid,$this->dest)=explode('_',$jobdest);
+
+		$this->items=backwpup_get_option('temp',$jobdest,false);
 		//if no itmes brake
-		if (empty($backups)) {
+		if (!$this->items) {
 			$this->items='';
 			return;
 		}
@@ -60,61 +55,57 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		$tmp = Array();
 		if ($orderby=='time') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["time"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);
 			}
 		}		
 		elseif ($orderby=='file') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filename"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);
 			}
 		}
 		elseif ($orderby=='folder') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["folder"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);
 			}
 		}
 		elseif ($orderby=='size') {
 			if ($order=='asc') {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_ASC, $backups);			
+				array_multisort($tmp, SORT_ASC, $this->items);
 			} else {
-				foreach($backups as &$ma)
+				foreach($this->items as &$ma)
 					$tmp[] = &$ma["filesize"];
-				array_multisort($tmp, SORT_DESC, $backups);	
+				array_multisort($tmp, SORT_DESC, $this->items);
 			}
 		}	
 
 		//by page
 		$start=intval( ( $this->get_pagenum() - 1 ) * $per_page );
 		$end=$start+$per_page;
-		if ($end>count($backups))
-			$end=count($backups);
-
-		$this->items=array();
-		for ($i=$start;$i<$end;$i++)
-			$this->items[]=$backups[$i];
+		if ($end>count($this->items))
+			$end=count($this->items);
 	
 		$this->set_pagination_args( array(
-			'total_items' => count($backups),
+			'total_items' => count($this->items),
 			'per_page' => $per_page,
 			'jobdest' => $jobdest,
 			'orderby' => $orderby,
@@ -124,7 +115,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	}
 	
 	function no_items() {
-		_e( 'No Files found.','backwpup');
+		_e( 'No Files found. (List will be generated on next backup)','backwpup');
 	}
 	
 	function get_bulk_actions() {
@@ -139,9 +130,8 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		echo '<div class="alignleft actions">';
 		echo "<select name=\"jobdest\" id=\"jobdest\" class=\"postform\">\n";
 		foreach ($this->get_dest_list() as $jobdest) {
-			list($jobid,$dest)=explode(',',$jobdest);
-			$jobname=backwpup_get_option('job_'.$this->jobid,'name');
-			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.','.$this->dest,$jobdest).">".$dest.": ".esc_html($jobname)."</option>\n";
+			list($jobid,$dest)=explode('_',$jobdest);
+			echo "\t<option value=\"".$jobdest."\" ".selected($this->jobid.'_'.$this->dest,$jobdest).">".$dest.": ".esc_html(backwpup_get_option('job_'.$jobid,'name'))."</option>\n";
 		}
 		echo "</select>\n";
 		submit_button( __('Change Destination','backwpup'), 'secondary', '', false, array( 'id' => 'post-query-submit' ) );
@@ -156,22 +146,22 @@ class BackWPup_Backups_Table extends WP_List_Table {
 			foreach ($jobids as $jobid) {
 				$main='job_'.$jobid;
 				if (backwpup_get_option($main,'backupdir') and is_dir(backwpup_get_option($main,'backupdir')))
-					$jobdest[]=$jobid.',FOLDER';
+					$jobdest[]=$jobid.'_FOLDER';
 				foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
 					if ($dest=='S3' and backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='GSTORAGE' and backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='DROPBOX' and backwpup_get_option($main,'dropetoken') and backwpup_get_option($main,'dropesecret'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='RSC' and backwpup_get_option($main,'rscUsername') and backwpup_get_option($main,'rscAPIKey') and backwpup_get_option($main,'rscContainer'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='FTP' and backwpup_get_option($main,'ftphost') and function_exists('ftp_connect') and backwpup_get_option($main,'ftpuser') and backwpup_get_option($main,'ftppass'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='MSAZURE' and backwpup_get_option($main,'msazureHost') and backwpup_get_option($main,'msazureAccName') and backwpup_get_option($main,'msazureKey') and backwpup_get_option($main,'msazureContainer'))
-						$jobdest[]=$jobid.','.$dest;
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='SUGARSYNC' and backwpup_get_option($main,'sugarpass') and backwpup_get_option($main,'sugarpass'))
-						$jobdest[]=$jobid.','.$dest;					
+						$jobdest[]=$jobid.'_'.$dest;
 				}
 
 			}
@@ -180,60 +170,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 	}
 
 	//get backup files and infos
-	function get_backup_files($jobid,$dest) {
-		global $backwpup_message;
-		if (empty($jobid) or (!in_array(strtoupper($dest),explode(',',strtoupper(BACKWPUP_DESTS))) and $dest!='FOLDER'))
-			return false;
-		$main='job_'.$jobid;
-		$filecounter=0;
-		$files=array();
-		//Get files/fileinfo in backup folder
-		if ($dest=='FOLDER' and backwpup_get_option($main,'backupdir') and is_dir(backwpup_get_option($main,'backupdir'))) {
-			if ( $dir = opendir( backwpup_get_option($main,'backupdir') ) ) {
-				while (($file = readdir( $dir ) ) !== false ) {
-					if (substr($file,0,1)=='.')
-						continue;
-					if (is_file(backwpup_get_option($main,'backupdir').$file)) {
-						$files[$filecounter]['JOBID']=$jobid;
-						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']=backwpup_get_option($main,'backupdir');
-						$files[$filecounter]['file']=backwpup_get_option($main,'backupdir').$file;
-						$files[$filecounter]['filename']=$file;
-						$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.backwpup_get_option($main,'backupdir').$file;
-						$files[$filecounter]['filesize']=filesize(backwpup_get_option($main,'backupdir').$file);
-						$files[$filecounter]['time']=filemtime(backwpup_get_option($main,'backupdir').$file);
-						$filecounter++;
-					}
-				}
-				closedir( $dir );
-			}
-		}
-		//Get files/fileinfo from Dropbox
-		if ($dest=='DROPBOX' and backwpup_get_option($main,'dropetoken') and backwpup_get_option($main,'dropesecret')) {
-			require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
-			try {
-				$dropbox = new backwpup_Dropbox(backwpup_get_option($main,'droperoot'));
-				$dropbox->setOAuthTokens(backwpup_get_option($main,'dropetoken'),backwpup_get_option($main,'dropesecret'));
-				$contents = $dropbox->metadatabackwpup_get_option($main,'dropedir');
-				if (is_array($contents)) {
-					foreach ($contents['contents'] as $object) {
-						if ($object['is_dir']!=true) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="https://api-content.dropbox.com/1/files/".backwpup_get_option($main,'droperoot')."/".dirname($object['path'])."/";
-							$files[$filecounter]['file']=$object['path'];
-							$files[$filecounter]['filename']=basename($object['path']);
-							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloaddropbox&file='.$object['path'].'&jobid='.$jobid;
-							$files[$filecounter]['filesize']=$object['bytes'];
-							$files[$filecounter]['time']=strtotime($object['modified']);
-							$filecounter++;
-						}
-					}
-				}
-			} catch (Exception $e) {
-				$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
-			}
-		}
+	function get_backup_files() {
 		//Get files/fileinfo from Sugarsync
 		if ($dest=='SUGARSYNC' and backwpup_get_option($main,'sugarpass') and backwpup_get_option($main,'sugarpass')) {
 			if (!class_exists('SugarSync'))
@@ -247,8 +184,6 @@ class BackWPup_Backups_Table extends WP_List_Table {
 					$getfiles=$sugarsync->getcontents('file');
 					if (is_object($getfiles)) {
 						foreach ($getfiles->file as $getfile) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
 							$files[$filecounter]['folder']='https://'.$user->nickname.'.sugarsync.com/'.$dir;
 							$files[$filecounter]['file']=(string)$getfile->ref;
 							$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
@@ -261,156 +196,6 @@ class BackWPup_Backups_Table extends WP_List_Table {
 				} catch (Exception $e) {
 					$backwpup_message.='SUGARSYNC: '.$e->getMessage().'<br />';
 				}
-			}
-		}
-		//Get files/fileinfo from S3
-		if ($dest=='S3' and backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket'))	{
-			if (!class_exists('AmazonS3'))
-				require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-			if (class_exists('AmazonS3')) {
-				try {
-					CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-					$s3 = new AmazonS3();
-					if (($contents = $s3->list_objects(backwpup_get_option($main,'awsBucket'),array('prefix'=>backwpup_get_option($main,'awsdir')))) !== false) {
-						foreach ($contents->body->Contents as $object) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="https://".backwpup_get_option($main,'awsBucket').".s3.amazonaws.com/".dirname((string)$object->Key).'/';
-							$files[$filecounter]['file']=(string)$object->Key;
-							$files[$filecounter]['filename']=basename($object->Key);
-							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloads3&file='.$object->Key.'&jobid='.$jobid;
-							$files[$filecounter]['filesize']=(string)$object->Size;
-							$files[$filecounter]['time']=strtotime($object->LastModified);
-							$filecounter++;
-						}
-					}
-				} catch (Exception $e) {
-					$backwpup_message.='Amazon S3: '.$e->getMessage().'<br />';
-				}
-			}
-		}
-		//Get files/fileinfo from Google Storage
-		if ($dest=='GSTORAGE' and backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket'))	{
-			if (!class_exists('AmazonS3'))
-				require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-			if (class_exists('AmazonS3')) {
-				try {
-					CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-					$gstorage = new AmazonS3();
-					$gstorage->set_hostname('commondatastorage.googleapis.com');
-					$gstorage->allow_hostname_override(false);
-					if (($contents = $gstorage->list_objects(backwpup_get_option($main,'GStorageBucket'),array('prefix'=>backwpup_get_option($main,'GStoragedir')))) !== false) {
-						foreach ($contents->body->Contents as $object) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="https://sandbox.google.com/storage/".backwpup_get_option($main,'GStorageBucket')."/".dirname((string)$object->Key).'/';
-							$files[$filecounter]['file']=(string)$object->Key;
-							$files[$filecounter]['filename']=basename($object->Key);
-							$files[$filecounter]['downloadurl']="https://sandbox.google.com/storage/".backwpup_get_option($main,'GStorageBucket')."/".(string)$object->Key;
-							$files[$filecounter]['filesize']=(string)$object->Size;
-							$files[$filecounter]['time']=strtotime($object->LastModified);
-							$filecounter++;
-						}
-					}
-				} catch (Exception $e) {
-					$backwpup_message.=sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()).'<br />';
-				}
-			}
-		}
-		//Get files/fileinfo from Microsoft Azure
-		if ($dest=='MSAZURE' and backwpup_get_option($main,'msazureHost') and backwpup_get_option($main,'msazureAccName') and backwpup_get_option($main,'msazureKey') and backwpup_get_option($main,'msazureContainer')) {
-			if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
-				require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
-			if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
-				try {
-					$storageClient = new Microsoft_WindowsAzure_Storage_Blob(backwpup_get_option($main,'msazureHost'),backwpup_get_option($main,'msazureAccName'),backwpup_get_option($main,'msazureKey'));
-					$blobs = $storageClient->listBlobs(backwpup_get_option($main,'msazureContainer'),backwpup_get_option($main,'msazuredir'));
-					if (is_array($blobs)) {
-						foreach ($blobs as $blob) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="https://".backwpup_get_option($main,'msazureAccName').'.'.backwpup_get_option($main,'msazureHost')."/".backwpup_get_option($main,'msazureContainer')."/".dirname($blob->Name)."/";
-							$files[$filecounter]['file']=$blob->Name;
-							$files[$filecounter]['filename']=basename($blob->Name);
-							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadmsazure&file='.$blob->Name.'&jobid='.$jobid;
-							$files[$filecounter]['filesize']=$blob->size;
-							$files[$filecounter]['time']=strtotime($blob->lastmodified);
-							$filecounter++;
-						}
-					}
-				} catch (Exception $e) {
-					$backwpup_message.='MSAZURE: '.$e->getMessage().'<br />';
-				}
-			}
-		}
-		//Get files/fileinfo from RSC
-		if ($dest=='RSC' and backwpup_get_option($main,'rscUsername') and backwpup_get_option($main,'rscAPIKey') and backwpup_get_option($main,'rscContainer'))	{
-			if (!class_exists('CF_Authentication'))
-				require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
-			if (class_exists('CF_Authentication') ) {
-				try {
-					$auth = new CF_Authentication(backwpup_get_option($main,'rscUsername'), backwpup_get_option($main,'rscAPIKey'));
-					$auth->ssl_use_cabundle();
-					if ($auth->authenticate()) {
-						$conn = new CF_Connection($auth);
-						$conn->ssl_use_cabundle();
-						$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
-						$contents = $backwpupcontainer->get_objects(0,NULL,NULL,backwpup_get_option($main,'rscdir'));
-						foreach ($contents as $object) {
-							$files[$filecounter]['JOBID']=$jobid;
-							$files[$filecounter]['DEST']=$dest;
-							$files[$filecounter]['folder']="RSC://".backwpup_get_option($main,'rscContainer')."/".dirname($object->name)."/";
-							$files[$filecounter]['file']=$object->name;
-							$files[$filecounter]['filename']=basename($object->name);
-							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadrsc&file='.$object->name.'&jobid='.$jobid;
-							$files[$filecounter]['filesize']=$object->content_length;
-							$files[$filecounter]['time']=strtotime($object->last_modified);
-							$filecounter++;
-						}
-					}
-				} catch (Exception $e) {
-					$backwpup_message.='RSC: '.$e->getMessage().'<br />';
-				}
-			}
-		}
-		//Get files/fileinfo from FTP
-		if ($dest=='FTP' and backwpup_get_option($main,'ftphost') and function_exists('ftp_connect') and !backwpup_get_option($main,'ftpuser') and backwpup_get_option($main,'ftppass')) {
-			if (function_exists('ftp_ssl_connect') and backwpup_get_option($main,'ftpssl')) { //make SSL FTP connection
-				$ftp_conn_id = ftp_ssl_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
-			} elseif (!backwpup_get_option($main,'ftpssl')) { //make normal FTP conection if SSL not work
-				$ftp_conn_id = ftp_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
-			}
-			$loginok=false;
-			if ($ftp_conn_id) {
-				//FTP Login
-				if (@ftp_login($ftp_conn_id,backwpup_get_option($main,'ftpuser'), backwpup_decrypt(backwpup_get_option($main,'ftppass')))) {
-					$loginok=true;
-				} else { //if PHP ftp login don't work use raw login
-					ftp_raw($ftp_conn_id,'USER '.backwpup_get_option($main,'ftpuser'));
-					$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_decrypt(backwpup_get_option($main,'ftppass')));
-					if (substr(trim($return[0]),0,3)<=400)
-						$loginok=true;
-				}
-			}
-			if ($loginok) {
-				ftp_pasv($ftp_conn_id,backwpup_get_option($main,'ftppasv'));
-				if ($ftpfilelist=ftp_nlist($ftp_conn_id,backwpup_get_option($main,'ftpdir'))) {
-					foreach($ftpfilelist as $ftpfiles) {
-						if (substr(basename($ftpfiles),0,1)=='.')
-							continue;
-						$files[$filecounter]['JOBID']=$jobid;
-						$files[$filecounter]['DEST']=$dest;
-						$files[$filecounter]['folder']="ftp://".backwpup_get_option($main,'ftphost').':'.backwpup_get_option($main,'ftphostport').dirname($ftpfiles)."/";
-						$files[$filecounter]['file']=$ftpfiles;
-						$files[$filecounter]['filename']=basename($ftpfiles);
-						$files[$filecounter]['downloadurl']="ftp://".rawurlencode(backwpup_get_option($main,'ftpuser')).":".rawurlencode(backwpup_decrypt(backwpup_get_option($main,'ftppass')))."@".backwpup_get_option($main,'ftphost').':'.backwpup_get_option($main,'ftphostport').rawurlencode($ftpfiles);
-						$files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
-						$files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
-						$filecounter++;
-					}
-				}
-			} else {
-				$backwpup_message.='FTP: '.__('Login failure!','backwpup').'<br />';
 			}
 		}
 		return $files;

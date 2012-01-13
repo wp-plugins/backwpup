@@ -177,11 +177,7 @@ class SugarSync {
 				curl_setopt($curl,CURLOPT_PUT,true);
 				curl_setopt($curl,CURLOPT_INFILE,$datafilefd);
 				curl_setopt($curl,CURLOPT_INFILESIZE,filesize($data));
-				if ($this->ProgressFunction and defined('CURLOPT_PROGRESSFUNCTION')) {
-					curl_setopt($curl, CURLOPT_NOPROGRESS, false);
-					curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-					curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
-				}
+				curl_setopt($curl,CURLOPT_READFUNCTION, array(&$this, '_read_cb'));
 			}  else {
 				throw new SugarSyncException('Is not a readable file:'. $data);
 			}
@@ -220,6 +216,15 @@ class SugarSync {
 			else
 				throw new SugarSyncException('Http Error: '. $curlgetinfo['http_code']);
 		}
+	}
+
+	private function _read_cb($curl, $fd, $length) {
+		$data = fread($fd, $length);
+		$len = strlen($data);
+		if (isset($this->ProgressFunction)) {
+			call_user_func($this->ProgressFunction, $len);
+		}
+		return $data;
 	}
 
 	public function chdir($folder,$root='') {

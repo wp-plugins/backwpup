@@ -971,8 +971,8 @@ class CF_Http
 
         $conn_type = "COPY";
 
-        $url_path = $this->_make_path("STORAGE", $container_name_source, $src_obj_name);
-        $destination = $container_name_target."/".$dest_obj_name;
+        $url_path = $this->_make_path("STORAGE", $container_name_source, rawurlencode($src_obj_name));
+        $destination = rawurlencode($container_name_target."/".$dest_obj_name);
 
         $hdrs = self::_process_headers($metadata, $headers);
         $hdrs[DESTINATION] = $destination;
@@ -1108,7 +1108,7 @@ class CF_Http
             $this->_cdn_ssl_uri = $value;
             break;
         case strtolower(CDN_STREAMING_URI):
-            $this->_cdn_ssl_uri = $value;
+            $this->_cdn_streaming_uri = $value;
             break;
         case strtolower(CDN_TTL):
             $this->_cdn_ttl = $value;
@@ -1283,14 +1283,7 @@ class CF_Http
         if ($conn_type == "PUT_OBJ") {
             curl_setopt($ch, CURLOPT_PUT, 1);
             curl_setopt($ch, CURLOPT_READFUNCTION, array(&$this, '_read_cb'));
-	        /* start Backwpup */
-			if (function_exists('curl_progresscallback') and defined('CURLOPT_PROGRESSFUNCTION')) {
-				curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-				curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
-				curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
-			}
-			/* end Backwpup */
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         }
         if ($conn_type == "HEAD") {
             curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "HEAD");
@@ -1327,6 +1320,7 @@ class CF_Http
         $this->_obj_manifest = NULL;
         $this->_obj_headers = NULL;
         $this->_obj_write_string = "";
+        $this->_cdn_streaming_uri = NULL;
         $this->_cdn_enabled = NULL;
         $this->_cdn_ssl_uri = NULL;
         $this->_cdn_uri = NULL;

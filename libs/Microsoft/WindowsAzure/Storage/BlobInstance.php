@@ -30,7 +30,7 @@
  * @subpackage Storage
  * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
- * @version    $Id: BlobInstance.php 61044 2011-04-19 10:21:34Z unknown $
+ * @version    $Id: BlobInstance.php 61042 2011-04-19 10:03:39Z unknown $
  */
 
 /**

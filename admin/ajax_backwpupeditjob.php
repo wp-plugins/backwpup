@@ -77,6 +77,7 @@ function backwpup_get_cron_text($args='') {
 
 //ajax/normal get buckests select box
 function backwpup_get_aws_buckets($args='') {
+	$error='';
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -87,54 +88,41 @@ function backwpup_get_aws_buckets($args='') {
 		$awsAccessKey=$_POST['awsAccessKey'];
 		$awsSecretKey=$_POST['awsSecretKey'];
 		$awsselected=$_POST['awsselected'];
+		$awsdisablessl=$_POST['awsdisablessl'];
 		$ajax=true;
 	}
-	if (!class_exists('CFRuntime'))
-		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-	if (empty($awsAccessKey)) {
-		echo '<span id="awsBucket" style="color:red;">'.__('Missing access key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	echo '<span id="awsBucketerror" style="color:red;">';
+	if (!empty($awsAccessKey) and !empty($awsSecretKey)) {
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
+		try {
+			CFCredentials::set(array('backwpup' => array('key'=>$awsAccessKey,'secret'=>$awsSecretKey,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$s3 = new AmazonS3();
+			if (!empty($awsdisablessl))
+				$s3->disable_ssl(true);
+			$buckets=$s3->list_buckets();
+		} catch (Exception $e) {
+			$error= $e->getMessage();
+		}
 	}
-	if (empty($awsSecretKey)) {
-		echo '<span id="awsBucket" style="color:red;">'.__('Missing secret access key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if (empty($awsAccessKey))
+		_e('Missing access key!','backwpup');
+	elseif (empty($awsSecretKey))
+		_e('Missing secret access key!','backwpup');
+	elseif (!empty($error))
+		echo $error;
+	elseif ($buckets->status<200 or $buckets->status>=300)
+		echo $buckets->status.': '.$buckets->body->Message;
+	elseif (count($buckets->body->Buckets->Bucket)<1)
+		_e('No bucket fount!','backwpup');
+	echo '<br /></span>';
+	if (is_object($buckets->body->Buckets->Bucket)) {
+		echo '<select name="awsBucket" id="awsBucket">';
+		foreach ($buckets->body->Buckets->Bucket as $bucket) {
+			echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
+		}
+		echo '</select>';
 	}
-	try {
-		CFCredentials::set(array('backwpup' => array('key'=>$awsAccessKey,'secret'=>$awsSecretKey,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-		$s3 = new AmazonS3();
-		$buckets=$s3->list_buckets();
-	} catch (Exception $e) {
-		echo '<span id="awsBucket" style="color:red;">'.$e->getMessage().'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	if ($buckets->status<200 or $buckets->status>=300) {
-		echo '<span id="awsBucket" style="color:red;">'.$buckets->status.': '.$buckets->body->Message.'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	if (count($buckets->body->Buckets->Bucket)<1) {
-		echo '<span id="awsBucket" style="color:red;">'.__('No bucket fount!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	} 	
-	echo '<select name="awsBucket" id="awsBucket">';
-	foreach ($buckets->body->Buckets->Bucket as $bucket) {
-		echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
-	}
-	echo '</select>';
 	if ($ajax)
 		die();
 	else
@@ -143,6 +131,7 @@ function backwpup_get_aws_buckets($args='') {
 
 //ajax/normal get buckests select box
 function backwpup_get_gstorage_buckets($args='') {
+	$error='';
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -155,54 +144,38 @@ function backwpup_get_gstorage_buckets($args='') {
 		$GStorageselected=$_POST['GStorageselected'];
 		$ajax=true;
 	}
-	if (!class_exists('CFRuntime'))
-		require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-	if (empty($GStorageAccessKey)) {
-		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing access key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	echo '<span id="GStorageBucketerror" style="color:red;">';
+	if (!empty($GStorageAccessKey) and !empty($GStorageSecret)) {
+		if (!class_exists('CFRuntime'))
+			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
+		try {
+			CFCredentials::set(array('backwpup' => array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
+			$gstorage = new AmazonS3();
+			$gstorage->set_hostname('commondatastorage.googleapis.com');
+			$gstorage->allow_hostname_override(false);
+			$buckets=$gstorage->list_buckets();
+		} catch (Exception $e) {
+			$error = $e->getMessage();
+		}
 	}
-	if (empty($GStorageSecret)) {
-		echo '<span id="GStorageBucket" style="color:red;">'.__('Missing secret access key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if (empty($GStorageAccessKey))
+		_e('Missing access key!','backwpup');
+	elseif (empty($GStorageSecret))
+		_e('Missing secret access key!','backwpup');
+	elseif (!empty($error))
+		echo $error;
+	elseif ($buckets->status<200 or $buckets->status>=300)
+		echo $buckets->status.': '.$buckets->body->Message;
+	elseif (count($buckets->body->Buckets->Bucket)<1)
+		_e('No bucket fount!','backwpup');
+	echo '<br /></span>';
+	if (is_object($buckets->body->Buckets->Bucket)) {
+		echo '<select name="GStorageBucket" id="GStorageBucket">';
+		foreach ($buckets->body->Buckets->Bucket as $bucket) {
+			echo "<option ".selected(strtolower($GStorageselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
+		}
+		echo '</select>';
 	}
-	try {
-		CFCredentials::set(array('backwpup' => array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-		$gstorage = new AmazonS3();
-		$gstorage->set_hostname('commondatastorage.googleapis.com');
-		$gstorage->allow_hostname_override(false);
-		$buckets=$gstorage->list_buckets();
-	} catch (Exception $e) {
-		echo '<span id="GStorageBucket" style="color:red;">'.$e->getMessage().'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	if ($buckets->status<200 or $buckets->status>=300) {
-		echo '<span id="GStorageBucket" style="color:red;">'.$buckets->status.': '.$buckets->body->Message.'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	} 
-	if (count($buckets->body->Buckets->Bucket)<1) {
-		echo '<span id="GStorageBucket" style="color:red;">'.__('No bucket fount!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	} 	
-	echo '<select name="GStorageBucket" id="GStorageBucket">';
-	foreach ($buckets->body->Buckets->Bucket as $bucket) {
-		echo "<option ".selected(strtolower($GStorageselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";
-	}
-	echo '</select>';
 	if ($ajax)
 		die();
 	else
@@ -211,6 +184,7 @@ function backwpup_get_gstorage_buckets($args='') {
 
 //ajax/normal get Container for RSC select box
 function backwpup_get_rsc_container($args='') {
+	$error='';
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -223,57 +197,48 @@ function backwpup_get_rsc_container($args='') {
 		$rscselected=$_POST['rscselected'];
 		$ajax=true;
 	}
-	if (!class_exists('CF_Authentication'))
-		require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
-
-	if (empty($rscUsername)) {
-		echo '<span id="rscContainer" style="color:red;">'.__('Missing Username!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	echo '<span id="rscContainererror" style="color:red;">';
+	if (!empty($rscUsername) and !empty($rscAPIKey) ) {
+		//if (!class_exists('CF_Authentication'))
+			require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
+		try {
+			$auth = new CF_Authentication($rscUsername, $rscAPIKey);
+			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+				$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
+			$auth->authenticate();
+			$conn = new CF_Connection($auth);
+			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+				$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
+			$containers=$conn->get_containers();
+		} catch (Exception $e) {
+			$error=$e->getMessage();
+		}
 	}
-	if (empty($rscAPIKey)) {
-		echo '<span id="rscContainer" style="color:red;">'.__('Missing API Key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if (empty($rscUsername))
+		_e('Missing Username!','backwpup');
+	elseif (empty($rscAPIKey))
+		_e('Missing API Key!','backwpup');
+	elseif (!empty($error))
+		echo $error;
+	elseif (!is_array($containers))
+		_e("No Container's found!",'backwpup');
+   	echo '<br /></span>';
+	if (!empty($containers)) {
+		echo '<select name="rscContainer" id="rscContainer">';
+		foreach ($containers as $container) {
+			echo "<option ".selected(strtolower($rscselected),strtolower($container->name),false).">".$container->name."</option>";
+		}
+		echo '</select>';
 	}
-
-	try {
-		$auth = new CF_Authentication($rscUsername, $rscAPIKey);
-		$auth->authenticate();
-		$conn = new CF_Connection($auth);
-		$containers=$conn->get_containers();
-	} catch (Exception $e) {
-		echo '<span id="rscContainer" style="color:red;">'.$e->getMessage().'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-
-	if (!is_array($containers)) {
-		echo '<span id="rscContainer" style="color:red;">'.__('No Containerss found!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	echo '<select name="rscContainer" id="rscContainer">';
-	foreach ($containers as $container) {
-		echo "<option ".selected(strtolower($rscselected),strtolower($container->name),false).">".$container->name."</option>";
-	}
-	echo '</select>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if ($ajax)
+		die();
+	else
+		return;
 }
 
-//ajax/normal get buckests select box
+//ajax/normal get container select box
 function backwpup_get_msazure_container($args='') {
+	$error='';
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -287,51 +252,35 @@ function backwpup_get_msazure_container($args='') {
 		$msazureselected=$_POST['msazureselected'];
 		$ajax=true;
 	}
-	if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) 
-		require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
-	if (empty($msazureHost)) {
-		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Hostname!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	echo '<span id="msazureContainererror" style="color:red;">';
+	if (!empty($msazureHost) and !empty($msazureAccName) and !empty($msazureKey)) {
+		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
+			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
+		try {
+			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($msazureHost,$msazureAccName,$msazureKey);
+			$Containers=$storageClient->listContainers();
+		} catch (Exception $e) {
+			$error = $e->getMessage();
+		}
 	}
-	if (empty($msazureAccName)) {
-		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Account Name!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if (empty($msazureHost))
+		_e('Missing Hostname!','backwpup');
+	elseif (empty($msazureAccName))
+		_e('Missing Account Name!','backwpup');
+	elseif (empty($msazureKey))
+		_e('Missing Access Key!','backwpup');
+	elseif (!empty($error))
+		echo $error;
+	elseif (empty($Containers))
+		_e('No Container found!','backwpup');
+	echo '<br /></span>';
+	if (!empty($Containers)) {
+		echo '<select name="msazureContainer" id="msazureContainer">';
+		foreach ($Containers as $Container) {
+			echo "<option ".selected(strtolower($msazureselected),strtolower($Container->Name),false).">".$Container->Name."</option>";
+		}
+		echo '</select>';
 	}
-	if (empty($msazureKey)) {
-		echo '<span id="msazureContainer" style="color:red;">'.__('Missing Access Key!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	try {
-		$storageClient = new Microsoft_WindowsAzure_Storage_Blob($msazureHost,$msazureAccName,$msazureKey);
-		$Containers=$storageClient->listContainers();
-	} catch (Exception $e) {
-		echo '<span id="msazureContainer" style="color:red;">'.$e->getMessage().'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	if (empty($Containers)) {
-		echo '<span id="msazureContainer" style="color:red;">'.__('No Container found!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	echo '<select name="msazureContainer" id="msazureContainer">';
-	foreach ($Containers as $Container) {
-		echo "<option ".selected(strtolower($msazureselected),strtolower($Container->Name),false).">".$Container->Name."</option>";
-	}
-	echo '</select>';
 	if ($ajax)
 		die();
 	else
@@ -340,6 +289,7 @@ function backwpup_get_msazure_container($args='') {
 
 //ajax/normal get SugarSync roots select box
 function backwpup_get_sugarsync_root($args='') {
+	$error='';
 	if (is_array($args)) {
 		extract($args);
 		$ajax=false;
@@ -352,52 +302,39 @@ function backwpup_get_sugarsync_root($args='') {
 		$sugarrootselected=$_POST['sugarrootselected'];
 		$ajax=true;
 	}
-	if (!class_exists('SugarSync'))
-		require_once(dirname(__FILE__).'/../libs/sugarsync.php');
+	echo '<span id="sugarrooterror" style="color:red;">';
+	if (!empty($sugarpass) and !empty($sugaruser)) {
+		if (!class_exists('SugarSync'))
+			require_once(dirname(__FILE__).'/../libs/sugarsync.php');
+		try {
+			$sugarsync = new SugarSync($sugaruser,$sugarpass,backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'),backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
+			$user=$sugarsync->user();
+			$syncfolders=$sugarsync->get($user->syncfolders);
+		} catch (Exception $e) {
+			$error=$e->getMessage();
+		}
 
-	if (empty($sugaruser)) {
-		echo '<span id="sugarroot" style="color:red;">'.__('Missing Username!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
 	}
-	if (empty($sugarpass)) {
-		echo '<span id="sugarroot" style="color:red;">'.__('Missing Password!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if (empty($sugaruser))
+		_e('Missing Username!','backwpup');
+	elseif (empty($sugarpass))
+		_e('Missing Password!','backwpup');
+	elseif (!empty($error))
+		echo $error;
+	elseif (!is_object($syncfolders))
+		_e('No Syncfolders found!','backwpup');
+	echo '<br /></span>';
+	if (is_object($syncfolders)) {
+		echo '<select name="sugarroot" id="sugarroot">';
+		foreach ($syncfolders->collection as $roots) {
+			echo "<option ".selected(strtolower($sugarrootselected),strtolower($roots->ref),false)." value=\"".$roots->ref."\">".$roots->displayName."</option>";
+		}
+		echo '</select>';
 	}
-
-	try {
-		$sugarsync = new SugarSync($sugaruser,$sugarpass,backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'),backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
-		$user=$sugarsync->user();
-		$syncfolders=$sugarsync->get($user->syncfolders);
-	} catch (Exception $e) {
-		echo '<span id="sugarroot" style="color:red;">'.$e->getMessage().'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-
-	if (!is_object($syncfolders)) {
-		echo '<span id="sugarroot" style="color:red;">'.__('No Syncfolders found!','backwpup').'</span>';
-		if ($ajax)
-			die();
-		else
-			return;
-	}
-	echo '<select name="sugarroot" id="sugarroot">';
-	foreach ($syncfolders->collection as $roots) {
-		echo "<option ".selected(strtolower($sugarrootselected),strtolower($roots->ref),false)." value=\"".$roots->ref."\">".$roots->displayName."</option>";
-	}
-	echo '</select>';
-		if ($ajax)
-			die();
-		else
-			return;
+	if ($ajax)
+		die();
+	else
+		return;
 }
 //add ajax function
 add_action('wp_ajax_backwpup_get_cron_text', 'backwpup_get_cron_text');

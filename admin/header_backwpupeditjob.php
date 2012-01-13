@@ -230,6 +230,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 	backwpup_update_option($main,'awsAccessKey',isset($_POST['awsAccessKey']) ? $_POST['awsAccessKey'] : '');
 	backwpup_update_option($main,'awsSecretKey',isset($_POST['awsSecretKey']) ? $_POST['awsSecretKey'] : '');
 	backwpup_update_option($main,'awsrrs', (isset($_POST['awsrrs']) && $_POST['awsrrs']==1) ? true : false);
+	backwpup_update_option($main,'awsdisablessl', (isset($_POST['awsdisablessl']) && $_POST['awsdisablessl']==1) ? true : false);
 	backwpup_update_option($main,'awsssencrypt', (isset($_POST['awsssencrypt']) && $_POST['awsssencrypt']=='AES256') ? 'AES256' : '');
 	backwpup_update_option($main,'awsBucket',isset($_POST['awsBucket']) ? $_POST['awsBucket'] : '');
 	$_POST['awsdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim(stripslashes($_POST['awsdir'])))));
@@ -289,6 +290,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		try {
 			CFCredentials::set(array('backwpup' => array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
+			$s3->disable_ssl(backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'));
 			$req=$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
 			if (empty($req->body->Message)) {
 				$backwpup_message.=sprintf(__('S3 bucket "%s" created.','backwpup'),$_POST['newawsBucket']).'<br />';
@@ -301,27 +303,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		}
 	}
 	
-	if (!empty($_POST['GStorageAccessKey']) and !empty($_POST['GStorageSecret']) and !empty($_POST['newGStorageBucket'])) { //create new google storage bucket if needed
-		if (!class_exists('CFRuntime'))
-			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-		try {
-			CFCredentials::set(array('backwpup' => array('key'=>$_POST['GStorageAccessKey'],'secret'=>$_POST['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$gstorage = new AmazonS3();
-			$gstorage->set_hostname('commondatastorage.googleapis.com');
-			$gstorage->allow_hostname_override(false);
-			$req=$gstorage->create_bucket($_POST['newGStorageBucket'],'');
-			if (empty($req->body->Message)) {
-				$backwpup_message.=sprintf(__('GStorage bucket "%s" created.','backwpup'),$_POST['newGStorageBucket']).'<br />';
-				backwpup_update_option($main,'GStorageBucket',$_POST['newGStorageBucket']);
-				sleep(1); //creation take a moment
-			} else {
-				$backwpup_message.=sprintf(__('GStorage bucket create: %s','backwpup'),$req->body->Message).'<br />';
-			}
-		} catch (Exception $e) {
-			$backwpup_message.=sprintf(__('GStorage bucket create: %s','backwpup'),$e->getMessage()).'<br />';
-		}
-	}
-	
 	if (!empty($_POST['newmsazureContainer'])  and !empty($_POST['msazureHost']) and !empty($_POST['msazureAccName']) and !empty($_POST['msazureKey'])) { //create new s3 bucket if needed
 		if (!class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
 			require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
@@ -329,9 +310,12 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		try {
 			$storageClient = new Microsoft_WindowsAzure_Storage_Blob($_POST['msazureHost'],$_POST['msazureAccName'],$_POST['msazureKey']);
 			$result = $storageClient->createContainer($_POST['newmsazureContainer']);
-			backwpup_update_option($main,'msazureContainer',$result->Name);
+			if (!empty($result->Name)) {
+				backwpup_update_option($main,'msazureContainer',$result->Name);
+				$backwpup_message.=sprintf(__('MS azure container "%s" created.','backwpup'),$result->Name).'<br />';
+			}
 		} catch (Exception $e) {
-			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
+			$backwpup_message.=sprintf(__('MS azure container create: %s','backwpup'),$e->getMessage()).'<br />';
 		}
 	}	
 	
@@ -340,13 +324,20 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 			require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 		try {
 			$auth = new CF_Authentication($_POST['rscUsername'], $_POST['rscAPIKey']);
+			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+				$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
+			echo realpath(dirname(__FILE__).'/../libs/cacert.pem');
 			if ($auth->authenticate()) {
 				$conn = new CF_Connection($auth);
+				if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
+					$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
 				$public_container = $conn->create_container($_POST['newrscContainer']);
 				$public_container->make_private();
+				backwpup_update_option($main,'rscContainer',$_POST['newrscContainer']);
+				$backwpup_message.=sprintf(__('Rackspase Cloud container "%s" created.','backwpup'),$_POST['newrscContainer']).'<br />';
 			}
 		} catch (Exception $e) {
-			$backwpup_message.=__($e->getMessage(),'backwpup').'<br />';
+			$backwpup_message.=sprintf(__('Rackspase Cloud container create: %s','backwpup'),$e->getMessage()).'<br />';
 		}
 	}
 	

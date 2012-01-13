@@ -16,7 +16,7 @@
  * @category   Microsoft
  * @package    Microsoft_Http
  * @subpackage Response
- * @version    $Id: Response.php 61036 2011-04-19 06:09:54Z unknown $
+ * @version    $Id: Response.php 35835 2009-12-17 09:40:36Z unknown $
  * @copyright  Copyright (c) 2005-2009 Zend Technologies USA Inc. (http://www.zend.com)
  * @license    http://framework.zend.com/license/new-bsd     New BSD License
  */

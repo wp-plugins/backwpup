@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2009 - 2010, RealDolmen
+ * Copyright (c) 2009 - 2011, RealDolmen
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Management
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * @version    $Id: BlobInstance.php 53615 2010-11-16 20:45:11Z unknown $
  */
@@ -42,7 +42,7 @@ require_once dirname(__FILE__) . '/../../AutoLoader.php';
  * @category   Microsoft
  * @package    Microsoft_WindowsAzure
  * @subpackage Management
- * @copyright  Copyright (c) 2009 - 2010, RealDolmen (http://www.realdolmen.com)
+ * @copyright  Copyright (c) 2009 - 2011, RealDolmen (http://www.realdolmen.com)
  * @license    http://phpazure.codeplex.com/license
  * 
  * @property string $Name              Indicates which operating system family this version belongs to. A value of 1 corresponds to the Windows Azure guest operating system that is substantially compatible with Windows Server 2008 SP2. A value of 2 corresponds to the Windows Azure guest operating system that is substantially compatible with Windows Server 2008 R2. 
