@@ -86,7 +86,7 @@ if (!empty($doaction)) {
 				if (class_exists('SugarSync')) {
 					if (backwpup_get_option($main,'sugaruser') and backwpup_get_option($main,'sugarpass')) {
 						try {
-							$sugarsync = new SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
+							$sugarsync = new backwpup_SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
 							$sugarsync->delete(urldecode($backupfile));
 							unset($sugarsync);
 						} catch (Exception $e) {
@@ -215,7 +215,7 @@ if (!empty($doaction)) {
 		if (!class_exists('SugarSync'))
 			require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 		try {
-			$sugarsync = new SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
+			$sugarsync = new backwpup_SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
 			$response=$sugarsync->get(urldecode($_GET['file']));
 			header("Pragma: public");
 			header("Expires: 0");

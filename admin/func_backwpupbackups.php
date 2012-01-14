@@ -169,38 +169,6 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		return $jobdest;
 	}
 
-	//get backup files and infos
-	function get_backup_files() {
-		//Get files/fileinfo from Sugarsync
-		if ($dest=='SUGARSYNC' and backwpup_get_option($main,'sugarpass') and backwpup_get_option($main,'sugarpass')) {
-			if (!class_exists('SugarSync'))
-				require_once (dirname(__FILE__).'/../libs/sugarsync.php');
-			if (class_exists('SugarSync')) {
-				try {
-					$sugarsync = new SugarSync(backwpup_get_option($main,'sugarpass'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
-					$dirid=$sugarsync->chdir(backwpup_get_option($main,'sugardir'),backwpup_get_option($main,'sugarroot'));
-					$user=$sugarsync->user();
-					$dir=$sugarsync->showdir($dirid);
-					$getfiles=$sugarsync->getcontents('file');
-					if (is_object($getfiles)) {
-						foreach ($getfiles->file as $getfile) {
-							$files[$filecounter]['folder']='https://'.$user->nickname.'.sugarsync.com/'.$dir;
-							$files[$filecounter]['file']=(string)$getfile->ref;
-							$files[$filecounter]['filename']=utf8_decode((string) $getfile->displayName);
-							$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$jobid;
-							$files[$filecounter]['filesize']=(int) $getfile->size;
-							$files[$filecounter]['time']=strtotime((string) $getfile->lastModified);
-							$filecounter++;
-						}
-					}
-				} catch (Exception $e) {
-					$backwpup_message.='SUGARSYNC: '.$e->getMessage().'<br />';
-				}
-			}
-		}
-		return $files;
-	}
-
 	function get_columns() {
 		$posts_columns = array();
 		$posts_columns['cb'] = '<input type="checkbox" />';

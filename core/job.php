@@ -108,6 +108,9 @@ class BackWPup_job {
 		}
 		if ( !backwpup_get_option('working', 'data',false) )
 			exit;
+		//Back from maintenance if not
+		if (is_file(ABSPATH . '.maintenance') or get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)
+			$this->_maintenance_mode(false);
 		//set PID to 0
 		$this->jobdata['PID'] = 0;
 		//Restart job
@@ -119,7 +122,7 @@ class BackWPup_job {
 		exit;
 	}
 
-	private function start($jobid) {
+	protected function start($jobid) {
 		global $wp_version;
 		if (empty($jobid))
 			return;
@@ -294,6 +297,7 @@ class BackWPup_job {
 		$this->jobdata['LASTQUERYTIMESTAMP']=current_time('timestamp');
 		return $query;
 	}
+
 	private function _check_folder($folder) {
 		$folder = untrailingslashit($folder);
 		//check that is not home of WP
@@ -445,7 +449,7 @@ class BackWPup_job {
 		return true;
 	}
 
-	private function end() {
+	protected function end() {
 		//check if end() in progress
 		if ( !$this->jobdata['ENDINPROGRESS'] )
 			$this->jobdata['ENDINPROGRESS'] = true;
@@ -576,6 +580,7 @@ class BackWPup_job {
 	}
 
 	private function _maintenance_mode($enable = false) {
+		global $wp_filesystem;
 		if ( !backwpup_get_option($this->jobdata['JOBMAIN'],'maintenance') )
 			return;
 		if ( $enable ) {
@@ -587,7 +592,7 @@ class BackWPup_job {
 					update_option(FB_WM_TEXTDOMAIN . '-msqld', 1);
 			} else { //WP Support
 				if ( is_writable(ABSPATH . '.maintenance') )
-					file_put_contents(ABSPATH . '.maintenance', '<?php $upgrading = ' .time(). '; ?>');
+					file_put_contents(ABSPATH . '.maintenance', '<?php $upgrading = ' . time() . '; ?>');
 				else
 					trigger_error(__('Cannot set Blog to maintenance mode! Root folder is not writable!', 'backwpup'), E_USER_NOTICE);
 			}
@@ -645,7 +650,7 @@ class BackWPup_job {
 		return;
 	}
 
-	private function db_dump() {
+	protected function db_dump() {
 		global $wpdb, $wp_version;
 
 		trigger_error(sprintf(__('%d. Try for database dump...', 'backwpup'), $this->jobdata['DB_DUMP']['STEP_TRY']), E_USER_NOTICE);
@@ -894,7 +899,7 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 	}
 
-	private function db_check() {
+	protected function db_check() {
 		global $wpdb;
 		trigger_error(sprintf(__('%d. Try for database check...', 'backwpup'), $this->jobdata['DB_CHECK']['STEP_TRY']), E_USER_NOTICE);
 		if ( !isset($this->jobdata['DB_CHECK']['DONETABLE']) or !is_array($this->jobdata['DB_CHECK']['DONETABLE']) )
@@ -955,7 +960,7 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_CHECK'; //set done
 	}
 
-	private function db_optimize() {
+	protected function db_optimize() {
 		global $wpdb;
 		trigger_error(sprintf(__('%d. Try for database optimize...', 'backwpup'), $this->jobdata['DB_OPTIMIZE']['STEP_TRY']), E_USER_NOTICE);
 		if ( !isset($this->jobdata['DB_OPTIMIZE']['DONETABLE']) or !is_array($this->jobdata['DB_OPTIMIZE']['DONETABLE']) )
@@ -1013,7 +1018,7 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_OPTIMIZE'; //set done
 	}
 
-	private function wp_export() {
+	protected function wp_export() {
 		$this->jobdata['STEPTODO'] = 1;
 		trigger_error(sprintf(__('%d. Try to make a WordPress Export to XML file...', 'backwpup'), $this->jobdata['WP_EXPORT']['STEP_TRY']), E_USER_NOTICE);
 		$this->_need_free_memory('5M'); //5MB free memory
@@ -1077,7 +1082,7 @@ class BackWPup_job {
 		$this->_update_working_data();
 	}
 
-	private function folder_list() {
+	protected function folder_list() {
 		trigger_error(sprintf(__('%d. Try to make list of folder to backup....', 'backwpup'), $this->jobdata['FOLDER_LIST']['STEP_TRY']), E_USER_NOTICE);
 		$this->jobdata['STEPTODO'] = 7;
 
@@ -1184,7 +1189,7 @@ class BackWPup_job {
 		$this->_update_working_data();
 	}
 
-	private function _folder_list($folder = '', $levels = 100, $excludedirs = array()) {
+	protected function _folder_list($folder = '', $levels = 100, $excludedirs = array()) {
 		if ( empty($folder) )
 			return false;
 		if ( !$levels )
@@ -1241,7 +1246,7 @@ class BackWPup_job {
 		return $files;
 	}
 
-	private function create_archive() {
+	protected function create_archive() {
 		$this->jobdata['STEPTODO'] = count($this->jobdata['FOLDERLIST']) + 1;
 
 		if ( strtolower(backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')) == ".zip" and class_exists('ZipArchive') ) { //use php zip lib
@@ -1430,7 +1435,7 @@ class BackWPup_job {
 		trigger_error(sprintf(__(' %1$d Files with %2$s in Archive', 'backwpup'),$this->jobdata['COUNT']['FILES']+$this->jobdata['COUNT']['FILESINFOLDER'] ,backwpup_format_bytes($this->jobdata['COUNT']['FILESIZE']+$this->jobdata['COUNT']['FILESIZEINFOLDER'])), E_USER_NOTICE);
 	}
 
-	private function _tar_file($file, $outfile, $handle) {
+	protected function _tar_file($file, $outfile, $handle) {
 		$this->_need_free_memory('2M'); //2MB free memory
 		//split filename larger than 100 chars
 		if ( strlen($outfile) <= 100 ) {
@@ -1505,7 +1510,7 @@ class BackWPup_job {
 		fclose($fd);
 	}
 
-	private function _tar_foldername($folder, $foldername, $handle) {
+	protected function _tar_foldername($folder, $foldername, $handle) {
 		//split filename larger than 100 chars
 		if ( strlen($foldername) <= 100 ) {
 			$foldernameprefix = "";
@@ -1564,7 +1569,7 @@ class BackWPup_job {
 			fwrite($handle, $header);
 	}
 
-	private function dest_folder() {
+	protected function dest_folder() {
 		$this->jobdata['STEPTODO'] = 1;
 		backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl', backwpup_admin_url('admin.php') . '?page=backwpupbackups&action=download&file=' . $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
 		//Delete old Backupfiles
@@ -1612,7 +1617,7 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER'; //set done
 	}
 
-	private function dest_folder_sync() {
+	protected function dest_folder_sync() {
 		$this->jobdata['STEPTODO']=count($this->jobdata['FOLDERLIST']);
 		trigger_error(sprintf(__('%d. Try to sync files with folder...','backwpup'),$this->jobdata['DEST_FOLDER_SYNC']['STEP_TRY']),E_USER_NOTICE);
 
@@ -1630,7 +1635,7 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER_SYNC'; //set done
 	}
 
-	private function _dest_folder_sync_files($folder = '', $levels = 100) {
+	protected function _dest_folder_sync_files($folder = '', $levels = 100) {
 		if ( empty($folder) )
 			return false;
 		if ( !$levels )
@@ -1678,7 +1683,7 @@ class BackWPup_job {
 		}
 	}
 
-	private function dest_dropbox() {
+	protected function dest_dropbox() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$this->jobdata['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
 		require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
@@ -1767,7 +1772,7 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
-	private function dest_ftp() {
+	protected function dest_ftp() {
 		$this->jobdata['STEPTODO']=2;
 		trigger_error(sprintf(__('%d. Try to sending backup file to a FTP Server...','backwpup'),$this->jobdata['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
 
@@ -1915,7 +1920,7 @@ class BackWPup_job {
 	}
 
 
-	private function dest_s3() {
+	protected function dest_s3() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$this->jobdata['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
 
@@ -2010,7 +2015,7 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
-	private function dest_gstorage() {
+	protected function dest_gstorage() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to Google Storage...','backwpup'),$this->jobdata['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
 
@@ -2099,7 +2104,7 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
-	private function dest_mail() {
+	protected function dest_mail() {
 		$this->jobdata['STEPTODO']=1;
 		trigger_error(sprintf(__('%d. Try to sending backup with mail...','backwpup'),$this->jobdata['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
 
@@ -2133,8 +2138,8 @@ class BackWPup_job {
 		}
 		$this->jobdata['STEPSDONE'][]='DEST_MAIL'; //set done
 	}
-	
-	private function dest_msazure() {
+
+	protected function dest_msazure() {
 		$this->jobdata['STEPTODO']=2;
 		trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$this->jobdata['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
 
@@ -2205,7 +2210,7 @@ class BackWPup_job {
 	}
 
 
-	private function dest_rsc() {
+	protected function dest_rsc() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		$this->jobdata['STEPDONE']=0;
 		trigger_error(sprintf(__('%d. Try to sending backup file to Rackspace cloud...','backwpup'),$this->jobdata['DEST_RSC']['STEP_TRY']),E_USER_NOTICE);
@@ -2316,5 +2321,86 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
+	protected function dest_sugarsync() {
+		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
+		trigger_error(sprintf(__('%d. Try to sending backup to SugarSync...','backwpup'),$this->jobdata['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);
+
+		require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+
+		try {
+			$sugarsync = new backwpup_SugarSync(backwpup_get_option($this->jobdata['JOBMAIN'],'sugaruser'),backwpup_decrypt(backwpup_get_option($this->jobdata['JOBMAIN'],'sugarpass')));
+			//Check Quota
+			$user=$sugarsync->user();
+			if (!empty($user->nickname))
+				trigger_error(sprintf(__('Authed to SugarSync with Nick %s','backwpup'),$user->nickname),E_USER_NOTICE);
+			$sugarsyncfreespase=(float)$user->quota->limit-(float)$user->quota->usage; //float fixes bug for display of no free space
+			if ($this->jobdata['BACKUPFILESIZE']>$sugarsyncfreespase) {
+				trigger_error(__('No free space left on SugarSync!!!','backwpup'),E_USER_ERROR);
+				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
+				$this->jobdata['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
+				return;
+			} else {
+				trigger_error(sprintf(__('%s free on SugarSync','backwpup'),backwpup_format_bytes($sugarsyncfreespase)),E_USER_NOTICE);
+			}
+			//Create and change folder
+			$sugarsync->mkdir(backwpup_get_option($this->jobdata['JOBMAIN'],'sugardir'),backwpup_get_option($this->jobdata['JOBMAIN'],'sugarroot'));
+			$dirid=$sugarsync->chdir(backwpup_get_option($this->jobdata['JOBMAIN'],'sugardir'),backwpup_get_option($this->jobdata['JOBMAIN'],'sugarroot'));
+			//Upload to SugarSync
+			$sugarsync->setProgressFunction(array($this,'_curl_read_callback'));
+			trigger_error(__('Upload to SugarSync now started... ','backwpup'),E_USER_NOTICE);
+			$reponse=$sugarsync->upload($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']);
+			if (is_object($reponse)) {
+				backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string)$reponse.'&jobid='.$this->jobdata['JOBID']);
+				$this->jobdata['STEPDONE']++;
+				$this->jobdata['STEPSDONE'][]='DEST_SUGARSYNC'; //set done
+				trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://'.$user->nickname.'.sugarsync.com/'.$sugarsync->showdir($dirid).$this->jobdata['BACKUPFILE']),E_USER_NOTICE);
+			} else {
+				trigger_error(__('Can not transfer backup to SugarSync!','backwpup'),E_USER_ERROR);
+				return;
+			}
+
+			$backupfilelist=array();
+			$files=array();
+			$filecounter=0;
+			$dir=$sugarsync->showdir($dirid);
+			$getfiles=$sugarsync->getcontents('file');
+			if (is_object($getfiles)) {
+				foreach ($getfiles->file as $getfile) {
+					$getfile->displayName=utf8_decode((string) $getfile->displayName);
+					if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr($getfile->displayName,0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix'))) )
+						$backupfilelist[strtotime((string) $getfile->lastModified)]=(string)$getfile->ref;
+					$files[$filecounter]['folder']='https://'.(string)$user->nickname.'.sugarsync.com/'.$dir;
+					$files[$filecounter]['file']=(string)$getfile->ref;
+					$files[$filecounter]['filename']=(string)$getfile->displayName;
+					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=downloadsugarsync&file='.(string) $getfile->ref.'&jobid='.$this->jobdata['JOBID'];
+					$files[$filecounter]['filesize']=(int) $getfile->size;
+					$files[$filecounter]['time']=strtotime((string) $getfile->lastModified);
+					$filecounter++;
+				}
+			}
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'sugarmaxbackups')>0) { //Delete old backups
+				if (count($backupfilelist)>backwpup_get_option($this->jobdata['JOBMAIN'],'sugarmaxbackups')) {
+					$numdeltefiles=0;
+					while ($file=array_shift($backupfilelist)) {
+						if (count($backupfilelist)<backwpup_get_option($this->jobdata['JOBMAIN'],'sugarmaxbackups'))
+							break;
+						$sugarsync->delete($file); //delete files on Cloud
+						for ($i=0;$i<count($files);$i++) {
+							if($files[$i]['file']==$file)
+								unset($files[$i]);
+						}
+						$numdeltefiles++;
+					}
+					if ($numdeltefiles>0)
+						trigger_error(sprintf(_n('One file deleted on SugarSync folder','%d files deleted on SugarSync folder',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
+				}
+			}
+			backwpup_update_option('temp',$this->jobdata['JOBID'].'_SUGARSYNC',$files);
+		} catch (Exception $e) {
+			trigger_error(sprintf(__('SugarSync API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+		}
+
+		$this->jobdata['STEPDONE']++;
+	}
 }
 ?>

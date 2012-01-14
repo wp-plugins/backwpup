@@ -307,7 +307,7 @@ function backwpup_get_sugarsync_root($args='') {
 		if (!class_exists('SugarSync'))
 			require_once(dirname(__FILE__).'/../libs/sugarsync.php');
 		try {
-			$sugarsync = new SugarSync($sugaruser,$sugarpass,backwpup_get_option('cfg','SUGARSYNC_ACCESSKEY'),backwpup_get_option('cfg','SUGARSYNC_PRIVATEACCESSKEY'));
+			$sugarsync = new backwpup_SugarSync($sugaruser,backwpup_decrypt($sugarpass));
 			$user=$sugarsync->user();
 			$syncfolders=$sugarsync->get($user->syncfolders);
 		} catch (Exception $e) {
@@ -324,7 +324,7 @@ function backwpup_get_sugarsync_root($args='') {
 	elseif (!is_object($syncfolders))
 		_e('No Syncfolders found!','backwpup');
 	echo '<br /></span>';
-	if (is_object($syncfolders)) {
+	if (isset($syncfolders) and is_object($syncfolders)) {
 		echo '<select name="sugarroot" id="sugarroot">';
 		foreach ($syncfolders->collection as $roots) {
 			echo "<option ".selected(strtolower($sugarrootselected),strtolower($roots->ref),false)." value=\"".$roots->ref."\">".$roots->displayName."</option>";
