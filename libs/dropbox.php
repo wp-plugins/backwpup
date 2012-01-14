@@ -325,7 +325,7 @@ class backwpup_OAuthSimple {
 	 * @return OAuthSimple (Object)
 	 */
 	public function reset() {
-		$this->_parameters = array();
+		$this->_parameters = Array();
 		$this->path = NULL;
 		$this->sbs = NULL;
 
@@ -765,7 +765,7 @@ class backwpup_OAuthSimple {
 		switch($this->_parameters['oauth_signature_method'])
 		{
 			case 'PLAINTEXT':
-				return urlencode($secretKey);
+				return urlencode($secretKey);;
 			case 'HMAC-SHA1':
 				$this->sbs = self::_oauthEscape($this->_action).'&'.self::_oauthEscape($this->_path).'&'.self::_oauthEscape($this->_normalizedParameters());
 

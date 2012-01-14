@@ -203,8 +203,10 @@ function backwpup_get_rsc_container($args='') {
 			require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 		try {
 			$auth = new CF_Authentication($rscUsername, $rscAPIKey);
+			$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 			$auth->authenticate();
 			$conn = new CF_Connection($auth);
+			$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 			$containers=$conn->get_containers();
 		} catch (Exception $e) {
 			$error=$e->getMessage();

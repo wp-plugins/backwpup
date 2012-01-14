@@ -2418,10 +2418,12 @@ class BackWPup_job {
 		require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 
 		$auth = new CF_Authentication(backwpup_get_option($this->jobdata['JOBMAIN'],'rscUsername'), backwpup_get_option($this->jobdata['JOBMAIN'],'rscAPIKey'));
+		$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 		try {
 			if ($auth->authenticate())
 				trigger_error(__('Connected to Rackspase cloud ...','backwpup'),E_USER_NOTICE);
 			$conn = new CF_Connection($auth);
+			$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 			$conn->set_write_progress_function(array($this,'_curl_read_callback'));
 			$is_container=false;
 			$containers=$conn->get_containers();
@@ -2449,10 +2451,8 @@ class BackWPup_job {
 		try {
 			//Transfer Backup to Rackspace Cloud
 			$backwpupcontainer = $conn->get_container(backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer'));
-			//if (!empty(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir'])) //make the foldder
-			//	$backwpupcontainer->create_paths(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir']);
 			$backwpupbackup = $backwpupcontainer->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir').$this->jobdata['BACKUPFILE']);
-			$backwpupbackup->content_type=_get_mime_type($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']);
+			$backwpupbackup->content_type=$this->_get_mime_type($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']);
 			$this->jobdata['STEPDONE'] = 0;
 			trigger_error(__('Upload to Rackspase cloud now started ... ','backwpup'),E_USER_NOTICE);
 			if ($backwpupbackup->load_from_filename($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'])) {

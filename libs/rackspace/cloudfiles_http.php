@@ -193,7 +193,8 @@ class CF_Http
         if ($path) {
             $this->cabundle_path = $path;
         } else {
-            $this->cabundle_path = dirname(__FILE__) . "/share/cacert.pem";
+            //$this->cabundle_path = dirname(__FILE__) . "/share/cacert.pem";
+			$this->cabundle_path = realpath(dirname(__FILE__).'/../cert/cacert.pem');
         }
         if (!file_exists($this->cabundle_path)) {
             throw new IOException("Could not use CA bundle: "
