@@ -64,7 +64,7 @@ if (is_main_site()) {
 	//Load some file
 	include_once(dirname(__FILE__).'/core/functions.php');
 	//WP-Cron
-	add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>300,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
+	add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>240,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
 	if (defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and DOING_CRON )
 		include_once(dirname(__FILE__).'/core/wp-cron.php');
 	//load menus and pages

@@ -28,11 +28,11 @@ function backwpup_cron_run() {
 		@ini_set('ignore_user_abort', '0');
 		ignore_user_abort(true);
 		@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
-		include_once(dirname(__FILE__).'/core/job.php');
+		include_once(dirname(__FILE__).'/job.php');
 		new BackWPup_job('restarttime');
 	} else {
 		global $wpdb;
-		$mains=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND vlaue='wpcron'");
+		$mains=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron'");
 		if (!empty($mains)) {
 			foreach ($mains as $main) {
 				$cronnextrun=backwpup_get_option($main,'cronnextrun');
@@ -58,7 +58,7 @@ function backwpup_cron_run() {
 					@ini_set('ignore_user_abort', '0');
 					ignore_user_abort(true);
 					@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
-					include_once(dirname(__FILE__).'/core/job.php');
+					include_once(dirname(__FILE__).'/job.php');
 					new BackWPup_job('cronrun',backwpup_get_option($main,'jobid'));
 				}
 			}
@@ -72,7 +72,7 @@ function backwpup_cron_run_url() {
 	if ($backupdata and current_time('timestamp')-$backupdata['TIMESTAMP']>=480) {
 		backwpup_jobrun_url('restarttime','',true);
 	} else {
-		$mains=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND vlaue='wpcron'");
+		$mains=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron'");
 		if (!empty($mains)) {
 			foreach ($mains as $main) {
 				$cronnextrun=backwpup_get_option($main,'cronnextrun');

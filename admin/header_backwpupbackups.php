@@ -101,10 +101,10 @@ if (!empty($doaction)) {
 					if (backwpup_get_option($main,'rscUsername') and backwpup_get_option($main,'rscAPIKey') and backwpup_get_option($main,'rscContainer')) {
 						try {
 							$auth = new CF_Authentication(backwpup_get_option($main,'rscUsername'), backwpup_get_option($main,'rscAPIKey'));
-							$auth->ssl_use_cabundle();
+							$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 							if ($auth->authenticate()) {
 								$conn = new CF_Connection($auth);
-								$conn->ssl_use_cabundle();
+								$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 								$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
 								$backwpupcontainer->delete_object($backupfile);
 							}
@@ -263,10 +263,10 @@ if (!empty($doaction)) {
 			require_once(realpath(plugin_dir_path(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 		try {
 			$auth = new CF_Authentication(backwpup_get_option($main,'rscUsername'), backwpup_get_option($main,'rscAPIKey'));
-			$auth->ssl_use_cabundle();
+			$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 			if ($auth->authenticate()) {
 				$conn = new CF_Connection($auth);
-				$conn->ssl_use_cabundle();
+				$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 				$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
 				$backupfile=$backwpupcontainer->get_object($_GET['file']);
 				header("Pragma: public");

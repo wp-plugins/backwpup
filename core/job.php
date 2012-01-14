@@ -26,6 +26,7 @@ class BackWPup_job {
 		@ini_set('display_errors', 'Off');
 		@ini_set('log_errors', 'On');
 		set_error_handler(array( $this, '_error_handler' ), E_ALL | E_STRICT);
+		set_exception_handler(array( $this, '_exception_handler'));
 		//Check Folder
 		if (!empty($this->jobdata['BACKUPDIR']) and $this->jobdata['BACKUPDIR']!=backwpup_get_option('cfg','tempfolder') )
 			$this->_check_folder($this->jobdata['BACKUPDIR']);
@@ -328,6 +329,11 @@ class BackWPup_job {
 		return true;
 	}
 
+
+	public function _exception_handler($exception) {
+		$this->_error_handler(E_USER_ERROR,sprintf(__('Exception caught in %1$s: %2$s','backwpup'),get_class($exception),htmlentities($exception->getMessage())),$exception->getFile(),$exception->getLine());
+	}
+
 	public function _error_handler() {
 		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
 		// if error has been suppressed with an @
@@ -527,6 +533,7 @@ class BackWPup_job {
 			fclose($fd);
 		}
 		//Restore error handler
+		restore_exception_handler();
 		restore_error_handler();
 		@ini_set('log_errors', $this->jobdata['PHP']['INI']['LOG_ERRORS']);
 		@ini_set('error_log', $this->jobdata['PHP']['INI']['ERROR_LOG']);
@@ -1922,7 +1929,8 @@ class BackWPup_job {
 				return;
 			}
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('DropBox API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
 		try {
 			$backupfilelist=array();
@@ -1966,7 +1974,8 @@ class BackWPup_job {
 			}
 			backwpup_update_option('temp',$this->jobdata['JOBID'].'_DROPBOX',$files);
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('DropBox API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
 		$this->jobdata['STEPDONE']++;
 	}
@@ -2164,7 +2173,7 @@ class BackWPup_job {
 			}
 			$s3->register_streaming_read_callback(NULL);
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Amazon API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
 			return;
 		}
 		try {
@@ -2209,7 +2218,7 @@ class BackWPup_job {
 				backwpup_update_option('temp',$this->jobdata['JOBID'].'_S3',$files);
 			}
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('Amazon API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Amazon API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
 			return;
 		}
 		$this->jobdata['STEPDONE']++;
@@ -2254,7 +2263,7 @@ class BackWPup_job {
 			}
 			$gstorage->register_streaming_read_callback(NULL);
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('Google Storage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Google Storage API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
 			return;
 		}
 		try {
@@ -2299,7 +2308,7 @@ class BackWPup_job {
 				backwpup_update_option('temp',$this->jobdata['JOBID'].'_GSTORAGE',$files);
 			}
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('Google Storage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Google Storage API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
 			return;
 		}
 		$this->jobdata['STEPDONE']++;
@@ -2405,7 +2414,8 @@ class BackWPup_job {
 			}
 			backwpup_update_option('temp',$this->jobdata['JOBID'].'_MSAZURE',$files);
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('Microsoft Azure API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Microsoft Azure API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
 		$this->jobdata['STEPDONE']++;
 	}
@@ -2438,7 +2448,7 @@ class BackWPup_job {
 					$is_container=false;
 			}
 		} catch (Exception $e) {
-			trigger_error(__('Rackspase cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Rackspase Cloud API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
 			return;
 		}
 
@@ -2464,7 +2474,8 @@ class BackWPup_job {
 				trigger_error(__('Can not transfer backup to Rackspase cloud.','backwpup'),E_USER_ERROR);
 			}
 		} catch (Exception $e) {
-			trigger_error(__('Rackspase cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Rackspase Cloud API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
 		try {
 			$backupfilelist=array();
@@ -2507,7 +2518,8 @@ class BackWPup_job {
 			}
 			backwpup_update_option('temp',$this->jobdata['JOBID'].'_RSC',$files);
 		} catch (Exception $e) {
-			trigger_error(__('Rackspase Cloud API:','backwpup').' '.$e->getMessage(),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('Rackspase Cloud API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
 		$this->jobdata['STEPDONE']++;
 	}
@@ -2589,9 +2601,9 @@ class BackWPup_job {
 			}
 			backwpup_update_option('temp',$this->jobdata['JOBID'].'_SUGARSYNC',$files);
 		} catch (Exception $e) {
-			trigger_error(sprintf(__('SugarSync API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
+			$this->_error_handler(E_USER_ERROR,sprintf(__('SugarSync API: %s','backwpup'),htmlentities($e->getMessage())),$e->getFile(),$e->getLine());
+			return;
 		}
-
 		$this->jobdata['STEPDONE']++;
 	}
 }
