@@ -59,11 +59,11 @@ class backwpup_SugarSync {
 		curl_setopt($curl,CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($curl,CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
-		//curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
-		//curl_setopt($curl,CURLOPT_SSLVERSION,3);
-		//if (is_file(dirname(__FILE__).'/cacert.pem'))
-		//	curl_setopt($curl, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
+		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,true);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSLVERSION,3);
+		if (is_file(dirname(__FILE__).'/cert/gd-class2-root.pem'))
+			curl_setopt($curl, CURLOPT_CAINFO, dirname(__FILE__).'/cert/gd-class2-root.pem');
 		curl_setopt($curl,CURLOPT_HEADER,true);
 		curl_setopt($curl,CURLOPT_HTTPHEADER,array('Content-Type: application/xml; charset=UTF-8'));
 		curl_setopt($curl,CURLOPT_POSTFIELDS,$auth);
@@ -128,11 +128,11 @@ class backwpup_SugarSync {
 		curl_setopt($curl,CURLOPT_RETURNTRANSFER,true);
 		curl_setopt($curl,CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($curl,CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
-		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,false);
-		//curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
-		//curl_setopt($curl,CURLOPT_SSLVERSION,3);
-		//if (is_file(dirname(__FILE__).'/cacert.pem'))
-		//	curl_setopt($curl, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
+		curl_setopt($curl,CURLOPT_SSL_VERIFYPEER,true);
+		curl_setopt($curl,CURLOPT_SSL_VERIFYHOST,2);
+		curl_setopt($curl,CURLOPT_SSLVERSION,3);
+		if (is_file(dirname(__FILE__).'/cert/gd-class2-root.pem'))
+			curl_setopt($curl, CURLOPT_CAINFO, dirname(__FILE__).'/cert/gd-class2-root.pem');
 		
 		if ($method == 'POST') {	
 			$headers[]='Content-Type: application/xml; charset=UTF-8';

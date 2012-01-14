@@ -324,13 +324,8 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 			require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 		try {
 			$auth = new CF_Authentication($_POST['rscUsername'], $_POST['rscAPIKey']);
-			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
-				$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
-			echo realpath(dirname(__FILE__).'/../libs/cacert.pem');
 			if ($auth->authenticate()) {
 				$conn = new CF_Connection($auth);
-				if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
-					$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
 				$public_container = $conn->create_container($_POST['newrscContainer']);
 				$public_container->make_private();
 				backwpup_update_option($main,'rscContainer',$_POST['newrscContainer']);

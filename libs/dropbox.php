@@ -48,12 +48,12 @@ class backwpup_Dropbox {
 			throw new backwpup_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		if (filesize($file)>157286400)
 			throw new backwpup_DropboxException("Error: File \"$file\" is too big max. 150 MB.");
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.$this->encode_path($path);
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
 	
 	public function download($path,$echo=false){
-		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files/'.$this->root.'/'.trim($path,'/');
+		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files/'.$this->root.'/'.$this->encode_path($path);
 		if (!$echo)
 			return $this->request($url);
 		else
@@ -61,39 +61,40 @@ class backwpup_Dropbox {
 	}
 	
 	public function metadata($path = '', $listContents = true, $fileLimit = 10000){
-		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.trim($path,'/');
+		$url = self::API_URL.self::API_VERSION_URL.'metadata/'.$this->root.'/'.$this->encode_path($path);
 		return $this->request($url, array('list' => ($listContents) ? 'true' : 'false', 'file_limit' => $fileLimit));
 	}
 	
 	public function search($path = '', $query , $fileLimit = 1000){
 		if (strlen($query)>=3)
 			throw new backwpup_DropboxException("Error: Query \"$query\" must three characters long.");
-		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.trim($path,'/');
+		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.$this->encode_path($path);
 		return $this->request($url, array('query' => $query, 'file_limit' => $fileLimit));
 	}
 	
 	public function shares($path = ''){
-		$url = self::API_URL.self::API_VERSION_URL.'shares/'.$this->root.'/'.trim($path,'/');
+		$url = self::API_URL.self::API_VERSION_URL.'shares/'.$this->root.'/'.$this->encode_path($path);
 		return $this->request($url);
 	}
 	
 	public function media($path = ''){
-		$url = self::API_URL.self::API_VERSION_URL.'media/'.$this->root.'/'.trim($path,'/');
+		$url = self::API_URL.self::API_VERSION_URL.'media/'.$this->root.'/'.$this->encode_path($path);
 		return $this->request($url);
 	}
 	
 	public function fileopsDelete($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/delete';
-		return $this->request($url, array('path' => '/'.trim($path,'/'), 'root' => $this->root));
+		return $this->request($url, array('path' => '/'.$this->encode_path($path), 'root' => $this->root));
 	}
 
 	public function fileopsCreate_folder($path){
 		$url = self::API_URL.self::API_VERSION_URL.'fileops/create_folder';
-		return $this->request($url, array('path' => '/'.trim($path,'/'), 'root' => $this->root));
+		return $this->request($url, array('path' => '/'.$this->encode_path($path), 'root' => $this->root));
 	}
 
 	public function oAuthAuthorize($callback_url) {
 		//request tokens
+		$this->OAuthObject->reset();
 		$OAuthSign = $this->OAuthObject->sign(array(
 			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
 			'method' 	=>'HMAC-SHA1',
@@ -106,8 +107,8 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		if (is_file(dirname(__FILE__).'/cacert.pem'))
-			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
+		if (is_file(dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem');
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -133,6 +134,7 @@ class backwpup_Dropbox {
 	}
 	
 	public function oAuthAccessToken($oauth_token, $oauth_token_secret) {
+		 $this->OAuthObject->reset();
 		 $OAuthSign = $this->OAuthObject->sign(array(
 			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
 			'action'	=>'GET',
@@ -146,8 +148,8 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		if (is_file(dirname(__FILE__).'/cacert.pem'))
-			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
+		if (is_file(dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem');
 		curl_setopt($ch, CURLOPT_AUTOREFERER , true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
@@ -168,7 +170,6 @@ class backwpup_Dropbox {
 	}
 
 	private function request($url, $args = array(), $method = 'GET', $file = NULL, $echo=false){
-		$url = $this->url_encode($url);
 		/* Sign Request*/
 		$this->OAuthObject->reset();
 		$OAuthSign=$this->OAuthObject->sign(array(
@@ -210,8 +211,8 @@ class backwpup_Dropbox {
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
-		if (is_file(dirname(__FILE__).'/cacert.pem'))
-			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cacert.pem');
+		if (is_file(dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem'))
+			curl_setopt($ch, CURLOPT_CAINFO, dirname(__FILE__).'/cert/Thawte_Premium_Server_CA.pem');
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
@@ -260,17 +261,12 @@ class backwpup_Dropbox {
 		return $data;
 	}
 	
-	private function url_encode($string) {
-		$string = str_replace('?','%3F',$string);
-		$string = str_replace('=','%3D',$string);
-		$string = str_replace(' ','%20',$string);
-		$string = str_replace('(','%28',$string);
-		$string = str_replace(')','%29',$string);
-		$string = str_replace('&','%26',$string);
-		$string = str_replace('@','%40',$string);
-		return $string;
+	private function encode_path($path)
+	{
+		$path = preg_replace('#/+#', '/', trim($path, '/'));
+		$path = str_replace('%2F', '/', rawurlencode($path));
+		return $path;
 	}
-
 }
 
 class backwpup_DropboxException extends Exception {

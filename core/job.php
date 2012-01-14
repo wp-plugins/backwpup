@@ -109,7 +109,7 @@ class BackWPup_job {
 		if ( !backwpup_get_option('working', 'data',false) )
 			exit;
 		//Back from maintenance if not
-		if (is_file(ABSPATH . '.maintenance') or get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)
+		if (is_file(ABSPATH . '.maintenance') or (defined('FB_WM_TEXTDOMAIN') and (get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)))
 			$this->_maintenance_mode(false);
 		//set PID to 0
 		$this->jobdata['PID'] = 0;
@@ -458,7 +458,7 @@ class BackWPup_job {
 
 		$this->jobdata['STEPTODO'] = 1;
 		//Back from maintenance if not
-		if (is_file(ABSPATH . '.maintenance') or get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)
+		if (is_file(ABSPATH . '.maintenance') or (defined('FB_WM_TEXTDOMAIN') and (get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)))
 			$this->_maintenance_mode(false);
 		//delete old logs
 		if ( backwpup_get_option('cfg','maxlogs') ) {
@@ -650,6 +650,15 @@ class BackWPup_job {
 		return;
 	}
 
+	private function _get_mime_type($data)
+	{
+		if(extension_loaded('fileinfo')){
+			$finfo = new \finfo(FILEINFO_MIME);
+			return $finfo->buffer($data);
+		}
+		return false;
+	}
+	
 	protected function db_dump() {
 		global $wpdb, $wp_version;
 
@@ -1179,10 +1188,8 @@ class BackWPup_job {
 
 		if ( empty($this->jobdata['FOLDERLIST']) )
 			trigger_error(__('No Folder to backup', 'backwpup'), E_USER_ERROR);
-		else {
-			//$this->jobdata['COUNT']['FOLDER']=count($this->jobdata['FOLDERLIST']);
+		else 
 			trigger_error(sprintf(__('%1$d Folders to backup', 'backwpup'), $this->jobdata['COUNT']['FOLDER']), E_USER_NOTICE);
-		}
 
 		$this->jobdata['STEPDONE'] = 7;
 		$this->jobdata['STEPSDONE'][] = 'FOLDER_LIST'; //set done
@@ -1707,6 +1714,7 @@ class BackWPup_job {
 			}
 			//set callback function
 			$dropbox->setProgressFunction(array($this,'_curl_read_callback'));
+			$this->jobdata['STEPDONE'] = 0;
 			// put the file
 			trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
 			$response = $dropbox->upload($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'],backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir').$this->jobdata['BACKUPFILE']);
@@ -1950,6 +1958,7 @@ class BackWPup_job {
 			else
 				$params['storage']=AmazonS3::STORAGE_STANDARD;
 			$s3->register_streaming_read_callback(array($this,'_curl_aws_read_callback'));
+			$this->jobdata['STEPDONE'] = 0;
 			//transfer file to S3
 			trigger_error(__('Upload to Amazon S3 now started... ','backwpup'),E_USER_NOTICE);
 			$result=$s3->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir').$this->jobdata['BACKUPFILE'],$params);
@@ -2039,6 +2048,7 @@ class BackWPup_job {
 			$params['fileUpload']=$this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'];
 			$params['acl']=AmazonS3::ACL_PRIVATE;
 			$gstorage->register_streaming_read_callback(array($this,'_curl_aws_read_callback'));
+			$this->jobdata['STEPDONE'] = 0;
 			//transfer file to Google Storage
 			trigger_error(__('Upload to Google Storage now started... ','backwpup'),E_USER_NOTICE);
 			$result=$gstorage->create_object(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'), backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir').$this->jobdata['BACKUPFILE'],$params);
@@ -2217,14 +2227,10 @@ class BackWPup_job {
 		require_once(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php');
 
 		$auth = new CF_Authentication(backwpup_get_option($this->jobdata['JOBMAIN'],'rscUsername'), backwpup_get_option($this->jobdata['JOBMAIN'],'rscAPIKey'));
-		if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
-			$auth->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
 		try {
 			if ($auth->authenticate())
 				trigger_error(__('Connected to Rackspase cloud ...','backwpup'),E_USER_NOTICE);
 			$conn = new CF_Connection($auth);
-			if (is_file(realpath(dirname(__FILE__).'/../libs/cacert.pem')))
-				$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../libs/cacert.pem'));
 			$conn->set_write_progress_function(array($this,'_curl_read_callback'));
 			$is_container=false;
 			$containers=$conn->get_containers();
@@ -2263,6 +2269,7 @@ class BackWPup_job {
 				$backwpupbackup->content_type='application/x-compressed';
 			if (backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')=='.tar.bz2')
 				$backwpupbackup->content_type='application/x-compressed';
+			$this->jobdata['STEPDONE'] = 0;
 			trigger_error(__('Upload to Rackspase cloud now started ... ','backwpup'),E_USER_NOTICE);
 			if ($backwpupbackup->load_from_filename($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE'])) {
 				$this->jobdata['STEPTODO']=1+$this->jobdata['BACKUPFILESIZE'];
@@ -2347,6 +2354,7 @@ class BackWPup_job {
 			$dirid=$sugarsync->chdir(backwpup_get_option($this->jobdata['JOBMAIN'],'sugardir'),backwpup_get_option($this->jobdata['JOBMAIN'],'sugarroot'));
 			//Upload to SugarSync
 			$sugarsync->setProgressFunction(array($this,'_curl_read_callback'));
+			$this->jobdata['STEPDONE'] = 0;
 			trigger_error(__('Upload to SugarSync now started... ','backwpup'),E_USER_NOTICE);
 			$reponse=$sugarsync->upload($this->jobdata['BACKUPDIR'].$this->jobdata['BACKUPFILE']);
 			if (is_object($reponse)) {
