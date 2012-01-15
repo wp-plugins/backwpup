@@ -47,12 +47,12 @@ class BackWPup_job {
 		//set Pid
 		$this->jobdata['PID'] = getmypid();
 		// execute function on job shutdown
-		register_shutdown_function(array( $this, '__destruct' ));
+		register_shutdown_function(array( $this, '_shutdown_function' ));
 		if ( function_exists('pcntl_signal') ) {
 			declare(ticks = 1); //set ticks
-			pcntl_signal(15, array( $this, '__destruct' )); //SIGTERM
-			//pcntl_signal(9, array($this,'__destruct')); //SIGKILL
-			pcntl_signal(2, array( $this, '__destruct' )); //SIGINT
+			pcntl_signal(15, array( $this, '_shutdown_function' )); //SIGTERM
+			//pcntl_signal(9, array($this,'_shutdown_function')); //SIGKILL
+			pcntl_signal(2, array( $this, '_shutdown_function' )); //SIGINT
 		}
 		$this->_update_working_data(true);
 		// Working step by step
@@ -85,7 +85,7 @@ class BackWPup_job {
 		}
 	}
 
-	public function __destruct() {
+	public function _shutdown_function() { //can not in __destruct()
 		$args = func_get_args();
 		//nothing on empty
 		if ( empty($this->jobdata['LOGFILE']) )
@@ -196,31 +196,31 @@ class BackWPup_job {
 		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) )
 			$this->jobdata['STEPS'][] = 'FOLDER_LIST';
 		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) ) {
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' ) {
+			//Add archive creation on backup type archive
+			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' )
 				$this->jobdata['STEPS'][] = 'CREATE_ARCHIVE';
-				$backuptypeextension = '';
-			} elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'sync' ) {
-				$backuptypeextension = '_SYNC';
-			}
+			$appendsync='';
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'sync')
+				$appendsync='_SYNC';
 			//ADD Destinations
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'BACKUPDIR') and backwpup_get_option($this->jobdata['JOBMAIN'],'BACKUPDIR') != '/')
-				$this->jobdata['STEPS'][] = 'DEST_FOLDER' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'mailaddress') and backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' )
+			if ( in_array('FOLDER', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'BACKUPDIR') and backwpup_get_option($this->jobdata['JOBMAIN'],'BACKUPDIR') != '/')
+				$this->jobdata['STEPS'][] = 'DEST_FOLDER'.$appendsync;
+			if ( in_array('MAIL', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'mailaddress') and backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' )
 				$this->jobdata['STEPS'][] = 'DEST_MAIL';
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost') and backwpup_get_option($this->jobdata['JOBMAIN'],'ftpuser') and backwpup_get_option($this->jobdata['JOBMAIN'],'ftppass') and in_array('FTP', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_FTP' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dropetoken') and backwpup_get_option($this->jobdata['JOBMAIN'],'dropesecret') and in_array('DROPBOX', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_DROPBOX' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'sugaruser') and backwpup_get_option($this->jobdata['JOBMAIN'],'sugarpass') and backwpup_get_option($this->jobdata['JOBMAIN'],'sugarroot') and in_array('SUGARSYNC', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_SUGARSYNC' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket') and in_array('S3', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_S3' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageAccessKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageSecret') and backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket') and in_array('GSTORAGE', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_GSTORAGE' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'rscUsername') and backwpup_get_option($this->jobdata['JOBMAIN'],'rscAPIKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer') and in_array('RSC', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_RSC' . $backuptypeextension;
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'msazureHost') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureAccName') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer') and in_array('MSAZURE', explode(',', strtoupper(BACKWPUP_DESTS))) )
-				$this->jobdata['STEPS'][] = 'DEST_MSAZURE' . $backuptypeextension;
+			if ( in_array('FTP', explode(',', strtoupper(BACKWPUP_DESTS) and  backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost') and backwpup_get_option($this->jobdata['JOBMAIN'],'ftpuser') and backwpup_get_option($this->jobdata['JOBMAIN'],'ftppass'))) )
+				$this->jobdata['STEPS'][] = 'DEST_FTP'.$appendsync;
+			if ( in_array('DROPBOX', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'dropetoken') and backwpup_get_option($this->jobdata['JOBMAIN'],'dropesecret') )
+				$this->jobdata['STEPS'][] = 'DEST_DROPBOX'.$appendsync;
+			if ( in_array('SUGARSYNC', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'sugaruser') and backwpup_get_option($this->jobdata['JOBMAIN'],'sugarpass') and backwpup_get_option($this->jobdata['JOBMAIN'],'sugarroot') )
+				$this->jobdata['STEPS'][] = 'DEST_SUGARSYNC'.$appendsync;
+			if ( in_array('S3', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket') )
+				$this->jobdata['STEPS'][] = 'DEST_S3'.$appendsync;
+			if ( in_array('GSTORAGE', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageAccessKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageSecret') and backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket') )
+				$this->jobdata['STEPS'][] = 'DEST_GSTORAGE'.$appendsync;
+			if ( in_array('RSC', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'rscUsername') and backwpup_get_option($this->jobdata['JOBMAIN'],'rscAPIKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'rscContainer') )
+				$this->jobdata['STEPS'][] = 'DEST_RSC'.$appendsync;
+			if ( in_array('MSAZURE', explode(',', strtoupper(BACKWPUP_DESTS))) and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureHost') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureAccName') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureKey') and backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer') )
+				$this->jobdata['STEPS'][] = 'DEST_MSAZURE'.$appendsync;
 		}
 		if ( in_array('CHECK', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) )
 			$this->jobdata['STEPS'][] = 'DB_CHECK';

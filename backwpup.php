@@ -35,7 +35,7 @@ if (!defined('ABSPATH')) {
 
 //define some things
 define('BACKWPUP_VERSION', '3.0-Dev');
-define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.2');
+define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.1');
 define('BACKWPUP_PLUGIN_BASENAME',plugin_basename(__FILE__));
 define('BACKWPUP_PLUGIN_DIR',dirname(plugin_basename( __FILE__ )));
 define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
@@ -43,18 +43,18 @@ define('BACKWPUP_USER_CAPABILITY', 'export');
 define('BACKWPUP_MENU_PAGES', 'backwpup,backwpupeditjob,backwpupworking,backwpuplogs,backwpupbackups,backwpuptools,backwpupsettings');
 if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
-		define('BACKWPUP_DESTS', 'FTP,MSAZURE,BOXNET');
+		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,MSAZURE,BOXNET');
 	else
-		define('BACKWPUP_DESTS', 'FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE,BOXNET');
+		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
 if (!defined('FS_CHMOD_DIR'))
 	define('FS_CHMOD_DIR', 0755 );
 
 //not load translations for other text domains reduces memory and load time
-if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
+if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
 	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
 //Load text domain if needed
-if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES))))
+if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
 	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
 //load thins only on main sites (MU)
 if (is_main_site()) {
@@ -75,6 +75,6 @@ if (is_main_site()) {
 if (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB)
 	include_once(dirname(__FILE__).'/core/job.php');
 //include ajax functions
-if (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php'))
+if (defined('DOING_AJAX') and DOING_AJAX and isset($_POST['backwpupajaxpage']) and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php'))
 	include_once(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php');
 ?>

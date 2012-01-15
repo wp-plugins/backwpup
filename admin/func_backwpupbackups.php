@@ -145,9 +145,9 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		if (!empty($jobids)) {
 			foreach ($jobids as $jobid) {
 				$main='job_'.$jobid;
-				if (backwpup_get_option($main,'backupdir') and is_dir(backwpup_get_option($main,'backupdir')))
-					$jobdest[]=$jobid.'_FOLDER';
 				foreach (explode(',',strtoupper(BACKWPUP_DESTS)) as $dest) {
+					if ($dest=='FOLDER' and backwpup_get_option($main,'backupdir') and is_dir(backwpup_get_option($main,'backupdir')))
+						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='S3' and backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket'))
 						$jobdest[]=$jobid.'_'.$dest;
 					if ($dest=='GSTORAGE' and backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket'))

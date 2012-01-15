@@ -199,7 +199,7 @@ function backwpup_update_option($main,$name,$value) {
 }
 
 function backwpup_get_option($main,$name,$default=false) {
-	global $wpdb;
+	global $wpdb,$wp_object_cache;
 	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
 	if (empty($main) or empty($name))
@@ -268,7 +268,7 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 		$authurl=backwpup_get_option('cfg','httpauthuser').':'.backwpup_decrypt(backwpup_get_option('cfg','httpauthpassword')).'@';
 	}
 
-	if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+	if (WP_PLUGIN_DIR!=ABSPATH.'wp-content/plugins')
 		$query_args['ABSPATH']=urlencode(str_replace('\\','/',ABSPATH));
 
 	if ($starttype=='apirun')
@@ -279,11 +279,23 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 			$url=str_replace('https://','https://'.$authurl,$url);
 			$url=str_replace('http://','http://'.$authurl,$url);
 		}
-	} elseif ($starttype=='cronrun' or $starttype=='restart' or $starttype=='restarttimenonce') {
-		$query_args['_nonce']=wp_generate_password( 12, false, false );
-		backwpup_update_option('temp','restartnonce',$query_args['_nonce']);
-	} else
-		$query_args['_nonce']=wp_create_nonce('BackWPupJobRun');
+	} elseif ($starttype=='cronrun' or $starttype=='restart' or $starttype=='restarttime') {
+		$oldnonce=backwpup_get_option('temp', $starttype.'_nonce');
+		if (!empty($oldnonce))
+			$query_args['_nonce']=$oldnonce;
+		else {
+			$query_args['_nonce']=wp_generate_password( 12, false, false );
+			backwpup_update_option('temp', $starttype.'_nonce', $query_args['_nonce']);
+		}
+	} else {
+		$oldnonce=backwpup_get_option('temp', $starttype.'_nonce_'.$jobid);
+		if (!empty($oldnonce))
+			$query_args['_nonce']=$oldnonce;
+		else {
+			$query_args['_nonce']=wp_generate_password( 12, false, false );
+			backwpup_update_option('temp', $starttype.'_nonce_'.$jobid, $query_args['_nonce']);
+		}
+	}
 
 	$url=array('url'=>add_query_arg($query_args, $url),'header'=>$header);
 	if ($run) {

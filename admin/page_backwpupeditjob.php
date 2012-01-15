@@ -19,9 +19,6 @@ if (empty($_REQUEST['jobid'])) {
 	$_REQUEST['jobid']++;
 }
 $main='job_'.(int)$_REQUEST['jobid'];
-//backwpup_get_option($main,'');
-//set extra vars
-$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 ?>
 <div class="wrap">
 <?php 
@@ -66,7 +63,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 					}
 					echo '<strong>'. __('Commandline start:','backwpup').'</strong> ';
 					$abspath='';
-					if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
+					if (WP_PLUGIN_DIR!=ABSPATH.'wp-content/plugins')
 						$abspath='-abspath='.str_replace('\\','/',ABSPATH);
 					echo "<span>".sprintf('php %1$s -jobid=%2$d %3$s',realpath(dirname(__FILE__).'/../job.php'),backwpup_get_option($main,'jobid'),$abspath)."</span><br />";
 					?>

@@ -71,15 +71,19 @@ if ( defined('STDIN') ) {
 		wp_die(__('Starttype check','backwpup'),'',array( 'response' => 400 ));
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )) )
 		wp_die(__('JOBID check','backwpup'),'',array( 'response' => 400 ));
-	if ( in_array($_GET['starttype'], array( 'runnow' )) and !wp_verify_nonce($_GET['_nonce'],'BackWPupJobRun'))
-		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403));
-	elseif ( in_array($_GET['starttype'], array( 'cronrun','restarttime', 'restart' )) and backwpup_get_option('temp','restartnonce')!=$_GET['_nonce'])
+
+	if ( $_GET['starttype']=='runnow' and backwpup_get_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid'])!=$_GET['_nonce'])
+		wp_die(__('Nonce check','',array( 'response' => 403)));
+	elseif ( in_array($_GET['starttype'], array( 'cronrun','restarttime', 'restart' )) and backwpup_get_option('temp',$_GET['starttype'].'_nonce')!=$_GET['_nonce'])
 		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='apirun' and (!backwpup_get_option('cfg','apicronservicekey') or $_GET['_nonce']!=backwpup_get_option('cfg','apicronservicekey')))
 		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='runext' and (backwpup_get_option('cfg','jobrunauthkey') or $_GET['_nonce']!=backwpup_get_option('cfg','jobrunauthkey')))
 		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
-	backwpup_delete_option('temp','restartnonce');
+	//delete nonces
+	backwpup_delete_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid']);
+	backwpup_delete_option('temp',$_GET['starttype'].'_nonce');
+	//set max execution time
 	@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
 }
 if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'apirun', 'runcmd' )))  {

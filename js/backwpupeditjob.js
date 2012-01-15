@@ -2,48 +2,28 @@ jQuery(document).ready( function($) {
 
 	$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
 	
-	$('.jobtype-select').change(function() {
-		if ( true == $('#jobtype-select-FILE').prop('checked') || true ==  $('#jobtype-select-DB').prop('checked') || true == $('#jobtype-select-WPEXP').prop('checked')) {
-			$('#backwpup_jobedit_destfolder').show();
-			$('#backwpup_jobedit_destftp').show();
-			$('#backwpup_jobedit_dests3').show();
-			$('#backwpup_jobedit_destgstorage').show();
-			$('#backwpup_jobedit_destazure').show();
-			$('#backwpup_jobedit_destrsc').show();
-			$('#backwpup_jobedit_destdropbox').show();
-			$('#backwpup_jobedit_destboxnet').show();
-			$('#backwpup_jobedit_destsugarsync').show();
-			$('#backwpup_jobedit_destfile').show();
-			$('#backwpup_jobedit_destmail').show();
+	$('input[name="type[]"]').change(function() {
+		if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+            $('.destination').show();
 		} else {
-			$('#backwpup_jobedit_destfolder').hide();
-			$('#backwpup_jobedit_destftp').hide();
-			$('#backwpup_jobedit_dests3').hide();
-			$('#backwpup_jobedit_destgstorage').hide();
-			$('#backwpup_jobedit_destazure').hide();
-			$('#backwpup_jobedit_destrsc').hide();
-			$('#backwpup_jobedit_destdropbox').hide();
-			$('#backwpup_jobedit_destboxnet').hide();
-			$('#backwpup_jobedit_destsugarsync').hide();
-			$('#backwpup_jobedit_destfile').hide();
-			$('#backwpup_jobedit_destmail').hide();
+            $('.destination').hide();
 		}
-		if ( true == $('#jobtype-select-DB').prop('checked') || true == $('#jobtype-select-CHECK').prop('checked') || true == $('#jobtype-select-OPTIMIZE').prop('checked')) {
+		if ( 'DB' == $('#jobtype-select-DB:checked').val() || 'CHECK' == $('#jobtype-select-CHECK:checked').val() || 'OPTIMIZE' == $('#jobtype-select-OPTIMIZE:checked').val()) {
 			$('#databasejobs').show();
 		} else {
 			$('#databasejobs').hide();
 		}
-		if ( true == $('#jobtype-select-DB').prop('checked')) {
+		if ( 'DB' == $('#jobtype-select-DB:checked').val()) {
 			$('#dbdump').show();
 		} else {
 			$('#dbdump').hide();
 		}
-		if ( true == $('#jobtype-select-WPEXP').prop('checked')) {
+		if ( 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
 			$('#wpexport').show();
 		} else {
 			$('#wpexport').hide();
 		}
-		if ( true == $('#jobtype-select-FILE').prop('checked')) {
+		if ( 'FILE' == $('#jobtype-select-FILE:checked').val()) {
 			$('#filebackup').show();
 		} else {
 			$('#filebackup').hide();
@@ -54,22 +34,18 @@ jQuery(document).ready( function($) {
 		if ($(this).val()=='sync') {
 			$('.nosync').hide();
             $('.sync').show();
-			$('#backwpup_jobedit_destmail').hide();
 		} else {
 			$('.nosync').show();
             $('.sync').hide();
-			$('#backwpup_jobedit_destmail').show();
 		}
 	});
 	
 	if ($('input[name="backuptype"]:checked').val()=='sync') {
 		$('.nosync').hide();
         $('.sync').show();
-		$('#backwpup_jobedit_destmail').hide();	
 	} else {
         $('.nosync').show();
         $('.sync').hide();
-        $('#backwpup_jobedit_destmail').show();
     }
 
     $('input[name="activetype"]').change(function() {
@@ -80,11 +56,13 @@ jQuery(document).ready( function($) {
         }
     });
 
-    if ($('input[name="activetype"]:checked').val()=='') {
-        $('#schedulecron').hide();
-    } else {
-        $('#schedulecron').show();
-    }
+    $('input[name="fileprefix"]').keyup(function() {
+        $('#backupfileprefix').replaceWith('<span id="backupfileprefix">'+$(this).val()+'</span>');
+    });
+
+    $('input[name="fileformart"]').change(function() {
+        $('#backupfileformart').replaceWith('<span id="backupfileformart">'+$(this).val()+'</span>');
+    });
 
 	$('input[name="cronselect"]').change(function() {
 		if ( 'basic' == $('input[name="cronselect"]:checked').val()) {
@@ -97,15 +75,7 @@ jQuery(document).ready( function($) {
 			cronstampadvanced();
 		}
 	});
-	
-	$('input[name="fileprefix"]').keyup(function() {
-		$('#backupfileprefix').replaceWith('<span id="backupfileprefix">'+$(this).val()+'</span>');
-	});
-	
-	$('input[name="fileformart"]').change(function() {
-		$('#backupfileformart').replaceWith('<span id="backupfileformart">'+$(this).val()+'</span>');
-	});
-	
+
 	function cronstampadvanced() {
 		var cronminutes = [];
 		var cronhours = [];

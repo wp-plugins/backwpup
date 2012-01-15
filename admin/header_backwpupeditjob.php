@@ -365,7 +365,6 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 
 
 $dests=explode(',',strtoupper(BACKWPUP_DESTS));
-
 //load java
 wp_enqueue_script('common');
 wp_enqueue_script('wp-lists');
@@ -374,24 +373,44 @@ wp_enqueue_script('postbox');
 //add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
 add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), array('BackWPup_editjob_metaboxes','backupfile'), get_current_screen()->id, 'side', 'default');
 add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), array('BackWPup_editjob_metaboxes','sendlog'), get_current_screen()->id, 'side', 'default');
-add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), array('BackWPup_editjob_metaboxes','destfolder'), get_current_screen()->id, 'advanced', 'core');
-add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), array('BackWPup_editjob_metaboxes','destmail'), get_current_screen()->id, 'advanced', 'core');
-if (in_array('FTP',$dests))
-	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), array('BackWPup_editjob_metaboxes','destftp'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('DROPBOX',$dests))
-	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), array('BackWPup_editjob_metaboxes','destdropbox'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('SUGARSYNC',$dests))
-	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), array('BackWPup_editjob_metaboxes','destsugarsync'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('S3',$dests))
-	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), array('BackWPup_editjob_metaboxes','dests3'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('GSTORAGE',$dests))
-	add_meta_box('backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), array('BackWPup_editjob_metaboxes','destgstorage'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('MSAZURE',$dests))
-	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), array('BackWPup_editjob_metaboxes','destazure'), get_current_screen()->id, 'advanced', 'default');
-if (in_array('RSC',$dests))
-	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), array('BackWPup_editjob_metaboxes','destrsc'), get_current_screen()->id, 'advanced', 'default');
+if (in_array('FOLDER',$dests)) {
+	add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), array('BackWPup_editjob_metaboxes','destfolder'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destfolder", create_function('$classes','$classes[]="destination"; return $classes;') );
+}
+if (in_array('MAIL',$dests)) {
+	add_meta_box('backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), array('BackWPup_editjob_metaboxes','destmail'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destmail", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('FTP',$dests)) {
+	add_meta_box('backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), array('BackWPup_editjob_metaboxes','destftp'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destftp", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('DROPBOX',$dests)) {
+	add_meta_box('backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), array('BackWPup_editjob_metaboxes','destdropbox'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destdropbox", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('SUGARSYNC',$dests)) {
+	add_meta_box('backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), array('BackWPup_editjob_metaboxes','destsugarsync'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destsugarsync", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('S3',$dests)) {
+	add_meta_box('backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), array('BackWPup_editjob_metaboxes','dests3'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_dests3", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('GSTORAGE',$dests)) {
+	add_meta_box('backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), array('BackWPup_editjob_metaboxes','destgstorage'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destgstorage", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('MSAZURE',$dests)) {
+	add_meta_box('backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), array('BackWPup_editjob_metaboxes','destazure'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destazure", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
+if (in_array('RSC',$dests)) {
+	add_meta_box('backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), array('BackWPup_editjob_metaboxes','destrsc'), get_current_screen()->id, 'normal', 'default');
+	add_filter( "postbox_classes_".get_current_screen()->id."_backwpup_jobedit_destrsc", create_function('$classes','$classes[]="nosync"; $classes[]="destination"; return $classes;') );
+}
 
-//add clumns
+//add columns
 add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
 
 //add Help

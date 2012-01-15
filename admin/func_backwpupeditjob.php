@@ -46,7 +46,7 @@ class BackWPup_editjob_metaboxes {
 		echo '<input class="radio" type="radio"'.checked('sync',backwpup_get_option($main,'backuptype'),false).' name="backuptype" value="sync" />'.__('Sync files with destination','backwpup').'<br />';
 		echo '<input class="radio" type="radio"'.checked('archive',backwpup_get_option($main,'backuptype'),false).' name="backuptype" value="archive" />'.__('Create backup archive','backwpup').'<br />';
 		?>
-		<div class="nosync">
+		<div class="nosync"<?PHP if (backwpup_get_option($main,'backuptype')=='sync') echo ' style="display:none;"';?>>
 			<b><?PHP _e('File Prefix:','backwpup'); ?></b><br />
 			<input name="fileprefix" type="text" value="<?PHP echo backwpup_get_option($main,'fileprefix');?>" class="large-text" /><br />
 			<b><?PHP _e('File Formart:','backwpup'); ?></b><br />
@@ -87,7 +87,10 @@ class BackWPup_editjob_metaboxes {
 			if (!backwpup_get_option('cfg','apicronservicekey'))
 				$disabled=' disabled="disabled"';
 			echo '<input class="radio" type="radio"'.checked('backwpupapi',backwpup_get_option($main,'activetype'),false).' name="activetype" value="backwpupapi"'.$disabled.' />'.__('BackWPup external cron service','backwpup').'<br />';
-			echo "</strong><br /><div id=\"schedulecron\">";
+			$display='';
+			if (backwpup_get_option($main,'activetype')=='')
+				$display=' style="display:none;"';
+			echo "</strong><br /><div id=\"schedulecron\"".$display.">";
 			list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',backwpup_get_option($main,'cron'),5);
 			if (strstr($cronstr['minutes'],'*/'))
 				$minutes=explode('/',$cronstr['minutes']);

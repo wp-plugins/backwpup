@@ -67,7 +67,7 @@ class BackWPup_api {
 		$post=array();
 		$post['ACTION']='updatecheck';
 		$saved=backwpup_get_option('temp','updatecheck');
-		if ($saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200) {
+		if (!empty($saved) and $saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200) {
 			$checked_data->response[BACKWPUP_PLUGIN_BASENAME] = $saved['response'];
 			return $checked_data;
 		}
@@ -93,7 +93,7 @@ class BackWPup_api {
 		$post=array();
 		$post['ACTION']='updateinfo';
 		$saved=backwpup_get_option('temp','updateinfo');
-		if ($saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200)
+		if (!empty($saved) and $saved['version']==BACKWPUP_VERSION and (time()-$saved['time'])<=43200)
 			return $saved['return'];
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
 		if (is_wp_error($request)) {
