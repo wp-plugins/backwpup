@@ -33,7 +33,7 @@ class BackWPup_api {
 	//API for cron trigger
 	public function cronupdate() {
 		global $wpdb;
-		if (backwpup_get_option('cfg','apicronservicekey'))
+		if (!backwpup_get_option('cfg','apicronservicekey'))
 			return;
 		$post=array();
 		$post['ACTION']='cronupdate';
