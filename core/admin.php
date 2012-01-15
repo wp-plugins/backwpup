@@ -230,7 +230,7 @@ class BackWPup_Admin {
 	}
 
 	public function first_plugin($newvalue, $oldvalue) {
-		if (!is_array($newvalue))
+		if (!is_array($newvalue) or current_filter('deactivate_' . BACKWPUP_PLUGIN_BASENAME))
 			return $newvalue;
 		for ($i=0; $i<count($newvalue);$i++) {
 			if ($newvalue[$i]==BACKWPUP_PLUGIN_BASENAME)
