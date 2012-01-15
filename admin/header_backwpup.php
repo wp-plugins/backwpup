@@ -150,6 +150,10 @@ if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
 	$backwpup_admin_message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 	$checks=false;
 }
+if (version_compare($wpdb->get_var( "SELECT VERSION() AS version" ), '5.0', '<')) { // check MySQL Version
+	$backwpup_admin_message.=__('- MySQL 5.0 or higher is needed!','backwpup') . '<br />';
+	$checks=false;
+}
 // check logs folder
 if (!backwpup_check_open_basedir(backwpup_get_option('cfg','logfolder'))) //check open basedir
 	$backwpup_admin_message.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),backwpup_get_option('cfg','logfolder')).'<br />';

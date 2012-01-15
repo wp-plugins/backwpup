@@ -124,7 +124,7 @@ class BackWPup_job {
 	}
 
 	protected function start($jobid) {
-		global $wp_version;
+		global $wpdb;$wp_version;
 		if (empty($jobid))
 			return;
 		//make start on cli mode
@@ -189,11 +189,12 @@ class BackWPup_job {
 		//build working steps
 		$this->jobdata['STEPS'] = array();
 		//setup job steps
-		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) )
+		$mysqlversion=$wpdb->get_var( "SELECT VERSION() AS version" );
+		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) and version_compare($mysqlversion,'5.0','>='))
 			$this->jobdata['STEPS'][] = 'DB_DUMP';
-		if ( in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) )
+		if ( in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) and version_compare($mysqlversion,'5.0','>='))
 			$this->jobdata['STEPS'][] = 'WP_EXPORT';
-		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) )
+		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) and version_compare($mysqlversion,'5.0','>='))
 			$this->jobdata['STEPS'][] = 'FOLDER_LIST';
 		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) ) {
 			//Add archive creation on backup type archive
@@ -268,7 +269,7 @@ class BackWPup_job {
 		fwrite($fd, __('[INFO]: PHP ver.:', 'backwpup') . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		if ( (bool)ini_get('safe_mode') )
 			fwrite($fd, sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup'), ini_get('max_execution_time')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), mysql_result(mysql_query("SELECT VERSION() AS version"), 0)) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), $mysqlversion ). "<br />" . BACKWPUP_LINE_SEPARATOR);
 		if ( function_exists('curl_init') ) {
 			$curlversion = curl_version();
 			fwrite($fd, sprintf(__('[INFO]: curl ver.: %1$s; %2$s', 'backwpup'), $curlversion['version'], $curlversion['ssl_version']) . "<br />" . BACKWPUP_LINE_SEPARATOR);
@@ -865,9 +866,8 @@ class BackWPup_job {
 		if ( !isset($this->jobdata['DB_DUMP']['TABLES']) or !is_array($this->jobdata['DB_DUMP']['TABLES']) )
 			$this->jobdata['DB_DUMP']['TABLES'] = array();
 
-
-		if ( $this->jobdata['STEPDONE']==0 ) {
-			//build filename
+		//build filename
+		if (empty($this->jobdata['DBDUMPFILE'])) {
 			$datevars = array( '%d', '%D', '%l', '%N', '%S', '%w', '%z', '%W', '%F', '%m', '%M', '%n', '%t', '%L', '%o', '%Y', '%a', '%A', '%B', '%g', '%G', '%h', '%H', '%i', '%s', '%u', '%e', '%I', '%O', '%P', '%T', '%Z', '%c', '%U' );
 			$datevalues = array( date_i18n('d'), date_i18n('D'), date_i18n('l'), date_i18n('N'), date_i18n('S'), date_i18n('w'), date_i18n('z'), date_i18n('W'), date_i18n('F'), date_i18n('m'), date_i18n('M'), date_i18n('n'), date_i18n('t'), date_i18n('L'), date_i18n('o'), date_i18n('Y'), date_i18n('a'), date_i18n('A'), date_i18n('B'), date_i18n('g'), date_i18n('G'), date_i18n('h'), date_i18n('H'), date_i18n('i'), date_i18n('s'), date_i18n('u'), date_i18n('e'), date_i18n('I'), date_i18n('O'), date_i18n('P'), date_i18n('T'), date_i18n('Z'), date_i18n('c'), date_i18n('U') );
 			$this->jobdata['DBDUMPFILE'] = str_replace($datevars, $datevalues, backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfile'));
@@ -880,7 +880,27 @@ class BackWPup_job {
 			$this->jobdata['DBDUMPFILE'] .= '.sql';
 			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' or backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
 				$this->jobdata['DBDUMPFILE'] .= '.' . backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression');
+		}
 
+		//Set maintenance
+		$this->_maintenance_mode(true);
+
+		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
+			$file = gzopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'wb9');
+		elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
+			$file = bzopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'w');
+		else
+			$file = fopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'wb');
+
+		if ( !$file ) {
+			trigger_error(sprintf(__('Can not create database dump file! "%s"', 'backwpup'), $this->jobdata['DBDUMPFILE']), E_USER_ERROR);
+			$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
+			$this->_maintenance_mode(false);
+			return;
+		}
+
+
+		if ( $this->jobdata['STEPDONE']==0 ) {
 			//get tables to backup
 			$tables = $wpdb->get_col("SHOW TABLES FROM `" . DB_NAME . "`"); //get table status
 			if ( mysql_error() )
@@ -898,31 +918,11 @@ class BackWPup_job {
 			foreach ( $tablesstatus as $tablestatus )
 				$this->jobdata['DB_DUMP']['TABLESTATUS'][$tablestatus['Name']] = $tablestatus;
 
-
-
 			if ( count($this->jobdata['DB_DUMP']['TABLES']) == 0 ) {
 				trigger_error(__('No tables to dump', 'backwpup'), E_USER_WARNING);
 				$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 				return;
 			}
-
-			//Set maintenance
-			$this->_maintenance_mode(true);
-
-			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
-				$file = gzopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'wb9');
-			elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
-				$file = bzopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'w');
-			else
-				$file = fopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE'], 'wb');
-
-			if ( !$file ) {
-				trigger_error(sprintf(__('Can not create database dump file! "%s"', 'backwpup'), $this->jobdata['DBDUMPFILE']), E_USER_ERROR);
-				$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
-				$this->_maintenance_mode(false);
-				return;
-			}
-
 
 			$dbdumpheader = "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR;
 			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BACKWPUP_VERSION . BACKWPUP_LINE_SEPARATOR;
@@ -958,15 +958,14 @@ class BackWPup_job {
 				bzwrite($file, $dbdumpheader);
 			else
 				fwrite($file, $dbdumpheader);
-
 		}
-		//make table dumps
+
+		//make table dumps with native sql commands for reduce memory usage
 		if ($this->jobdata['STEPTODO']!=$this->jobdata['STEPDONE']) {
 			foreach ( $this->jobdata['DB_DUMP']['TABLES'] as $tablekey => $table ) {
 
 				trigger_error(sprintf(__('Dump database table "%s"', 'backwpup'), $table), E_USER_NOTICE);
 				//get more memory if needed
-				$this->_need_free_memory(($this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Data_length'] + $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Index_length']) * 2);
 				$this->_update_working_data();
 
 				$tablecreate = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Table structure for table $table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
@@ -974,12 +973,12 @@ class BackWPup_job {
 				$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . BACKWPUP_LINE_SEPARATOR;
 				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
 				//Dump the table structure
-				$tablestruc = $wpdb->get_row("SHOW CREATE TABLE `" . $table . "`", 'ARRAY_A');
+				$res = mysql_query("SHOW CREATE TABLE `" . $table . "`");
 				if ( mysql_error() ) {
 					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SHOW CREATE TABLE `" . $table . "`"), E_USER_ERROR);
 					return false;
 				}
-				$tablecreate .= $tablestruc['Create Table'] . ";" . BACKWPUP_LINE_SEPARATOR;
+				$tablecreate .= mysql_result ($res,0,'Create Table') . ";" . BACKWPUP_LINE_SEPARATOR. BACKWPUP_LINE_SEPARATOR;
 				$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;" . BACKWPUP_LINE_SEPARATOR;
 
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
@@ -988,24 +987,6 @@ class BackWPup_job {
 					bzwrite($file, $tablecreate);
 				else
 					fwrite($file, $tablecreate);
-
-				//get data from table
-				$datas = $wpdb->get_results("SELECT * FROM `" . $table . "`", 'ARRAY_N');
-				if ( mysql_error() ) {
-					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), $wpdb->last_query), E_USER_ERROR);
-					return false;
-				}
-				//get key information
-				$keys = $wpdb->get_col_info('name', -1);
-
-				//build key string
-				$keystring = " (`" . implode("`, `", $keys) . "`)";
-				//colem infos
-				for ( $i = 0; $i < count($keys); $i++ ) {
-					$colinfo[$i]['numeric'] = $wpdb->get_col_info('numeric', $i);
-					$colinfo[$i]['type'] = $wpdb->get_col_info('type', $i);
-					$colinfo[$i]['blob'] = $wpdb->get_col_info('blob', $i);
-				}
 
 				$tabledata = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Dumping data for table $table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
 
@@ -1020,20 +1001,35 @@ class BackWPup_job {
 					fwrite($file, $tabledata);
 				$tabledata = '';
 
+				//get data from table
+				$result=mysql_query("SELECT * FROM `".$table."`");
+				if ( mysql_error() ) {
+					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SELECT * FROM `".$table."`"), E_USER_ERROR);
+					return false;
+				}
+				//get field information
+				$fieldsarray=array();
+				$fieldinfo=array();
+				$fields = mysql_num_fields($result);
+				for ($i=0; $i < $fields; $i++) {
+					$fieldsarray[$i]=mysql_field_name($result, $i);
+					$fieldinfo[$fieldsarray[$i]] = mysql_fetch_field($result, $i);
+				}
+
 				$querystring = '';
-				foreach ( $datas as $data ) {
+				while ( $data = mysql_fetch_assoc($result)) {
 					$values = array();
 					foreach ( $data as $key => $value ) {
 						if ( is_null($value) or !isset($value) ) // Make Value NULL to string NULL
 							$value = "NULL";
-						elseif ( $colinfo[$key]['numeric'] == 1 and $colinfo[$key]['type'] != 'timestamp' and $colinfo[$key]['blob'] != 1 ) //is value numeric no esc
+						elseif ( $fieldinfo[$key]->numeric == 1 and $fieldinfo[$key]->type != 'timestamp' and $fieldinfo[$key]->blob != 1 ) //is value numeric no esc
 							$value = empty($value) ? 0 : $value;
 						else
 							$value = "'" . mysql_real_escape_string($value) . "'";
 						$values[] = $value;
 					}
 					if ( empty($querystring) )
-						$querystring = "INSERT INTO `" . $table . "`" . $keystring . " VALUES" . BACKWPUP_LINE_SEPARATOR;
+						$querystring = "INSERT INTO `" . $table . "` (`".implode("`, `", $fieldsarray)."`) VALUES " . BACKWPUP_LINE_SEPARATOR;
 					if ( strlen($querystring) <= 50000 ) { //write dump on more than 50000 chars.
 						$querystring .= "(" . implode(", ", $values) . ")," . BACKWPUP_LINE_SEPARATOR;
 					} else {
@@ -1060,12 +1056,13 @@ class BackWPup_job {
 				else
 					fwrite($file, $tabledata);
 
-				$wpdb->flush();
+				mysql_free_result($result);
 
 				unset($this->jobdata['DB_DUMP']['TABLES'][$tablekey]);
 				$this->jobdata['STEPDONE']++;
 			}
 		}
+
 		if ( $this->jobdata['STEPTODO']==$this->jobdata['STEPDONE'] ) {
 			//for better import with mysql client
 			$dbdumpfooter = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Delete not needed values on backwpup table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
