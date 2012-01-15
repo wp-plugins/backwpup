@@ -124,7 +124,7 @@ class BackWPup_job {
 	}
 
 	protected function start($jobid) {
-		global $wpdb;$wp_version;
+		global $wpdb,$wp_version;
 		if (empty($jobid))
 			return;
 		//make start on cli mode
