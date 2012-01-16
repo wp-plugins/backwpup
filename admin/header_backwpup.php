@@ -212,7 +212,7 @@ if (!empty($backwpup_admin_message))
 else
 	define('BACKWPUP_ENV_CHECK_OK',true);
 //not relevant checks for job start
-if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
+if (false !== $nextrun=wp_next_scheduled('backwpup_cron') and backwpup_get_option('cfg','apicronservicekey')=='') {
 	if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
 		$backwpup_admin_message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 	}
