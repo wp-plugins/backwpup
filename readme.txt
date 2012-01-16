@@ -5,7 +5,7 @@ Tags: backup, admin, file, Database, mysql, dump, cron, ftp, S3, export, xml,  m
 Requires at least: 3.2
 Tested up to: 3.3
 Stable tag: 2.1.7
-
+ 
 WordPress Backup and more...
 
 == Description ==
