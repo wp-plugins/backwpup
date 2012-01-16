@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 	die();
 }
 function backwpup_cron_run() {
-	$backupdata=backwpup_get_option('working','data',false);
+	$backupdata=backwpup_get_workingdata();
 	if ($backupdata and current_time('timestamp')-$backupdata['TIMESTAMP']>=480) { //8 min no progress.
 		define('DOING_BACKWPUP_JOB', true);
 		define('DONOTCACHEPAGE', true);
@@ -68,7 +68,7 @@ function backwpup_cron_run() {
 
 function backwpup_cron_run_url() {
 	global $wpdb;
-	$backupdata=backwpup_get_option('working','data',false);
+	$backupdata=backwpup_get_workingdata();
 	if ($backupdata and current_time('timestamp')-$backupdata['TIMESTAMP']>=480) {
 		backwpup_jobrun_url('restarttime','',true);
 	} else {

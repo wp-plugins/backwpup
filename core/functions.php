@@ -38,6 +38,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default['cfg']['jobrunauthkey']='';
 		$default['cfg']['apicronservicekey']='';
 		$default['cfg']['jobrunmaxexectime']=0;
+		$default['cfg']['storeworkingdatain']='db';
 		if ($name=='tempfolder') {
 			if (defined('WP_TEMP_DIR')) //get temp folder
 				$default['cfg']['tempfolder']=trim(WP_TEMP_DIR);
@@ -609,5 +610,29 @@ function backwpup_decrypt($string, $key='') {
 		$result.=$char;
 	}
 	return $result;
+}
+
+function backwpup_get_workingdata($fulldata=true) {
+	global $wpdb;
+	if ($fulldata) {
+		if (backwpup_get_option('cfg','storeworkingdatain')=='db')
+			$workingdata=backwpup_get_option('working', 'data', false);
+		if (backwpup_get_option('cfg','storeworkingdatain')=='file') {
+			if (!file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+				$workingdata=false;
+			else
+				$workingdata=maybe_unserialize(file_get_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)));
+		}
+		return $workingdata;
+	} else {
+		if (backwpup_get_option('cfg','storeworkingdatain')=='db') {
+			$results=$wpdb->query("SELECT value FROM ".$wpdb->prefix."backwpup WHERE main='working' AND name='data' LIMIT 1");
+			if ($results==1)
+				return true;
+		}
+		if (backwpup_get_option('cfg','storeworkingdatain')=='file' and file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+			return true;
+		return false;
+	}
 }
 ?>

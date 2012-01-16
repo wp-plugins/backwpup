@@ -33,8 +33,7 @@ class BackWPup_Admin {
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
 		$page_hook=add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$backupdata=backwpup_get_option('working','data');
-		if (!empty($backupdata)) {
+		if (!backwpup_get_workingdata(false)) {
 			$page_hook=add_submenu_page( 'backwpup', __('Working Job','backwpup'), __('Working Job','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', array($this,'admin_page') );
 			add_action('load-'.$page_hook, array($this,'admin_page_load'));
 		}
@@ -202,7 +201,7 @@ class BackWPup_Admin {
 			echo '<ul><li><i>'.__('none','backwpup').'</i></li></ul>';
 			return;
 		}
-		$backupdata=backwpup_get_option('working','data');
+		$backupdata=backwpup_get_workingdata();
 		//get ordering
 		$mainscronnextrun=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='cronnextrun' ORDER BY value ASC");
 		echo '<ul>';

@@ -81,10 +81,12 @@ if (!empty($doaction)) {
 		break;
 	case 'abort': //Abort Job
 		check_admin_referer('abort-job');
-		$backupdata=backwpup_get_option('working','data');
+		$backupdata=backwpup_get_workingdata();
 		if (!$backupdata)
 			break;
 		backwpup_delete_option('working','data'); //delete working data
+		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
 		if (!empty($backupdata['LOGFILE'])) {
 			$timestamp = "<span title=\"[Type: " .E_USER_ERROR . "|Line: " . __LINE__ . "|File: " . basename(__FILE__) . "|PID: " . $backupdata['PID'] . "|Query's: " . $backupdata['COUNT']['SQLQUERRYS'] . "]\">[" . date_i18n('d-M-Y H:i:s') . "]</span> ";
 			file_put_contents($backupdata['LOGFILE'], $timestamp . "<span class=\"error\">" . __('ERROR:', 'backwpup')." ".__('Aborted by user!!!','backwpup')."</span><br />\n", FILE_APPEND);

@@ -16,7 +16,7 @@ class BackWPup_job {
 		if ( in_array($this->jobstarttype, array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) )
 			$this->start((int)$jobid);
 		else
-			$this->jobdata = backwpup_get_option('working', 'data');
+			$this->jobdata = backwpup_get_workingdata();
 		add_filter('query',array($this,'_count_querys'));
 		//set function for PHP user defined error handling
 		$this->jobdata['PHP']['INI']['ERROR_LOG'] = ini_get('error_log');
@@ -25,6 +25,7 @@ class BackWPup_job {
 		@ini_set('error_log', $this->jobdata['LOGFILE']);
 		@ini_set('display_errors', 'Off');
 		@ini_set('log_errors', 'On');
+		@ini_set('mysql.connect_timeout','60');
 		set_error_handler(array( $this, '_error_handler' ), E_ALL | E_STRICT);
 		set_exception_handler(array( $this, '_exception_handler'));
 		//Check Folder
@@ -107,7 +108,7 @@ class BackWPup_job {
 			$this->end();
 			exit;
 		}
-		if ( !backwpup_get_option('working', 'data',false) )
+		if ( !backwpup_get_workingdata(false) )
 			exit;
 		//Back from maintenance if not
 		if (is_file(ABSPATH . '.maintenance') or (defined('FB_WM_TEXTDOMAIN') and (get_site_option( FB_WM_TEXTDOMAIN . '-msqld' )==1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' )==1)))
@@ -232,7 +233,10 @@ class BackWPup_job {
 		foreach ( $this->jobdata['STEPS'] as $step )
 			$this->jobdata[$step]['DONE'] = false;
 		//must write working data
-		backwpup_update_option('working','data',$this->jobdata);
+		if (backwpup_get_option('cfg','storeworkingdatain')=='db')
+			backwpup_update_option('working', 'data', $this->jobdata);
+		if (backwpup_get_option('cfg','storeworkingdatain')=='file')
+			file_put_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16),maybe_serialize($this->jobdata));
 		//create log file
 		$fd = fopen($this->jobdata['LOGFILE'], 'w');
 		fwrite($fd, "<html>" . BACKWPUP_LINE_SEPARATOR . "<head>" . BACKWPUP_LINE_SEPARATOR);
@@ -296,7 +300,6 @@ class BackWPup_job {
 
 	public function _count_querys($query) {
 		$this->jobdata['COUNT']['SQLQUERRYS']++;
-		$this->jobdata['LASTQUERYTIMESTAMP']=current_time('timestamp');
 		return $query;
 	}
 
@@ -422,23 +425,19 @@ class BackWPup_job {
 
 	private function _update_working_data($mustwrite = false) {
 		global $wpdb;
-		//only run every  1 sec.
+		//only run every 1 sec.
 		$timetoupdate = current_time('timestamp')-$this->jobdata['TIMESTAMP'];
 		if ( !$mustwrite and $timetoupdate<1 )
 			return true;
+		//check MySQL connection
+		if (!mysql_ping($wpdb->dbh)) {
+			trigger_error(__('Database connection is gone create a new one.', 'backwpup'), E_USER_NOTICE);
+			$wpdb->db_connect();
+		}
 		//check if job already aborted
-		if ( !backwpup_get_option('working', 'data',false) ) {
+		if ( !backwpup_get_workingdata(false) ) {
 			$this->end();
 			return false;
-		}
-		//check MySQL connection
-		$lastquerytimestamp=current_time('timestamp')-$this->jobdata['LASTQUERYTIMESTAMP'];
-		if ($lastquerytimestamp>=5) {
-			if (!mysql_ping($wpdb->dbh)) {
-				trigger_error(__('Database connection is gone create a new one.', 'backwpup'), E_USER_NOTICE);
-				$wpdb->db_connect();
-			}
-			$this->jobdata['LASTQUERYTIMESTAMP']=current_time('timestamp');
 		}
 		//Update % data
 		if ( $this->jobdata['STEPTODO'] > 0 and $this->jobdata['STEPDONE'] > 0 )
@@ -450,7 +449,10 @@ class BackWPup_job {
 		else
 			$this->jobdata['STEPSPERSENT'] = 1;
 		$this->jobdata['TIMESTAMP'] = current_time('timestamp');
-		backwpup_update_option('working', 'data', $this->jobdata);
+		if (backwpup_get_option('cfg','storeworkingdatain')=='db')
+			backwpup_update_option('working', 'data', $this->jobdata);
+		if (backwpup_get_option('cfg','storeworkingdatain')=='file')
+			file_put_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16),maybe_serialize($this->jobdata));
 		if ( defined('STDIN') ) //make dots on cli mode
 			echo ".";
 		return true;
@@ -582,6 +584,8 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE'] = 1;
 		$this->jobdata['STEPSDONE'][] = 'END'; //set done
 		backwpup_delete_option('working','data'); //delete working data
+		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
 		if ( defined('STDIN') )
 			_e('Done!', 'backwpup');
 		exit;
@@ -974,6 +978,7 @@ class BackWPup_job {
 				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
 				//Dump the table structure
 				$res = mysql_query("SHOW CREATE TABLE `" . $table . "`");
+				$this->jobdata['COUNT']['SQLQUERRYS']++;
 				if ( mysql_error() ) {
 					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SHOW CREATE TABLE `" . $table . "`"), E_USER_ERROR);
 					return false;
@@ -1003,6 +1008,7 @@ class BackWPup_job {
 
 				//get data from table
 				$result=mysql_query("SELECT * FROM `".$table."`");
+				$this->jobdata['COUNT']['SQLQUERRYS']++;
 				if ( mysql_error() ) {
 					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SELECT * FROM `".$table."`"), E_USER_ERROR);
 					return false;
@@ -1773,7 +1779,7 @@ class BackWPup_job {
 
 	protected function dest_folder() {
 		$this->jobdata['STEPTODO'] = 1;
-		backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl', backwpup_admin_url('admin.php') . '?page=backwpupbackups&action=download&file=' . $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
+		backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',add_query_arg(array('page'=>'backwpupbackups','action'=>'download','file'=>$this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']), backwpup_admin_url('admin.php')) );
 		//Delete old Backupfiles
 		$backupfilelist = array();
 		$filecounter=0;
@@ -1787,7 +1793,7 @@ class BackWPup_job {
 					$files[$filecounter]['folder']=$this->jobdata['BACKUPDIR'];
 					$files[$filecounter]['file']=$this->jobdata['BACKUPDIR'].$file;
 					$files[$filecounter]['filename']=$file;
-					$files[$filecounter]['downloadurl']=backwpup_admin_url('admin.php').'?page=backwpupbackups&action=download&file='.$this->jobdata['BACKUPDIR'].$file;
+					$files[$filecounter]['downloadurl']=add_query_arg(array('page'=>'backwpupbackups','action'=>'download','file'=>$this->jobdata['BACKUPDIR'] . $file), backwpup_admin_url('admin.php'));
 					$files[$filecounter]['filesize']=filesize($this->jobdata['BACKUPDIR'].$file);
 					$files[$filecounter]['time']=filemtime($this->jobdata['BACKUPDIR'].$file);
 					$filecounter++;

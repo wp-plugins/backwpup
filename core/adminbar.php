@@ -11,12 +11,12 @@ function backwpup_add_adminbar() {
 		return;
 	if (!is_admin()) //load text domain if not in admin area ther it is loaded in main plugin file
 		load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
-	$backupdata=backwpup_get_option('working','data');
+	$backupdata=backwpup_get_workingdata(false);
 	$menutitle='<span class="ab-icon"></span><span class="ab-label"></span>';
-	if (!empty($backupdata))
+	if ($backupdata)
 		$menutitle= '<span class="ab-icon"></span><span class="ab-label">!</span>';
 	$wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => $menutitle, 'href' => backwpup_admin_url('admin.php').'?page=backwpup','meta' => array('title' => __( 'BackWPup', 'backwpup' ))));
-	if (!empty($backupdata)) {
+	if ($backupdata) {
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working' ,'parent' => 'backwpup_jobs', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working_abort' ,'parent' => 'backwpup_working', 'title' => __('Abort!','backwpup'), 'href' => wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job')));
 	}

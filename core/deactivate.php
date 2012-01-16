@@ -11,7 +11,8 @@ function backwpup_plugin_deactivate() {
 	$wpdb->query("UPDATE ".$wpdb->prefix."backwpup SET value='0.0' WHERE main='cfg' and name='dbversion' LIMIT 1");
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
 	$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
-	//include_once(dirname(__FILE__).'/api.php');
+	if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+		unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
 	do_action('backwpup_api_delete');
 }
 ?>

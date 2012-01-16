@@ -56,6 +56,16 @@ if (isset($backwpup_message) and !empty($backwpup_message))
 <p><?PHP _e('Here you can set Job related options.','backwpup'); ?></p>
 <table class="form-table">
 	<tr valign="top">
+		<th scope="row"><label for="storeworkingdatain"><?PHP _e('Where to store working data','backwpup'); ?></label></th>
+		<td>
+			<select name="storeworkingdatain" id="storeworkingdatain">
+				<option <?PHP selected(strtolower(backwpup_get_option('cfg','storeworkingdatain')),'db',true);?> value="db"><?PHP _e('Database','backwpup'); ?></option>
+				<option <?PHP selected(strtolower(backwpup_get_option('cfg','storeworkingdatain')),'file',true);?> value="file"><?PHP _e('File','backwpup'); ?></option>
+			</select>
+			<span class="description"><?PHP _e('(The data will stored every second if a job run!)','backwpup');?></span>
+		</td>
+	</tr>
+	<tr valign="top">
 		<th scope="row"><label for="jobrunmaxexectime"><?PHP _e('Max. Script Execution time','backwpup'); ?></label></th>
 		<td><input name="jobrunmaxexectime" type="text" id="jobrunmaxexectime" value="<?PHP echo backwpup_get_option('cfg','jobrunmaxexectime');?>" class="small-text code" />
 			<span class="description"><?PHP _e('(0 = endless; Default. You can test the time under Tools. The job will be automatic restarted after this time.)','backwpup');?></span>

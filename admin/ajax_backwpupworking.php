@@ -18,7 +18,7 @@ function backwpup_get_logfile_ajax() {
 
     $log='';
     if (is_file(trim($_POST['logfile']))) {
-		$backupdata=backwpup_get_option('working','data');
+		$backupdata=backwpup_get_workingdata();
         if (!empty($backupdata)) {
             $warnings=$backupdata['WARNING'];
             $errors=$backupdata['ERROR'];

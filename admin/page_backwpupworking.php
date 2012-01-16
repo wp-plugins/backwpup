@@ -9,7 +9,7 @@ if (!defined('ABSPATH')) {
 <?php screen_icon(); ?>
 <h2><?php echo esc_html( __('BackWPup Working', 'backwpup') ); ?></h2>
 <?php
-	$backupdata=backwpup_get_option('working','data');
+	$backupdata=backwpup_get_workingdata();
 	if (!empty($backupdata)) {
 		$backwpup_message.=sprintf(__('Job "%s" is running.','backwpup'),backwpup_get_option($backupdata['JOBMAIN'],'name'));
 		$backwpup_message.=" <a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=abort', 'abort-job') . "\">" . __('Abort!','backwpup') . "</a>";

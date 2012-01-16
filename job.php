@@ -4,7 +4,7 @@ if (empty($_GET['starttype']) and !defined('STDIN')) {
 	header("Status: 404 Not Found");
 	die();
 }
-
+ignore_user_abort(true);
 define('DOING_BACKWPUP_JOB', true);
 define('DONOTCACHEPAGE', true);
 define('DONOTCACHEDB', true);
@@ -12,19 +12,13 @@ define('DONOTMINIFY', true);
 define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY', false); //W3TC will not loaded
+define('DOING_CRON',true);
 define('BACKWPUP_LINE_SEPARATOR', (false !== strpos(PHP_OS, "WIN") or false !== strpos(PHP_OS, "OS/2")) ? "\r\n" : "\n");
 //define E_DEPRECATED if PHP lower than 5.3
 if ( !defined('E_DEPRECATED') )
 	define('E_DEPRECATED', 8192);
 if ( !defined('E_USER_DEPRECATED') )
 	define('E_USER_DEPRECATED', 16384);
-if ( !defined('DOING_CRON') )
-	define('DOING_CRON',true);
-//try to disable safe mode
-@ini_set('safe_mode', '0');
-// Now user abort
-@ini_set('ignore_user_abort', '0');
-ignore_user_abort(true);
 //phrase commandline args
 if ( defined('STDIN') ) {
 	$_GET['starttype'] = 'runcmd';
@@ -80,7 +74,7 @@ if ( defined('STDIN') ) {
 		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='runext' and (backwpup_get_option('cfg','jobrunauthkey') or $_GET['_nonce']!=backwpup_get_option('cfg','jobrunauthkey')))
 		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
-	//delete nonces
+	//delete nonce
 	backwpup_delete_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid']);
 	backwpup_delete_option('temp',$_GET['starttype'].'_nonce');
 	//set max execution time
@@ -96,12 +90,10 @@ if (!backwpup_get_option('cfg','logfolder') or !is_dir(backwpup_get_option('cfg'
 if (!backwpup_get_option('cfg','tempfolder') or !is_dir(backwpup_get_option('cfg','tempfolder')) or !is_writable(backwpup_get_option('cfg','tempfolder')))
 	wp_die(__('Temp folder not exists or is not writable'),'',array( 'response' => 500 ));
 //check running job
-$backwpupjobdata = backwpup_get_option('working', 'data');
-if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) and !empty($backwpupjobdata) )
+if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) and backwpup_get_workingdata(false) )
 	wp_die(__('A job already running'),'',array( 'response' => 503 ));
-if ( in_array($_GET['starttype'], array( 'restart', 'restarttime' )) and (empty($backwpupjobdata) or !is_array($backwpupjobdata)) )
+if ( in_array($_GET['starttype'], array( 'restart', 'restarttime' )) and !backwpup_get_workingdata(false) )
 	wp_die(__('No job running'),'',array( 'response' => 400 ));
-unset($backwpupjobdata);
 //disconnect or redirect
 if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runext','apirun' )) ) {
 	ob_end_clean();
@@ -113,7 +105,7 @@ if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'r
 }
 elseif ( $_GET['starttype'] == 'runnow' ) {
 	ob_start();
-	wp_redirect(backwpup_admin_url('admin.php') . '?page=backwpupworking&runlogjobid='.$_GET['jobid']);
+	wp_redirect(add_query_arg(array('page'=>'backwpupworking','runlogjobid'=>$_GET['jobid']),backwpup_admin_url('admin.php')));
 	echo ' ';
 	while ( @ob_end_flush() );
 	flush();

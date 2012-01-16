@@ -67,7 +67,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function display_rows() {
 		//check for running job
-		$backupdata=backwpup_get_option('working','data');
+		$backupdata=backwpup_get_workingdata();
 		$style = '';
 		foreach ( $this->items as $jobid ) {
 			$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';
