@@ -23,7 +23,7 @@ $main='job_'.(int)$_REQUEST['jobid'];
 <div class="wrap">
 <?php 
 screen_icon(); 
-echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
+echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"button add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
 ?>
 
 <?php if (isset($backwpup_message) and !empty($backwpup_message)) : ?>

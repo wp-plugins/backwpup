@@ -4,9 +4,15 @@ jQuery(document).ready( function($) {
 	
 	$('input[name="type[]"]').change(function() {
 		if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
-            $('.destination').show();
+            $('div[id^=backwpup_jobedit_dest]').show();
+            if ($('input[name="backuptype"]:checked').val()=='sync') {
+                $('div[id^=nosync_backwpup_jobedit_dest]').hide();
+            } else {
+                $('div[id^=nosync_backwpup_jobedit_dest]').show();
+            }
 		} else {
-            $('.destination').hide();
+            $('div[id^=backwpup_jobedit_dest]').hide();
+            $('div[id^=nosync_backwpup_jobedit_dest]').hide();
 		}
 		if ( 'DB' == $('#jobtype-select-DB:checked').val() || 'CHECK' == $('#jobtype-select-CHECK:checked').val() || 'OPTIMIZE' == $('#jobtype-select-OPTIMIZE:checked').val()) {
 			$('#databasejobs').show();
@@ -33,18 +39,26 @@ jQuery(document).ready( function($) {
 	$('input[name="backuptype"]').change(function() {
 		if ($(this).val()=='sync') {
 			$('.nosync').hide();
+            $('div[id^=nosync_backwpup_jobedit_dest]').hide();
             $('.sync').show();
 		} else {
 			$('.nosync').show();
+            if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+                $('div[id^=nosync_backwpup_jobedit_dest]').show();
+            }
             $('.sync').hide();
 		}
 	});
 	
 	if ($('input[name="backuptype"]:checked').val()=='sync') {
 		$('.nosync').hide();
+        $('div[id^=nosync_backwpup_jobedit_dest]').hide();
         $('.sync').show();
 	} else {
         $('.nosync').show();
+        if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+            $('div[id^=nosync_backwpup_jobedit_dest]').show();
+        }
         $('.sync').hide();
     }
 
