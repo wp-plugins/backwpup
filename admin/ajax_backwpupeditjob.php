@@ -113,10 +113,10 @@ function backwpup_get_aws_buckets($args='') {
 		echo $error;
 	elseif ($buckets->status<200 or $buckets->status>=300)
 		echo $buckets->status.': '.$buckets->body->Message;
-	elseif (count($buckets->body->Buckets->Bucket)<1)
+	elseif (!isset($buckets) or count($buckets->body->Buckets->Bucket)<1)
 		_e('No bucket fount!','backwpup');
 	echo '<br /></span>';
-	if (is_object($buckets->body->Buckets->Bucket)) {
+	if (isset($buckets) and is_object($buckets->body->Buckets->Bucket)) {
 		echo '<select name="awsBucket" id="awsBucket">';
 		foreach ($buckets->body->Buckets->Bucket as $bucket) {
 			echo "<option ".selected(strtolower($awsselected),strtolower($bucket->Name),false).">".$bucket->Name."</option>";

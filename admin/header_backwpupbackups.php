@@ -29,7 +29,8 @@ if (!empty($doaction)) {
 						try {
 							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 							$s3 = new AmazonS3();
-							$s3->disable_ssl(backwpup_get_option($main,'awsdisablessl'));
+							if (backwpup_get_option($main,'awsdisablessl'))
+								$s3->disable_ssl(true);
 							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
 							unset($s3);
 						} catch (Exception $e) {
@@ -171,7 +172,8 @@ if (!empty($doaction)) {
 		try {
 			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
-			$s3->disable_ssl(backwpup_get_option($main,'awsdisablessl'));
+			if (backwpup_get_option($main,'awsdisablessl'))
+				$s3->disable_ssl(true);
 			$s3file=$s3->get_object(backwpup_get_option($main,'awsBucket'), $_GET['file']);
 		} catch (Exception $e) {
 			die($e->getMessage());

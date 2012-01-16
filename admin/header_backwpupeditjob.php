@@ -392,7 +392,6 @@ if (in_array('MSAZURE',$dests))
 if (in_array('RSC',$dests))
 	add_meta_box('nosync_backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), array('BackWPup_editjob_metaboxes','destrsc'), get_current_screen()->id, 'normal', 'default');
 
-
 //add columns
 add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
 

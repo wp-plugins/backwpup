@@ -2135,7 +2135,8 @@ class BackWPup_job {
 		try {
 			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
 			$s3 = new AmazonS3();
-			$s3->disable_ssl(backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'));
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'))
+				$s3->disable_ssl(true);
 			if ($s3->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'))) {
 				$bucketregion=$s3->get_bucket_region(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'));
 				trigger_error(sprintf(__('Connected to S3 Bucket "%1$s" in %2$s','backwpup'),backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'),$bucketregion->body),E_USER_NOTICE);
