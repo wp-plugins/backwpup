@@ -88,7 +88,7 @@ function backwpup_get_aws_buckets($args='') {
 		$awsAccessKey=$_POST['awsAccessKey'];
 		$awsSecretKey=$_POST['awsSecretKey'];
 		$awsselected=$_POST['awsselected'];
-		$awsdisablessl=$_POST['awsdisablessl'];
+		$awsdisablessl=isset($_POST['awsdisablessl']);
 		$ajax=true;
 	}
 	echo '<span id="awsBucketerror" style="color:red;">';
@@ -96,8 +96,7 @@ function backwpup_get_aws_buckets($args='') {
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>$awsAccessKey,'secret'=>$awsSecretKey,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$s3 = new AmazonS3();
+			$s3 = new AmazonS3(array('key'=>$awsAccessKey,'secret'=>$awsSecretKey));
 			if (!empty($awsdisablessl))
 				$s3->disable_ssl(true);
 			$buckets=$s3->list_buckets();
@@ -149,8 +148,7 @@ function backwpup_get_gstorage_buckets($args='') {
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$gstorage = new AmazonS3();
+			$gstorage = new AmazonS3(array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret));
 			$gstorage->set_hostname('commondatastorage.googleapis.com');
 			$gstorage->allow_hostname_override(false);
 			$buckets=$gstorage->list_buckets();

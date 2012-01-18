@@ -2331,8 +2331,7 @@ class BackWPup_job {
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$s3 = new AmazonS3();
+			$s3 = new AmazonS3(array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsSecretKey')));
 			if (backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'))
 				$s3->disable_ssl(true);
 			if ($s3->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'))) {
@@ -2432,8 +2431,7 @@ class BackWPup_job {
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageSecret'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$gstorage = new AmazonS3();
+			$gstorage = new AmazonS3(array('key'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageAccessKey'),'secret'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageSecret')));
 			$gstorage->set_hostname('commondatastorage.googleapis.com');
 			$gstorage->allow_hostname_override(false);
 			if ($gstorage->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'))) {

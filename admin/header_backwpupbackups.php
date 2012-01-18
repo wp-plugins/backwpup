@@ -27,8 +27,7 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (backwpup_get_option($main,'awsAccessKey') and !backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket')) {
 						try {
-							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-							$s3 = new AmazonS3();
+							$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey')));
 							if (backwpup_get_option($main,'awsdisablessl'))
 								$s3->disable_ssl(true);
 							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
@@ -44,8 +43,7 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket')) {
 						try {
-							CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-							$gstorage = new AmazonS3();
+							$gstorage = new AmazonS3(array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret')));
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
 							$gstorage->delete_object(backwpup_get_option($main,'GStorageBucket'),$backupfile);
@@ -170,8 +168,7 @@ if (!empty($doaction)) {
 		if (!class_exists('AmazonS3'))
 			require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$s3 = new AmazonS3();
+			$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey')));
 			if (backwpup_get_option($main,'awsdisablessl'))
 				$s3->disable_ssl(true);
 			$s3file=$s3->get_object(backwpup_get_option($main,'awsBucket'), $_GET['file']);
