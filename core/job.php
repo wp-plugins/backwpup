@@ -173,7 +173,7 @@ class BackWPup_job {
 			//make empty file list
 			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' ) {
 				//set Backup folder to temp folder if not set
-				$this->jobdata['BACKUPDIR']=backwpup_get_option($this->jobdata['JOBMAIN'],'BACKUPDIR');
+				$this->jobdata['BACKUPDIR']=backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir');
 				if ( !$this->jobdata['BACKUPDIR'] or $this->jobdata['BACKUPDIR'] == '/' )
 					$this->jobdata['BACKUPDIR'] = backwpup_get_option('cfg','tempfolder');
 				//Create backup archive full file name
@@ -563,11 +563,11 @@ class BackWPup_job {
 			$filesize = 0;
 
 		//clean up temp
-		if ( $this->jobdata['BACKUPFILE'] and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['BACKUPFILE']) )
+		if (!empty($this->jobdata['BACKUPFILE']) and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['BACKUPFILE']) )
 			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['BACKUPFILE']);
-		if ( $this->jobdata['DBDUMPFILE'] and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']) )
+		if (!empty($this->jobdata['DBDUMPFILE']) and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']) )
 			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']);
-		if ($this->jobdata['WPEXPORTFILE'] and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']) )
+		if (!empty($this->jobdata['WPEXPORTFILE']) and file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']) )
 			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']);
 
 		//Update job options
@@ -2007,18 +2007,18 @@ class BackWPup_job {
 	protected function dest_folder_sync() {
 		$this->jobdata['STEPTODO']=count($this->jobdata['FOLDERLIST']);
 		trigger_error(sprintf(__('%d. Try to sync files with folder...','backwpup'),$this->jobdata['DEST_FOLDER_SYNC']['STEP_TRY']),E_USER_NOTICE);
-
+		if (backwpup_get_option($this->jobdata['JOBMAIN'],'backupsyncnodelete'))
+			trigger_error(__('No files/folder will deleted on destination!','backwpup'));
 		//create not existing folders
 		foreach($this->jobdata['FOLDERLIST'] as $folder) {
 			$testfolder=str_replace($this->jobdata['REMOVEPATH'], '', $folder);
 			if (empty($testfolder))
 				continue;
-			if (!is_dir($this->jobdata['BACKUPDIR'].$testfolder))
-				mkdir($this->jobdata['BACKUPDIR'].$testfolder,FS_CHMOD_DIR, true);
+			if (!is_dir(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir').$testfolder))
+				mkdir(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir').$testfolder,FS_CHMOD_DIR, true);
 		}
 		//sync folder by folder
-		$this->_dest_folder_sync_files($this->jobdata['BACKUPDIR']);
-		$this->jobdata['STEPDONE']++;
+		$this->_dest_folder_sync_files(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir'));
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER_SYNC'; //set done
 	}
 
@@ -2027,11 +2027,12 @@ class BackWPup_job {
 			return false;
 		if ( !$levels )
 			return false;
+		$this->jobdata['STEPDONE']++;
 		$this->_update_working_data();
 		$folder = trailingslashit($folder);
 		//get files to sync
-		$filestosync=$this->_get_files_in_folder($this->jobdata['REMOVEPATH'].trim(str_replace($this->jobdata['BACKUPDIR'], '', $folder)));
-		if ($folder==$this->jobdata['BACKUPDIR']) //add extra files to sync
+		$filestosync=$this->_get_files_in_folder($this->jobdata['REMOVEPATH'].trim(str_replace(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir'), '', $folder)));
+		if ($folder==backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir')) //add extra files to sync
 			$filestosync=array_merge($filestosync,$this->jobdata['EXTRAFILESTOBACKUP']);
 
 		if ( $dir = @opendir($folder) ) {
@@ -2042,13 +2043,15 @@ class BackWPup_job {
 					trigger_error(sprintf(__('File or folder "%s" is not readable!', 'backwpup'), $folder . $file), E_USER_WARNING);
 				}  elseif ( is_dir($folder . $file) ) {
 					$this->_dest_folder_sync_files(trailingslashit($folder . $file), $levels - 1);
-					$testfolder=str_replace($this->jobdata['BACKUPDIR'], '', $folder . $file);
-					if (!in_array($this->jobdata['REMOVEPATH'].$testfolder,$this->jobdata['FOLDERLIST'])) {
-						rmdir($folder . $file);
-						trigger_error(sprintf(__('Folder deleted %s','backwpup'),$folder . $file));
+					if (!backwpup_get_option($this->jobdata['JOBMAIN'],'backupsyncnodelete')) {
+						$testfolder=str_replace(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir'), '', $folder . $file);
+						if (!in_array($this->jobdata['REMOVEPATH'].$testfolder,$this->jobdata['FOLDERLIST'])) {
+							if (rmdir($folder . $file))
+								trigger_error(sprintf(__('Folder deleted %s','backwpup'),$folder . $file));
+						}
 					}
 				} elseif ( is_file($folder . $file) ) {
-					$testfile=str_replace($this->jobdata['BACKUPDIR'], '', $folder . $file);
+					$testfile=str_replace(backwpup_get_option($this->jobdata['JOBMAIN'],'backupdir'), '', $folder . $file);
 					if (in_array($this->jobdata['REMOVEPATH'].$testfile,$filestosync)) {
 						if (filesize($this->jobdata['REMOVEPATH'].$testfile)!=filesize($folder . $file))
 							copy($this->jobdata['REMOVEPATH'].$testfile,$folder . $file);
@@ -2056,18 +2059,17 @@ class BackWPup_job {
 							if ($keyfile==$this->jobdata['REMOVEPATH'].$testfile)
 								unset($filestosync[$key]);
 						}
-					} else {
-						unlink($folder . $file);
-						trigger_error(sprintf(__('File deleted %s','backwpup'),$folder . $file));
+					} elseif (!backwpup_get_option($this->jobdata['JOBMAIN'],'backupsyncnodelete'))  {
+						if(unlink($folder . $file))
+							trigger_error(sprintf(__('File deleted %s','backwpup'),$folder . $file));
 					}
 				}
 			}
 			@closedir($dir);
 		}
 		//sync new files
-		foreach($filestosync as $keyfile) {
+		foreach($filestosync as $keyfile)
 			copy($keyfile,$folder . basename($keyfile));
-		}
 	}
 
 	/**
