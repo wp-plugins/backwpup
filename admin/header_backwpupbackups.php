@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -321,4 +321,3 @@ if (method_exists(get_current_screen(),'add_help_tab')) {
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpupbackups_per_page') );
 
 $backwpup_listtable->prepare_items();
-?>

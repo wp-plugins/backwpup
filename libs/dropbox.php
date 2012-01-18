@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -780,5 +780,3 @@ class backwpup_OAuthSimple {
 class backwpup_OAuthSimpleException extends Exception {
 
 }
-
-?>

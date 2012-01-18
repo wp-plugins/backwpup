@@ -351,7 +351,6 @@ class backwpup_SugarSync {
 	}	
 }
 
-
 /**
  * SugarSync Exception class
  *

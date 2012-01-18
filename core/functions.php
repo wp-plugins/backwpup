@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -32,6 +32,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default['cfg']['jobscriptretry']=5;
 		$default['cfg']['maxlogs']=50;
 		$default['cfg']['gzlogs']=false;
+		$default['cfg']['runnowalt']=false;
 		$default['cfg']['logfolder']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.substr(md5(md5(SECURE_AUTH_KEY)), -5).'-logs/';
 		$default['cfg']['httpauthuser']='';
 		$default['cfg']['httpauthpassword']='';
@@ -258,10 +259,10 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	$header='';
 	$authurl='';
 
-	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )))
+	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
 
-	if (in_array($starttype, array( 'runnow', 'cronrun', 'runext','apirun' )))
+	if (in_array($starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
 		$query_args['jobid']=$jobid;
 
 	if (backwpup_get_option('cfg','httpauthuser') and backwpup_get_option('cfg','httpauthpassword')) {
@@ -288,7 +289,10 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 			$query_args['_nonce']=wp_generate_password( 12, false, false );
 			backwpup_update_option('temp', $starttype.'_nonce', $query_args['_nonce']);
 		}
-	} else {
+	} elseif (backwpup_get_option('cfg','runnowalt') and $starttype=='runnow') {
+		$url=wp_nonce_url(backwpup_admin_url('admin.php'), 'job-runnow');
+		$query_args['page']='backwpupworking';
+	} elseif ($starttype=='runnow' or $starttype=='runnowalt'){
 		$oldnonce=backwpup_get_option('temp', $starttype.'_nonce_'.$jobid);
 		if (!empty($oldnonce))
 			$query_args['_nonce']=$oldnonce;
@@ -635,4 +639,3 @@ function backwpup_get_workingdata($fulldata=true) {
 		return false;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -8,20 +8,20 @@ if (!defined('ABSPATH')) {
 global $wpdb;
 ?>
 <div class="wrap">
-<?PHP
+<?php
 screen_icon();
 echo "<h2>".esc_html( __('BackWPup Tools', 'backwpup'))."</h2>";
 if (isset($backwpup_message) and !empty($backwpup_message)) 
 	echo "<div id=\"message\" class=\"updated\"><p>".$backwpup_message."</p></div>";
 ?>
-<form id="posts-filter" enctype="multipart/form-data" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpuptools'; ?>" method="post">
-<?PHP wp_nonce_field('backwpup-tools'); ?>
-<h3><?PHP _e('Database restore','backwpup'); ?></h3> 
+<form id="posts-filter" enctype="multipart/form-data" action="<?php echo backwpup_admin_url('admin.php').'?page=backwpuptools'; ?>" method="post">
+<?php wp_nonce_field('backwpup-tools'); ?>
+<h3><?php _e('Database restore','backwpup'); ?></h3>
 <table class="form-table"> 
 <tr valign="top">
-<th scope="row"><?PHP _e('DB Restore','backwpup'); ?></th>
+<th scope="row"><?php _e('DB Restore','backwpup'); ?></th>
 <td>
-<?PHP
+<?php
 if (!file_exists(ABSPATH.'backwpup_db_restore.php') and is_writeable(ABSPATH)) {
 	_e('Download manually DB restore tool: <a href="http://api.backwpup.com/download/backwpup_db_restore.zip">http://api.backwpup.com/download/backwpup_db_restore.zip</a>','backwpup');
 	echo '<br />';
@@ -36,16 +36,16 @@ elseif(is_writeable(ABSPATH)) {
 </tr>
 </table>
 
-<h3><?PHP _e('Import Jobs settings','backwpup'); ?></h3>
+<h3><?php _e('Import Jobs settings','backwpup'); ?></h3>
 <table class="form-table"> 
 <tr valign="top"> 
-<th scope="row"><label for="importfile"><?php _e('Select file to import:', 'backwpup'); ?></label></th> 
+<th scope="row"><label for="importfile"><?php _e('Select file to import:', 'backwpup'); ?></label></th>
 <td><input name="importfile" type="file" id="importfile" class="regular-text code" /> 
 <input type="submit" name="upload" class="button-primary" value="<?php _e('Upload', 'backwpup'); ?>" />
 </td> 
 </tr>
 <tr valign="top"> 
-<?PHP
+<?php
 if (isset($_POST['upload']) and is_uploaded_file($_FILES['importfile']['tmp_name']) and $_POST['upload']==__('Upload', 'backwpup')) {
 	echo "<th scope=\"row\"><label for=\"maxlogs\">".__('Select jobs to import','backwpup')."</label></th><td>";
 	$import=file_get_contents($_FILES['importfile']['tmp_name']);
@@ -92,12 +92,12 @@ echo '</td>';
 </tr>
 </table>
 
-	<h3><?PHP _e('Test max. script execution time','backwpup'); ?></h3>
+	<h3><?php _e('Test max. script execution time','backwpup'); ?></h3>
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row"><?PHP _e('Test result:','backwpup'); ?></th>
+			<th scope="row"><?php _e('Test result:','backwpup'); ?></th>
 			<td>
-				<?PHP
+				<?php
 				$times=backwpup_get_option('temp','exectime');
 				if (empty($times['starttime']) or empty($times['lasttime'])) {
 					_e('No result');

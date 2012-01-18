@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -15,5 +15,4 @@ echo "<input type=\"hidden\" name=\"page\" value=\"backwpuplogs\" />";
 $backwpup_listtable->display();
 echo "<div id=\"ajax-response\"></div>";
 echo "</form>"; 
-echo "</div>";	
-?>
+echo "</div>";

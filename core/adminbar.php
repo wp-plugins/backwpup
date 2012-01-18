@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -67,4 +67,3 @@ function backwpup_add_adminbar() {
 }
 wp_enqueue_style("backwpupadmin",BACKWPUP_PLUGIN_BASEURL."/css/adminbar.css","",BACKWPUP_VERSION,"screen");
 add_action('admin_bar_menu', 'backwpup_add_adminbar',100);
-?>

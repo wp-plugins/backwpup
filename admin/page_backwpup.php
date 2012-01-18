@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -16,5 +16,4 @@ wp_nonce_field('backwpup_ajax_nonce', 'backwpupajaxnonce', false );
 $backwpup_listtable->display();
 echo "<div id=\"ajax-response\"></div>";
 echo "</form>";
-echo "</div>";	
-?>
+echo "</div>";

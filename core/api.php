@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -137,4 +137,3 @@ class BackWPup_api {
 	}
 }
 new BackWPup_api();
-?>

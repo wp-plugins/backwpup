@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -341,4 +341,3 @@ add_action('wp_ajax_backwpup_get_gstorage_buckets', 'backwpup_get_gstorage_bucke
 add_action('wp_ajax_backwpup_get_rsc_container', 'backwpup_get_rsc_container');
 add_action('wp_ajax_backwpup_get_msazure_container', 'backwpup_get_msazure_container');
 add_action('wp_ajax_backwpup_get_sugarsync_root', 'backwpup_get_sugarsync_root');
-?>

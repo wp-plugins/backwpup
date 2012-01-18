@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -235,4 +235,3 @@ if (!empty($sqlfiles)) {  //for restore file
 //put massage if one
 if (!empty($backwpup_admin_message))
 	$backwpup_admin_message = '<div id="message" class="error fade"><strong>BackWPup:</strong><br />'.$backwpup_admin_message.'</div>';
-?>

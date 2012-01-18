@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -166,4 +166,3 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 		return $r;
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -25,13 +25,13 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	backwpup_update_option('cfg','jobscriptretry',$_POST['jobscriptretry']);
 	backwpup_update_option('cfg','maxlogs',abs((int)$_POST['maxlogs']));
 	backwpup_update_option('cfg','gzlogs',isset($_POST['gzlogs']) ? true : false);
+	backwpup_update_option('cfg','runnowalt',isset($_POST['runnowalt']) ? true : false);
 	backwpup_update_option('cfg','storeworkingdatain', (($_POST['storeworkingdatain']=='db' or $_POST['storeworkingdatain']=='file') ? $_POST['storeworkingdatain'] : 'db'));
-	backwpup_update_option('cfg','apicronservice',isset($_POST['apicronservice']) ? true : false);
 	backwpup_update_option('cfg','httpauthuser',$_POST['httpauthuser']);
 	backwpup_update_option('cfg','httpauthpassword',backwpup_encrypt($_POST['httpauthpassword']));
-	$_POST['jobrunauthkey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['jobrunauthkey']));
+	$_POST['jobrunauthkey']=preg_replace( '/[^a-zA-Z0-9]/', '',trim($_POST['jobrunauthkey']));
 	backwpup_update_option('cfg','jobrunauthkey',$_POST['jobrunauthkey']);
-	$_POST['apicronservicekey']=preg_replace( '/[^a-zA-Z0-9_\-]/', '',trim($_POST['apicronservicekey']));
+	$_POST['apicronservicekey']=preg_replace( '/[^a-zA-Z0-9]/', '',trim($_POST['apicronservicekey']));
 	backwpup_update_option('cfg','apicronservicekey',$_POST['apicronservicekey']);
 	if (7200>$_POST['jobrunmaxexectime'] and 0<$_POST['jobrunmaxexectime'])
 		$_POST['jobrunmaxexectime']=(int)$_POST['jobrunmaxexectime'];
@@ -80,4 +80,3 @@ if (method_exists(get_current_screen(),'add_help_tab')) {
 		'<p>' . '</p>'
 	) );
 }
-?>

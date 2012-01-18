@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -13,7 +13,7 @@ class BackWPup_job {
 	public function __construct($starttype,$jobid=0) {
 		$this->jobstarttype=$starttype;
 		//get job data
-		if ( in_array($this->jobstarttype, array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) )
+		if ( in_array($this->jobstarttype, array( 'runnow','runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun' )) )
 			$this->start((int)$jobid);
 		else
 			$this->jobdata = backwpup_get_workingdata();
@@ -118,9 +118,7 @@ class BackWPup_job {
 		//Restart job
 		$this->_update_working_data(true);
 		$this->_error_handler(E_USER_NOTICE, sprintf(__('%d. Script stop! Will started again now!', 'backwpup'), $this->jobdata['RESTART']), __FILE__, __LINE__,false);
-		$raw_response=backwpup_jobrun_url('restart','',true);
-		if (300<= wp_remote_retrieve_response_code($raw_response) or is_wp_error($raw_response))
-			$this->_error_handler(E_USER_ERROR, strip_tags(json_encode($raw_response)), __FILE__, __LINE__,false);
+		backwpup_jobrun_url('restart','',true);
 		exit;
 	}
 
@@ -262,7 +260,7 @@ class BackWPup_job {
 			fwrite($fd, __('[INFO]: BackWPup cron:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'cron') . '; ' . date_i18n('D, j M Y @ H:i', backwpup_get_option($this->jobdata['JOBMAIN'],'cronnextrun')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		if ( $this->jobstarttype == 'cronrun' )
 			fwrite($fd, __('[INFO]: BackWPup job started from wp-cron', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		elseif ( $this->jobstarttype == 'runnow' )
+		elseif ( $this->jobstarttype == 'runnow' or $this->jobstarttype == 'runnowalt')
 			fwrite($fd, __('[INFO]: BackWPup job started manually', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
 		elseif ( $this->jobstarttype == 'runext' )
 			fwrite($fd, __('[INFO]: BackWPup job started external from url', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
@@ -969,8 +967,9 @@ class BackWPup_job {
 			foreach ( $this->jobdata['DB_DUMP']['TABLES'] as $tablekey => $table ) {
 
 				trigger_error(sprintf(__('Dump database table "%s"', 'backwpup'), $table), E_USER_NOTICE);
-				//get more memory if needed
 				$this->_update_working_data();
+				if (!isset($this->jobdata['DB_DUMP']['ROWDONE']))
+					$this->jobdata['DB_DUMP']['ROWDONE']=0;
 
 				$tablecreate = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Table structure for table $table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
 				$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;" . BACKWPUP_LINE_SEPARATOR;
@@ -1008,6 +1007,7 @@ class BackWPup_job {
 
 				//get data from table
 				$result=mysql_query("SELECT * FROM `".$table."`");
+				$numrows=mysql_num_rows($result);
 				$this->jobdata['COUNT']['SQLQUERRYS']++;
 				if ( mysql_error() ) {
 					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SELECT * FROM `".$table."`"), E_USER_ERROR);
@@ -1022,9 +1022,14 @@ class BackWPup_job {
 					$fieldinfo[$fieldsarray[$i]] = mysql_fetch_field($result, $i);
 				}
 
-				$querystring = '';
+				if ($this->jobdata['DB_DUMP']['ROWDONE']==0)
+					$this->jobdata['DB_DUMP']['QUERYLEN'] = 0;
+				$count=0;
 				while ( $data = mysql_fetch_assoc($result)) {
 					$values = array();
+					$dump='';
+					if ($this->jobdata['DB_DUMP']['ROWDONE']>$count)
+						continue;
 					foreach ( $data as $key => $value ) {
 						if ( is_null($value) or !isset($value) ) // Make Value NULL to string NULL
 							$value = "NULL";
@@ -1034,26 +1039,27 @@ class BackWPup_job {
 							$value = "'" . mysql_real_escape_string($value) . "'";
 						$values[] = $value;
 					}
-					if ( empty($querystring) )
-						$querystring = "INSERT INTO `" . $table . "` (`".implode("`, `", $fieldsarray)."`) VALUES " . BACKWPUP_LINE_SEPARATOR;
-					if ( strlen($querystring) <= 50000 ) { //write dump on more than 50000 chars.
-						$querystring .= "(" . implode(", ", $values) . ")," . BACKWPUP_LINE_SEPARATOR;
+					if ($this->jobdata['DB_DUMP']['QUERYLEN'] == 0 )
+						$dump = "INSERT INTO `" . $table . "` (`".implode("`, `", $fieldsarray)."`) VALUES " . BACKWPUP_LINE_SEPARATOR;
+					if ( ( $this->jobdata['DB_DUMP']['QUERYLEN'] + strlen($dump)) <= 50000 and $this->jobdata['DB_DUMP']['ROWDONE']!=($numrows-1) ) { //new query in dump on more than 50000 chars.
+						$dump .= "(" . implode(", ", $values) . ")," . BACKWPUP_LINE_SEPARATOR;
+						$this->jobdata['DB_DUMP']['QUERYLEN'] = $this->jobdata['DB_DUMP']['QUERYLEN'] + strlen($dump);
 					} else {
-						$querystring .= "(" . implode(", ", $values) . ");" . BACKWPUP_LINE_SEPARATOR;
-						if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
-							gzwrite($file, $querystring);
-						elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
-							bzwrite($file, $querystring);
-						else
-							fwrite($file, $querystring);
-						$querystring = '';
+						$dump .= "(" . implode(", ", $values) . ");" . BACKWPUP_LINE_SEPARATOR;
+						$this->jobdata['DB_DUMP']['QUERYLEN'] = 0;
 					}
+					if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
+						gzwrite($file, $dump);
+					elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
+						bzwrite($file, $dump);
+					else
+						fwrite($file, $dump);
+					$this->jobdata['DB_DUMP']['ROWDONE']++;
+					$count++;
 				}
-				if ( !empty($querystring) ) //dump rest
-					$tabledata = substr($querystring, 0, -strlen(BACKWPUP_LINE_SEPARATOR)-1) . ";" . BACKWPUP_LINE_SEPARATOR;
 
 				if ( $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
-					$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . BACKWPUP_LINE_SEPARATOR;
+					$tabledata = "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . BACKWPUP_LINE_SEPARATOR;
 
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
 					gzwrite($file, $tabledata);
@@ -1066,6 +1072,7 @@ class BackWPup_job {
 
 				unset($this->jobdata['DB_DUMP']['TABLES'][$tablekey]);
 				$this->jobdata['STEPDONE']++;
+				$this->jobdata['DB_DUMP']['ROWDONE']=0;
 			}
 		}
 
@@ -2611,4 +2618,3 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 }
-?>

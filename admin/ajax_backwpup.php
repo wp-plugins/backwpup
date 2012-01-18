@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -128,4 +128,3 @@ function backwpup_show_info_td() {
 }
 //add ajax function
 add_action('wp_ajax_backwpup_show_info_td', 'backwpup_show_info_td');
-?>

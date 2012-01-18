@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -65,24 +65,4 @@ function backwpup_cron_run() {
 		}
 	}
 }
-
-function backwpup_cron_run_url() {
-	global $wpdb;
-	$backupdata=backwpup_get_workingdata();
-	if ($backupdata and current_time('timestamp')-$backupdata['TIMESTAMP']>=480) {
-		backwpup_jobrun_url('restarttime','',true);
-	} else {
-		$mains=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron'");
-		if (!empty($mains)) {
-			foreach ($mains as $main) {
-				$cronnextrun=backwpup_get_option($main,'cronnextrun');
-				if ($cronnextrun<=current_time('timestamp')) {
-					backwpup_jobrun_url('cronrun',backwpup_get_option($main,'jobid'),true);
-					exit;
-				}
-			}
-		}
-	}
-}
 add_action('backwpup_cron',  'backwpup_cron_run');
-?>

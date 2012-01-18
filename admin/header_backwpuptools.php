@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -92,4 +92,3 @@ if (method_exists(get_current_screen(),'add_help_tab')) {
 		'<p>' . '</p>'
 	) );
 }
-?>

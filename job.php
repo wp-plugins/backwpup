@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (empty($_GET['starttype']) and !defined('STDIN')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -32,15 +32,13 @@ if ( defined('STDIN') ) {
 	if ( is_file('../../../wp-load.php') ) {
 		require_once('../../../wp-load.php');
 	} else {
-		$_GET['ABSPATH'] = preg_replace('/[^a-zA-Z0-9.\/_\-]/', '', trim(urldecode($_GET['ABSPATH'])));
-		$_GET['ABSPATH'] = str_replace(array( '../', '\\', '//' ), '', $_GET['ABSPATH']);
-		if ( file_exists($_GET['ABSPATH'] . 'wp-load.php') )
+		if ( is_dir($_GET['ABSPATH']) and file_exists($_GET['ABSPATH'] . 'wp-load.php') )
 			require_once($_GET['ABSPATH'] . 'wp-load.php');
 		else
 			die('ABSPATH check');
 	}
 	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) )
-		wp_die(__('JOBID check','backwpup'),'',array( 'response' => 400 ));
+		die(__('JOBID check','backwpup'));
 	@set_time_limit(0);
 } else { //normal start from webservice
 	//check get vars
@@ -48,68 +46,80 @@ if ( defined('STDIN') ) {
 	if ( is_file('../../../wp-load.php') ) {
 		require_once('../../../wp-load.php');
 	} else {
-		$_GET['ABSPATH'] = preg_replace('/[^a-zA-Z0-9.\/_\-]/', '', trim(urldecode($_GET['ABSPATH'])));
-		$_GET['ABSPATH'] = str_replace(array( '../', '\\', '//' ), '', $_GET['ABSPATH']);
-		if ( realpath($_GET['ABSPATH'])  and file_exists(realpath($_GET['ABSPATH'] . 'wp-load.php')) )
-			require_once(realpath($_GET['ABSPATH'] . 'wp-load.php'));
-		else {
+		$_GET['ABSPATH']=rtrim(preg_replace('/[^a-zA-Z0-9. :_\/-]/', '',trim(urldecode($_GET['ABSPATH']))),'/');
+		if (substr($_GET['ABSPATH'],1,1)==':')
+			$_GET['ABSPATH'] =realpath(str_replace(array('..'), '', $_GET['ABSPATH']));
+		else
+			$_GET['ABSPATH'] = realpath('/'.ltrim(str_replace(array(':','..'), '', $_GET['ABSPATH']),'/'));
+		if ( !empty($_GET['ABSPATH']) and is_dir($_GET['ABSPATH'].'/') and file_exists(realpath($_GET['ABSPATH'] . '/wp-load.php')) ) {
+			require_once(realpath($_GET['ABSPATH'] . '/wp-load.php'));
+		} else {
 			header($_SERVER["SERVER_PROTOCOL"]." 400 Bad Request",400);
 			die('ABSPATH check');
 		}
 	}
 	if (isset($_GET['_nonce']))
-		$_GET['_nonce'] = preg_replace('/[^a-zA-Z0-9_\-]/', '', trim($_GET['_nonce']));
+		$_GET['_nonce'] = preg_replace('/[^a-zA-Z0-9]/', '', trim($_GET['_nonce']));
 	if ( empty($_GET['_nonce']) or !is_string($_GET['_nonce']) )
-		wp_die(__('Nonce pre check','backwpup'),'',array( 'response' => 403 ));
-	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restarttime', 'restart', 'runnow', 'cronrun', 'runext','apirun' )) )
-		wp_die(__('Starttype check','backwpup'),'',array( 'response' => 400 ));
-	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext','apirun' )) )
-		wp_die(__('JOBID check','backwpup'),'',array( 'response' => 400 ));
+		wp_die(__('Nonce pre check','backwpup'),__('Nonce pre check','backwpup'),array( 'response' => 403 ));
+	if ( empty($_GET['starttype']) or !in_array($_GET['starttype'], array( 'restart', 'runnow', 'runnowalt', 'runext','apirun' )) )
+		wp_die(__('Starttype check','backwpup'),__('Starttype check','backwpup'),array( 'response' => 400 ));
+	if ( (empty($_GET['jobid']) or !is_numeric($_GET['jobid'])) and in_array($_GET['starttype'], array( 'runnow', 'runnowalt', 'runext', 'apirun' )) )
+		wp_die(__('JOBID check','backwpup'),__('JOBID check','backwpup'),array( 'response' => 400 ));
 
-	if ( $_GET['starttype']=='runnow' and backwpup_get_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid'])!=$_GET['_nonce'])
-		wp_die(__('Nonce check','',array( 'response' => 403)));
-	elseif ( in_array($_GET['starttype'], array( 'cronrun','restarttime', 'restart' )) and backwpup_get_option('temp',$_GET['starttype'].'_nonce')!=$_GET['_nonce'])
-		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
+	if ( in_array($_GET['starttype'], array( 'runnow', 'runnowalt' )) and backwpup_get_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid'])!=$_GET['_nonce'])
+		wp_die(__('Nonce check','backwpup'),__('Nonce check','backwpup'),array( 'response' => 403));
+	elseif ( $_GET['starttype']=='restart' and backwpup_get_option('temp',$_GET['starttype'].'_nonce')!=$_GET['_nonce'])
+		wp_die(__('Nonce check','backwpup'),__('Nonce check','backwpup'),array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='apirun' and (!backwpup_get_option('cfg','apicronservicekey') or $_GET['_nonce']!=backwpup_get_option('cfg','apicronservicekey')))
-		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
+		wp_die(__('Nonce check','backwpup'),__('Nonce check','backwpup'),array( 'response' => 403 ));
 	elseif ( $_GET['starttype']=='runext' and (backwpup_get_option('cfg','jobrunauthkey') or $_GET['_nonce']!=backwpup_get_option('cfg','jobrunauthkey')))
-		wp_die(__('Nonce check','backwpup'),'',array( 'response' => 403 ));
+		wp_die(__('Nonce check','backwpup'),__('Nonce check','backwpup'),array( 'response' => 403 ));
 	//delete nonce
 	backwpup_delete_option('temp',$_GET['starttype'].'_nonce_'.$_GET['jobid']);
 	backwpup_delete_option('temp',$_GET['starttype'].'_nonce');
 	//set max execution time
 	@set_time_limit(backwpup_get_option('cfg','jobrunmaxexectime'));
 }
-if (in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'apirun', 'runcmd' )))  {
+//check job id exists
+if (in_array($_GET['starttype'], array( 'runnow', 'runnowalt', 'runext', 'apirun', 'runcmd' )))  {
 	if ( $_GET['jobid'] != backwpup_get_option('job_' . $_GET['jobid'], 'jobid'))
-		wp_die(__('Wrong JOBID check','backwpup'),'',array( 'response' => 400 ));
+		wp_die(__('Wrong JOBID check','backwpup'),__('Wrong JOBID check','backwpup'),array( 'response' => 400 ));
+}
+//check api run is in time windows
+if ($_GET['starttype']=='apirun')  {
+	$nextruntime=backwpup_get_option('job_' . $_GET['jobid'], 'cronnextrun');
+	$timenow=current_time('timestamp');
+	if ( ($nextruntime+1800)<$timenow or ($nextruntime-1800)>$timenow)
+		wp_die(__('API run on false time','backwpup'),__('API run on false time','backwpup'),array( 'response' => 400 ));
 }
 //check folders
 if (!backwpup_get_option('cfg','logfolder') or !is_dir(backwpup_get_option('cfg','logfolder')) or !is_writable(backwpup_get_option('cfg','logfolder')))
-	wp_die(__('Log folder not exists or is not writable'),'',array( 'response' => 500 ));
+	wp_die(__('Log folder not exists or is not writable','backwpup'),__('Log folder not exists or is not writable','backwpup'),array( 'response' => 500 ));
 if (!backwpup_get_option('cfg','tempfolder') or !is_dir(backwpup_get_option('cfg','tempfolder')) or !is_writable(backwpup_get_option('cfg','tempfolder')))
-	wp_die(__('Temp folder not exists or is not writable'),'',array( 'response' => 500 ));
+	wp_die(__('Temp folder not exists or is not writable','backwpup'),__('Temp folder not exists or is not writable','backwpup'),array( 'response' => 500 ));
 //check running job
-if ( in_array($_GET['starttype'], array( 'runnow', 'cronrun', 'runext', 'runcmd','apirun' )) and backwpup_get_workingdata(false) )
-	wp_die(__('A job already running'),'',array( 'response' => 503 ));
-if ( in_array($_GET['starttype'], array( 'restart', 'restarttime' )) and !backwpup_get_workingdata(false) )
-	wp_die(__('No job running'),'',array( 'response' => 400 ));
+if ( in_array($_GET['starttype'], array( 'runnow', 'runnowalt', 'runext', 'runcmd','apirun' )) and backwpup_get_workingdata(false) )
+	wp_die(__('A job already running','backwpup'),__('A job already running','backwpup'),array( 'response' => 503 ));
+if ( in_array($_GET['starttype'], array( 'restart' )) and !backwpup_get_workingdata(false) )
+	wp_die(__('No job running','backwpup'),__('No job running','backwpup'),array( 'response' => 400 ));
 //disconnect or redirect
-if ( in_array($_GET['starttype'], array( 'restarttime', 'restart', 'cronrun', 'runext','apirun' )) ) {
-	ob_end_clean();
+if ( in_array($_GET['starttype'], array( 'restart', 'runnowalt', 'runext','apirun' )) ) {
+	nocache_headers();
+	@ob_end_clean();
 	header("Connection: close");
-	ob_start();
+	@ob_start();
 	header("Content-Length: 0");
-	ob_end_flush();
-	flush();
+	@ob_end_flush();
+	@flush();
 }
 elseif ( $_GET['starttype'] == 'runnow' ) {
-	ob_start();
-	wp_redirect(add_query_arg(array('page'=>'backwpupworking','runlogjobid'=>$_GET['jobid']),backwpup_admin_url('admin.php')));
+	nocache_headers();
+	@ob_start();
+	wp_redirect(add_query_arg(array('page'=>'backwpupworking','jobid'=>$_GET['jobid']),backwpup_admin_url('admin.php')));
 	echo ' ';
 	while ( @ob_end_flush() );
-	flush();
+	@flush();
 }
 //start class
 new BackWPup_job($_GET['starttype'],(int)$_GET['jobid']);
-?>

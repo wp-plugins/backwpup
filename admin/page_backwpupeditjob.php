@@ -1,4 +1,4 @@
-<?PHP
+<?php
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -21,7 +21,7 @@ if (empty($_REQUEST['jobid'])) {
 $main='job_'.(int)$_REQUEST['jobid'];
 ?>
 <div class="wrap">
-<?php 
+<?php
 screen_icon(); 
 echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob', 'edit-job')."\" class=\"button add-new-h2\">".esc_html__('Add New','backwpup')."</a></h2>";
 ?>
@@ -30,8 +30,8 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 <div id="message" class="updated"><p><?php echo $backwpup_message; ?></p></div>
 <?php endif; ?>
 
-<form name="editjob" id="editjob" method="post" action="<?PHP echo backwpup_admin_url('admin.php').'?page=backwpupeditjob';?>">
-<input type="hidden" name="jobid" value="<?PHP echo (int)$_REQUEST['jobid'];?>" />
+<form name="editjob" id="editjob" method="post" action="<?php echo backwpup_admin_url('admin.php').'?page=backwpupeditjob';?>">
+<input type="hidden" name="jobid" value="<?php echo (int)$_REQUEST['jobid'];?>" />
 <?php wp_nonce_field('edit-job'); ?>
 <?php wp_nonce_field('closedpostboxes', 'closedpostboxesnonce', false ); ?>
 <?php wp_nonce_field('meta-box-order', 'meta-box-order-nonce', false ); ?>
@@ -48,14 +48,14 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 
 			<div id="titlediv">
 				<div id="titlewrap">
-					<label class="hide-if-no-js" style="visibility:hidden" id="title-prompt-text" for="title"><?PHP _e('Enter Job name here','backwpup'); ?></label>
-					<input type="text" name="name" size="30" tabindex="1" value="<?PHP echo backwpup_get_option($main,'name');?>" id="title" autocomplete="off" />
+					<label class="hide-if-no-js" style="visibility:hidden" id="title-prompt-text" for="title"><?php _e('Enter Job name here','backwpup'); ?></label>
+					<input type="text" name="name" size="30" tabindex="1" value="<?php echo backwpup_get_option($main,'name');?>" id="title" autocomplete="off" />
 				</div>
 			</div>
 
 			<div class="inside">
 				<div>
-					<?PHP
+					<?php
 					if (backwpup_get_option('cfg','jobrunauthkey')) {
 						echo '<strong>'. __('External start link:','backwpup').'</strong> ';
 						$url=backwpup_jobrun_url('runext',backwpup_get_option($main,'jobid'),false);
@@ -70,11 +70,11 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 
-			<div id="databasejobs" class="stuffbox"<?PHP if (!in_array("OPTIMIZE",backwpup_get_option($main,'type')) and !in_array("DB",backwpup_get_option($main,'type')) and !in_array("CHECK",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
-				<h3><label for="dbtables"><?PHP _e('Database Jobs','backwpup'); ?></label></h3>
+			<div id="databasejobs" class="stuffbox"<?php if (!in_array("OPTIMIZE",backwpup_get_option($main,'type')) and !in_array("DB",backwpup_get_option($main,'type')) and !in_array("CHECK",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
+				<h3><label for="dbtables"><?php _e('Database Jobs','backwpup'); ?></label></h3>
 				<div class="inside">
 					<div>
-					<b><?PHP _e('Database tables for use:','backwpup'); ?></b>
+					<b><?php _e('Database tables for use:','backwpup'); ?></b>
 						<div id="dbtables">
 						<?php
 						$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
@@ -84,10 +84,10 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						?>
 						</div>
 					</div>
-					<span id="dbdump"<?PHP if (!in_array("DB",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
+					<span id="dbdump"<?php if (!in_array("DB",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
 					<strong><?php _e('Filename for Dump:','backwpup');?></strong> <input class="long-text" type="text" name="dbdumpfile" value="<?php echo backwpup_get_option($main,'dbdumpfile');?>"/>.sql
 					<br /><strong><?php _e('Copmpression for dump:','backwpup');?></strong>
-					<?PHP
+					<?php
 					echo ' <input class="radio" type="radio"'.checked('',backwpup_get_option($main,'dbdumpfilecompression'),false).' name="dbdumpfilecompression" value="" />'.__('none','backwpup');
 					if (function_exists('gzopen'))
 						echo ' <input class="radio" type="radio"'.checked('gz',backwpup_get_option($main,'dbdumpfilecompression'),false).' name="dbdumpfilecompression" value="gz" />'.__('GZip','backwpup');
@@ -103,12 +103,12 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 				</div>
 			</div>
 
-			<div id="wpexport" class="stuffbox"<?PHP if (!in_array("WPEXP",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
-				<h3><label for="dbtables"><?PHP _e('Wordpress Export','backwpup'); ?></label></h3>
+			<div id="wpexport" class="stuffbox"<?php if (!in_array("WPEXP",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
+				<h3><label for="dbtables"><?php _e('Wordpress Export','backwpup'); ?></label></h3>
 				<div class="inside">
 					<strong><?php _e('Filename for Export:','backwpup');?></strong> <input class="long-text" type="text" name="wpexportfile" value="<?php echo backwpup_get_option($main,'wpexportfile');?>"/>.xml
 					<br /><strong><?php _e('Copmpression for Export:','backwpup');?></strong>
-					<?PHP
+					<?php
 					echo ' <input class="radio" type="radio"'.checked('',backwpup_get_option($main,'wpexportfilecompression'),false).' name="wpexportfilecompression" value="" />'.__('none','backwpup');
 					if (function_exists('gzopen'))
 						echo ' <input class="radio" type="radio"'.checked('gz',backwpup_get_option($main,'wpexportfilecompression'),false).' name="wpexportfilecompression" value="gz" />'.__('GZip','backwpup');
@@ -123,15 +123,15 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 			</div>
 
 
-			<div id="filebackup" class="stuffbox"<?PHP if (!in_array("FILE",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
-				<h3><label for="filebackup"><?PHP _e('File Backup','backwpup'); ?></label></h3>
+			<div id="filebackup" class="stuffbox"<?php if (!in_array("FILE",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
+				<h3><label for="filebackup"><?php _e('File Backup','backwpup'); ?></label></h3>
 				<div class="inside">
-					<b><?PHP _e('Blog Folders to Backup:','backwpup'); ?></b><br />&nbsp;<br />
+					<b><?php _e('Blog Folders to Backup:','backwpup'); ?></b><br />&nbsp;<br />
 					<div id="filebackup">
 						<div style="width:20%; float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backuproot'),true,true);?> name="backuproot" value="1"/> <?php _e('root','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
-							<?PHP
+							<?php
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
 							$folder=untrailingslashit(str_replace('\\','/',ABSPATH));
 							if ( $dir = @opendir( $folder ) ) {
@@ -147,7 +147,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						<div style="width:20%;float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupcontent'),true,true);?> name="backupcontent" value="1"/> <?php _e('Content','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
-							<?PHP
+							<?php
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
 							$folder=untrailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
 							if ( $dir = @opendir( $folder ) ) {
@@ -163,7 +163,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						<div style="width:20%; float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupplugins'),true,true);?> name="backupplugins" value="1"/> <?php _e('Plugins','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
-							<?PHP
+							<?php
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
 							$folder=untrailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
 							if ( $dir = @opendir( $folder ) ) {
@@ -179,7 +179,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						<div style="width:20%; float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupthemes'),true,true);?> name="backupthemes" value="1"/> <?php _e('Themes','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
-							<?PHP
+							<?php
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
 							$folder=untrailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes'));
 							if ( $dir = @opendir( $folder ) ) {
@@ -195,7 +195,7 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 						<div style="width:20%; float: left;">
 							&nbsp;<b><input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupuploads'),true,true);?> name="backupuploads" value="1"/> <?php _e('Blog uploads','backwpup');?></b><br />
 							<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
-							<?PHP
+							<?php
 							echo '<i>'.__('Exclude:','backwpup').'</i><br />';
 							$folder=untrailingslashit(backwpup_get_upload_dir());
 							if ( $dir = @opendir( $folder ) ) {
@@ -212,13 +212,13 @@ echo "<h2>".esc_html( __('BackWPup Job Settings', 'backwpup'))."&nbsp;<a href=\"
 					<input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupexcludethumbs'),true,true);?> name="backupexcludethumbs" value="1"/> <?php _e('Don\'t backup thumbnails in blog uploads folder','backwpup');?><br />
 					<input class="checkbox" type="checkbox"<?php checked(backwpup_get_option($main,'backupspecialfiles'),true,true);?> name="backupspecialfiles" value="1"/> <?php _e('Backup wp-config.php, robots.txt, .htaccess, .htpasswd and favicon.ico form root if it not selected','backwpup');?>
 					<br />&nbsp;<br />
-					<b><?PHP _e('Include folders to backup:','backwpup'); ?></b><br />
-					<?PHP _e('Example:','backwpup'); ?> <?PHP echo str_replace('\\','/',ABSPATH); ?>,...<br />
-					<input name="dirinclude" id="dirinclude" type="text" value="<?PHP echo backwpup_get_option($main,'dirinclude');?>" class="large-text" /><br />
+					<b><?php _e('Include folders to backup:','backwpup'); ?></b><br />
+					<?php _e('Example:','backwpup'); ?> <?php echo str_replace('\\','/',ABSPATH); ?>,...<br />
+					<input name="dirinclude" id="dirinclude" type="text" value="<?php echo backwpup_get_option($main,'dirinclude');?>" class="large-text" /><br />
 					<br />
-					<b><?PHP _e('Exclude files/folders from backup:','backwpup'); ?></b><br />
-					<?PHP _e('Example:','backwpup'); ?> /logs/,.log,.tmp,/temp/,....<br />
-					<input name="fileexclude" id="fileexclude" type="text" value="<?PHP echo backwpup_get_option($main,'fileexclude');?>" class="large-text" /><br />
+					<b><?php _e('Exclude files/folders from backup:','backwpup'); ?></b><br />
+					<?php _e('Example:','backwpup'); ?> /logs/,.log,.tmp,/temp/,....<br />
+					<input name="fileexclude" id="fileexclude" type="text" value="<?php echo backwpup_get_option($main,'fileexclude');?>" class="large-text" /><br />
 				</div>
 			</div>
 

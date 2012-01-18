@@ -77,4 +77,3 @@ if (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB)
 //include ajax functions
 if (defined('DOING_AJAX') and DOING_AJAX and isset($_POST['backwpupajaxpage']) and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php'))
 	include_once(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php');
-?>
