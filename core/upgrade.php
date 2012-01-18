@@ -8,8 +8,9 @@ if (!defined('ABSPATH')) {
 function backwpup_upgrade() {
 	global $wpdb;
 	//Set table collate
+	$charset_collate='';
 	if ( ! empty($wpdb->charset) )
-		$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
+		$charset_collate .= "DEFAULT CHARACTER SET $wpdb->charset";
 	if ( ! empty($wpdb->collate) )
 		$charset_collate .= " COLLATE $wpdb->collate";
 	//Create DB table if not exists

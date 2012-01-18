@@ -32,8 +32,9 @@ if ( defined('STDIN') ) {
 	if ( is_file('../../../wp-load.php') ) {
 		require_once('../../../wp-load.php');
 	} else {
-		if ( is_dir($_GET['ABSPATH']) and file_exists($_GET['ABSPATH'] . 'wp-load.php') )
-			require_once($_GET['ABSPATH'] . 'wp-load.php');
+		$_GET['ABSPATH']=rtrim($_GET['ABSPATH'],'/');
+		if ( is_dir($_GET['ABSPATH']) and file_exists($_GET['ABSPATH'] . '/wp-load.php') )
+			require_once($_GET['ABSPATH'] . '/wp-load.php');
 		else
 			die('ABSPATH check');
 	}

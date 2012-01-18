@@ -5,6 +5,9 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class for management in wp-admin for BackWPup
+ */
 class BackWPup_Admin {
 
 	public function __construct() {

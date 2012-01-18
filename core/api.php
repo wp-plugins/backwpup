@@ -5,11 +5,17 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class for calling the BackWPup API
+ */
 class BackWPup_api {
 
 	private $apiurl='https://api.backwpup.com/1/';
 	private $headers=array();
 
+	/**
+	 *
+	 */
 	public function __construct() {
 		global $wp_version;
 		if (!defined('BACKWPUP_VERSION'))
@@ -29,12 +35,17 @@ class BackWPup_api {
 		//Add action for delte blog from api
 		add_action('backwpup_api_delete',  array($this,'delete'));
 	}
-	
-	//API for cron trigger
+
+	/**
+	 *
+	 * API for cron trigger
+	 *
+	 * @return bool
+	 */
 	public function cronupdate() {
 		global $wpdb;
 		if (!backwpup_get_option('cfg','apicronservicekey'))
-			return;
+			return true;
 		$post=array();
 		$post['ACTION']='cronupdate';
 		$post['OFFSET']=get_option('gmt_offset');
@@ -59,7 +70,13 @@ class BackWPup_api {
 			return false;
 	}
 
-	//check for Plugin Updates
+	/**
+	 *
+	 * Get data for plugin update check
+	 *
+	 * @param $checked_data
+	 * @return mixed
+	 */
 	public function plugin_update_check($checked_data) {
 		if (empty($checked_data->checked))
 			return $checked_data;
@@ -86,7 +103,15 @@ class BackWPup_api {
 		return $checked_data;
 	}
 
-	//infoscreen
+	/**
+	 *
+	 * Get data to display the info screen on Plugin updates
+	 *
+	 * @param $def
+	 * @param $action
+	 * @param $args
+	 * @return bool|array|WP_Error
+	 */
 	public function plugin_infoscreen($def, $action, $args) {
 		if (strtolower($action)!='plugin_information' or $args->slug!='backwpup')
 			return false;
@@ -108,7 +133,12 @@ class BackWPup_api {
 		return $res;
 	}
 
-	//delete blog
+	/**
+	 *
+	 * Delte blog form BackWPup API
+	 *
+	 * @return bool
+	 */
 	public function delete() {
 		$post=array();
 		$post['ACTION']='delete';
@@ -119,7 +149,14 @@ class BackWPup_api {
 			return false;
 	}
 
-	//for api keys
+	/**
+	 *
+	 * Get Keys for some Services
+	 *
+	 * @param string $appkey to get
+	 * @param mixed $defauft to giv back if no return
+	 * @return bool|mixed
+	 */
 	public function app_keys($appkey,$defauft=false) {
 		$apiapp=backwpup_get_option('temp','apiapp');
 		if (!$apiapp) {

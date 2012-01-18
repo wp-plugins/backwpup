@@ -5,11 +5,21 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class in that the BackWPup job runs
+ */
 class BackWPup_job {
 
 	private $jobdata = false;
 	private $jobstarttype = '';
 
+	/**
+	 *
+	 * This starts or restarts the job working
+	 *
+	 * @param sting $starttype Start types are 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart', 'restarttime'
+	 * @param int $jobid The id of job to start
+	 */
 	public function __construct($starttype,$jobid=0) {
 		$this->jobstarttype=$starttype;
 		//get job data
@@ -86,6 +96,14 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 *
+	 * Shutdown function  is call if script terminates trys to make a restart if needed
+	 *
+	 * Prepare the job for start
+	 *
+	 * @param int the signal that terminates the job
+	 */
 	public function _shutdown_function() { //can not in __destruct()
 		$args = func_get_args();
 		//nothing on empty
@@ -122,6 +140,12 @@ class BackWPup_job {
 		exit;
 	}
 
+	/**
+	 *
+	 * Prepare the job for start
+	 *
+	 * @param $jobid int the job id to start
+	 */
 	protected function start($jobid) {
 		global $wpdb,$wp_version;
 		if (empty($jobid))
@@ -296,11 +320,26 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 *
+	 * Is call for sum the sql querys done in job
+	 *
+	 * @param string $query the query that was called
+	 * @return string the input query
+	 */
 	public function _count_querys($query) {
 		$this->jobdata['COUNT']['SQLQUERRYS']++;
 		return $query;
 	}
 
+	/**
+	 *
+	 * Check is folder readable and exists create it if not
+	 * add .htaccess or index.html file in folder to prevent directory listing
+	 *
+	 * @param string $folder the folder to check
+	 * @return bool ok or not
+	 */
 	private function _check_folder($folder) {
 		$folder = untrailingslashit($folder);
 		//check that is not home of WP
@@ -331,13 +370,28 @@ class BackWPup_job {
 		return true;
 	}
 
-
+	/**
+	 *
+	 * The uncouth exception handler
+	 *
+	 * @param object $exception
+	 */
 	public function _exception_handler($exception) {
 		$this->_error_handler(E_USER_ERROR,sprintf(__('Exception caught in %1$s: %2$s','backwpup'),get_class($exception),htmlentities($exception->getMessage())),$exception->getFile(),$exception->getLine());
 	}
 
+	/**
+	 *
+	 * The error handler to write massegase to log
+	 *
+	 * @param int the error number (E_USER_ERROR,E_USER_WARNING,E_USER_NOTICE, ...)
+	 * @param string the error massege
+	 * @param string the full path of file with error (__FILE__)
+	 * @param int the line in that is the error (__LINE__)
+	 * @return bool true
+	 */
 	public function _error_handler() {
-		$args = func_get_args(); // 0:errno, 1:errstr, 2:errfile, 3:errline
+		$args = func_get_args();
 		// if error has been suppressed with an @
 		if ( error_reporting() == 0 )
 			return;
@@ -421,6 +475,13 @@ class BackWPup_job {
 		return true;
 	}
 
+	/**
+	 *
+	 * Write the Working data to display the process or that i can executes again
+	 *
+	 * @param bool $mustwrite overwrite the only ever 1 sec writing
+	 * @return bool true if working date written
+	 */
 	private function _update_working_data($mustwrite = false) {
 		global $wpdb;
 		//only run every 1 sec.
@@ -456,6 +517,11 @@ class BackWPup_job {
 		return true;
 	}
 
+	/**
+	 *
+	 * Called on job stop makes cleanup and terminates the script
+	 *
+	 */
 	protected function end() {
 		//check if end() in progress
 		if ( !$this->jobdata['ENDINPROGRESS'] )
@@ -589,8 +655,13 @@ class BackWPup_job {
 		exit;
 	}
 
+	/**
+	 *
+	 * Ste blog to maintenance mode
+	 *
+	 * @param bool $enable set to true to enable maintenance
+	 */
 	private function _maintenance_mode($enable = false) {
-		global $wp_filesystem;
 		if ( !backwpup_get_option($this->jobdata['JOBMAIN'],'maintenance') )
 			return;
 		if ( $enable ) {
@@ -619,6 +690,13 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 *
+	 * convertes a string withe M,G,K in bytes
+	 *
+	 * @param string $value string of size
+	 * @return int bytes
+	 */
 	private function _job_in_bytes($value) {
 		$multi = strtoupper(substr(trim($value), -1));
 		$bytes = abs(intval(trim($value)));
@@ -631,6 +709,12 @@ class BackWPup_job {
 		return $bytes;
 	}
 
+	/**
+	 *
+	 * Increase automatically the memory that is needed
+	 *
+	 * @param int|string $memneed of the needed memory
+	 */
 	private function _need_free_memory($memneed) {
 		if ( !function_exists('memory_get_usage') )
 			return;
@@ -648,6 +732,13 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 *
+	 * Callback for the CURLOPT_READFUNCTION that submit the transferred bytes
+	 * to build the process bar
+	 *
+	 * @param int $bytes_transferred
+	 */
 	public function _curl_read_callback($bytes_transferred) {
 		if ( $this->jobdata['STEPTODO'] > 10 and backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') != 'sync' )
 			$this->jobdata['STEPDONE'] = $this->jobdata['STEPDONE']+$bytes_transferred;
@@ -655,11 +746,26 @@ class BackWPup_job {
 		return;
 	}
 
+	/**
+	 *
+	 * Curl callback for AWS SDK to build the process bar
+	 *
+	 * @param $curl_handle
+	 * @param $file_handle
+	 * @param $out
+	 */
 	public function _curl_aws_read_callback($curl_handle, $file_handle, $out) {
 		$this->_curl_read_callback(strlen($out));
 		return;
 	}
 
+	/**
+	 *
+	 * Get the mime type of a file
+	 *
+	 * @param string $file The full file name
+	 * @return bool|string the mime type or false
+	 */
 	protected function _get_mime_type($file) {
 		if (!is_file($file))
 			return false;
@@ -859,7 +965,11 @@ class BackWPup_job {
 		}
 		return 'application/octet-stream';
 	}
-	
+
+	/**
+	 * Dumps the Database
+	 * @return nothing
+	 */
 	protected function db_dump() {
 		global $wpdb, $wp_version;
 
@@ -1116,6 +1226,10 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 	}
 
+	/**
+	 * Checks the Database
+	 * @return nothing
+	 */
 	protected function db_check() {
 		global $wpdb;
 		trigger_error(sprintf(__('%d. Try for database check...', 'backwpup'), $this->jobdata['DB_CHECK']['STEP_TRY']), E_USER_NOTICE);
@@ -1177,6 +1291,10 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_CHECK'; //set done
 	}
 
+	/**
+	 * Optimize the Database
+	 * @return nothing
+	 */
 	protected function db_optimize() {
 		global $wpdb;
 		trigger_error(sprintf(__('%d. Try for database optimize...', 'backwpup'), $this->jobdata['DB_OPTIMIZE']['STEP_TRY']), E_USER_NOTICE);
@@ -1235,6 +1353,10 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'DB_OPTIMIZE'; //set done
 	}
 
+	/**
+	 * Makes a WordPress export
+	 * @return nothing
+	 */
 	protected function wp_export() {
 		$this->jobdata['STEPTODO'] = 1;
 		trigger_error(sprintf(__('%d. Try to make a WordPress Export to XML file...', 'backwpup'), $this->jobdata['WP_EXPORT']['STEP_TRY']), E_USER_NOTICE);
@@ -1288,6 +1410,12 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][] = 'WP_EXPORT'; //set done
 	}
 
+	/**
+	 *
+	 * Helper for wp-export()
+	 *
+	 * @param $output
+	 */
 	public function _wp_export_ob_bufferwrite($output) {
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'wpexportfilecompression') == 'gz' ) {
 			gzwrite($this->jobdata['filehandel'], $output);
@@ -1299,6 +1427,10 @@ class BackWPup_job {
 		$this->_update_working_data();
 	}
 
+	/**
+	 * Generates a list of folder to backup
+	 * @return nothing
+	 */
 	protected function folder_list() {
 		trigger_error(sprintf(__('%d. Try to make list of folder to backup....', 'backwpup'), $this->jobdata['FOLDER_LIST']['STEP_TRY']), E_USER_NOTICE);
 		$this->jobdata['STEPTODO'] = 7;
@@ -1404,6 +1536,15 @@ class BackWPup_job {
 		$this->_update_working_data();
 	}
 
+	/**
+	 *
+	 * Helper function for folder_list()
+	 *
+	 * @param string $folder
+	 * @param int $levels
+	 * @param array $excludedirs
+	 * @return bool
+	 */
 	protected function _folder_list($folder = '', $levels = 100, $excludedirs = array()) {
 		if ( empty($folder) )
 			return false;
@@ -1433,6 +1574,13 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 *
+	 *  Gif back a array of files to backup in the selected folder
+	 *
+	 * @param string $folder thefolder to get the files from
+	 * @return array files to backup
+	 */
 	private function _get_files_in_folder($folder) {
 		$files=array();
 		if ( $dir = @opendir($folder) ) {
@@ -1461,6 +1609,10 @@ class BackWPup_job {
 		return $files;
 	}
 
+	/**
+	 * Creates the backup archive
+	 * @return nothing
+	 */
 	protected function create_archive() {
 		$this->jobdata['STEPTODO'] = count($this->jobdata['FOLDERLIST']) + 1;
 
@@ -1650,6 +1802,14 @@ class BackWPup_job {
 		trigger_error(sprintf(__(' %1$d Files with %2$s in Archive', 'backwpup'),$this->jobdata['COUNT']['FILES']+$this->jobdata['COUNT']['FILESINFOLDER'] ,backwpup_format_bytes($this->jobdata['COUNT']['FILESIZE']+$this->jobdata['COUNT']['FILESIZEINFOLDER'])), E_USER_NOTICE);
 	}
 
+	/**
+	 *
+	 * Helper for create_archive() to tar files
+	 *
+	 * @param string $file full file path
+	 * @param string $outfile filename in archive
+	 * @param resource $handle of archive
+	 */
 	protected function _tar_file($file, $outfile, $handle) {
 		$this->_need_free_memory('2M'); //2MB free memory
 		//split filename larger than 100 chars
@@ -1725,6 +1885,14 @@ class BackWPup_job {
 		fclose($fd);
 	}
 
+	/**
+	 *
+	 * Helper for create_archive() to tar folder names
+	 *
+	 * @param string $folder Orignal folder
+	 * @param string $foldername Name in archive
+	 * @param resource $handle of archive
+	 */
 	protected function _tar_foldername($folder, $foldername, $handle) {
 		//split filename larger than 100 chars
 		if ( strlen($foldername) <= 100 ) {
@@ -1784,6 +1952,10 @@ class BackWPup_job {
 			fwrite($handle, $header);
 	}
 
+	/**
+	 * Backup destination Folder for archives
+	 * @return nothing
+	 */
 	protected function dest_folder() {
 		$this->jobdata['STEPTODO'] = 1;
 		backwpup_update_option($this->jobdata['JOBMAIN'],'lastbackupdownloadurl',add_query_arg(array('page'=>'backwpupbackups','action'=>'download','file'=>$this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']), backwpup_admin_url('admin.php')) );
@@ -1898,6 +2070,10 @@ class BackWPup_job {
 		}
 	}
 
+	/**
+	 * Backup destination DropBox for archives
+	 * @return nothing
+	 */
 	protected function dest_dropbox() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$this->jobdata['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
@@ -1990,6 +2166,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
+	/**
+	 * Backup destination FTP for archives
+	 * @return nothing
+	 */
 	protected function dest_ftp() {
 		$this->jobdata['STEPTODO']=2;
 		trigger_error(sprintf(__('%d. Try to sending backup file to a FTP Server...','backwpup'),$this->jobdata['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
@@ -2137,7 +2317,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
-
+	/**
+	 * Backup destination Amazon S3 for archives
+	 * @return nothing
+	 */
 	protected function dest_s3() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to Amazon S3...','backwpup'),$this->jobdata['DEST_S3']['STEP_TRY']),E_USER_NOTICE);
@@ -2235,6 +2418,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
+	/**
+	 * Backup destination Google storage for archives
+	 * @return nothing
+	 */
 	protected function dest_gstorage() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup file to Google Storage...','backwpup'),$this->jobdata['DEST_GSTORAGE']['STEP_TRY']),E_USER_NOTICE);
@@ -2325,6 +2512,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
+	/**
+	 * Backup destination Mail for archives
+	 * @return nothing
+	 */
 	protected function dest_mail() {
 		$this->jobdata['STEPTODO']=1;
 		trigger_error(sprintf(__('%d. Try to sending backup with mail...','backwpup'),$this->jobdata['DEST_MAIL']['STEP_TRY']),E_USER_NOTICE);
@@ -2360,6 +2551,10 @@ class BackWPup_job {
 		$this->jobdata['STEPSDONE'][]='DEST_MAIL'; //set done
 	}
 
+	/**
+	 * Backup destination Microsoft Azure for archives
+	 * @return nothing
+	 */
 	protected function dest_msazure() {
 		$this->jobdata['STEPTODO']=2;
 		trigger_error(sprintf(__('%d. Try sending backup to a Microsoft Azure (Blob)...','backwpup'),$this->jobdata['DEST_MSAZURE']['STEP_TRY']),E_USER_NOTICE);
@@ -2431,7 +2626,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
-
+	/**
+	 * Backup destination rackspace cloud for archives
+	 * @return nothing
+	 */
 	protected function dest_rsc() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		$this->jobdata['STEPDONE']=0;
@@ -2535,6 +2733,10 @@ class BackWPup_job {
 		$this->jobdata['STEPDONE']++;
 	}
 
+	/**
+	 * Backup destination SugarSync for archives
+	 * @return nothing
+	 */
 	protected function dest_sugarsync() {
 		$this->jobdata['STEPTODO']=2+$this->jobdata['BACKUPFILESIZE'];
 		trigger_error(sprintf(__('%d. Try to sending backup to SugarSync...','backwpup'),$this->jobdata['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);

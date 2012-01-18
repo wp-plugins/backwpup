@@ -5,6 +5,12 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ * Plugin init function
+ *
+ * @return nothing
+ */
 function backwpup_plugin_init() {
 	//start upgrade if needed
 	if (backwpup_get_option('cfg','dbversion')!=BACKWPUP_VERSION) {
@@ -19,6 +25,14 @@ function backwpup_plugin_init() {
 }
 add_action('init','backwpup_plugin_init');
 
+/**
+ *
+ * Get default option for BackWPup option
+ *
+ * @param string $main Main option name lowercase max 64 chars
+ * @param string $name Option name lowercase max 64 chars
+ * @return bool|mixed
+ */
 function backwpup_default_option_settings($main,$name) {
 	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
@@ -162,6 +176,15 @@ function backwpup_default_option_settings($main,$name) {
 		return false;
 }
 
+/**
+ *
+ * Update a BackWPup option
+ *
+ * @param string $main Main option name lowercase max 64 chars
+ * @param string $name Option name lowercase max 64 chars
+ * @param mixed $value the value to store
+ * @return bool if option save or not
+ */
 function backwpup_update_option($main,$name,$value) {
 	global $wpdb;
 	$main=sanitize_key(trim($main));
@@ -200,6 +223,15 @@ function backwpup_update_option($main,$name,$value) {
 		return false;
 }
 
+/**
+ *
+ * Get a BackWPup Option
+ *
+ * @param string $main Main option name lowercase max 64 chars
+ * @param string $name Option name lowercase max 64 chars
+ * @param mixed $default if not the the default BackWPup option will get
+ * @return bool|mixed false if nothing can get else the option value
+ */
 function backwpup_get_option($main,$name,$default=false) {
 	global $wpdb,$wp_object_cache;
 	$main=sanitize_key(trim($main));
@@ -237,6 +269,14 @@ function backwpup_get_option($main,$name,$default=false) {
 	}
 }
 
+/**
+ *
+ * Deltests a BackWPup Option
+ *
+ * @param string $main Main option name lowercase max 64 chars
+ * @param string $name Option name lowercase max 64 chars
+ * @return bool deletet or not
+ */
 function backwpup_delete_option($main,$name) {
 	global $wpdb;
 	$main=sanitize_key(trim($main));
@@ -253,8 +293,16 @@ function backwpup_delete_option($main,$name) {
 		return false;
 }
 
-
-function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
+/**
+ *
+ * Get a url to run a job of BackWPup
+ *
+ * @param string $starttype Start types are 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart', 'restarttime'
+ * @param int $jobid The id of job to start else 0
+ * @param bool $run call the url no give back
+ * @return array|object [url] is the job url [header] for auth header or object form wp_remote_get()
+ */
+function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
 	$url=BACKWPUP_PLUGIN_BASEURL.'/job.php';
 	$header='';
 	$authurl='';
@@ -262,7 +310,7 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
 
-	if (in_array($starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
+	if (in_array($starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )) and !empty($jobid))
 		$query_args['jobid']=$jobid;
 
 	if (backwpup_get_option('cfg','httpauthuser') and backwpup_get_option('cfg','httpauthpassword')) {
@@ -309,6 +357,13 @@ function backwpup_jobrun_url($starttype,$jobid='',$run=false) {
 		return $url;
 }
 
+/**
+ *
+ * check if path in open basedir
+ *
+ * @param string $dir the folder to check
+ * @return bool is it in open basedir
+ */
 function backwpup_check_open_basedir($dir) {
 	if (!ini_get('open_basedir'))
 		return true;
@@ -323,6 +378,14 @@ function backwpup_check_open_basedir($dir) {
 	return false;
 }
 
+/**
+ *
+ * Formatting bytes to MB, GB, ...
+ *
+ * @param int $bytes bytes to convert
+ * @param int $precision after , digits
+ * @return string
+ */
 function backwpup_format_bytes($bytes, $precision = 2) {
 	$units = array('B', 'KB', 'MB', 'GB', 'TB');
 	$bytes = max($bytes, 0);
@@ -332,6 +395,14 @@ function backwpup_format_bytes($bytes, $precision = 2) {
 	return round($bytes, $precision) . ' ' . $units[$pow];
 }
 
+/**
+ *
+ * Returns the job types as Text or array
+ *
+ * @param array $type
+ * @param bool $echo
+ * @return array|string
+ */
 function backwpup_job_types($type=array(),$echo=false) {
 	$typename='';
 	$type=(array)$type;
@@ -365,6 +436,13 @@ function backwpup_job_types($type=array(),$echo=false) {
 		return $typename;
 }
 
+/**
+ *
+ * Reads a BackWPup logfile header and gives back a array of information
+ *
+ * @param string $logfile full logfile path
+ * @return array|bool
+ */
 function backwpup_read_logheader($logfile) {
 	$headers=array("backwpup_version" => "version","backwpup_logtime" => "logtime","backwpup_errors" => "errors","backwpup_warnings" => "warnings","backwpup_jobid" => "jobid","backwpup_jobname" => "name","backwpup_jobtype" => "type","backwpup_jobruntime" => "runtime","backwpup_backupfilesize" => "backupfilesize");
 	if (!is_readable($logfile))
@@ -392,6 +470,12 @@ function backwpup_read_logheader($logfile) {
 	return $joddata;
 }
 
+/**
+ *
+ * Get the folder for blog uploads
+ *
+ * @return sting
+ */
 function backwpup_get_upload_dir() {
 	$upload_path = get_option('upload_path');
 	$upload_path = trim($upload_path);
@@ -411,7 +495,14 @@ function backwpup_get_upload_dir() {
 	return str_replace('\\','/',trailingslashit($dir));
 }
 
-function backwpup_get_exclude_wp_dirs($folder,$exclude='') {
+/**
+ *
+ * Get folder to exclude from a given folder for file backups
+ *
+ * @param $folder to check for excludes
+ * @return array of folder to exclude
+ */
+function backwpup_get_exclude_wp_dirs($folder) {
 	global $wpdb;
 	$folder=trailingslashit(str_replace('\\','/',$folder));
 	$excludedir=array();
@@ -440,6 +531,13 @@ function backwpup_get_exclude_wp_dirs($folder,$exclude='') {
 	return $excludedir;
 }
 
+/**
+ *
+ * Get the local time timestamp of the next cron execution
+ *
+ * @param string $cronstring string of cron (* * * * *)
+ * @return timestamp
+ */
 function backwpup_cron_next($cronstring) {
 	//Cronstring
 	list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$cronstring,5);
@@ -568,6 +666,13 @@ function backwpup_cron_next($cronstring) {
 	return 2147483647;
 }
 
+/**
+ *
+ * Warper for Admin urls on multisite or normal blog
+ *
+ * @param $url 'admin.php'
+ * @return string url
+ */
 function backwpup_admin_url($url) {
 	if (is_multisite()) {
 		if  (is_super_admin())
@@ -577,6 +682,14 @@ function backwpup_admin_url($url) {
 	}
 }
 
+/**
+ *
+ * Encrypt a sting (Passwords)
+ *
+ * @param string $string value to encrypt
+ * @param string $key if empty default will used
+ * @return string encrypted string
+ */
 function backwpup_encrypt($string, $key='') {
 	if (empty($key))
 		$key=md5(ABSPATH);
@@ -595,6 +708,14 @@ function backwpup_encrypt($string, $key='') {
 	return '$BackWPup$ENC1$'.base64_encode($result);
 }
 
+/**
+ *
+ * Decrypt a sting (Passwords)
+ *
+ * @param string $string value to decrypt
+ * @param string $key if empty default will used
+ * @return string decrypted string
+ */
 function backwpup_decrypt($string, $key='') {
 	if (empty($key))
 		$key=md5(ABSPATH);
@@ -616,6 +737,13 @@ function backwpup_decrypt($string, $key='') {
 	return $result;
 }
 
+/**
+ *
+ * Get data ao a working job
+ *
+ * @param bool $fulldata is full data needed or only that it working
+ * @return bool|array false if not working, true or array with data if working
+ */
 function backwpup_get_workingdata($fulldata=true) {
 	global $wpdb;
 	if ($fulldata) {
