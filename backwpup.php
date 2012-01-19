@@ -54,8 +54,10 @@ if (!defined('FS_CHMOD_DIR'))
 if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
 	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
 //Load text domain if needed
-if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
+if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
 	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
+if (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB)
+	load_plugin_textdomain('backwpup-job', false, BACKWPUP_PLUGIN_DIR.'/lang');
 //load thins only on main sites (MU)
 if (is_main_site()) {
 	//deactivation hook
