@@ -15,29 +15,44 @@ if (!empty($doaction)) {
 	switch($doaction) {
 	case 'delete': //Delete Backup archives
 		check_admin_referer('bulk-backups');
-		list($jobid,$dest)=explode(',',$_GET['jobdest']);
+		list($jobid,$dest)=explode('_',$_GET['jobdest']);
 		$main='job_'.$jobid;
+		$files=backwpup_get_option('temp',$_GET['jobdest'],false);
 		foreach ($_GET['backupfiles'] as $backupfile) {
 			if ($dest=='FOLDER') {
-				if (is_file($backupfile))
-					unlink($backupfile);
-			} elseif ($dest=='S3') {
+				if (is_file($backupfile)) {
+					if(unlink($backupfile)) {
+						//update file list
+						foreach ($files as $key =>$file) {
+							if(is_array($file) and $file['file']==$backupfile)
+								unset($files[$key]);
+						}
+					}
+				}
+			}
+			elseif ($dest=='S3') {
 				if (!class_exists('AmazonS3'))
 					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 				if (class_exists('AmazonS3')) {
-					if (backwpup_get_option($main,'awsAccessKey') and !backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket')) {
+					if (backwpup_get_option($main,'awsAccessKey') and backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket')) {
 						try {
 							$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'certificate_authority'=>true));
 							if (backwpup_get_option($main,'awsdisablessl'))
 								$s3->disable_ssl(true);
 							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
+							//update file list
+							foreach ($files as $key =>$file) {
+								if(is_array($file) and $file['file']==$backupfile)
+									unset($files[$key]);
+							}
 							unset($s3);
 						} catch (Exception $e) {
 							$backwpup_message.='Amazon S3: '.$e->getMessage().'<br />';
 						}
 					}
 				}
-			}  elseif ($dest=='GSTORAGE') {
+			}
+			elseif ($dest=='GSTORAGE') {
 				if (!class_exists('AmazonS3'))
 					require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 				if (class_exists('AmazonS3')) {
@@ -47,13 +62,19 @@ if (!empty($doaction)) {
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
 							$gstorage->delete_object(backwpup_get_option($main,'GStorageBucket'),$backupfile);
+							//update file list
+							foreach ($files as $key =>$file) {
+								if(is_array($file) and $file['file']==$backupfile)
+									unset($files[$key]);
+							}
 							unset($gstorage);
 						} catch (Exception $e) {
 							$backwpup_message.=sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()).'<br />';
 						}
 					}
 				}
-			}elseif ($dest=='MSAZURE') {
+			}
+			elseif ($dest=='MSAZURE') {
 				if (!class_exists('Microsoft_WindowsAzure_Storage_Blob'))
 					require_once(dirname(__FILE__).'/../libs/Microsoft/WindowsAzure/Storage/Blob.php');
 				if (class_exists('Microsoft_WindowsAzure_Storage_Blob')) {
@@ -61,39 +82,54 @@ if (!empty($doaction)) {
 						try {
 							$storageClient = new Microsoft_WindowsAzure_Storage_Blob(backwpup_get_option($main,'msazureHost'),backwpup_get_option($main,'msazureAccName'),backwpup_get_option($main,'msazureKey'));
 							$storageClient->deleteBlob(backwpup_get_option($main,'msazureContainer'),$backupfile);
+							//update file list
+							foreach ($files as $key =>$file) {
+								if(is_array($file) and $file['file']==$backupfile)
+									unset($files[$key]);
+							}
 							unset($storageClient);
 						} catch (Exception $e) {
 							$backwpup_message.='MS AZURE: '.$e->getMessage().'<br />';
 						}
 					}
 				}
-			} elseif ($dest=='DROPBOX') {
+			}
+			elseif ($dest=='DROPBOX') {
 				require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
 				if (backwpup_get_option($main,'dropetoken') and backwpup_get_option($main,'dropesecret')) {
 					try {
 						$dropbox = new backwpup_Dropbox(backwpup_get_option($main,'droperoot'));
 						$dropbox->setOAuthTokens(backwpup_get_option($main,'dropetoken'),backwpup_get_option($main,'dropesecret'));
 						$dropbox->fileopsDelete($backupfile);
+						//update file list
+						foreach ($files as $key =>$file) {
+							if(is_array($file) and $file['file']==$backupfile)
+								unset($files[$key]);
+						}
 						unset($dropbox);
 					} catch (Exception $e) {
 						$backwpup_message.='DROPBOX: '.$e->getMessage().'<br />';
 					}
 				}	
-			}  elseif ($dest=='SUGARSYNC') {
-				if (!class_exists('SugarSync'))
-					require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
-				if (class_exists('SugarSync')) {
-					if (backwpup_get_option($main,'sugaruser') and backwpup_get_option($main,'sugarpass')) {
-						try {
-							$sugarsync = new backwpup_SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
-							$sugarsync->delete(urldecode($backupfile));
-							unset($sugarsync);
-						} catch (Exception $e) {
-							$backwpup_message.='SUGARSYNC: '.$e->getMessage().'<br />';
+			}
+			elseif ($dest=='SUGARSYNC') {
+				require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+				if (backwpup_get_option($main,'sugaruser') and backwpup_get_option($main,'sugarpass')) {
+					try {
+						$sugarsync = new backwpup_SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
+						$sugarsync->delete(urldecode($backupfile));
+						//update file list
+						foreach ($files as $key =>$file) {
+							if(is_array($file) and $file['file']==$backupfile)
+								unset($files[$key]);
 						}
+						unset($sugarsync);
+					} catch (Exception $e) {
+						$backwpup_message.='SUGARSYNC: '.$e->getMessage().'<br />';
 					}
 				}
-			} elseif ($dest=='RSC') {
+			}
+			elseif ($dest=='RSC') {
 				if (!class_exists('CF_Authentication'))
 					require_once(realpath(dirname(__FILE__).'/../libs/rackspace/cloudfiles.php'));
 				if (class_exists('CF_Authentication')) {
@@ -106,13 +142,19 @@ if (!empty($doaction)) {
 								$conn->ssl_use_cabundle(realpath(dirname(__FILE__).'/../cert/cacert.pem'));
 								$backwpupcontainer = $conn->get_container(backwpup_get_option($main,'rscContainer'));
 								$backwpupcontainer->delete_object($backupfile);
+								//update file list
+								foreach ($files as $key =>$file) {
+									if(is_array($file) and $file['file']==$backupfile)
+										unset($files[$key]);
+								}
 							}
 						} catch (Exception $e) {
 							$backwpup_message.='RSC: '.$e->getMessage().'<br />';
 						}
 					}
 				}
-			} elseif ($dest=='FTP') {
+			}
+			elseif ($dest=='FTP') {
 				if (backwpup_get_option($main,'ftphost') and backwpup_get_option($main,'ftpuser') and backwpup_get_option($main,'ftppass') and function_exists('ftp_connect')) {
 					if (function_exists('ftp_ssl_connect') and backwpup_get_option($main,'ftpssl')) { //make SSL FTP connection
 						$ftp_conn_id = ftp_ssl_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
@@ -134,13 +176,18 @@ if (!empty($doaction)) {
 					if ($loginok) {
 						ftp_pasv($ftp_conn_id, backwpup_get_option($main,'ftppasv'));
 						ftp_delete($ftp_conn_id, $backupfile);
+						//update file list
+						foreach ($files as $key =>$file) {
+							if(is_array($file) and $file['file']==$backupfile)
+								unset($files[$key]);
+						}
 					} else {
 						$backwpup_message.='FTP: '.__('Login failure!','backwpup').'<br />';
 					}
 				}
 			}
 		}
-		delete_transient('backwpup_backups_chache');
+		backwpup_update_option('temp',$_GET['jobdest'],$files);
 		break;
 	case 'download': //Download Backup
 		check_admin_referer('download-backup');
@@ -168,7 +215,7 @@ if (!empty($doaction)) {
 		if (!class_exists('AmazonS3'))
 			require_once(realpath(dirname(__FILE__).'/../libs/aws/sdk.class.php'));
 		try {
-			$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey')));
+			$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'certificate_authority'=>true));
 			if (backwpup_get_option($main,'awsdisablessl'))
 				$s3->disable_ssl(true);
 			$s3file=$s3->get_object(backwpup_get_option($main,'awsBucket'), $_GET['file']);
@@ -211,8 +258,7 @@ if (!empty($doaction)) {
 	case 'downloadsugarsync': //Download SugarSync Backup
 		check_admin_referer('download-backup');
 		$main='job_'.(int)$_GET['jobid'];
-		if (!class_exists('SugarSync'))
-			require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+		require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 		try {
 			$sugarsync = new backwpup_SugarSync(backwpup_get_option($main,'sugaruser'),backwpup_decrypt(backwpup_get_option($main,'sugarpass')));
 			$response=$sugarsync->get(urldecode($_GET['file']));

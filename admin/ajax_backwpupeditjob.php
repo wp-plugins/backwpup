@@ -300,8 +300,7 @@ function backwpup_get_sugarsync_root($args='') {
 	}
 	echo '<span id="sugarrooterror" style="color:red;">';
 	if (!empty($sugarpass) and !empty($sugaruser)) {
-		if (!class_exists('SugarSync'))
-			require_once(dirname(__FILE__).'/../libs/sugarsync.php');
+		require_once(dirname(__FILE__).'/../libs/sugarsync.php');
 		try {
 			$sugarsync = new backwpup_SugarSync($sugaruser,backwpup_decrypt($sugarpass));
 			$user=$sugarsync->user();
@@ -309,7 +308,6 @@ function backwpup_get_sugarsync_root($args='') {
 		} catch (Exception $e) {
 			$error=$e->getMessage();
 		}
-
 	}
 	if (empty($sugaruser))
 		_e('Missing Username!','backwpup');
