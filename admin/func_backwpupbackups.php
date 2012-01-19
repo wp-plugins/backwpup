@@ -43,7 +43,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
 		list($this->jobid,$this->dest)=explode('_',$jobdest);
 
 		$this->items=backwpup_get_option('temp',$jobdest,false);
-		//if no itmes brake
+		//if no items brake
 		if (!$this->items) {
 			$this->items='';
 			return;
