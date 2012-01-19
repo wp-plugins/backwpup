@@ -288,8 +288,7 @@ if ((isset($_POST['save']) or isset($_POST['authbutton'])) and !empty($_POST['jo
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			CFCredentials::set(array('backwpup' => array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
-			$s3 = new AmazonS3();
+			$s3 = new AmazonS3(array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'certificate_authority'=>true));
 			$s3->disable_ssl(backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'));
 			$req=$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
 			if (empty($req->body->Message)) {

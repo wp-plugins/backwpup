@@ -96,7 +96,7 @@ function backwpup_get_aws_buckets($args='') {
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			$s3 = new AmazonS3(array('key'=>$awsAccessKey,'secret'=>$awsSecretKey));
+			$s3 = new AmazonS3(array('key'=>$awsAccessKey,'secret'=>$awsSecretKey,'certificate_authority'=>true));
 			if (!empty($awsdisablessl))
 				$s3->disable_ssl(true);
 			$buckets=$s3->list_buckets();
@@ -148,7 +148,7 @@ function backwpup_get_gstorage_buckets($args='') {
 		if (!class_exists('CFRuntime'))
 			require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
 		try {
-			$gstorage = new AmazonS3(array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret));
+			$gstorage = new AmazonS3(array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'certificate_authority'=>true));
 			$gstorage->set_hostname('commondatastorage.googleapis.com');
 			$gstorage->allow_hostname_override(false);
 			$buckets=$gstorage->list_buckets();

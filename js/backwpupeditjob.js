@@ -209,7 +209,7 @@ jQuery(document).ready( function($) {
 	}
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
-    $('input[name="awsdisablessl"]:checked').change(function() {awsgetbucket();});
+    $('input[name="awsdisablessl"]').change(function() {awsgetbucket();});
 
 	function gstoragegetbucket() {
 		var data = {

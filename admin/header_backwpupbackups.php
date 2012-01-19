@@ -27,7 +27,7 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (backwpup_get_option($main,'awsAccessKey') and !backwpup_get_option($main,'awsSecretKey') and backwpup_get_option($main,'awsBucket')) {
 						try {
-							$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey')));
+							$s3 = new AmazonS3(array('key'=>backwpup_get_option($main,'awsAccessKey'),'secret'=>backwpup_get_option($main,'awsSecretKey'),'certificate_authority'=>true));
 							if (backwpup_get_option($main,'awsdisablessl'))
 								$s3->disable_ssl(true);
 							$s3->delete_object(backwpup_get_option($main,'awsBucket'),$backupfile);
@@ -43,7 +43,7 @@ if (!empty($doaction)) {
 				if (class_exists('AmazonS3')) {
 					if (backwpup_get_option($main,'GStorageAccessKey') and backwpup_get_option($main,'GStorageSecret') and backwpup_get_option($main,'GStorageBucket')) {
 						try {
-							$gstorage = new AmazonS3(array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret')));
+							$gstorage = new AmazonS3(array('key'=>backwpup_get_option($main,'GStorageAccessKey'),'secret'=>backwpup_get_option($main,'GStorageSecret'),'certificate_authority'=>true));
 							$gstorage->set_hostname('commondatastorage.googleapis.com');
 							$gstorage->allow_hostname_override(false);
 							$gstorage->delete_object(backwpup_get_option($main,'GStorageBucket'),$backupfile);
