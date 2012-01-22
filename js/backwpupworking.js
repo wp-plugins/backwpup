@@ -6,7 +6,7 @@ jQuery(document).ready( function($) {
 			cache: false,
 			data: {
 				action: 'backwpup_get_logfile_ajax',
-				backwpupajaxpage: 'backwpupworking',
+                page: 'backwpupworking',
 				logfile: $('#logfile').val(),
 				logpos:  $('#logpos').val(),
 				_ajax_nonce: $('#backwpupworkingajaxnonce').val()

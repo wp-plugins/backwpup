@@ -11,71 +11,70 @@ if (!defined('ABSPATH')) {
 class BackWPup_Admin {
 
 	public function __construct() {
+		$pluginbasename=plugin_basename(realpath(dirname(__FILE__).'/../backwpup.php'));
 		if (is_multisite()) {
-			add_action('network_admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(BACKWPUP_USER_CAPABILITY)) echo $backwpup_admin_message;'));
+			add_action('network_admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(bbackwpup_get_option("cfg","capability"))) echo $backwpup_admin_message;'));
 			add_action('network_admin_menu', array($this,'admin_menu'));
 			add_action('wp_network_dashboard_setup', array($this,'dashboard_setup'));
 			add_filter('plugin_row_meta', array($this,'plugin_links'),10,2);
 		} else {
-			add_action('admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(BACKWPUP_USER_CAPABILITY)) echo $backwpup_admin_message;'));
+			add_action('admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(backwpup_get_option("cfg","capability"))) echo $backwpup_admin_message;'));
 			add_action('admin_menu', array($this,'admin_menu'));
 			add_action('wp_dashboard_setup', array($this,'dashboard_setup'));
-			add_filter('plugin_action_links_'.BACKWPUP_PLUGIN_BASENAME, create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
+			add_filter('plugin_action_links_'.$pluginbasename, create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));
 			add_filter('plugin_row_meta', array($this,'plugin_links'),10,2);
 		}
-		//make backwpup first plugin
-		add_filter('pre_update_option_active_plugins', array($this,'first_plugin'),1,2);
 		//Oauth bypass if a other Plugin check only for $_REQUEST['oauth_token'];
 		add_action('init',array($this,'oauth_bypass'),1);
 	}
 
 	public function admin_menu() {
-		$page_hook=add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', array($this,'admin_page'), BACKWPUP_PLUGIN_BASEURL.'/css/BackWPup16.png');
+		$page_hook=add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), 'backwpup', 'backwpup', array($this,'admin_page'), plugins_url('',dirname(__FILE__)).'/css/BackWPup16.png');
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$page_hook=add_submenu_page( 'backwpup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Jobs','backwpup'), __('Jobs','backwpup'), 'backwpup', 'backwpup', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$page_hook=add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupeditjob', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Add New','backwpup'), __('Add New','backwpup'), 'backwpup', 'backwpupeditjob', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
 		if (!backwpup_get_workingdata(false)) {
-			$page_hook=add_submenu_page( 'backwpup', __('Working Job','backwpup'), __('Working Job','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', array($this,'admin_page') );
+			$page_hook=add_submenu_page( 'backwpup', __('Working Job','backwpup'), __('Working Job','backwpup'), 'backwpup', 'backwpupworking', array($this,'admin_page') );
 			add_action('load-'.$page_hook, array($this,'admin_page_load'));
 		}
 		elseif (isset($_GET['page']) and $_GET['page']=='backwpupworking') {
-			$page_hook=add_submenu_page( 'backwpup', __('Watch Log','backwpup'), __('Watch Log','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupworking', array($this,'admin_page') );
+			$page_hook=add_submenu_page( 'backwpup', __('Watch Log','backwpup'), __('Watch Log','backwpup'), 'backwpup', 'backwpupworking', array($this,'admin_page') );
 			add_action('load-'.$page_hook, array($this,'admin_page_load'));
 		}
-		$page_hook=add_submenu_page( 'backwpup', __('Logs','backwpup'), __('Logs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuplogs', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Logs','backwpup'), __('Logs','backwpup'), 'backwpup', 'backwpuplogs', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$page_hook=add_submenu_page( 'backwpup', __('Backups','backwpup'), __('Backups','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupbackups', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Backups','backwpup'), __('Backups','backwpup'), 'backwpup', 'backwpupbackups', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$page_hook=add_submenu_page( 'backwpup', __('Tools','backwpup'), __('Tools','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuptools', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Tools','backwpup'), __('Tools','backwpup'), 'backwpup', 'backwpuptools', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
-		$page_hook=add_submenu_page( 'backwpup', __('Settings','backwpup'), __('Settings','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupsettings', array($this,'admin_page') );
+		$page_hook=add_submenu_page( 'backwpup', __('Settings','backwpup'), __('Settings','backwpup'), 'backwpup', 'backwpupsettings', array($this,'admin_page') );
 		add_action('load-'.$page_hook, array($this,'admin_page_load'));
 	}
 
 	public function admin_page() {
-		global $backwpup_message,$backwpup_listtable;
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		global $backwpup_message,$backwpup_listtable,$backwpup_menu_pages;
+		if (!current_user_can('backwpup'))
 			return;
-		if (!empty($_GET['page']) and in_array($_GET['page'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php'))
+		if (!empty($_GET['page']) and in_array($_GET['page'],$backwpup_menu_pages) and is_file(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php'))
 			include_once(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php');
 	}
 
 	public function admin_page_load() {
-		global $backwpup_message,$backwpup_listtable;
+		global $backwpup_message,$backwpup_listtable,$backwpup_menu_pages;
 		//check user permissions
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			return;
 		//check called page exists
-		if (empty($_GET['page']) or !in_array($_GET['page'],explode(',',BACKWPUP_MENU_PAGES)) or !is_file(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php'))
+		if (empty($_GET['page']) or !in_array($_GET['page'],$backwpup_menu_pages) or !is_file(dirname(__FILE__).'/../admin/page_'.$_GET['page'].'.php'))
 			return;
 		if (method_exists(get_current_screen(),'add_help_tab')) {
 			get_current_screen()->add_help_tab( array(
 				'id'      => 'plugininfo',
 				'title'   => __('Plugin Info','backwpup'),
 				'content' =>
-				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.BACKWPUP_VERSION.', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy 2009-'.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'
+				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.backwpup_get_version().', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy 2009-'.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'
 			) );
 			get_current_screen()->set_help_sidebar(
 				'<p><strong>' . __( 'For more information:','backwpup' ) . '</strong></p>' .
@@ -87,7 +86,7 @@ class BackWPup_Admin {
 			);
 		} elseif (function_exists('add_contextual_help')) { //for WP < 3.3 help
 			add_contextual_help( get_current_screen(),
-				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.BACKWPUP_VERSION.', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy 2009-'.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
+				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. '.backwpup_get_version().', <a href="http://www.gnu.org/licenses/gpl-2.0.html" target="_blank">GPL2</a> &copy 2009-'.date('Y').' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>'.__('BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.','backwpup').'</p>'.
 					'<p><strong>' . __( 'For more information:','backwpup' ) . '</strong></p><p>' .
 					' ' . __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' ) . ' |' .
 					' ' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . ' |' .
@@ -100,16 +99,16 @@ class BackWPup_Admin {
 		//add css for Admin Section
 		if (is_file(dirname(__FILE__).'/../css/'.$_GET['page'].'.css')) {
 			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-				wp_enqueue_style($_GET['page'],BACKWPUP_PLUGIN_BASEURL.'/css/'.$_GET['page'].'.css','',time(),'screen');
+				wp_enqueue_style($_GET['page'],plugins_url('',dirname(__FILE__)).'/css/'.$_GET['page'].'.css','',time(),'screen');
 			else
-				wp_enqueue_style($_GET['page'],BACKWPUP_PLUGIN_BASEURL.'/css/'.$_GET['page'].'.css','',BACKWPUP_VERSION,'screen');
+				wp_enqueue_style($_GET['page'],plugins_url('',dirname(__FILE__)).'/css/'.$_GET['page'].'.css','',backwpup_get_version(),'screen');
 		}
 		//add java for Admin Section
 		if (is_file(dirname(__FILE__).'/../js/'.$_GET['page'].'.js')) {
 			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-				wp_enqueue_script($_GET['page'],BACKWPUP_PLUGIN_BASEURL.'/js/'.$_GET['page'].'.js','',time(),true);
+				wp_enqueue_script($_GET['page'],plugins_url('',dirname(__FILE__)).'/js/'.$_GET['page'].'.js','',time(),true);
 			else
-				wp_enqueue_script($_GET['page'],BACKWPUP_PLUGIN_BASEURL.'/js/'.$_GET['page'].'.js','',BACKWPUP_VERSION,true);
+				wp_enqueue_script($_GET['page'],plugins_url('',dirname(__FILE__)).'/js/'.$_GET['page'].'.js','',backwpup_get_version(),true);
 		}
 		//include functions
 		if (is_file(dirname(__FILE__).'/../admin/func_'.$_GET['page'].'.php'))
@@ -120,7 +119,8 @@ class BackWPup_Admin {
 	}
 
 	public function plugin_links($links, $file) {
-		if ($file == BACKWPUP_PLUGIN_BASENAME) {
+		$pluginbasename=plugin_basename(realpath(dirname(__FILE__).'/../backwpup.php'));
+		if ($file == $pluginbasename) {
 			$links[] = __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' );
@@ -131,7 +131,7 @@ class BackWPup_Admin {
 	}
 
 	public function dashboard_setup() {
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			return;
 		wp_add_dashboard_widget("backwpup_dashboard_widget_logs", __("BackWPup Logs","backwpup"),array($this,"dashboard_logs"),array($this,"dashboard_logs_config"));
 		wp_add_dashboard_widget("backwpup_dashboard_widget_activejobs", __("BackWPup Active Jobs","backwpup"),array($this,"dashboard_activejobs"));
@@ -229,17 +229,6 @@ class BackWPup_Admin {
 			}
 		}
 		echo '</ul>';
-	}
-
-	public function first_plugin($newvalue, $oldvalue) {
-		if (!is_array($newvalue) or current_filter('deactivate_' . BACKWPUP_PLUGIN_BASENAME))
-			return $newvalue;
-		for ($i=0; $i<count($newvalue);$i++) {
-			if ($newvalue[$i]==BACKWPUP_PLUGIN_BASENAME)
-				unset($newvalue[$i]);
-		}
-		array_unshift($newvalue,BACKWPUP_PLUGIN_BASENAME);
-		return $newvalue;
 	}
 
 	function oauth_bypass() {

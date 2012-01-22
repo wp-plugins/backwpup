@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
 }
 
 function backwpup_upgrade() {
-	global $wpdb;
+	global $wpdb,$wp_roles;
 	//Set table collate
 	$charset_collate='';
 	if ( ! empty($wpdb->charset) )
@@ -14,7 +14,7 @@ function backwpup_upgrade() {
 	if ( ! empty($wpdb->collate) )
 		$charset_collate .= " COLLATE $wpdb->collate";
 	//Create DB table if not exists
-	$query ="CREATE TABLE ".$wpdb->prefix."backwpup (
+	$query ="CREATE TABLE IF NOT EXISTS ".$wpdb->prefix."backwpup (
 			id bigint(20) unsigned NOT NULL auto_increment,
 			main varchar(64) NOT NULL default '',
 			name varchar(64) NOT NULL default '',
@@ -96,6 +96,9 @@ function backwpup_upgrade() {
 	wp_clear_scheduled_hook('backwpup_cron');
 	//make new schedule
 	wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
+	//add user role
+	$wp_roles -> add_cap( 'administrator', 'backwpup' );
 	//update version
-	backwpup_update_option('cfg','dbversion',BACKWPUP_VERSION);
+	backwpup_update_option('backwpup','md5',md5_file(dirname(__FILE__).'/../backwpup.php'));
+	backwpup_update_option('backwpup','version',backwpup_get_version());
 }

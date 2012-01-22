@@ -13,17 +13,36 @@ if (!defined('ABSPATH')) {
  */
 function backwpup_plugin_init() {
 	//start upgrade if needed
-	if (backwpup_get_option('cfg','dbversion')!=BACKWPUP_VERSION) {
+	if (backwpup_get_option('backwpup','md5')!=md5_file(dirname(__FILE__).'/../backwpup.php')) {
 		require_once(dirname(__FILE__).'/upgrade.php');
 		backwpup_upgrade();
 	}
 	//add admin bar. Works only in init
-	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can(BACKWPUP_USER_CAPABILITY) and is_admin_bar_showing())
+	if (!defined('DOING_CRON') and backwpup_get_option('cfg','showadminbar') and current_user_can('backwpup') and is_admin_bar_showing())
 		include_once(dirname(__FILE__).'/adminbar.php');
 	//load API for update checks and so on
 	include_once(dirname(__FILE__).'/api.php');
 }
 add_action('init','backwpup_plugin_init');
+
+
+/**
+ *
+ * Get (and set) Version number of BackWPup
+ *
+ * @return string Version
+ */
+function backwpup_get_version() {
+	$version=backwpup_get_option('backwpup','version');
+	if ($version==false or $version=='0.0') {
+		$plugin_data = get_file_data( realpath(dirname(__FILE__).'/../backwpup.php'),  array('Version' => 'Version'), 'plugin' );
+		$version=$plugin_data['Version'];
+		backwpup_update_option('backwpup','version',$version);
+	}
+	if (empty($version))
+		return '0.0';
+	return $version;
+}
 
 /**
  *
@@ -37,8 +56,10 @@ function backwpup_default_option_settings($main,$name) {
 	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
 	//set defaults
-	if ($main=='cfg') { //for settings
-		$default['cfg']['dbversion']='0.0';
+	if ($main=='backwpup') { //for settings
+		$default['backwpup']['version']='0.0';
+		$default['backwpup']['md5']=false;
+	} elseif ($main=='cfg') { //for settings
 		$default['cfg']['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 		$default['cfg']['mailsndname']='BackWPup '.get_bloginfo('name');
 		$default['cfg']['showadminbar']=true;
@@ -303,7 +324,7 @@ function backwpup_delete_option($main,$name) {
  * @return array|object [url] is the job url [header] for auth header or object form wp_remote_get()
  */
 function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
-	$url=BACKWPUP_PLUGIN_BASEURL.'/job.php';
+	$url=plugins_url('',dirname(__FILE__)).'/job.php';
 	$header='';
 	$authurl='';
 

@@ -95,7 +95,7 @@ function backwpup_calc_file_size($main) {
 //ajax show info div for jobs
 function backwpup_show_info_td() {
 	check_ajax_referer('backwpup_ajax_nonce');
-	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+	if (!current_user_can('backwpup'))
 		die('-1');
 	global $wpdb;
 	$mode=$_POST['mode'];
@@ -111,6 +111,7 @@ function backwpup_show_info_td() {
 			}
 		}
 		echo __("DB Size:","backwpup")." ".backwpup_format_bytes($dbsize['size'])."<br />";
+		//echo 'Mem:'.backwpup_format_bytes(@memory_get_usage(true))."<br />";
 		if ( 'excerpt' == $mode ) {
 			echo  __("DB Tables:","backwpup")." ".$dbsize['num']."<br />";
 			echo  __("DB Rows:","backwpup")." ".$dbsize['rows']."<br />";

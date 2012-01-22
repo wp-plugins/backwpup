@@ -18,7 +18,7 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 	}
 
 	function ajax_user_can() {
-		return current_user_can(BACKWPUP_USER_CAPABILITY);
+		return current_user_can('backwpup');
 	}
 
 	function prepare_items() {

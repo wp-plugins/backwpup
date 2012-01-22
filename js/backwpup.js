@@ -3,7 +3,7 @@ jQuery(document).ready( function($) {
 		var jobid = $(this).attr('id').replace('image-wait-',''),
 		    data = {
 				action: 'backwpup_show_info_td',
-				backwpupajaxpage: 'backwpup',
+                page: 'backwpup',
 				jobid: jobid,
 				mode: jQuery('input[name="mode"]').val(),
 				_ajax_nonce: jQuery('#backwpupajaxnonce').val()

@@ -144,8 +144,8 @@ $backwpup_listtable->prepare_items();
 //ENV Checks
 global $wp_version,$backwpup_admin_message;
 $backwpup_admin_message='';
-if (version_compare($wp_version, BACKWPUP_MIN_WORDPRESS_VERSION, '<')) { // check WP Version
-	$backwpup_admin_message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
+if (version_compare($wp_version, '3.1', '<')) { // check WP Version
+	$backwpup_admin_message.=str_replace('%d','3.1',__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
 	$checks=false;
 }
 if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version

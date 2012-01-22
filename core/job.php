@@ -9,9 +9,9 @@ if (!defined('ABSPATH')) {
  * Class in that the BackWPup job runs
  */
 class BackWPup_job {
-
-	private $jobdata = false;
+	private $line_separator = "\n";
 	private $jobstarttype = '';
+	private $jobdata = false;
 
 	/**
 	 *
@@ -22,6 +22,8 @@ class BackWPup_job {
 	 */
 	public function __construct($starttype,$jobid=0) {
 		$this->jobstarttype=$starttype;
+		if (false !== strpos(PHP_OS, "WIN") or false !== strpos(PHP_OS, "OS/2"))
+			$this->line_separator="\r\n";
 		//get job data
 		if ( in_array($this->jobstarttype, array( 'runnow','runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun' )) )
 			$this->start((int)$jobid);
@@ -261,50 +263,50 @@ class BackWPup_job {
 			file_put_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16),maybe_serialize($this->jobdata));
 		//create log file
 		$fd = fopen($this->jobdata['LOGFILE'], 'w');
-		fwrite($fd, "<html>" . BACKWPUP_LINE_SEPARATOR . "<head>" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<meta name=\"backwpup_version\" content=\"" . BACKWPUP_VERSION . "\" />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<meta name=\"backwpup_logtime\" content=\"" . current_time('timestamp') . "\" />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, str_pad("<meta name=\"backwpup_errors\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<meta name=\"backwpup_jobid\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'jobid') . "\" />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<meta name=\"backwpup_jobname\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'name') . "\" />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<meta name=\"backwpup_jobtype\" content=\"" . implode('+', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) . "\" />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />", 100) . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<style type=\"text/css\">" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, ".warning {background-color:yellow;}" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, ".error {background-color:red;}" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "#body {font-family:monospace;font-size:12px;white-space:nowrap;}" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "</style>" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, "<title>" . sprintf(__('BackWPup log for %1$s from %2$s at %3$s', 'backwpup'), backwpup_get_option($this->jobdata['JOBMAIN'],'name'), date_i18n(get_option('date_format')), date_i18n(get_option('time_format'))) . "</title>" . BACKWPUP_LINE_SEPARATOR . "</head>" . BACKWPUP_LINE_SEPARATOR . "<body id=\"body\">" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s'), BACKWPUP_VERSION, '&copy; 2009-'.date_i18n('Y'), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, __('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, __('[INFO]: BackWPup job:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'jobid') . '. ' . backwpup_get_option($this->jobdata['JOBMAIN'],'name') . '; ' . implode('+', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+		fwrite($fd, "<html>" . $this->line_separator . "<head>" . $this->line_separator);
+		fwrite($fd, "<meta name=\"backwpup_version\" content=\"" . backwpup_get_version() . "\" />" . $this->line_separator);
+		fwrite($fd, "<meta name=\"backwpup_logtime\" content=\"" . current_time('timestamp') . "\" />" . $this->line_separator);
+		fwrite($fd, str_pad("<meta name=\"backwpup_errors\" content=\"0\" />", 100) . $this->line_separator);
+		fwrite($fd, str_pad("<meta name=\"backwpup_warnings\" content=\"0\" />", 100) . $this->line_separator);
+		fwrite($fd, "<meta name=\"backwpup_jobid\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'jobid') . "\" />" . $this->line_separator);
+		fwrite($fd, "<meta name=\"backwpup_jobname\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'name') . "\" />" . $this->line_separator);
+		fwrite($fd, "<meta name=\"backwpup_jobtype\" content=\"" . implode('+', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) . "\" />" . $this->line_separator);
+		fwrite($fd, str_pad("<meta name=\"backwpup_backupfilesize\" content=\"0\" />", 100) . $this->line_separator);
+		fwrite($fd, str_pad("<meta name=\"backwpup_jobruntime\" content=\"0\" />", 100) . $this->line_separator);
+		fwrite($fd, "<style type=\"text/css\">" . $this->line_separator);
+		fwrite($fd, ".warning {background-color:yellow;}" . $this->line_separator);
+		fwrite($fd, ".error {background-color:red;}" . $this->line_separator);
+		fwrite($fd, "#body {font-family:monospace;font-size:12px;white-space:nowrap;}" . $this->line_separator);
+		fwrite($fd, "</style>" . $this->line_separator);
+		fwrite($fd, "<title>" . sprintf(__('BackWPup log for %1$s from %2$s at %3$s', 'backwpup'), backwpup_get_option($this->jobdata['JOBMAIN'],'name'), date_i18n(get_option('date_format')), date_i18n(get_option('time_format'))) . "</title>" . $this->line_separator . "</head>" . $this->line_separator . "<body id=\"body\">" . $this->line_separator);
+		fwrite($fd, sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s'), backwpup_get_version(), '&copy; 2009-'.date_i18n('Y'), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version) . "<br />" . $this->line_separator);
+		fwrite($fd, __('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup') . "<br />" . $this->line_separator);
+		fwrite($fd, __('[INFO]: BackWPup job:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'jobid') . '. ' . backwpup_get_option($this->jobdata['JOBMAIN'],'name') . '; ' . implode('+', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) . "<br />" . $this->line_separator);
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'activetype')!='' )
-			fwrite($fd, __('[INFO]: BackWPup cron:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'cron') . '; ' . date_i18n('D, j M Y @ H:i', backwpup_get_option($this->jobdata['JOBMAIN'],'cronnextrun')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup cron:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'cron') . '; ' . date_i18n('D, j M Y @ H:i', backwpup_get_option($this->jobdata['JOBMAIN'],'cronnextrun')) . "<br />" . $this->line_separator);
 		if ( $this->jobstarttype == 'cronrun' )
-			fwrite($fd, __('[INFO]: BackWPup job started from wp-cron', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup job started from wp-cron', 'backwpup') . "<br />" . $this->line_separator);
 		elseif ( $this->jobstarttype == 'runnow' or $this->jobstarttype == 'runnowalt')
-			fwrite($fd, __('[INFO]: BackWPup job started manually', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup job started manually', 'backwpup') . "<br />" . $this->line_separator);
 		elseif ( $this->jobstarttype == 'runext' )
-			fwrite($fd, __('[INFO]: BackWPup job started external from url', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup job started external from url', 'backwpup') . "<br />" . $this->line_separator);
 		elseif ( $this->jobstarttype == 'apirun' )
-			fwrite($fd, __('[INFO]: BackWPup job started by its API', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup job started by its API', 'backwpup') . "<br />" . $this->line_separator);
 		elseif ( $this->jobstarttype == 'runcmd' )
-			fwrite($fd, __('[INFO]: BackWPup job started form commandline', 'backwpup') . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, __('[INFO]: PHP ver.:', 'backwpup') . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, __('[INFO]: BackWPup job started form commandline', 'backwpup') . "<br />" . $this->line_separator);
+		fwrite($fd, __('[INFO]: PHP ver.:', 'backwpup') . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . $this->line_separator);
 		if ( (bool)ini_get('safe_mode') )
-			fwrite($fd, sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup'), ini_get('max_execution_time')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), $mysqlversion ). "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup'), ini_get('max_execution_time')) . "<br />" . $this->line_separator);
+		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), $mysqlversion ). "<br />" . $this->line_separator);
 		if ( function_exists('curl_init') ) {
 			$curlversion = curl_version();
-			fwrite($fd, sprintf(__('[INFO]: curl ver.: %1$s; %2$s', 'backwpup'), $curlversion['version'], $curlversion['ssl_version']) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, sprintf(__('[INFO]: curl ver.: %1$s; %2$s', 'backwpup'), $curlversion['version'], $curlversion['ssl_version']) . "<br />" . $this->line_separator);
 		}
-		fwrite($fd, sprintf(__('[INFO]: Temp folder is: %s', 'backwpup'), backwpup_get_option('cfg','tempfolder')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, sprintf(__('[INFO]: Logfile folder is: %s', 'backwpup'), backwpup_get_option('cfg','logfolder')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
-		fwrite($fd, sprintf(__('[INFO]: Backup type is: %s', 'backwpup'), backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype')) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+		fwrite($fd, sprintf(__('[INFO]: Temp folder is: %s', 'backwpup'), backwpup_get_option('cfg','tempfolder')) . "<br />" . $this->line_separator);
+		fwrite($fd, sprintf(__('[INFO]: Logfile folder is: %s', 'backwpup'), backwpup_get_option('cfg','logfolder')) . "<br />" . $this->line_separator);
+		fwrite($fd, sprintf(__('[INFO]: Backup type is: %s', 'backwpup'), backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype')) . "<br />" . $this->line_separator);
 		if ( !empty($this->jobdata['BACKUPFILE']) and backwpup_get_option($this->jobdata['JOBMAIN'],'backuptype') == 'archive' )
-			fwrite($fd, sprintf(__('[INFO]: Backup file is: %s', 'backwpup'), $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']) . "<br />" . BACKWPUP_LINE_SEPARATOR);
+			fwrite($fd, sprintf(__('[INFO]: Backup file is: %s', 'backwpup'), $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']) . "<br />" . $this->line_separator);
 		fclose($fd);
 		//test for destinations
 		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) ) {
@@ -354,12 +356,12 @@ class BackWPup_job {
 			//create .htaccess for apache and index.html/php for other
 			if ( strtolower(substr($_SERVER["SERVER_SOFTWARE"], 0, 6)) == "apache" ) { //check for apache webserver
 				if ( !is_file($folder . '/.htaccess') )
-					file_put_contents($folder . '/.htaccess', "Order allow,deny" . BACKWPUP_LINE_SEPARATOR . "deny from all");
+					file_put_contents($folder . '/.htaccess', "Order allow,deny" . $this->line_separator . "deny from all");
 			} else {
 				if ( !is_file($folder . '/index.html') )
-					file_put_contents($folder . '/index.html', BACKWPUP_LINE_SEPARATOR);
+					file_put_contents($folder . '/index.html', $this->line_separator);
 				if ( !is_file($folder . '/index.php') )
-					file_put_contents($folder . '/index.php', BACKWPUP_LINE_SEPARATOR);
+					file_put_contents($folder . '/index.php', $this->line_separator);
 			}
 		}
 		//check backup dir
@@ -438,7 +440,7 @@ class BackWPup_job {
 		//log line
 		$timestamp = "<span title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename($args[2]) . "|Mem: " . backwpup_format_bytes(@memory_get_usage(true)) . "|Mem Max: " . backwpup_format_bytes(@memory_get_peak_usage(true)) . "|Mem Limit: " . ini_get('memory_limit') . "|PID: " . getmypid() . "|Query's: " . $this->jobdata['COUNT']['SQLQUERRYS'] . "]\">[" . date_i18n('d-M-Y H:i:s') . "]</span> ";
 		//write log file
-		file_put_contents($this->jobdata['LOGFILE'], $timestamp . $messagetype . " " . $args[1] . "</span><br />" . BACKWPUP_LINE_SEPARATOR, FILE_APPEND);
+		file_put_contents($this->jobdata['LOGFILE'], $timestamp . $messagetype . " " . $args[1] . "</span><br />" . $this->line_separator, FILE_APPEND);
 
 		//write new log header
 		if ( $adderrorwarning ) {
@@ -449,12 +451,12 @@ class BackWPup_job {
 				$line = fgets($fd);
 				if ( stripos($line, "<meta name=\"backwpup_errors\"") !== false ) {
 					fseek($fd, $filepos);
-					fwrite($fd, str_pad("<meta name=\"backwpup_errors\" content=\"" . $this->jobdata['ERROR'] . "\" />", 100) . BACKWPUP_LINE_SEPARATOR);
+					fwrite($fd, str_pad("<meta name=\"backwpup_errors\" content=\"" . $this->jobdata['ERROR'] . "\" />", 100) . $this->line_separator);
 					$found++;
 				}
 				if ( stripos($line, "<meta name=\"backwpup_warnings\"") !== false ) {
 					fseek($fd, $filepos);
-					fwrite($fd, str_pad("<meta name=\"backwpup_warnings\" content=\"" . $this->jobdata['WARNING'] . "\" />", 100) . BACKWPUP_LINE_SEPARATOR);
+					fwrite($fd, str_pad("<meta name=\"backwpup_warnings\" content=\"" . $this->jobdata['WARNING'] . "\" />", 100) . $this->line_separator);
 					$found++;
 				}
 				if ( $found >= 2 )
@@ -585,12 +587,12 @@ class BackWPup_job {
 				$line = fgets($fd);
 				if ( stripos($line, "<meta name=\"backwpup_jobruntime\"") !== false ) {
 					fseek($fd, $filepos);
-					fwrite($fd, str_pad("<meta name=\"backwpup_jobruntime\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'lastruntime') . "\" />", 100) . BACKWPUP_LINE_SEPARATOR);
+					fwrite($fd, str_pad("<meta name=\"backwpup_jobruntime\" content=\"" . backwpup_get_option($this->jobdata['JOBMAIN'],'lastruntime') . "\" />", 100) . $this->line_separator);
 					$found++;
 				}
 				if ( stripos($line, "<meta name=\"backwpup_backupfilesize\"") !== false ) {
 					fseek($fd, $filepos);
-					fwrite($fd, str_pad("<meta name=\"backwpup_backupfilesize\" content=\"" . $filesize . "\" />", 100) . BACKWPUP_LINE_SEPARATOR);
+					fwrite($fd, str_pad("<meta name=\"backwpup_backupfilesize\" content=\"" . $filesize . "\" />", 100) . $this->line_separator);
 					$found++;
 				}
 				if ( $found >= 2 )
@@ -606,7 +608,7 @@ class BackWPup_job {
 		@ini_set('error_log', $this->jobdata['PHP']['INI']['ERROR_LOG']);
 		@ini_set('display_errors', $this->jobdata['PHP']['INI']['DISPLAY_ERRORS']);
 		//logfile end
-		file_put_contents($this->jobdata['LOGFILE'], "</body>" . BACKWPUP_LINE_SEPARATOR . "</html>", FILE_APPEND);
+		file_put_contents($this->jobdata['LOGFILE'], "</body>" . $this->line_separator . "</html>", FILE_APPEND);
 
 		//Send mail with log
 		$sendmail = false;
@@ -1036,34 +1038,34 @@ class BackWPup_job {
 				return;
 			}
 
-			$dbdumpheader = "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BACKWPUP_VERSION . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- http://backwpup.com" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Blog Name: " . get_bloginfo('name') . BACKWPUP_LINE_SEPARATOR;
+			$dbdumpheader = "-- ---------------------------------------------------------" . $this->line_separator;
+			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . backwpup_get_version() . $this->line_separator;
+			$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken" . $this->line_separator;
+			$dbdumpheader .= "-- http://backwpup.com" . $this->line_separator;
+			$dbdumpheader .= "-- Blog Name: " . get_bloginfo('name') . $this->line_separator;
 			if ( defined('WP_SITEURL') )
-				$dbdumpheader .= "-- Blog URL: " . trailingslashit(WP_SITEURL) . BACKWPUP_LINE_SEPARATOR;
+				$dbdumpheader .= "-- Blog URL: " . trailingslashit(WP_SITEURL) . $this->line_separator;
 			else
-				$dbdumpheader .= "-- Blog URL: " . trailingslashit(get_option('siteurl')) . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit(str_replace('\\', '/', ABSPATH)) . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Database Name: " . DB_NAME . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Database charset: " . DB_CHARSET . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Database collate: " . DB_COLLATE . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- Dumped on: " . date_i18n('Y-m-d H:i.s') . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "-- ---------------------------------------------------------" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
+				$dbdumpheader .= "-- Blog URL: " . trailingslashit(get_option('siteurl')) . $this->line_separator;
+			$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit(str_replace('\\', '/', ABSPATH)) . $this->line_separator;
+			$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . $this->line_separator;
+			$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . $this->line_separator;
+			$dbdumpheader .= "-- Database Name: " . DB_NAME . $this->line_separator;
+			$dbdumpheader .= "-- Database charset: " . DB_CHARSET . $this->line_separator;
+			$dbdumpheader .= "-- Database collate: " . DB_COLLATE . $this->line_separator;
+			$dbdumpheader .= "-- Dumped on: " . date_i18n('Y-m-d H:i.s') . $this->line_separator;
+			$dbdumpheader .= "-- ---------------------------------------------------------" . $this->line_separator . $this->line_separator;
 			//for better import with mysql client
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $wpdb->get_var("SELECT @@time_zone") . "' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
+			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding() . "' */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $wpdb->get_var("SELECT @@time_zone") . "' */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;" . $this->line_separator . $this->line_separator;
 			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
 				gzwrite($file, $dbdumpheader);
 			elseif ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'bz2' )
@@ -1081,10 +1083,10 @@ class BackWPup_job {
 				if (!isset($this->jobdata['DB_DUMP']['ROWDONE']))
 					$this->jobdata['DB_DUMP']['ROWDONE']=0;
 
-				$tablecreate = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Table structure for table $table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
-				$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;" . BACKWPUP_LINE_SEPARATOR;
-				$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . BACKWPUP_LINE_SEPARATOR;
-				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding() . "' */;" . BACKWPUP_LINE_SEPARATOR;
+				$tablecreate = $this->line_separator . "--" . $this->line_separator . "-- Table structure for table $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
+				$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;" . $this->line_separator;
+				$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . $this->line_separator;
+				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding() . "' */;" . $this->line_separator;
 				//Dump the table structure
 				$res = mysql_query("SHOW CREATE TABLE `" . $table . "`");
 				$this->jobdata['COUNT']['SQLQUERRYS']++;
@@ -1092,8 +1094,8 @@ class BackWPup_job {
 					trigger_error(sprintf(__('Database error %1$s for query %2$s', 'backwpup'), mysql_error(), "SHOW CREATE TABLE `" . $table . "`"), E_USER_ERROR);
 					return false;
 				}
-				$tablecreate .= mysql_result ($res,0,'Create Table') . ";" . BACKWPUP_LINE_SEPARATOR. BACKWPUP_LINE_SEPARATOR;
-				$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;" . BACKWPUP_LINE_SEPARATOR;
+				$tablecreate .= mysql_result ($res,0,'Create Table') . ";" . $this->line_separator. $this->line_separator;
+				$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;" . $this->line_separator;
 
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
 					gzwrite($file, $tablecreate);
@@ -1102,10 +1104,10 @@ class BackWPup_job {
 				else
 					fwrite($file, $tablecreate);
 
-				$tabledata = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Dumping data for table $table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
+				$tabledata = $this->line_separator . "--" . $this->line_separator . "-- Dumping data for table $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
 
 				if ( $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
-					$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` DISABLE KEYS */;" . BACKWPUP_LINE_SEPARATOR;
+					$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` DISABLE KEYS */;" . $this->line_separator;
 
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
 					gzwrite($file, $tabledata);
@@ -1150,12 +1152,12 @@ class BackWPup_job {
 						$values[] = $value;
 					}
 					if ($this->jobdata['DB_DUMP']['QUERYLEN'] == 0 )
-						$dump = "INSERT INTO `" . $table . "` (`".implode("`, `", $fieldsarray)."`) VALUES " . BACKWPUP_LINE_SEPARATOR;
+						$dump = "INSERT INTO `" . $table . "` (`".implode("`, `", $fieldsarray)."`) VALUES " . $this->line_separator;
 					if ( ( $this->jobdata['DB_DUMP']['QUERYLEN'] + strlen($dump)) <= 50000 and $this->jobdata['DB_DUMP']['ROWDONE']!=($numrows-1) ) { //new query in dump on more than 50000 chars.
-						$dump .= "(" . implode(", ", $values) . ")," . BACKWPUP_LINE_SEPARATOR;
+						$dump .= "(" . implode(", ", $values) . ")," . $this->line_separator;
 						$this->jobdata['DB_DUMP']['QUERYLEN'] = $this->jobdata['DB_DUMP']['QUERYLEN'] + strlen($dump);
 					} else {
-						$dump .= "(" . implode(", ", $values) . ");" . BACKWPUP_LINE_SEPARATOR;
+						$dump .= "(" . implode(", ", $values) . ");" . $this->line_separator;
 						$this->jobdata['DB_DUMP']['QUERYLEN'] = 0;
 					}
 					if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
@@ -1169,7 +1171,7 @@ class BackWPup_job {
 				}
 
 				if ( $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
-					$tabledata = "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . BACKWPUP_LINE_SEPARATOR;
+					$tabledata = "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . $this->line_separator;
 
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' )
 					gzwrite($file, $tabledata);
@@ -1188,17 +1190,17 @@ class BackWPup_job {
 
 		if ( $this->jobdata['STEPTODO']==$this->jobdata['STEPDONE'] ) {
 			//for better import with mysql client
-			$dbdumpfooter = BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . "-- Delete not needed values on backwpup table" . BACKWPUP_LINE_SEPARATOR . "--" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';" . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;" . BACKWPUP_LINE_SEPARATOR;
-			$dbdumpfooter .= "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;" . BACKWPUP_LINE_SEPARATOR;
+			$dbdumpfooter = $this->line_separator . "--" . $this->line_separator . "-- Delete not needed values on backwpup table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';" . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';" . $this->line_separator . $this->line_separator . $this->line_separator;
+			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;" . $this->line_separator;
 
 			if ( backwpup_get_option($this->jobdata['JOBMAIN'],'dbdumpfilecompression') == 'gz' ) {
 				gzwrite($file, $dbdumpfooter);

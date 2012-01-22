@@ -113,7 +113,7 @@ jQuery(document).ready( function($) {
 		});		
 		var data = {
 			action: 'backwpup_get_cron_text',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -167,7 +167,7 @@ jQuery(document).ready( function($) {
 		}	
 		var data = {
 			action: 'backwpup_get_cron_text',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -194,7 +194,7 @@ jQuery(document).ready( function($) {
 	function awsgetbucket() {
         var data = {
 			action: 'backwpup_get_aws_buckets',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			awsAccessKey: $('#awsAccessKey').val(),
 			awsSecretKey: $('#awsSecretKey').val(),
 			awsselected: $('#awsBucketselected').val(),
@@ -214,7 +214,7 @@ jQuery(document).ready( function($) {
 	function gstoragegetbucket() {
 		var data = {
 			action: 'backwpup_get_gstorage_buckets',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			GStorageAccessKey: $('#GStorageAccessKey').val(),
 			GStorageSecret: $('#GStorageSecret').val(),
 			GStorageselected: $('#GStorageselected').val(),
@@ -232,7 +232,7 @@ jQuery(document).ready( function($) {
 	function msazuregetcontainer() {
 		var data = {
 			action: 'backwpup_get_msazure_container',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			msazureHost: $('#msazureHost').val(),
 			msazureAccName: $('#msazureAccName').val(),
 			msazureKey: $('#msazureKey').val(),
@@ -252,7 +252,7 @@ jQuery(document).ready( function($) {
 	function rscgetcontainer() {
 		var data = {
 			action: 'backwpup_get_rsc_container',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			rscUsername: $('#rscUsername').val(),
 			rscAPIKey: $('#rscAPIKey').val(),
 			rscselected: $('#rscContainerselected').val(),
@@ -270,7 +270,7 @@ jQuery(document).ready( function($) {
 	function sugarsyncgetroot() {
 		var data = {
 			action: 'backwpup_get_sugarsync_root',
-			backwpupajaxpage: 'backwpupeditjob',
+            page: 'backwpupeditjob',
 			sugaruser: $('#sugaruser').val(),
 			sugarpass: $('#sugarpass').val(),
 			sugarrootselected: $('#sugarrootselected').val(),

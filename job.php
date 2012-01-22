@@ -5,7 +5,6 @@ if (empty($_GET['starttype']) and !defined('STDIN')) {
 	die();
 }
 ignore_user_abort(true);
-define('DOING_BACKWPUP_JOB', true);
 define('DONOTCACHEPAGE', true);
 define('DONOTCACHEDB', true);
 define('DONOTMINIFY', true);
@@ -13,7 +12,6 @@ define('DONOTCDN', true);
 define('DONOTCACHCEOBJECT', true);
 define('W3TC_IN_MINIFY', false); //W3TC will not loaded
 define('DOING_CRON',true);
-define('BACKWPUP_LINE_SEPARATOR', (false !== strpos(PHP_OS, "WIN") or false !== strpos(PHP_OS, "OS/2")) ? "\r\n" : "\n");
 //define E_DEPRECATED if PHP lower than 5.3
 if ( !defined('E_DEPRECATED') )
 	define('E_DEPRECATED', 8192);
@@ -122,5 +120,6 @@ elseif ( $_GET['starttype'] == 'runnow' ) {
 	while ( @ob_end_flush() );
 	@flush();
 }
+include_once(dirname(__FILE__).'/core/job.php');
 //start class
 new BackWPup_job($_GET['starttype'],(int)$_GET['jobid']);

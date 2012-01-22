@@ -12,7 +12,7 @@ function backwpup_get_cron_text($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		if (empty($_POST['cronminutes']) or $_POST['cronminutes'][0]=='*') {
 			if (!empty($_POST['cronminutes'][1]))
@@ -83,7 +83,7 @@ function backwpup_get_aws_buckets($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		$awsAccessKey=$_POST['awsAccessKey'];
 		$awsSecretKey=$_POST['awsSecretKey'];
@@ -136,7 +136,7 @@ function backwpup_get_gstorage_buckets($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		$GStorageAccessKey=$_POST['GStorageAccessKey'];
 		$GStorageSecret=$_POST['GStorageSecret'];
@@ -188,7 +188,7 @@ function backwpup_get_rsc_container($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		$rscUsername=$_POST['rscUsername'];
 		$rscAPIKey=$_POST['rscAPIKey'];
@@ -240,7 +240,7 @@ function backwpup_get_msazure_container($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		$msazureHost=$_POST['msazureHost'];
 		$msazureAccName=$_POST['msazureAccName'];
@@ -291,7 +291,7 @@ function backwpup_get_sugarsync_root($args='') {
 		$ajax=false;
 	} else {
 		check_ajax_referer('backwpupeditjob_ajax_nonce');
-		if (!current_user_can(BACKWPUP_USER_CAPABILITY))
+		if (!current_user_can('backwpup'))
 			die('-1');
 		$sugaruser=$_POST['sugaruser'];
 		$sugarpass=$_POST['sugarpass'];

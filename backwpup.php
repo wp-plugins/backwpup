@@ -34,13 +34,6 @@ if (!defined('ABSPATH')) {
 }
 
 //define some things
-define('BACKWPUP_VERSION', '3.0-Dev');
-define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.1');
-define('BACKWPUP_PLUGIN_BASENAME',plugin_basename(__FILE__));
-define('BACKWPUP_PLUGIN_DIR',dirname(plugin_basename( __FILE__ )));
-define('BACKWPUP_PLUGIN_BASEURL',plugins_url('',__FILE__));
-define('BACKWPUP_USER_CAPABILITY', 'export');
-define('BACKWPUP_MENU_PAGES', 'backwpup,backwpupeditjob,backwpupworking,backwpuplogs,backwpupbackups,backwpuptools,backwpupsettings');
 if (!defined('BACKWPUP_DESTS')) {
 	if (!function_exists('curl_init'))
 		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,MSAZURE,BOXNET');
@@ -49,31 +42,28 @@ if (!defined('BACKWPUP_DESTS')) {
 }
 if (!defined('FS_CHMOD_DIR'))
 	define('FS_CHMOD_DIR', 0755 );
-
+//Plugin Pages
+$backwpup_menu_pages=array('backwpup','backwpupeditjob','backwpupworking','backwpuplogs','backwpupbackups','backwpuptools','backwpupsettings');
 //not load translations for other text domains reduces memory and load time
-if ((defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
+if ((defined('DOING_CRON') and DOING_CRON ) or (defined('DOING_AJAX') and DOING_AJAX and in_array($_POST['page'],$backwpup_menu_pages)))
 	add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
-//Load text domain if needed
-if ((is_main_site() and is_admin() and !defined('DOING_CRON')) or (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB) or (defined('DOING_AJAX') and DOING_AJAX and !empty($_POST['backwpupajaxpage'])))
-	load_plugin_textdomain('backwpup', false, BACKWPUP_PLUGIN_DIR.'/lang');
+//Load text domain
+load_plugin_textdomain('backwpup', false, dirname(plugin_basename( __FILE__ )).'/lang');
 //load thins only on main sites (MU)
 if (is_main_site()) {
 	//deactivation hook
 	register_deactivation_hook(__FILE__, 'backwpup_plugin_deactivate');
 	include_once(dirname(__FILE__).'/core/deactivate.php');
-	//Load some file
+	//Load functions file
 	include_once(dirname(__FILE__).'/core/functions.php');
 	//WP-Cron
 	add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>240,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
-	if (defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and DOING_CRON )
+	if (defined('DOING_CRON') and DOING_CRON )
 		include_once(dirname(__FILE__).'/core/wp-cron.php');
 	//load menus and pages
-	if (!defined('DOING_CRON') and !defined('DOING_BACKWPUP_JOB') and !defined("DOING_AJAX") and !defined('XMLRPC_REQUEST') and !defined('APP_REQUEST') and is_admin())
+	if (!defined('DOING_CRON') and !defined("DOING_AJAX") and !defined('XMLRPC_REQUEST') and !defined('APP_REQUEST') and is_admin())
 		include_once(dirname(__FILE__).'/core/admin.php');
 }
-//load doing job class
-if (defined('DOING_BACKWPUP_JOB') and DOING_BACKWPUP_JOB)
-	include_once(dirname(__FILE__).'/core/job.php');
 //include ajax functions
-if (defined('DOING_AJAX') and DOING_AJAX and isset($_POST['backwpupajaxpage']) and in_array($_POST['backwpupajaxpage'],explode(',',BACKWPUP_MENU_PAGES)) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php'))
-	include_once(dirname(__FILE__).'/admin/ajax_'.$_POST['backwpupajaxpage'].'.php');
+if (defined('DOING_AJAX') and DOING_AJAX and isset($_POST['page']) and in_array($_POST['page'],$backwpup_menu_pages) and is_file(dirname(__FILE__).'/admin/ajax_'.$_POST['page'].'.php'))
+	include_once(dirname(__FILE__).'/admin/ajax_'.$_POST['page'].'.php');
