@@ -70,11 +70,11 @@ Do backups and more for your WordPress Blog.
 * Added: many little thinks
 * Improved: mysql dump
 * Improved: XML export
-* Improved: zipping
+* Improved: archive zipping
 * Improved: don't look for file extensions on deletion and use file time not name
 * Improved: Password encryption/security
-* Improved: Performance on Plugin load
-* Improved:  many little thinks
+* Improved: Performance all needed classes will auto loaded
+* Improved: many little thinks
 * Changed: the job runs now in the WordPress environment again
 * Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
 * Changed: Many code recode and added to classes

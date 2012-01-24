@@ -2,8 +2,7 @@ jQuery(document).ready( function($) {
 	$('.waiting').each( function (index) {
 		var jobid = $(this).attr('id').replace('image-wait-',''),
 		    data = {
-				action: 'backwpup_show_info_td',
-                page: 'backwpup',
+				action: 'backwpup_show_info',
 				jobid: jobid,
 				mode: jQuery('input[name="mode"]').val(),
 				_ajax_nonce: jQuery('#backwpupajaxnonce').val()
