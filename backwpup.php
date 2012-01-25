@@ -175,7 +175,7 @@ class BackWPup {
 			$links[] = __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' );
 			$links[] = __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' );
 			$links[] = __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' );
-			$links[] = __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' );
+			$links[] = __( '<a href="https://plus.google.com/112659782148359984250/" target="_blank">Google+</a>','backwpup' );
 		}
 		return $links;
 	}

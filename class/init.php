@@ -107,7 +107,7 @@ class BackWPup_Init {
 		//make new schedule
 		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 		//add user role
-		$wp_roles -> add_cap( 'administrator', 'backwpup' );
+		$wp_roles->add_cap( 'administrator', 'backwpup' );
 		//update version
 		backwpup_update_option('backwpup','md5',md5_file(dirname(__FILE__).'/../backwpup.php'));
 		backwpup_update_option('backwpup','version',backwpup_get_version());

@@ -20,7 +20,7 @@ class BackWPup_Help {
 			'<p>' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . '</p>' .
 			'<p>' . __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' ) . '</p>' .
 			'<p>' . __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' ) . '</p>' .
-			'<p>' . __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' ) . '</p>'
+			'<p>' . __( '<a href="https://plus.google.com/112659782148359984250/" target="_blank">Google+</a>','backwpup' ) . '</p>'
 			);
 		} elseif (function_exists('add_contextual_help')) { //for WP < 3.3 help
 			add_contextual_help( get_current_screen(),
@@ -30,7 +30,7 @@ class BackWPup_Help {
 					' ' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>','backwpup' ) . ' |' .
 					' ' . __( '<a href="http://backwpup.com/forums/" target="_blank">Support Forums</a>','backwpup' ) . ' |' .
 					' ' . __( '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">Donate</a>','backwpup' ) . ' |' .
-					' ' . __( '<a href="https://flattr.com/thing/345067/BackWPup" target="_blank">Flattr</a>','backwpup' ) . ' ' .
+					' ' . __( '<a href="https://plus.google.com/112659782148359984250/" target="_blank">Google+</a>','backwpup' ) . ' ' .
 					'</p>'
 			);
 		}
