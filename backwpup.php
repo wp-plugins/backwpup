@@ -9,14 +9,16 @@ Version: 3.0-Dev
 Text Domain: backwpup
 Domain Path: /lang/
 Network: true
-License: GPL2
+License: GPLv3
 */
 
-/*  Copyright 2009-2012  Daniel Hüsken  (email: mail@backwpup.com)
+/*
+	Copyright 2009-2012  Daniel Hüsken  (email: mail@backwpup.com)
 
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License, version 2, as
-    published by the Free Software Foundation.
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,9 +26,10 @@ License: GPL2
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 */
+
 if (!defined('ABSPATH')) {
 	header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
 	header("Status: 404 Not Found");
@@ -60,6 +63,16 @@ class BackWPup {
 	 * @return \BackWPup
 	 */
 	public function __construct() {
+		global $wp_version;
+		//Check minimal versions
+		if (version_compare($wp_version, '3.1', '<')) { // check WP Version
+			add_action('admin_notices', create_function('','echo "<div id=\"message\" class=\"error fade\"><strong>".__("BackWPup:", "backwpup")."</strong><br />".__("- WordPress 3.1 or higher is needed!","backwpup")."</div>";'));
+			return;
+		}
+		if (version_compare(phpversion(), '5.2.4', '<'))  {// check PHP Version
+			add_action('admin_notices', create_function('','echo "<div id=\"message\" class=\"error fade\"><strong>".__("BackWPup:", "backwpup")."</strong><br />".__("- PHP 5.2.4 or higher is needed!","backwpup")."</div>";'));
+			return;
+		}
 		//register auto load
 		spl_autoload_register(array($this,'autoload'));
 		//not load translations for other text domains reduces memory and load time
@@ -69,12 +82,10 @@ class BackWPup {
 		load_plugin_textdomain('backwpup', false, dirname(plugin_basename( __FILE__ )).'/lang');
 		//Multisite or normal actions/filter
 		if (is_multisite()) {
-			add_action('network_admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(bbackwpup_get_option("cfg","capability"))) echo $backwpup_admin_message;'));
 			add_action('network_admin_menu', array($this,'admin_menu'));
 			add_action('wp_network_dashboard_setup', array($this,'dashboard_setup'));
 			add_filter('plugin_row_meta', array($this,'plugin_links'),10,2);
 		} else {
-			add_action('admin_notices', create_function('','global $backwpup_admin_message;if (current_user_can(backwpup_get_option("cfg","capability"))) echo $backwpup_admin_message;'));
 			add_action('admin_menu', array($this,'admin_menu'));
 			add_action('wp_dashboard_setup', array($this,'dashboard_setup'));
 			add_filter('plugin_action_links_'.plugin_basename(__FILE__), create_function('$links','array_unshift($links,"<a href=\"".backwpup_admin_url("admin.php")."?page=backwpup\" title=\"". __("Go to Settings Page","backwpup") ."\" class=\"edit\">". __("Settings","backwpup") ."</a>");return $links;'));

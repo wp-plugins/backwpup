@@ -280,7 +280,7 @@ class BackWPup_Job {
 		fwrite($fd, "</style>" . $this->line_separator);
 		fwrite($fd, "<title>" . sprintf(__('BackWPup log for %1$s from %2$s at %3$s', 'backwpup'), backwpup_get_option($this->jobdata['JOBMAIN'],'name'), date_i18n(get_option('date_format')), date_i18n(get_option('time_format'))) . "</title>" . $this->line_separator . "</head>" . $this->line_separator . "<body id=\"body\">" . $this->line_separator);
 		fwrite($fd, sprintf(__('[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s'), backwpup_get_version(), '&copy; 2009-'.date_i18n('Y'), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version) . "<br />" . $this->line_separator);
-		fwrite($fd, __('[INFO]: BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup') . "<br />" . $this->line_separator);
+		fwrite($fd, __('[INFO]: This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup') . "<br />" . $this->line_separator);
 		fwrite($fd, __('[INFO]: BackWPup job:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'jobid') . '. ' . backwpup_get_option($this->jobdata['JOBMAIN'],'name') . '; ' . implode('+', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) . "<br />" . $this->line_separator);
 		if ( backwpup_get_option($this->jobdata['JOBMAIN'],'activetype')!='' )
 			fwrite($fd, __('[INFO]: BackWPup cron:', 'backwpup') . ' ' . backwpup_get_option($this->jobdata['JOBMAIN'],'cron') . '; ' . date_i18n('D, j M Y @ H:i', backwpup_get_option($this->jobdata['JOBMAIN'],'cronnextrun')) . "<br />" . $this->line_separator);

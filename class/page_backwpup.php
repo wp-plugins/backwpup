@@ -53,8 +53,6 @@ class BackWPup_Page_Backwpup {
 						foreach ($options as $option) {
 							if ($option->name=="activetype")
 								$option->value='';
-							if ($option->name=="fileprefix")
-								$option->value=str_replace($_GET['jobid'],$newjobid,$option->value);
 							if ($option->name=="logfile" || $option->name=="starttime" or
 								$option->name=="lastbackupdownloadurl" || $option->name=="lastruntime" or
 								$option->name=="lastrun" || $option->name=="cronnextrun")
@@ -91,6 +89,7 @@ class BackWPup_Page_Backwpup {
 					//write new log header
 					$backupdata['ERROR']++;
 					$fd=fopen($backupdata['LOGFILE'],'r+');
+					$filepos=ftell($fd);
 					while (!feof($fd)) {
 						$line=fgets($fd);
 						if (stripos($line,"<meta name=\"backwpup_errors\"") !== false) {
@@ -141,19 +140,14 @@ class BackWPup_Page_Backwpup {
 		wp_enqueue_script('backwpup_backwpup',plugins_url('',dirname(__FILE__)).'/js/backwpup.js','',((defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? time() : backwpup_get_version()),true);
 
 		$backwpup_listtable->prepare_items();
-
-
 	}
 
 	public function env_check() {
 		global $wpdb,$wp_version;
 		$massage='';
-		if (version_compare($wp_version, '3.1', '<'))  // check WP Version
-			$massage.=str_replace('%d','3.1',__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
-		if (version_compare(phpversion(), '5.2.4', '<'))  // check PHP Version
-			$massage.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
-		if (version_compare($wpdb->get_var( "SELECT VERSION() AS version" ), '5.0', '<'))  // check MySQL Version
-			$massage.=__('- MySQL 5.0 or higher is needed!','backwpup') . '<br />';
+		// check MySQL Version
+		if (version_compare($wpdb->get_var( "SELECT VERSION() AS version" ), '5.0', '<'))
+			$massage.=__("- MySQL 5.0 or higher is needed!",'backwpup').'<br />';
 		// check logs folder
 		if (!backwpup_check_open_basedir(backwpup_get_option('cfg','logfolder'))) //check open basedir
 			$massage.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),backwpup_get_option('cfg','logfolder')).'<br />';

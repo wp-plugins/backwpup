@@ -1,7 +1,7 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
-Tags: backup, admin, file, Database, mysql, dump, cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
+Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.2
 Tested up to: 3.3
 Stable tag: 2.1.7
@@ -77,6 +77,7 @@ Do backups and more for your WordPress Blog.
 * Improved: many little thinks
 * Changed: the job runs now in the WordPress environment again
 * Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
+* Changed: License changed to GPLv3
 * Changed: Many code recode and added to classes
 * Updated: AWS lib to 1.5.1
 * Updated: RSC lib to 1.7.10
