@@ -200,6 +200,7 @@ class BackWPup_Job {
 		$this->jobdata['FILEEXCLUDES']=array_unique($this->jobdata['FILEEXCLUDES']);
 		$this->jobdata['DBDUMPFILE'] = false;
 		$this->jobdata['WPEXPORTFILE'] = false;
+		$this->jobdata['PLUGINLISTFILE'] = false;
 		$this->jobdata['COUNT']['SQLQUERRYS']=0;
 		$this->jobdata['COUNT']['FILES']=0;
 		$this->jobdata['COUNT']['FILESIZE']=0;
@@ -214,12 +215,15 @@ class BackWPup_Job {
 		//build working steps
 		$this->jobdata['STEPS'] = array();
 		//setup job steps
-		$mysqlversion=$wpdb->get_var( "SELECT VERSION() AS version" );
-		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) && version_compare($mysqlversion,'5.0','>='))
+		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')))
 			$this->jobdata['STEPS'][] = 'DB_DUMP';
-		if ( in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) && version_compare($mysqlversion,'5.0','>='))
-			$this->jobdata['STEPS'][] = 'WP_EXPORT';
-		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) && version_compare($mysqlversion,'5.0','>='))
+		if ( in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type'))) {
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'wpexportfile'))
+				$this->jobdata['STEPS'][] = 'WP_EXPORT';
+			if (backwpup_get_option($this->jobdata['JOBMAIN'],'pluginlistfile'))
+				$this->jobdata['STEPS'][] = 'WP_PLUGIN_LIST';
+		}
+		if ( in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')))
 			$this->jobdata['STEPS'][] = 'FOLDER_LIST';
 		if ( in_array('DB', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('WPEXP', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) or in_array('FILE', backwpup_get_option($this->jobdata['JOBMAIN'],'type')) ) {
 			//Add archive creation on backup type archive
@@ -297,7 +301,7 @@ class BackWPup_Job {
 		fwrite($fd, __('[INFO]: PHP ver.:', 'backwpup') . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . $this->line_separator);
 		if ( (bool)ini_get('safe_mode') )
 			fwrite($fd, sprintf(__('[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup'), ini_get('max_execution_time')) . "<br />" . $this->line_separator);
-		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), $mysqlversion ). "<br />" . $this->line_separator);
+		fwrite($fd, sprintf(__('[INFO]: MySQL ver.: %s', 'backwpup'), $wpdb->get_var( "SELECT VERSION() AS version" ) ). "<br />" . $this->line_separator);
 		if ( function_exists('curl_init') ) {
 			$curlversion = curl_version();
 			fwrite($fd, sprintf(__('[INFO]: curl ver.: %1$s; %2$s', 'backwpup'), $curlversion['version'], $curlversion['ssl_version']) . "<br />" . $this->line_separator);
@@ -571,6 +575,8 @@ class BackWPup_Job {
 			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['DBDUMPFILE']);
 		if (!empty($this->jobdata['WPEXPORTFILE']) && file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']) )
 			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']);
+		if (!empty($this->jobdata['PLUGINLISTFILE']) && file_exists(backwpup_get_option('cfg','tempfolder') . $this->jobdata['PLUGINLISTFILE']) )
+			unlink(backwpup_get_option('cfg','tempfolder') . $this->jobdata['PLUGINLISTFILE']);
 
 		//Update job options
 		$starttime = backwpup_get_option($this->jobdata['JOBMAIN'],'starttime');
@@ -1357,6 +1363,7 @@ class BackWPup_Job {
 
 	/**
 	 * Makes a WordPress export
+	 *
 	 * @return nothing
 	 */
 	protected function wp_export() {
@@ -1428,6 +1435,64 @@ class BackWPup_Job {
 		}
 		$this->_update_working_data();
 	}
+
+	/**
+	 * Makes a file with installed Plugins
+	 *
+	 * @return nothing
+	 */
+	protected function wp_plugin_list() {
+		global $wp_version;
+		$this->jobdata['STEPTODO'] = 1;
+		trigger_error(sprintf(__('%d. Try to generate a file with installed Plugin names...', 'backwpup'), $this->jobdata['WP_PLUGIN_LIST']['STEP_TRY']), E_USER_NOTICE);
+		//build filename
+		$datevars = array( '%d', '%D', '%l', '%N', '%S', '%w', '%z', '%W', '%F', '%m', '%M', '%n', '%t', '%L', '%o', '%Y', '%a', '%A', '%B', '%g', '%G', '%h', '%H', '%i', '%s', '%u', '%e', '%I', '%O', '%P', '%T', '%Z', '%c', '%U' );
+		$datevalues = array( date_i18n('d'), date_i18n('D'), date_i18n('l'), date_i18n('N'), date_i18n('S'), date_i18n('w'), date_i18n('z'), date_i18n('W'), date_i18n('F'), date_i18n('m'), date_i18n('M'), date_i18n('n'), date_i18n('t'), date_i18n('L'), date_i18n('o'), date_i18n('Y'), date_i18n('a'), date_i18n('A'), date_i18n('B'), date_i18n('g'), date_i18n('G'), date_i18n('h'), date_i18n('H'), date_i18n('i'), date_i18n('s'), date_i18n('u'), date_i18n('e'), date_i18n('I'), date_i18n('O'), date_i18n('P'), date_i18n('T'), date_i18n('Z'), date_i18n('c'), date_i18n('U') );
+		$this->jobdata['PLUGINLISTFILE'] = str_replace($datevars, $datevalues, backwpup_get_option($this->jobdata['JOBMAIN'],'pluginlistfile')).'.txt';
+		//open file
+		$fd = fopen(backwpup_get_option('cfg','tempfolder') . $this->jobdata['PLUGINLISTFILE'], 'wb');
+		$header = "------------------------------------------------------------" . $this->line_separator;
+		$header .= "  Plugin list generated with BackWPup ver.: " . backwpup_get_version() . $this->line_separator;
+		$header .= "  Plugin for WordPress " . $wp_version . " by Daniel Huesken" . $this->line_separator;
+		$header .= "  http://backwpup.com" . $this->line_separator;
+		$header .= "  Blog Name: " . get_bloginfo('name') . $this->line_separator;
+		if ( defined('WP_SITEURL') )
+			$header .= "  Blog URL: " . trailingslashit(WP_SITEURL) . $this->line_separator;
+		else
+			$header .= "  Blog URL: " . trailingslashit(get_option('siteurl')) . $this->line_separator;
+		$header .= "  Generated on: " . date_i18n('Y-m-d H:i.s') . $this->line_separator;
+		$header .= "------------------------------------------------------------" . $this->line_separator . $this->line_separator;
+		fwrite($fd,$header);
+		//get Plugins
+		$plugins=get_plugins();
+		$plugins_active=get_option('active_plugins');
+		//write it to file
+		fwrite($fd,$this->line_separator.__('All plugins information:','backwpup').$this->line_separator.'------------------------------'.$this->line_separator);
+		foreach ($plugins as $key => $plugin) {
+			fwrite($fd,$plugin['Name'].' (v.'.$plugin['Version'].') '.html_entity_decode(sprintf(__('from %s','backwpup'),$plugin['Author']), ENT_QUOTES).$this->line_separator."\t".$plugin['PluginURI'].$this->line_separator);
+		}
+		fwrite($fd,$this->line_separator.__('Active plugins:','backwpup').$this->line_separator.'------------------------------'.$this->line_separator);
+		foreach ($plugins as $key => $plugin) {
+			if (in_array($key,$plugins_active))
+				fwrite($fd,$plugin['Name'].$this->line_separator);
+		}
+		fwrite($fd,$this->line_separator.__('Inactive plugins:','backwpup').$this->line_separator.'------------------------------'.$this->line_separator);
+		foreach ($plugins as $key => $plugin) {
+			if (!in_array($key,$plugins_active))
+				fwrite($fd,$plugin['Name'].$this->line_separator);
+		}
+		fclose($fd);
+		//add file to backup files
+		if ( is_readable(backwpup_get_option('cfg','tempfolder') .$this->jobdata['PLUGINLISTFILE']) ) {
+			$this->jobdata['EXTRAFILESTOBACKUP'][] = backwpup_get_option('cfg','tempfolder') . $this->jobdata['PLUGINLISTFILE'];
+			$this->jobdata['COUNT']['FILES']++;
+			$this->jobdata['COUNT']['FILESIZE']=$this->jobdata['COUNT']['FILESIZE']+@filesize(backwpup_get_option('cfg','tempfolder') . $this->jobdata['PLUGINLISTFILE']);
+			trigger_error(sprintf(__('Added plugin list file "%1$s" with %2$s to backup file list', 'backwpup'), $this->jobdata['PLUGINLISTFILE'], backwpup_format_bytes(filesize(backwpup_get_option('cfg','tempfolder') . $this->jobdata['WPEXPORTFILE']))), E_USER_NOTICE);
+		}
+		$this->jobdata['STEPDONE'] = 1;
+		$this->jobdata['STEPSDONE'][] = 'WP_PLUGIN_LIST'; //set done
+	}
+
 
 	/**
 	 * Generates a list of folder to backup

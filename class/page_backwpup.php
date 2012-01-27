@@ -122,6 +122,8 @@ class BackWPup_Page_Backwpup {
 					unlink(backwpup_get_option('CFG','tempfolder').$backupdata['DBDUMPFILE']);
 				if (!empty($backupdata['WPEXPORTFILE']) && file_exists(backwpup_get_option('CFG','tempfolder').$backupdata['WPEXPORTFILE']))
 					unlink(backwpup_get_option('CFG','tempfolder').$backupdata['WPEXPORTFILE']);
+				if (!empty($backupdata['PLUGINLISTFILE']) && file_exists(backwpup_get_option('CFG','tempfolder').$backupdata['PLUGINLISTFILE']))
+					unlink(backwpup_get_option('CFG','tempfolder').$backupdata['PLUGINLISTFILE']);
 				break;
 		}
 

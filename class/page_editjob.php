@@ -119,6 +119,7 @@ class BackWPup_Page_Editjob {
 				backwpup_update_option($main,'dbdumpfilecompression',$_POST['dbdumpfilecompression']);
 			backwpup_update_option($main,'maintenance',(isset($_POST['maintenance']) && $_POST['maintenance']==1) ? true : false);
 			backwpup_update_option($main,'wpexportfile',$_POST['wpexportfile']);
+			backwpup_update_option($main,'pluginlistfile',$_POST['pluginlistfile']);
 			if ($_POST['wpexportfilecompression']=='' || $_POST['wpexportfilecompression']=='gz' || $_POST['wpexportfilecompression']=='bz2')
 				backwpup_update_option($main,'wpexportfilecompression',$_POST['wpexportfilecompression']);
 			$fileexclude=explode(',',stripslashes($_POST['fileexclude']));
@@ -505,11 +506,12 @@ class BackWPup_Page_Editjob {
 						</div>
 
 						<div id="wpexport" class="stuffbox"<?php if (!in_array("WPEXP",backwpup_get_option($main,'type'))) echo ' style="display:none;"';?>>
-							<h3><label for="dbtables"><?php _e('Wordpress Export','backwpup'); ?></label></h3>
+							<h3><label for="wpexport"><?php _e('Wordpress Export','backwpup'); ?></label></h3>
 							<div class="inside">
-								<strong><?php _e('Filename for Export:','backwpup');?></strong> <input class="long-text" type="text" name="wpexportfile" value="<?php echo backwpup_get_option($main,'wpexportfile');?>"/>.xml
-								<br /><strong><?php _e('Copmpression for Export:','backwpup');?></strong>
+								<?php _e('Filename for the WP export file:','backwpup');?>
+								&nbsp;<input class="long-text" type="text" name="wpexportfile" value="<?php echo backwpup_get_option($main,'wpexportfile');?>"/>.xml&nbsp;
 								<?php
+								_e('Compression:','backwpup');
 								echo ' <input class="radio" type="radio"'.checked('',backwpup_get_option($main,'wpexportfilecompression'),false).' name="wpexportfilecompression" value="" />'.__('none','backwpup');
 								if (function_exists('gzopen'))
 									echo ' <input class="radio" type="radio"'.checked('gz',backwpup_get_option($main,'wpexportfilecompression'),false).' name="wpexportfilecompression" value="gz" />'.__('GZip','backwpup');
@@ -520,6 +522,9 @@ class BackWPup_Page_Editjob {
 								else
 									echo ' <input class="radio" type="radio"'.checked('bz2',backwpup_get_option($main,'wpexportfilecompression'),false).' name="wpexportfilecompression" value="bz2" disabled="disabled" />'.__('BZip2','backwpup');
 								?>
+								<br />&nbsp;<br />
+								<?php _e('Filename for export a list of installed plugins:','backwpup');?>
+								&nbsp;<input class="long-text" type="text" name="pluginlistfile" value="<?php echo backwpup_get_option($main,'pluginlistfile');?>"/>.txt&nbsp;
 							</div>
 						</div>
 

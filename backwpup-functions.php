@@ -91,6 +91,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['dbdumpfilecompression']='';
 		$default[$main]['maintenance']=false;
 		$default[$main]['wpexportfile']=sanitize_key(get_bloginfo('name')).'.wordpress.%Y-%m-%d';
+		$default[$main]['pluginlistfile']=sanitize_key(get_bloginfo('name')).'.pluginlist.%Y-%m-%d';
 		$default[$main]['wpexportfilecompression']='';
 		$default[$main]['fileexclude']='.tmp,.svn,.git';
 		$default[$main]['dirinclude']='';

@@ -132,7 +132,7 @@ class BackWPup {
 			include_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
 			return true;
 		}
-		//Include external Libs
+		//External libs to load
 		if ('CF_Authentication' == $class_name) {
 			include_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
 			return true;
@@ -145,7 +145,7 @@ class BackWPup {
 			include_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
 			return true;
 		}
-		//BackWPup class loading
+		//BackWPup classes to load
 		if (substr($class_name,0,9)=='BackWPup_') {
 			$inc = dirname(__FILE__).'/class/'.strtolower(str_replace('BackWPup_','',$class_name)).'.php';
 			if (file_exists($inc)) {
