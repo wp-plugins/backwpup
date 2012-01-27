@@ -668,7 +668,7 @@ class BackWPup_Job {
 			return;
 		if ( $enable ) {
 			trigger_error(__('Set Blog to maintenance mode', 'backwpup'), E_USER_NOTICE);
-			if ( class_exists('WPMaintenanceMode') ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
+			if ( class_exists('WPMaintenanceMode',false) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
 				if (is_multisite() && is_plugin_active_for_network(FB_WM_BASENAME) )
 					set_site_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
 				else
@@ -681,7 +681,7 @@ class BackWPup_Job {
 			}
 		} else {
 			trigger_error(__('Set Blog to normal mode', 'backwpup'), E_USER_NOTICE);
-			if (  class_exists('WPMaintenanceMode') ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
+			if (  class_exists('WPMaintenanceMode',false) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
 				if (is_multisite() && is_plugin_active_for_network(FB_WM_BASENAME))
 					set_site_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
 				else
@@ -1618,7 +1618,7 @@ class BackWPup_Job {
 	protected function create_archive() {
 		$this->jobdata['STEPTODO'] = count($this->jobdata['FOLDERLIST']) + 1;
 
-		if ( strtolower(backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')) == ".zip" && class_exists('ZipArchive') ) { //use php zip lib
+		if ( strtolower(backwpup_get_option($this->jobdata['JOBMAIN'],'fileformart')) == ".zip" && class_exists('ZipArchive',true) ) { //use php zip lib
 			trigger_error(sprintf(__('%d. Trying to create backup zip archive...', 'backwpup'), $this->jobdata['CREATE_ARCHIVE']['STEP_TRY']), E_USER_NOTICE);
 			$numopenfiles=0;
 			$zip = new ZipArchive();

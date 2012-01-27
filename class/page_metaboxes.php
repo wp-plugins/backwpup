@@ -51,7 +51,7 @@ class BackWPup_Page_Metaboxes {
 			<input name="fileprefix" type="text" value="<?php echo backwpup_get_option($main,'fileprefix');?>" class="large-text" /><br />
 			<b><?php _e('File Formart:','backwpup'); ?></b><br />
 			<?php
-			if (function_exists('gzopen') || class_exists('ZipArchive'))
+			if (function_exists('gzopen') || class_exists('ZipArchive',true))
 				echo '<input class="radio" type="radio"'.checked('.zip',backwpup_get_option($main,'fileformart'),false).' name="fileformart" value=".zip" />'.__('Zip','backwpup').'<br />';
 			else
 				echo '<input class="radio" type="radio"'.checked('.zip',backwpup_get_option($main,'fileformart'),false).' name="fileformart" value=".zip" disabled="disabled" />'.__('Zip','backwpup').'<br />';

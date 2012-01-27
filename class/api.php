@@ -4,7 +4,6 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
-
 /**
  * Class for calling the BackWPup API
  */

@@ -74,7 +74,7 @@ class BackWPup {
 			return;
 		}
 		//register auto load
-		spl_autoload_register(array($this,'autoload'));
+		spl_autoload_register(array($this,'autoloader'));
 		//not load translations for other text domains reduces memory and load time
 		if ((defined('DOING_CRON') && DOING_CRON ) || (defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && in_array($_POST['action'],array('backwpup_show_info','backwpup_working','backwpup_cron_text','backwpup_aws_buckets','backwpup_gstorage_buckets','backwpup_rsc_container','backwpup_msazure_container','backwpup_sugarsync_root'))))
 			add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
@@ -112,7 +112,8 @@ class BackWPup {
 			add_action('wp_ajax_backwpup_sugarsync_root', array('BackWPup_Ajax_Editjob','sugarsync_root'));
 		}
 		//load API for update checks and so on
-		new BackWPup_Api();
+		if (class_exists('BackWPup_Api',true))
+			new BackWPup_Api();
 	}
 
 	/**
@@ -121,25 +122,38 @@ class BackWPup {
 	 *
 	 * @param string $class_name Class to include
 	 */
-	public function autoload($class_name) {
+	public static function autoloader($class_name) {
 		//WordPress classes to load
-		if ('WP_List_Table' == $class_name)
+		if ('WP_List_Table' == $class_name) {
 			include_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
-		if ('PclZip' == $class_name)
+			return true;
+		}
+		if ('PclZip' == $class_name) {
 			include_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
+			return true;
+		}
 		//Include external Libs
-		if ('CF_Authentication' == $class_name)
+		if ('CF_Authentication' == $class_name) {
 			include_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
-		if ('Microsoft_WindowsAzure_Storage_Blob' == $class_name)
+			return true;
+		}
+		if ('Microsoft_WindowsAzure_Storage_Blob' == $class_name) {
 			include_once(dirname(__FILE__).'/libs/Microsoft/AutoLoader.php');
-		if ('AmazonS3' == $class_name)
+			return true;
+		}
+		if ('AmazonS3' == $class_name) {
 			include_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+			return true;
+		}
 		//BackWPup class loading
 		if (substr($class_name,0,9)=='BackWPup_') {
-			$inc = '/class/'.str_replace('BackWPup_','',$class_name).'.php';
-			if (file_exists(dirname(__FILE__).$inc))
-				include_once dirname(__FILE__).$inc;
+			$inc = dirname(__FILE__).'/class/'.strtolower(str_replace('BackWPup_','',$class_name)).'.php';
+			if (file_exists($inc)) {
+				include_once($inc);
+				return true;
+			}
 		}
+		return false;
 	}
 
 	/**

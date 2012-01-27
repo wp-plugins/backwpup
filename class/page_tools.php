@@ -14,7 +14,7 @@ class BackWPup_Page_Tools {
 			check_admin_referer('backwpup-tools');
 			if(copy('http://api.backwpup.com/download/backwpup_db_restore.zip',ABSPATH.'backwpup_db_restore.zip')) {
 				//unzip
-				if (class_exists('ZipArchive')) {
+				if (class_exists('ZipArchive',true)) {
 					$zip = new ZipArchive;
 					if ($zip->open(ABSPATH.'backwpup_db_restore.zip') === TRUE) {
 						$zip->extractTo(ABSPATH);
