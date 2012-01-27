@@ -4,6 +4,9 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
+/**
+ * @property mixed classobj
+ */
 class BackWPup_Ajax_Fileinfo {
 
 	static private $classobj = NULL;
@@ -18,13 +21,22 @@ class BackWPup_Ajax_Fileinfo {
 	 * @access  public
 	 * @return  object $classobj
 	 */
-	public function get_object() {
+	public static function get_object() {
 		if ( NULL === self :: $classobj )
 			self :: $classobj = new self;
 		return self :: $classobj;
 	}
 
-	//helper functions for detecting file size
+	/**
+	 *
+	 * helper functions for detecting file size
+	 *
+	 * @param string $folder
+	 * @param int $levels
+	 * @param array $excludes
+	 * @param array $excludedirs
+	 * @param bool $nothumbs
+	 */
 	protected function calc_file_size_file_list_folder( $folder = '', $levels = 100, $excludes=array(),$excludedirs=array(),$nothumbs=false) {
 		$this->countfolder++;
 		if ( !empty($folder) && $levels && $dir = @opendir( $folder )) {
@@ -35,7 +47,7 @@ class BackWPup_Ajax_Fileinfo {
 					if (false !== stripos($folder.$file,$exclusion) && !empty($exclusion) && $exclusion!='/')
 						continue 2;
 				}
-				if ($nothumbs && strpos($folder,backwpup_get_upload_dir()) !== false &&  preg_match("/\-[0-9]{2,4}x[0-9]{2,4}\.(jpg|png|gif)$/i",$file))
+				if ($nothumbs && strpos($folder,BackWPup_File::get_upload_dir()) !== false &&  preg_match("/\-[0-9]{2,4}x[0-9]{2,4}\.(jpg|png|gif)$/i",$file))
 					continue;
 				if ( @is_dir( $folder.$file )) {
 					if (!in_array(trailingslashit($folder.$file),$excludedirs))
@@ -57,15 +69,15 @@ class BackWPup_Ajax_Fileinfo {
 
 		//File list for blog folders
 		if (backwpup_get_option($this->jobmain,'backuproot'))
-			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backuprootexcludedirs'),backwpup_get_exclude_wp_dirs(ABSPATH)));
+			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',ABSPATH)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backuprootexcludedirs'),BackWPup_File::get_exclude_wp_dirs(ABSPATH)));
 		if (backwpup_get_option($this->jobmain,'backupcontent'))
-			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupcontentexcludedirs'),backwpup_get_exclude_wp_dirs(WP_CONTENT_DIR)));
+			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupcontentexcludedirs'),BackWPup_File::get_exclude_wp_dirs(WP_CONTENT_DIR)));
 		if (backwpup_get_option($this->jobmain,'backupplugins'))
-			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backuppluginsexcludedirs'),backwpup_get_exclude_wp_dirs(WP_PLUGIN_DIR)));
+			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backuppluginsexcludedirs'),BackWPup_File::get_exclude_wp_dirs(WP_PLUGIN_DIR)));
 		if (backwpup_get_option($this->jobmain,'backupthemes'))
-			$this->calc_file_size_file_list_folder(trailingslashit(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)).'themes'),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupthemesexcludedirs',backwpup_get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes'))));
+			$this->calc_file_size_file_list_folder(trailingslashit(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)).'themes'),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupthemesexcludedirs',BackWPup_File::get_exclude_wp_dirs(trailingslashit(WP_CONTENT_DIR).'themes'))));
 		if (backwpup_get_option($this->jobmain,'backupuploads'))
-			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',backwpup_get_upload_dir())),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupuploadsexcludedirs'),backwpup_get_exclude_wp_dirs(backwpup_get_upload_dir())),backwpup_get_option($this->jobmain,'backupexcludethumbs'));
+			$this->calc_file_size_file_list_folder(trailingslashit(str_replace('\\','/',BackWPup_File::get_upload_dir())),100,$backwpup_exclude,array_merge(backwpup_get_option($this->jobmain,'backupuploadsexcludedirs'),BackWPup_File::get_exclude_wp_dirs(BackWPup_File::get_upload_dir())),backwpup_get_option($this->jobmain,'backupexcludethumbs'));
 
 		//include dirs
 		if (backwpup_get_option($this->jobmain,'dirinclude')) {
@@ -106,14 +118,16 @@ class BackWPup_Ajax_Fileinfo {
 		}
 	}
 
-	//ajax show file info in div for jobs
+	/**
+	 * ajax show file info in div for jobs
+	 */
 	public function __construct() {
 		check_ajax_referer('backwpup_ajax_nonce');
 		$mode=filter_input(INPUT_POST,'mode',FILTER_SANITIZE_STRING);
 		$jobid=filter_input(INPUT_POST,'jobid',FILTER_SANITIZE_NUMBER_INT);
 		$this->jobmain='job_'.$jobid;
 		$this->calc_file_size();
-		echo sprintf(__("Files Size: %s","backwpup"),backwpup_format_bytes($this->countfilesize))."<br />";
+		echo sprintf(__("Files Size: %s","backwpup"),size_format($this->countfilesize),2)."<br />";
 		if ( 'excerpt' == $mode ) {
 			echo sprintf(__("Folder count: %d","backwpup"),$this->countfolder)."<br />";
 			echo sprintf(__("Files count: %d","backwpup"),$this->countfiles)."<br />";

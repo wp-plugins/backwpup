@@ -32,6 +32,7 @@ function backwpup_get_version() {
  * @return bool|mixed
  */
 function backwpup_default_option_settings($main,$name) {
+	global $wpdb;
 	$main=sanitize_key(trim($main));
 	$name=sanitize_key(trim($name));
 	//set defaults
@@ -58,13 +59,13 @@ function backwpup_default_option_settings($main,$name) {
 		if ($name=='tempfolder') {
 			if (defined('WP_TEMP_DIR')) //get temp folder
 				$default['cfg']['tempfolder']=trim(WP_TEMP_DIR);
-			if (empty($default['cfg']['tempfolder']) || !backwpup_check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
+			if (empty($default['cfg']['tempfolder']) || !BackWPup_File::check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
 				$default['cfg']['tempfolder']=sys_get_temp_dir();									//normal temp dir
-			if (empty($default['cfg']['tempfolder']) || !backwpup_check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
+			if (empty($default['cfg']['tempfolder']) || !BackWPup_File::check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
 				$default['cfg']['tempfolder']=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
-			if (empty($default['cfg']['tempfolder']) || !backwpup_check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
+			if (empty($default['cfg']['tempfolder']) || !BackWPup_File::check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
 				$default['cfg']['tempfolder']=WP_CONTENT_DIR.'/';
-			if (empty($default['cfg']['tempfolder']) || !backwpup_check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
+			if (empty($default['cfg']['tempfolder']) || !BackWPup_File::check_open_basedir($default['cfg']['tempfolder']) || !@is_writable($default['cfg']['tempfolder']) || !@is_dir($default['cfg']['tempfolder']))
 				$default['cfg']['tempfolder']=get_temp_dir();
 			$default['cfg']['tempfolder']=trailingslashit(str_replace('\\','/',realpath($default['cfg']['tempfolder'])));
 		}
@@ -75,12 +76,10 @@ function backwpup_default_option_settings($main,$name) {
 		$default[$main]['activetype']='';
 		$default[$main]['cronselect']='basic';
 		$default[$main]['cron']='0 3 * * *';
-		$default[$main]['cronnextrun']=backwpup_cron_next('0 3 * * *');
 		$default[$main]['mailaddresslog']=get_option('admin_email');
 		$default[$main]['mailerroronly']=true;
 		if ($name=='dbexclude') {
 			$default[$main]['dbexclude']=array();
-			global $wpdb;
 			$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
 			foreach ($tables as $table) {
 				if (strpos($table,$wpdb->prefix) === false)
@@ -308,6 +307,7 @@ function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
 	$url=plugins_url('',__FILE__).'/job.php';
 	$header='';
 	$authurl='';
+	$query_args=array();
 
 	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
@@ -361,44 +361,6 @@ function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
 
 /**
  *
- * check if path in open basedir
- *
- * @param string $dir the folder to check
- * @return bool is it in open basedir
- */
-function backwpup_check_open_basedir($dir) {
-	if (!ini_get('open_basedir'))
-		return true;
-	$openbasedirarray=explode(PATH_SEPARATOR,ini_get('open_basedir'));
-	$dir=rtrim(str_replace('\\','/',$dir),'/').'/';
-	if (!empty($openbasedirarray)) {
-		foreach ($openbasedirarray as $basedir) {
-			if (stripos($dir,rtrim(str_replace('\\','/',$basedir),'/').'/')==0)
-				return true;
-		}
-	} 
-	return false;
-}
-
-/**
- *
- * Formatting bytes to MB, GB, ...
- *
- * @param int $bytes bytes to convert
- * @param int $precision after , digits
- * @return string
- */
-function backwpup_format_bytes($bytes, $precision = 2) {
-	$units = array('B', 'KB', 'MB', 'GB', 'TB');
-	$bytes = max($bytes, 0);
-	$pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-	$pow = min($pow, count($units) - 1);
-	$bytes /= pow(1024, $pow);
-	return round($bytes, $precision) . ' ' . $units[$pow];
-}
-
-/**
- *
  * Returns the job types as Text or array
  *
  * @param array $type
@@ -434,8 +396,8 @@ function backwpup_job_types($type=array(),$echo=false) {
 
 	if ($echo)
 		echo $typename;
-	else
-		return $typename;
+
+	return $typename;
 }
 
 /**
@@ -474,219 +436,20 @@ function backwpup_read_logheader($logfile) {
 
 /**
  *
- * Get the folder for blog uploads
- *
- * @return sting
- */
-function backwpup_get_upload_dir() {
-	$upload_path = get_option('upload_path');
-	$upload_path = trim($upload_path);
-	if ( empty($upload_path) ) {
-		$dir = WP_CONTENT_DIR . '/uploads';
-	} else {
-		$dir = $upload_path;
-		if ( 'wp-content/uploads' == $upload_path )
-			$dir = WP_CONTENT_DIR . '/uploads';
-		elseif ( 0 !== strpos($dir, ABSPATH) )
-			$dir = path_join( ABSPATH, $dir );
-	}
-	if (defined('UPLOADS') && !is_multisite())
-		$dir = ABSPATH . UPLOADS;
-	if (is_multisite())
-			$dir = untrailingslashit(WP_CONTENT_DIR).'/blogs.dir';
-	return str_replace('\\','/',trailingslashit($dir));
-}
-
-/**
- *
- * Get folder to exclude from a given folder for file backups
- *
- * @param $folder to check for excludes
- * @return array of folder to exclude
- */
-function backwpup_get_exclude_wp_dirs($folder) {
-	global $wpdb;
-	$folder=trailingslashit(str_replace('\\','/',$folder));
-	$excludedir=array();
-	$excludedir[]=backwpup_get_option('cfg','tempfolder'); //exclude temp
-	$excludedir[]=backwpup_get_option('cfg','logfolder'); //exclude log folder
-	if (false !== strpos(trailingslashit(str_replace('\\','/',ABSPATH)),$folder) && trailingslashit(str_replace('\\','/',ABSPATH))!=$folder)
-		$excludedir[]=trailingslashit(str_replace('\\','/',ABSPATH));
-	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_CONTENT_DIR)),$folder) && trailingslashit(str_replace('\\','/',WP_CONTENT_DIR))!=$folder)
-		$excludedir[]=trailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
-	if (false !== strpos(trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR)),$folder) && trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR))!=$folder)
-		$excludedir[]=trailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
-	if (false !== strpos(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/'),$folder) && str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/')!=$folder)
-		$excludedir[]=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes/');
-	if (false !== strpos(backwpup_get_upload_dir(),$folder) && backwpup_get_upload_dir()!=$folder)
-		$excludedir[]=backwpup_get_upload_dir();
-	//Exclude Backup dirs
-	$value=wp_cache_get('exclude','backwpup');
-	if (false==$value) {
-		$value=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='backupdir' and value<>'' and value<>'/' ");
-		wp_cache_set('exclude',$value,'backwpup');
-	}
-	if (!empty($value)) {
-		foreach($value as $backupdir)
-				$excludedir[]=$backupdir;
-	}
-	return $excludedir;
-}
-
-/**
- *
- * Get the local time timestamp of the next cron execution
- *
- * @param string $cronstring string of cron (* * * * *)
- * @return timestamp
- */
-function backwpup_cron_next($cronstring) {
-	//Cronstring
-	list($cronstr['minutes'],$cronstr['hours'],$cronstr['mday'],$cronstr['mon'],$cronstr['wday'])=explode(' ',$cronstring,5);
-
-	//make arrys form string
-	foreach ($cronstr as $key => $value) {
-		if (strstr($value,','))
-			$cronarray[$key]=explode(',',$value);
-		else
-			$cronarray[$key]=array(0=>$value);
-	}
-	//make arryas complete with ranges and steps
-	foreach ($cronarray as $cronarraykey => $cronarrayvalue) {
-		$cron[$cronarraykey]=array();
-		foreach ($cronarrayvalue as $key => $value) {
-			//steps
-			$step=1;
-			if (strstr($value,'/'))
-				list($value,$step)=explode('/',$value,2);
-			//replase weekday 7 with 0 for sundays
-			if ($cronarraykey=='wday')
-				$value=str_replace('7','0',$value);
-			//ranges
-			if (strstr($value,'-')) {
-				list($first,$last)=explode('-',$value,2);
-				if (!is_numeric($first) || !is_numeric($last) || $last>60 || $first>60) //check
-					return 2147483647;
-				if ($cronarraykey=='minutes' && $step<5)  //set step ninimum to 5 min.
-					$step=5;
-				$range=array();
-				for ($i=$first;$i<=$last;$i=$i+$step)
-					$range[]=$i;
-				$cron[$cronarraykey]=array_merge($cron[$cronarraykey],$range);
-			} elseif ($value=='*') {
-				$range=array();
-				if ($cronarraykey=='minutes') {
-					if ($step<5) //set step ninimum to 5 min.
-						$step=5;
-					for ($i=0;$i<=59;$i=$i+$step)
-						$range[]=$i;
-				}
-				if ($cronarraykey=='hours') {
-					for ($i=0;$i<=23;$i=$i+$step)
-						$range[]=$i;
-				}
-				if ($cronarraykey=='mday') {
-					for ($i=$step;$i<=31;$i=$i+$step)
-						$range[]=$i;
-				}
-				if ($cronarraykey=='mon') {
-					for ($i=$step;$i<=12;$i=$i+$step)
-						$range[]=$i;
-				}
-				if ($cronarraykey=='wday') {
-					for ($i=0;$i<=6;$i=$i+$step)
-						$range[]=$i;
-				}
-				$cron[$cronarraykey]=array_merge($cron[$cronarraykey],$range);
-			} else {
-				//Month names
-				if (strtolower($value)=='jan')
-					$value=1;
-				if (strtolower($value)=='feb')
-					$value=2;
-				if (strtolower($value)=='mar')
-					$value=3;
-				if (strtolower($value)=='apr')
-					$value=4;
-				if (strtolower($value)=='may')
-					$value=5;
-				if (strtolower($value)=='jun')
-					$value=6;
-				if (strtolower($value)=='jul')
-					$value=7;
-				if (strtolower($value)=='aug')
-					$value=8;
-				if (strtolower($value)=='sep')
-					$value=9;
-				if (strtolower($value)=='oct')
-					$value=10;
-				if (strtolower($value)=='nov')
-					$value=11;
-				if (strtolower($value)=='dec')
-					$value=12;
-				//Week Day names
-				if (strtolower($value)=='sun')
-					$value=0;
-				if (strtolower($value)=='sat')
-					$value=6;
-				if (strtolower($value)=='mon')
-					$value=1;
-				if (strtolower($value)=='tue')
-					$value=2;
-				if (strtolower($value)=='wed')
-					$value=3;
-				if (strtolower($value)=='thu')
-					$value=4;
-				if (strtolower($value)=='fri')
-					$value=5;
-				if (!is_numeric($value) || $value>60) //check
-					return 2147483647;
-				$cron[$cronarraykey]=array_merge($cron[$cronarraykey],array(0=>$value));
-			}
-		}
-	}
-	//generate next 10 years
-	for ($i=date('Y');$i<2038;$i++)
-		$cron['year'][]=$i;
-
-	//calc next timestamp
-	$currenttime=current_time('timestamp');
-	foreach ($cron['year'] as $year) {
-		foreach ($cron['mon'] as $mon) {
-			foreach ($cron['mday'] as $mday) {
-				foreach ($cron['hours'] as $hours) {
-					foreach ($cron['minutes'] as $minutes) {
-						$timestamp=mktime($hours,$minutes,0,$mon,$mday,$year);
-						if ($timestamp && in_array(date('j',$timestamp),$cron['mday']) && in_array(date('w',$timestamp),$cron['wday']) && $timestamp>$currenttime) {
-							return $timestamp;
-						}
-					}
-				}
-			}
-		}
-	}
-	return 2147483647;
-}
-
-/**
- *
- * Warper for Admin urls on multisite or normal blog
+ * Warpper for Admin urls on multisite or normal blog
  *
  * @param $url 'admin.php'
  * @return string url
  */
 function backwpup_admin_url($url) {
-	if (is_multisite()) {
-		if  (is_super_admin())
-			return network_admin_url($url);
-	} else {
-		return admin_url($url);
-	}
+	if (is_multisite() && is_super_admin())
+		return network_admin_url($url);
+	return admin_url($url);
 }
 
 /**
  *
- * Encrypt a sting (Passwords)
+ * Encrypt a string (Passwords)
  *
  * @param string $string value to encrypt
  * @param string $key if empty default will used
@@ -712,7 +475,7 @@ function backwpup_encrypt($string, $key='') {
 
 /**
  *
- * Decrypt a sting (Passwords)
+ * Decrypt a string (Passwords)
  *
  * @param string $string value to decrypt
  * @param string $key if empty default will used
@@ -741,7 +504,7 @@ function backwpup_decrypt($string, $key='') {
 
 /**
  *
- * Get data ao a working job
+ * Get data off a working job
  *
  * @param bool $fulldata is full data needed or only that it working
  * @return bool|array false if not working, true or array with data if working
@@ -749,12 +512,11 @@ function backwpup_decrypt($string, $key='') {
 function backwpup_get_workingdata($fulldata=true) {
 	global $wpdb;
 	if ($fulldata) {
+		$workingdata=false;
 		if (backwpup_get_option('cfg','storeworkingdatain')=='db')
 			$workingdata=backwpup_get_option('working', 'data', false);
 		if (backwpup_get_option('cfg','storeworkingdatain')=='file') {
-			if (!file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
-				$workingdata=false;
-			else
+			if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
 				$workingdata=maybe_unserialize(file_get_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)));
 		}
 		return $workingdata;

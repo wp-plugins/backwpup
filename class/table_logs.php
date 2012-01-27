@@ -143,7 +143,7 @@ class BackWPup_Table_Logs extends WP_List_Table {
 				case 'size':
 					$r .= "<td $attributes>";
 					if (!empty($logdata['backupfilesize'])) {
-						$r .= backwpup_format_bytes($logdata['backupfilesize']);
+						$r .= size_format($logdata['backupfilesize'],2);
 					} else {
 						$r .= __('only Log','backwpup');
 					}

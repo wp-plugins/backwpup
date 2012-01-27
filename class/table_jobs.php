@@ -133,7 +133,7 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 								$dbsize['rows']=$dbsize['rows']+$tablevalue["Rows"];
 							}
 						}
-						$r .= sprintf(__("DB Size: %s","backwpup"),backwpup_format_bytes($dbsize['size']))."<br />";
+						$r .= sprintf(__("DB Size: %s","backwpup"),size_format($dbsize['size'],2))."<br />";
 						if ( 'excerpt' == $mode ) {
 							$r .= sprintf(__("DB Tables: %d","backwpup"),$dbsize['num'])."<br />";
 							$r .= sprintf(__("DB Rows: %d","backwpup"),$dbsize['rows'])."<br />";
@@ -143,7 +143,7 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 						if (false === ($files=get_transient('backwpup_file_info_'.$jobid)))
 							$r .=  "<img class=\"waiting\" src=\"".esc_url( backwpup_admin_url( 'images/wpspin_light.gif' ) )."\" id=\"image-wait-".$jobid."\" />";
 						else {
-							$r .= sprintf(__("Files Size: %s","backwpup"),backwpup_format_bytes($files['size']))."<br />";
+							$r .= sprintf(__("Files Size: %s","backwpup"),size_format($files['size'],2))."<br />";
 							if ( 'excerpt' == $mode ) {
 								$r .= sprintf(__("Folder count: %d","backwpup"),$files['folder'])."<br />";
 								$r .= sprintf(__("Files count: %d","backwpup"),$files['files'])."<br />";

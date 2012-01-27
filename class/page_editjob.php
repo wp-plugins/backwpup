@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
 
 class BackWPup_Page_Editjob {
 
-	public function load() {
+	public static function load() {
 		global $backwpup_message;
 		//Save Dropbox auth
 		if (isset($_GET['auth']) && $_GET['auth']=='DropBox')  {
@@ -97,8 +97,7 @@ class BackWPup_Page_Editjob {
 				if ($_POST['cronbtype']=='hour')
 					backwpup_update_option($main,'cron',$_POST['hourcronminutes'].' * * * *');
 			}
-			$cronnextrun=backwpup_cron_next(backwpup_get_option($main,'cron'));
-			backwpup_update_option($main,'cronnextrun',$cronnextrun);
+			backwpup_update_option($main,'cronnextrun',BackWPup_Cron::cron_next(backwpup_get_option($main,'cron')));
 			backwpup_update_option($main,'mailaddresslog',sanitize_email($_POST['mailaddresslog']));
 			backwpup_update_option($main,'mailerroronly',(isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false);
 			$check_db_tables=array();
@@ -194,7 +193,7 @@ class BackWPup_Page_Editjob {
 			backwpup_update_option($main,'fileformart',$_POST['fileformart']);
 			backwpup_update_option($main,'mailefilesize',isset($_POST['mailefilesize']) ? (float)$_POST['mailefilesize'] : 0);
 			$_POST['backupdir']=stripslashes($_POST['backupdir']);
-			if (substr($_POST['backupdir'],0,1)!='/' && substr($_POST['backupdir'],1,1)!=':' && !empty($_POST['backupdir'])) //add abspath if not absolute
+			if (path_is_absolute($_POST['backupdir']))
 				$_POST['backupdir']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['backupdir'];
 			$_POST['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($_POST['backupdir']))));
 			if ($_POST['backupdir']=='/')
@@ -291,7 +290,7 @@ class BackWPup_Page_Editjob {
 			if (!empty($_POST['newawsBucket']) && !empty($_POST['awsAccessKey']) && !empty($_POST['awsSecretKey'])) { //create new s3 bucket if needed
 				try {
 					$s3 = new AmazonS3(array('key'=>$_POST['awsAccessKey'],'secret'=>$_POST['awsSecretKey'],'certificate_authority'=>true));
-					$s3->disable_ssl(backwpup_get_option($this->jobdata['JOBMAIN'],'awsdisablessl'));
+					$s3->disable_ssl(backwpup_get_option($main,'awsdisablessl'));
 					$req=$s3->create_bucket($_POST['newawsBucket'], $_POST['awsRegion']);
 					if (empty($req->body->Message)) {
 						$backwpup_message.=sprintf(__('S3 bucket "%s" created.','backwpup'),$_POST['newawsBucket']).'<br />';
@@ -405,7 +404,7 @@ class BackWPup_Page_Editjob {
 
 	}
 
-	public function page() {
+	public static function page() {
 		global $wpdb,$screen_layout_columns,$backwpup_message;
 		if (!empty($_REQUEST['jobid']))
 			check_admin_referer('edit-job');
@@ -542,7 +541,7 @@ class BackWPup_Page_Editjob {
 											$folder=untrailingslashit(str_replace('\\','/',ABSPATH));
 											if ( $dir = @opendir( $folder ) ) {
 												while (($file = readdir( $dir ) ) !== false ) {
-													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',BackWPup_File::get_exclude_wp_dirs($folder)))
 														echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',backwpup_get_option($main,'backuprootexcludedirs')),true,false).' name="backuprootexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
 												}
 												@closedir( $dir );
@@ -558,7 +557,7 @@ class BackWPup_Page_Editjob {
 											$folder=untrailingslashit(str_replace('\\','/',WP_CONTENT_DIR));
 											if ( $dir = @opendir( $folder ) ) {
 												while (($file = readdir( $dir ) ) !== false ) {
-													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',BackWPup_File::get_exclude_wp_dirs($folder)))
 														echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',backwpup_get_option($main,'backupcontentexcludedirs')),true,false).' name="backupcontentexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
 												}
 												@closedir( $dir );
@@ -574,7 +573,7 @@ class BackWPup_Page_Editjob {
 											$folder=untrailingslashit(str_replace('\\','/',WP_PLUGIN_DIR));
 											if ( $dir = @opendir( $folder ) ) {
 												while (($file = readdir( $dir ) ) !== false ) {
-													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',BackWPup_File::get_exclude_wp_dirs($folder)))
 														echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',backwpup_get_option($main,'backuppluginsexcludedirs')),true,false).' name="backuppluginsexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
 												}
 												@closedir( $dir );
@@ -590,7 +589,7 @@ class BackWPup_Page_Editjob {
 											$folder=untrailingslashit(str_replace('\\','/',trailingslashit(WP_CONTENT_DIR).'themes'));
 											if ( $dir = @opendir( $folder ) ) {
 												while (($file = readdir( $dir ) ) !== false ) {
-													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',backwpup_get_exclude_wp_dirs($folder)))
+													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file.'/',BackWPup_File::get_exclude_wp_dirs($folder)))
 														echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',backwpup_get_option($main,'backupthemesexcludedirs')),true,false).' name="backupthemesexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
 												}
 												@closedir( $dir );
@@ -603,10 +602,10 @@ class BackWPup_Page_Editjob {
 										<div style="border-color:#CEE1EF; border-style:solid; border-width:2px; height:10em; width:90%; margin:2px; overflow:auto;">
 											<?php
 											echo '<i>'.__('Exclude:','backwpup').'</i><br />';
-											$folder=untrailingslashit(backwpup_get_upload_dir());
+											$folder=untrailingslashit(BackWPup_File::get_upload_dir());
 											if ( $dir = @opendir( $folder ) ) {
 												while (($file = readdir( $dir ) ) !== false ) {
-													if ( !in_array($file, array('.', '..','.svn')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file,backwpup_get_exclude_wp_dirs($folder)))
+													if ( !in_array($file, array('.', '..')) && is_dir($folder.'/'.$file) && !in_array($folder.'/'.$file,BackWPup_File::get_exclude_wp_dirs($folder)))
 														echo '<nobr><input class="checkbox" type="checkbox"'.checked(in_array($folder.'/'.$file.'/',backwpup_get_option($main,'backupuploadsexcludedirs')),true,false).' name="backupuploadsexcludedirs[]" value="'.$folder.'/'.$file.'/"/> '.$file.'</nobr><br />';
 												}
 												@closedir( $dir );

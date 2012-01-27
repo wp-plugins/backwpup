@@ -5,9 +5,12 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class For BackWPup Jos page
+ */
 class BackWPup_Page_Backwpup {
 
-	public function load() {
+	public static function load() {
 		global $backwpup_message,$backwpup_listtable,$wpdb;
 		//Create Table
 		$backwpup_listtable = new BackWPup_Table_Jobs;
@@ -46,6 +49,7 @@ class BackWPup_Page_Backwpup {
 				}
 				break;
 			case 'export': //Copy Job
+				$jobsexport=array();
 				if (is_array($_GET['jobs'])) {
 					check_admin_referer('bulk-jobs');
 					foreach ($_GET['jobs'] as $jobid) {
@@ -144,6 +148,9 @@ class BackWPup_Page_Backwpup {
 		$backwpup_listtable->prepare_items();
 	}
 
+	/**
+	 * @return string
+	 */
 	public function env_check() {
 		global $wpdb,$wp_version;
 		$massage='';
@@ -151,10 +158,10 @@ class BackWPup_Page_Backwpup {
 		if (version_compare($wpdb->get_var( "SELECT VERSION() AS version" ), '5.0', '<'))
 			$massage.=__("- MySQL 5.0 or higher is needed!",'backwpup').'<br />';
 		// check logs folder
-		if (!backwpup_check_open_basedir(backwpup_get_option('cfg','logfolder'))) //check open basedir
+		if (!BackWPup_File::check_open_basedir(backwpup_get_option('cfg','logfolder'))) //check open basedir
 			$massage.=sprintf(__("- Log folder '%s' is not in open_basedir path!",'backwpup'),backwpup_get_option('cfg','logfolder')).'<br />';
 		if (backwpup_get_option('cfg','logfolder') && !is_dir(backwpup_get_option('cfg','logfolder')))  // create logs folder if it not exists
-			@mkdir(untrailingslashit(backwpup_get_option('cfg','logfolder')),FS_CHMOD_DIR,true);
+			@wp_mkdir_p(backwpup_get_option('cfg','logfolder'));
 		if (!is_dir(backwpup_get_option('cfg','logfolder')))  // check logs folder
 			$massage.=sprintf(__("- Log folder '%s' not exists!",'backwpup'),backwpup_get_option('cfg','logfolder')).'<br />';
 		if (!is_writable(backwpup_get_option('cfg','logfolder'))) { // check logs folder
@@ -172,10 +179,10 @@ class BackWPup_Page_Backwpup {
 			}
 		}
 		// check temp folder
-		if (!backwpup_check_open_basedir(backwpup_get_option('cfg','tempfolder'))) //check open basedir
+		if (!BackWPup_File::check_open_basedir(backwpup_get_option('cfg','tempfolder'))) //check open basedir
 			$massage.=sprintf(__("- Temp folder '%s' is not in open_basedir path!",'backwpup'),backwpup_get_option('cfg','tempfolder')).'<br />';
 		if (backwpup_get_option('cfg','tempfolder') && !is_dir(backwpup_get_option('cfg','tempfolder')))  // create temp folder if it not exists
-			@mkdir(untrailingslashit(backwpup_get_option('cfg','tempfolder')),FS_CHMOD_DIR,true);
+			@wp_mkdir_p(backwpup_get_option('cfg','tempfolder'));
 		if (!is_dir(backwpup_get_option('cfg','tempfolder')))
 			$massage.=sprintf(__("- Temp folder '%s' not exists!",'backwpup'),backwpup_get_option('cfg','tempfolder')).'<br />';
 		if (!is_writable(backwpup_get_option('cfg','tempfolder'))) {
@@ -226,7 +233,7 @@ class BackWPup_Page_Backwpup {
 		return $massage;
 	}
 
-	public function page() {
+	public static function page() {
 		global $backwpup_message,$backwpup_listtable;
 		echo "<div class=\"wrap\">";
 		screen_icon();

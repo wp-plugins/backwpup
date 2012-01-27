@@ -5,8 +5,17 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class for Ajax job edit  page
+ */
 class BackWPup_Ajax_Editjob {
-	public function cron_text($args='') {
+
+	/**
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function cron_text($args='') {
 		if (is_array($args)) {
 			extract($args);
 			$ajax=false;
@@ -62,11 +71,11 @@ class BackWPup_Ajax_Editjob {
 				$repeathouer=1;
 			echo '<span style="color:red;">'.str_replace('%d',$repeathouer,__('ATTENTION: Job runs every %d houers.!!!','backwpup')).'</span><br />';
 		}
-		$nextrun=backwpup_cron_next($cronstamp);
+		$nextrun=BackWPup_Cron::cron_next($cronstamp);
 		if (2147483647==$nextrun) {
 			echo '<span style="color:red;">'.__('ATTENTION: Can\'t calculate cron!!!','backwpup').'</span><br />';
 		} else {
-			_e('Next runtime:','backwpup'); echo ' <b>'.date_i18n('D, j M Y, H:i',backwpup_cron_next($cronstamp)).'</b>';
+			_e('Next runtime:','backwpup'); echo ' <b>'.date_i18n('D, j M Y, H:i',BackWPup_Cron::cron_next($cronstamp)).'</b>';
 		}
 		echo "</div>";
 		if ($ajax)
@@ -75,8 +84,14 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
-	//ajax/normal get buckets select box
-	public function aws_buckets($args='') {
+	/**
+	 * ajax/normal get buckets select box
+	 *
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function aws_buckets($args='') {
 		$error='';
 		if (is_array($args)) {
 			extract($args);
@@ -126,8 +141,16 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
-	//ajax/normal get buckests select box
-	public function gstorage_buckets($args='') {
+
+	/**
+	 *
+	 * ajax/normal get buckests select box
+	 *
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function gstorage_buckets($args='') {
 		$error='';
 		if (is_array($args)) {
 			extract($args);
@@ -176,8 +199,15 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
-	//ajax/normal get Container for RSC select box
-	public function rsc_container($args='') {
+	/**
+	 *
+	 * ajax/normal get Container for RSC select box
+	 *
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function rsc_container($args='') {
 		$error='';
 		if (is_array($args)) {
 			extract($args);
@@ -224,8 +254,15 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
-	//ajax/normal get container select box
-	public function msazure_container($args='') {
+	/**
+	 *
+	 * ajax/normal get container select box
+	 *
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function msazure_container($args='') {
 		$error='';
 		if (is_array($args)) {
 			extract($args);
@@ -273,8 +310,14 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
-	//ajax/normal get SugarSync roots select box
-	public function sugarsync_root($args='') {
+	/**
+	 * ajax/normal get SugarSync roots select box
+	 *
+	 * @static
+	 * @param string $args
+	 * @return mixed
+	 */
+	public static function sugarsync_root($args='') {
 		$error='';
 		if (is_array($args)) {
 			extract($args);

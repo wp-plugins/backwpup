@@ -15,7 +15,7 @@ class BackWPup_Ajax_Working {
 	 * Function to generate json data
 	 *
 	 */
-	public function working() {
+	public static function working() {
 		check_ajax_referer('backwpupworking_ajax_nonce');
 
 		$logfile=filter_input(INPUT_POST,'logfile',FILTER_SANITIZE_URL);

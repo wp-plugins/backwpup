@@ -5,8 +5,11 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class for BackWPup display logs / working page
+ */
 class BackWPup_Page_Working {
-	public function load() {
+	public static function load() {
 		nocache_headers(); //no cache
 
 		if (isset($_GET['starttype']) && $_GET['starttype']=='runnow' && backwpup_get_option('cfg','runnowalt') && !empty($_GET['jobid'])) {
@@ -36,7 +39,7 @@ class BackWPup_Page_Working {
 
 	}
 
-	public function page() {
+	public static function page() {
 		?>
 		<div class="wrap">
 			<?php screen_icon(); ?>
@@ -55,7 +58,7 @@ class BackWPup_Page_Working {
 				//read logfile
 				if (file_exists($backupdata['LOGFILE']) && strtolower(substr($backupdata['LOGFILE'],-3))=='.gz')
 					$logfiledata=gzfile($backupdata['LOGFILE']);
-				elseif (file_exists($backupdata['LOGFILE']))
+				else
 					$logfiledata=file($backupdata['LOGFILE']);
 				echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".$backupdata['LOGFILE']."\">";
 				echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfiledata)."\">";
@@ -88,7 +91,8 @@ class BackWPup_Page_Working {
 			} elseif (!empty($_GET['logfile']) && file_exists($_GET['logfile'])) {
 				echo '<div id="showlogfile">';
 				//read logfile
-				$logfile=filter_input(INPUT_GET,'logfile',FILTER_SANITIZE_URL);
+				$logfile=$_GET['logfile'];
+				$logfiledata=array();
 				if (file_exists($logfile) && strtolower(substr($logfile,-3))=='.gz')
 					$logfiledata=gzfile($logfile);
 				elseif (file_exists($logfile))
@@ -112,7 +116,6 @@ class BackWPup_Page_Working {
 		</div>
 	<?php
 	}
-
 }
 
 

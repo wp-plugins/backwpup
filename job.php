@@ -20,6 +20,8 @@ if ( !defined('E_USER_DEPRECATED') )
 //phrase commandline args
 if ( defined('STDIN') ) {
 	$starttype = 'runcmd';
+	$abspath = '';
+	$jobid=0;
 	foreach ( $_SERVER['argv'] as $arg ) {
 		if ( strtolower(substr($arg, 0, 7)) == '-jobid=' )
 			$jobid = (int)substr($arg, 7);

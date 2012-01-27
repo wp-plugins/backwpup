@@ -16,7 +16,7 @@ class BackWPup_Init {
 	 *
 	 * @return nothing
 	 */
-	public function upgrade() {
+	public static function upgrade() {
 		global $wpdb,$wp_roles;
 		//Set table collate
 		$charset_collate='';
@@ -119,7 +119,7 @@ class BackWPup_Init {
 	 *
 	 * @return nothing
 	 */
-	public function deactivate() {
+	public static function deactivate() {
 		global $wpdb,$wp_roles;
 		wp_clear_scheduled_hook('backwpup_cron');
 		backwpup_update_option('backwpup','md5','');
@@ -137,7 +137,7 @@ class BackWPup_Init {
 	 *
 	 * @return nothing
 	 */
-	public function uninstall() {
+	public static function uninstall() {
 		global $wpdb,$wp_roles;
 		do_action('backwpup_api_delete');
 		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))

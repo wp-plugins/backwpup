@@ -5,8 +5,15 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ */
 class BackWPup_Page_Metaboxes {
-	public function save($main) {
+	/**
+	 * @static
+	 * @param $main
+	 */
+	public static function save($main) {
 		?>
 		<div class="submitbox" id="submitjobedit">
 		<div id="minor-publishing">
@@ -39,7 +46,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function backupfile($main) {
+	public static function backupfile($main) {
 		?>
 		<b><?php _e('Backup type:','backwpup'); ?></b><br />
 		<?php
@@ -71,7 +78,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function sendlog($main) {
+	public static function sendlog($main) {
 		_e('E-Mail-Adress:','backwpup');
 		?>
 		<input name="mailaddresslog" id="mailaddresslog" type="text" value="<?php echo backwpup_get_option($main,'mailaddresslog');?>" class="large-text" /><br />
@@ -79,7 +86,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function schedule($main) {
+	public static function schedule($main) {
 			echo "<br /><strong>".__('Run job with:','backwpup')."<br />";
 			echo '<input class="radio" type="radio"'.checked('',backwpup_get_option($main,'activetype'),false).' name="activetype" value="" />'.__('Manually','backwpup').'<br />';
 			echo '<input class="radio" type="radio"'.checked('wpcron',backwpup_get_option($main,'activetype'),false).' name="activetype" value="wpcron" />'.__('WordPress Cron','backwpup').'<br />';
@@ -248,7 +255,7 @@ class BackWPup_Page_Metaboxes {
 			<?php
 	}
 
-	public function destfolder($main) {
+	public static function destfolder($main) {
 		?>
 		<b><?php _e('Full Path to folder for Backup Files:','backwpup'); ?></b><br />
 		<input name="backupdir" id="backupdir" type="text" value="<?php echo backwpup_get_option($main,'backupdir');?>" class="large-text" /><br />
@@ -258,7 +265,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destftp($main) {
+	public static function destftp($main) {
 		?>
 		<b><?php _e('Hostname:','backwpup'); ?></b><br />
 		<input name="ftphost" type="text" value="<?php echo backwpup_get_option($main,'ftphost');?>" class="large-text" /><br />
@@ -278,7 +285,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function dests3($main) {
+	public static function dests3($main) {
 		?>
 		<div class="dests">
 			<b><?php _e('Access Key ID:','backwpup'); ?></b>
@@ -306,7 +313,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destgstorage($main) {
+	public static function destgstorage($main) {
 		?>
 		<div class="dests">
 			<b><?php _e('Access Key:','backwpup'); ?></b><br />
@@ -331,7 +338,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destazure($main) {
+	public static function destazure($main) {
 		?>
 		<div class="dests">
 
@@ -358,7 +365,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destrsc($main) {
+	public static function destrsc($main) {
 		?>
 		<div class="dests">
 			<b><?php _e('Username:','backwpup'); ?></b><br />
@@ -383,7 +390,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destdropbox($main) {
+	public static function destdropbox($main) {
 		?>
 		<div class="dests">
 			<?php if (!backwpup_get_option($main,'dropetoken') && !backwpup_get_option($main,'dropesecret')) { ?>
@@ -413,7 +420,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destsugarsync($main) {
+	public static function destsugarsync($main) {
 		?>
 		<div class="dests">
 			<b><?php _e('E-mail address:','backwpup'); ?></b><br />
@@ -436,7 +443,7 @@ class BackWPup_Page_Metaboxes {
 		<?php
 	}
 
-	public function destmail($main) {
+	public static function destmail($main) {
 		?>
 		<b><?php _e('E-mail address:','backwpup'); ?></b><br />
 		<input name="mailaddress" id="mailaddress" type="text" value="<?php echo backwpup_get_option($main,'mailaddress');?>" class="large-text" /><br />
@@ -445,7 +452,7 @@ class BackWPup_Page_Metaboxes {
 	}
 
 	//ever display needed boxes
-	public function displayneeded($hidden) {
+	public static function displayneeded($hidden) {
 		$newhidden=array();
 		foreach($hidden as $hiddenid) {
 			if ($hiddenid!='backwpup_jobedit_save' && $hiddenid!='backwpup_jobedit_schedule')

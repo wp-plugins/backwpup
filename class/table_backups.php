@@ -5,11 +5,17 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ */
 class BackWPup_Table_Backups extends WP_List_Table {
 	
 	private $jobid=1;
 	private $dest='FOLDER';
-	
+
+	/**
+	 *
+	 */
 	function __construct() {
 		parent::__construct( array(
 			'plural' => 'backups',
@@ -17,7 +23,10 @@ class BackWPup_Table_Backups extends WP_List_Table {
 			'ajax' => true
 		) );
 	}
-	
+
+	/**
+	 * @return bool
+	 */
 	function ajax_user_can() {
 		return current_user_can('backwpup');
 	}
@@ -115,13 +124,20 @@ class BackWPup_Table_Backups extends WP_List_Table {
 	function no_items() {
 		_e( 'No Files found. (List will be generated on next backup)','backwpup');
 	}
-	
+
+	/**
+	 * @return array
+	 */
 	function get_bulk_actions() {
 		$actions = array();
 		$actions['delete'] = __( 'Delete' );
 		return $actions;
 	}
 
+	/**
+	 * @param $which
+	 * @return mixed
+	 */
 	function extra_tablenav( $which ) {
 		if ( 'top' != $which )
 			return;
@@ -135,7 +151,10 @@ class BackWPup_Table_Backups extends WP_List_Table {
 		submit_button( __('Change Destination','backwpup'), 'secondary', '', false, array( 'id' => 'post-query-submit' ) );
 		echo '</div>';
 	}
-	
+
+	/**
+	 * @return array
+	 */
 	function get_dest_list() {
 		global $wpdb;
 		$jobdest=array();
@@ -167,6 +186,9 @@ class BackWPup_Table_Backups extends WP_List_Table {
 		return $jobdest;
 	}
 
+	/**
+	 * @return array
+	 */
 	function get_columns() {
 		$posts_columns = array();
 		$posts_columns['cb'] = '<input type="checkbox" />';
@@ -178,6 +200,9 @@ class BackWPup_Table_Backups extends WP_List_Table {
 		return $posts_columns;
 	}
 
+	/**
+	 * @return array
+	 */
 	function get_sortable_columns() {
 		return array(
 			'file'    => array('file',false),
@@ -227,7 +252,7 @@ class BackWPup_Table_Backups extends WP_List_Table {
 				case 'size':
 					$r .= "<td $attributes>";
 					if (!empty($backup['filesize']) && $backup['filesize']!=-1) {
-						$r .= backwpup_format_bytes($backup['filesize']);
+						$r .= size_format($backup['filesize'],2);
 					} else {
 						$r .= __('?','backwpup');
 					}

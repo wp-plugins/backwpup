@@ -43,9 +43,6 @@ if (!defined('BACKWPUP_DESTS')) {
 	else
 		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
 }
-if (!defined('FS_CHMOD_DIR'))
-	define('FS_CHMOD_DIR', 0755 );
-
 //Load functions file
 include_once(dirname(__FILE__).'/backwpup-functions.php');
 
@@ -121,6 +118,7 @@ class BackWPup {
 	 * include not existing classes automatically
 	 *
 	 * @param string $class_name Class to include
+	 * @return bool if class loaded or not
 	 */
 	public static function autoloader($class_name) {
 		//WordPress classes to load

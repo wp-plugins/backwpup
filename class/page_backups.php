@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 	die();
 }
 class BackWPup_Page_Backups {
-	public function load() {
+	public static function load() {
 		global $backwpup_listtable,$backwpup_message;
 		//Create Table
 		$backwpup_listtable = new BackWPup_Table_Backups;
@@ -134,6 +134,7 @@ class BackWPup_Page_Backups {
 					}
 					elseif ($dest=='FTP') {
 						if (backwpup_get_option($main,'ftphost') && backwpup_get_option($main,'ftpuser') && backwpup_get_option($main,'ftppass') && function_exists('ftp_connect')) {
+							$ftp_conn_id=false;
 							if (function_exists('ftp_ssl_connect') && backwpup_get_option($main,'ftpssl')) { //make SSL FTP connection
 								$ftp_conn_id = ftp_ssl_connect(backwpup_get_option($main,'ftphost'),backwpup_get_option($main,'ftphostport'),backwpup_get_option($main,'ftptimeout'));
 							} elseif (!backwpup_get_option($main,'ftpssl')) { //make normal FTP conection if SSL not work
@@ -338,7 +339,8 @@ class BackWPup_Page_Backups {
 
 		$backwpup_listtable->prepare_items();
 	}
-	public function page() {
+
+	public static function page() {
 		global $backwpup_message,$backwpup_listtable;
 		echo "<div class=\"wrap\">";
 		screen_icon();

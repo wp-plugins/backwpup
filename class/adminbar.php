@@ -4,9 +4,12 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
+/**
+ * Class to display BackWPup in Adminbar
+ */
 class BackWPup_Adminbar {
 
-	public function adminbar() {
+	public static function adminbar() {
 		global $wp_admin_bar,$wpdb;
 		if (!backwpup_get_option('cfg','showadminbar') || !current_user_can('backwpup') || !is_super_admin() || !is_admin_bar_showing())
 			return;
@@ -24,9 +27,6 @@ class BackWPup_Adminbar {
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs' ,'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_backups' ,'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
 		//add jobs
-		$abspath='';
-		if (WP_PLUGIN_DIR==ABSPATH.'/wp-content/plugins')
-			$abspath='ABSPATH='.urlencode(str_replace('\\','/',ABSPATH)).'&';
 		$jobs=$wpdb->get_col("SELECT value FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC");
 		foreach ($jobs as $job) {
 			$name=backwpup_get_option('job_'.$job,'name');

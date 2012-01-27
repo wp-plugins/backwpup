@@ -132,7 +132,13 @@ class BackWPup_Dest_Dropbox {
 				'oauth_token' => $oauth_token['oauth_token'])));
 		return array('authurl'=>$OAuthSign['signed_url'],'oauth_token'=>$oauth_token['oauth_token'],'oauth_token_secret'=>$oauth_token['oauth_token_secret']);
 	}
-	
+
+	/**
+	 * @param $oauth_token
+	 * @param $oauth_token_secret
+	 * @return array|null
+	 * @throws BackWPup_Dest_Dropbox_Exception
+	 */
 	public function oAuthAccessToken($oauth_token, $oauth_token_secret) {
 		 $this->OAuthObject->reset();
 		 $OAuthSign = $this->OAuthObject->sign(array(
@@ -169,6 +175,15 @@ class BackWPup_Dest_Dropbox {
 		}
 	}
 
+	/**
+	 * @param $url
+	 * @param array $args
+	 * @param string $method
+	 * @param null $file
+	 * @param bool $echo
+	 * @return array|mixed|string
+	 * @throws BackWPup_Dest_Dropbox_Exception
+	 */
 	private function request($url, $args = array(), $method = 'GET', $file = NULL, $echo=false){
 		/* Sign Request*/
 		$this->OAuthObject->reset();
@@ -216,6 +231,7 @@ class BackWPup_Dest_Dropbox {
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 		curl_setopt($ch, CURLOPT_FRESH_CONNECT, true);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+		$content='';
 		if ($echo) {
 			echo curl_exec($ch);
 			$output='';
@@ -253,6 +269,12 @@ class BackWPup_Dest_Dropbox {
 		}
 	}
 
+	/**
+	 * @param $ch
+	 * @param $fd
+	 * @param $length
+	 * @return string
+	 */
 	private function _read_cb($ch, $fd, $length) {
 		$data = fread($fd, $length);
 		$len = strlen($data);
@@ -260,7 +282,11 @@ class BackWPup_Dest_Dropbox {
 			call_user_func($this->ProgressFunction, $len);
 		return $data;
 	}
-	
+
+	/**
+	 * @param $path
+	 * @return mixed
+	 */
 	private function encode_path($path)
 	{
 		$path = preg_replace('#/+#', '/', trim($path, '/'));

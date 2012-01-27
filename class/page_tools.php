@@ -6,9 +6,12 @@ if (!defined('ABSPATH')) {
 }
 
 
+/**
+ * Class for BackWPup Tools Page
+ */
 class BackWPup_Page_Tools {
 
-	public function load() {
+	public static function load() {
 		global $backwpup_message;
 		if (isset($_POST['dbrestoretool']) && $_POST['dbrestoretool']==__('Put DB restore tool to blog root...', 'backwpup')) {
 			check_admin_referer('backwpup-tools');
@@ -106,7 +109,7 @@ class BackWPup_Page_Tools {
 
 	}
 
-	public function page() {
+	public static function page() {
 		global $wpdb;
 		?>
 		<div class="wrap">

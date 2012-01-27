@@ -5,8 +5,12 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ */
 class BackWPup_Help {
-	public function help() {
+
+	public static function help() {
 		if (method_exists(get_current_screen(),'add_help_tab')) {
 			get_current_screen()->add_help_tab( array(
 			'id'      => 'plugininfo',
@@ -36,7 +40,11 @@ class BackWPup_Help {
 		}
 	}
 
-	public function add_tab($tab=array()) {
+	/**
+	 * @static
+	 * @param array $tab
+	 */
+	public static function add_tab($tab=array()) {
 		if (method_exists(get_current_screen(),'add_help_tab'))
 			get_current_screen()->add_help_tab( $tab );
 		elseif (function_exists('add_contextual_help'))  //for WP < 3.3 help

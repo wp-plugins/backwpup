@@ -67,6 +67,7 @@ Do backups and more for your WordPress Blog.
 * Added: not load text domains on job or ajax working for better performance and lower memory usage
 * Added: tool for script execution time test
 * Added: capability backwpup for Administrator to wp_roles
+* Added: creation of a file with a list of installed plugins
 * Added: many little thinks
 * Improved: mysql dump
 * Improved: XML export

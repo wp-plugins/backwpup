@@ -6,8 +6,11 @@ if (!defined('ABSPATH')) {
 }
 
 
+/**
+ * Class for BackWPup settings page
+ */
 class BackWPup_Page_Settings {
-	public function load() {
+	public static function load() {
 		global $backwpup_message;
 		if (isset($_POST['submit']) && isset($_POST['action']) && $_POST['action']=='update') {
 			check_admin_referer('backwpup-cfg');
@@ -45,22 +48,22 @@ class BackWPup_Page_Settings {
 				$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 				$_POST['logfolder']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 			}
-			if (substr($_POST['logfolder'],0,1)!='/' && substr($_POST['logfolder'],1,1)!=':') //add abspath if not absolute
+			if (path_is_absolute($_POST['logfolder']))
 				$_POST['logfolder']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['logfolder'];
 			backwpup_update_option('cfg','logfolder',$_POST['logfolder']);
 			$_POST['tempfolder']=trailingslashit(str_replace('\\','/',$_POST['tempfolder']));
-			if (substr($_POST['tempfolder'],0,1)!='/' && substr($_POST['tempfolder'],1,1)!=':') //add abspath if not absolute
+			if (path_is_absolute($_POST['tempfolder']))
 				$_POST['tempfolder']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$_POST['tempfolder'];
-			if (empty($_POST['tempfolder']) || backwpup_check_open_basedir($_POST['tempfolder'])) {
+			if (empty($_POST['tempfolder']) || BackWPup_File::check_open_basedir($_POST['tempfolder'])) {
 				if (defined('WP_TEMP_DIR'))
 					$tempfolder=trim(WP_TEMP_DIR);
-				if (empty($tempfolder) || !backwpup_check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
+				if (empty($tempfolder) || !BackWPup_File::check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
 					$tempfolder=sys_get_temp_dir();									//normal temp dir
-				if (empty($tempfolder) || !backwpup_check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
+				if (empty($tempfolder) || !BackWPup_File::check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
 					$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
-				if (empty($tempfolder) || !backwpup_check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
+				if (empty($tempfolder) || !BackWPup_File::check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
 					$tempfolder=WP_CONTENT_DIR.'/';
-				if (empty($tempfolder) || !backwpup_check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
+				if (empty($tempfolder) || !BackWPup_File::check_open_basedir($tempfolder) || !@is_writable($tempfolder) || !@is_dir($tempfolder))
 					$tempfolder=get_temp_dir();
 				$_POST['tempfolder']=trailingslashit(str_replace('\\','/',realpath($tempfolder)));
 			}
@@ -85,7 +88,7 @@ class BackWPup_Page_Settings {
 
 	}
 
-	public function page() {
+	public static function page() {
 		global $backwpup_message;
 		?>
 		<div class="wrap">
@@ -219,7 +222,6 @@ class BackWPup_Page_Settings {
 							</label>
 							<span><?php echo sprintf(__('A unique key is: %s','backwpup'),wp_create_nonce('BackWPupJobRunAPI')); ?></span>
 							<span class="description"><?php _e('(empty = deactivated. Will be used for, that nobody else can use the job start URLs.)','backwpup');?></span>
-							</label>
 						</fieldset>
 						</td>
 					</tr>

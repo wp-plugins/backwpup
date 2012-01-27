@@ -5,8 +5,11 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ * Class for BackWPup Dashbord Widgets
+ */
 class BackWPup_Dashboard {
-	public function dashboard_logs() {
+	public static function dashboard_logs() {
 		$widgets = get_option('dashboard_widget_options');
 		if (!isset($widgets['backwpup_dashboard_logs']) || $widgets['backwpup_dashboard_logs']<1 || $widgets['backwpup_dashboard_logs']>20)
 			$widgets['backwpup_dashboard_logs'] =5;
@@ -45,7 +48,7 @@ class BackWPup_Dashboard {
 		}
 	}
 
-	public function dashboard_logs_config() {
+	public static function dashboard_logs_config() {
 		if ( !$widget_options = get_option( 'dashboard_widget_options' ) )
 			$widget_options = array();
 
@@ -66,7 +69,7 @@ class BackWPup_Dashboard {
 
 	}
 
-	public function dashboard_activejobs() {
+	public static function dashboard_activejobs() {
 		global $wpdb;
 		$backupdata=backwpup_get_workingdata();
 		$mainsactive=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value!=''");

@@ -4,8 +4,11 @@ if (!defined('ABSPATH')) {
 	header("Status: 404 Not Found");
 	die();
 }
+/**
+ * Class for BackWPup logs display page
+ */
 class BackWpup_Page_Logs {
-	public function load() {
+	public static function load() {
 		global $backwpup_listtable;
 		//Create Table
 		$backwpup_listtable = new BackWPup_Table_Logs;
@@ -73,7 +76,7 @@ class BackWpup_Page_Logs {
 		$backwpup_listtable->prepare_items();
 	}
 
-	public function page() {
+	public static function page() {
 		global $backwpup_listtable;
 		echo "<div class=\"wrap\">";
 		screen_icon();
