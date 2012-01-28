@@ -105,7 +105,15 @@ class BackWPup_Init {
 		//remove old schedule
 		wp_clear_scheduled_hook('backwpup_cron');
 		//make new schedule
-		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
+		//wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
+		$activejobs=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron' ORDER BY main");
+		if (!empty($activejobs)) {
+			$offset=get_option('gmt_offset')*3600;
+			foreach ($activejobs as $mainname) {
+				$cronnxet=backwpup_get_option($mainname,'cronnextrun');
+				wp_schedule_single_event($cronnxet-$offset,'backwpup_cron', array('main'=>$mainname));
+			}
+		}
 		//add user role
 		$role = get_role( 'administrator' );
 		$role->add_cap( 'backwpup' );
@@ -123,14 +131,21 @@ class BackWPup_Init {
 	public static function deactivate() {
 		global $wpdb;
 		wp_clear_scheduled_hook('backwpup_cron');
+		wp_clear_scheduled_hook('backwpup_cron', array('main'=>'restart'));
+		$activejobs=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron' ORDER BY main");
+		if (!empty($activejobs)) {
+			foreach ($activejobs as $mainname)
+				wp_clear_scheduled_hook('backwpup_cron', array('main'=>$mainname));
+		}
 		delete_option('backwpup_file_md5');
+		$role = get_role( 'administrator' );
+		$role->remove_cap( 'backwpup' );
+		do_action('backwpup_api_delete');
+		delete_site_transient( 'update_plugins' );
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
 		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
 			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
-		do_action('backwpup_api_delete');
-		$role = get_role( 'administrator' );
-		$role->remove_cap( 'backwpup' );
 	}
 
 	/**
@@ -141,15 +156,20 @@ class BackWPup_Init {
 	 */
 	public static function uninstall() {
 		global $wpdb;
-		do_action('backwpup_api_delete');
-		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
-			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
-		delete_option('backwpup_file_md5');
-		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."backwpup`");
 		wp_clear_scheduled_hook('backwpup_cron');
+		wp_clear_scheduled_hook('backwpup_cron', array('main'=>'restart'));
+		$activejobs=$wpdb->get_col("SELECT main FROM `".$wpdb->prefix."backwpup` WHERE main LIKE 'job_%' AND name='activetype' AND value='wpcron' ORDER BY main");
+		if (!empty($activejobs)) {
+			foreach ($activejobs as $mainname)
+				wp_clear_scheduled_hook('backwpup_cron', array('main'=>$mainname));
+		}
+		delete_option('backwpup_file_md5');
 		$role = get_role( 'administrator' );
 		$role->remove_cap( 'backwpup' );
+		do_action('backwpup_api_delete');
+		delete_site_transient( 'update_plugins' );
+		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
+			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
+		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."backwpup`");
 	}
-
-
 }

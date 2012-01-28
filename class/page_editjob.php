@@ -98,6 +98,14 @@ class BackWPup_Page_Editjob {
 					backwpup_update_option($main,'cron',$_POST['hourcronminutes'].' * * * *');
 			}
 			backwpup_update_option($main,'cronnextrun',BackWPup_Cron::cron_next(backwpup_get_option($main,'cron')));
+
+			wp_clear_scheduled_hook('backwpup_cron', array('main'=>$main));
+			if (backwpup_get_option($main,'activetype')=='wpcron') {
+				$cronnxet=backwpup_get_option($main,'cronnextrun');
+				$offset=get_option('gmt_offset')*3600;
+				wp_schedule_single_event($cronnxet-$offset,'backwpup_cron', array('main'=>$main));
+			}
+
 			backwpup_update_option($main,'mailaddresslog',sanitize_email($_POST['mailaddresslog']));
 			backwpup_update_option($main,'mailerroronly',(isset($_POST['mailerroronly']) && $_POST['mailerroronly']==1) ? true : false);
 			$check_db_tables=array();

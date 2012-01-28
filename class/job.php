@@ -17,7 +17,7 @@ class BackWPup_Job {
 	 *
 	 * This starts or restarts the job working
 	 *
-	 * @param sting $starttype Start types are 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart', 'restarttime'
+	 * @param sting $starttype Start types are 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart'
 	 * @param int $jobid The id of job to start
 	 */
 	public function __construct($starttype,$jobid=0) {
@@ -47,12 +47,12 @@ class BackWPup_Job {
 		if (backwpup_get_option('cfg','logfolder'))
 			$this->_check_folder(backwpup_get_option('cfg','logfolder'));
 		//Check double running and inactivity
-		if ( $this->jobdata['PID'] != getmypid() && (current_time('timestamp')-$this->jobdata['TIMESTAMP'] < 480) && $this->jobstarttype == 'restarttime' ) {
+		if ( $this->jobdata['PID']!=0 && $this->jobdata['PID'] != getmypid() && ( microtime(true)-$this->jobdata['TIMESTAMP'] < 300) && $this->jobstarttype == 'restart' ) {
 			trigger_error(__('Job restart terminated, because job runs!', 'backwpup'), E_USER_ERROR);
 			die();
-		} elseif ( $this->jobstarttype == 'restarttime' ) {
-			trigger_error(__('Job restarted, because of inactivity!', 'backwpup'), E_USER_ERROR);
-		} elseif ( $this->jobdata['PID'] != getmypid() && $this->jobdata['PID'] != 0 && (current_time('timestamp')-$this->jobdata['TIMESTAMP'] >= 480) ) {
+		} elseif ($this->jobdata['PID']!=0 && $this->jobstarttype == 'restart') {
+			trigger_error(__('Job restart due to inactivity for more than 5 min.!', 'backwpup'), E_USER_ERROR);
+		} elseif ( $this->jobdata['PID'] != getmypid() && $this->jobdata['PID'] != 0 && ( microtime(true)-$this->jobdata['TIMESTAMP'] >= 480) ) {
 			trigger_error(sprintf(__('Second process is running, but old job runs! Start type is %s', 'backwpup'), $this->jobstarttype), E_USER_ERROR);
 			die();
 		}
@@ -191,7 +191,7 @@ class BackWPup_Job {
 		$this->jobdata['STEPDONE'] = 0;
 		$this->jobdata['STEPSPERSENT'] = 0;
 		$this->jobdata['STEPPERSENT'] = 0;
-		$this->jobdata['TIMESTAMP'] = current_time('timestamp');
+		$this->jobdata['TIMESTAMP'] = microtime(true);
 		$this->jobdata['ENDINPROGRESS'] = false;
 		$this->jobdata['EXTRAFILESTOBACKUP'] = array();
 		$this->jobdata['FOLDERLIST'] = array();
@@ -263,6 +263,9 @@ class BackWPup_Job {
 			backwpup_update_option('working', 'data', $this->jobdata);
 		if (backwpup_get_option('cfg','storeworkingdatain')=='file')
 			file_put_contents(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16),maybe_serialize($this->jobdata));
+		//add cron for restart in 5 min if needed
+		wp_clear_scheduled_hook('backwpup_cron', array('main'=>'restart'));
+		wp_schedule_single_event(time()+300,'backwpup_cron', array('main'=>'restart'));
 		//create log file
 		$fd = fopen($this->jobdata['LOGFILE'], 'w');
 		fwrite($fd, "<html>" . $this->line_separator . "<head>" . $this->line_separator);
@@ -477,7 +480,7 @@ class BackWPup_Job {
 	private function _update_working_data($mustwrite = false) {
 		global $wpdb;
 		//only run every 1 sec.
-		$timetoupdate = current_time('timestamp')-$this->jobdata['TIMESTAMP'];
+		$timetoupdate = microtime(true)-$this->jobdata['TIMESTAMP'];
 		if ( !$mustwrite && $timetoupdate<1 )
 			return true;
 		//check MySQL connection
@@ -499,7 +502,7 @@ class BackWPup_Job {
 			$this->jobdata['STEPSPERSENT'] = round(count($this->jobdata['STEPSDONE']) / count($this->jobdata['STEPS']) * 100);
 		else
 			$this->jobdata['STEPSPERSENT'] = 1;
-		$this->jobdata['TIMESTAMP'] = current_time('timestamp');
+		$this->jobdata['TIMESTAMP'] = microtime(true);
 		if (backwpup_get_option('cfg','storeworkingdatain')=='db')
 			backwpup_update_option('working', 'data', $this->jobdata);
 		if (backwpup_get_option('cfg','storeworkingdatain')=='file')
@@ -638,6 +641,8 @@ class BackWPup_Job {
 			$this->jobdata['LOGFILE'] = $this->jobdata['LOGFILE'] . '.gz';
 			backwpup_update_option($this->jobdata['JOBMAIN'], 'logfile', $this->jobdata['LOGFILE']);
 		}
+		//remove restart cron
+		wp_clear_scheduled_hook('backwpup_cron', array('main'=>'restart'));
 
 		$this->jobdata['STEPDONE'] = 1;
 		$this->jobdata['STEPSDONE'][] = 'END'; //set done

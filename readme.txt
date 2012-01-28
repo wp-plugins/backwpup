@@ -75,6 +75,7 @@ Do backups and more for your WordPress Blog.
 * Improved: don't look for file extensions on deletion and use file time not name
 * Improved: Password encryption/security
 * Improved: Performance all needed classes will auto loaded
+* Improved: WP-Cron entry's and handling
 * Improved: many little thinks
 * Changed: the job runs now in the WordPress environment again
 * Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed

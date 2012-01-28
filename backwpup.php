@@ -36,18 +36,26 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
-if (!defined('BACKWPUP_DESTS')) {
-	if (!function_exists('curl_init'))
-		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,MSAZURE,BOXNET');
-	else
-		define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
-}
-
 if( ! class_exists( 'BackWPup' ) ) {
+
+	//check const for backup destinations or set it
+	if (!defined('BACKWPUP_DESTS')) {
+		if (!function_exists('curl_init'))
+			define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,MSAZURE,BOXNET');
+		else
+			define('BACKWPUP_DESTS', 'FOLDER,MAIL,FTP,DROPBOX,SUGARSYNC,S3,GSTORAGE,RSC,MSAZURE');
+	}
+
 	//Load functions file
 	include_once(dirname(__FILE__).'/backwpup-functions.php');
+
+	//not load translations for other text domains reduces memory and load time
+	if ((defined('DOING_CRON') && DOING_CRON ) || (defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && in_array($_POST['action'],array('backwpup_show_info','backwpup_working','backwpup_cron_text','backwpup_aws_buckets','backwpup_gstorage_buckets','backwpup_rsc_container','backwpup_msazure_container','backwpup_sugarsync_root'))))
+		add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
+
 	//Start Plugin
 	add_action( 'plugins_loaded', array( 'BackWPup', 'get_object' ) );
+
 	/**
 	 *
 	 * Main BackWPup Class that auto load all needed classes
@@ -71,15 +79,11 @@ if( ! class_exists( 'BackWPup' ) ) {
 				add_action('admin_notices', create_function('','echo "<div id=\"message\" class=\"error fade\"><strong>".__("BackWPup:", "backwpup")."</strong><br />".__("- PHP 5.2.4 or higher is needed!","backwpup")."</div>";'));
 				return;
 			}
-			//register auto load
-			spl_autoload_register(array($this,'autoloader'));
-			//not load translations for other text domains reduces memory and load time
-			if ((defined('DOING_CRON') && DOING_CRON ) || (defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && in_array($_POST['action'],array('backwpup_show_info','backwpup_working','backwpup_cron_text','backwpup_aws_buckets','backwpup_gstorage_buckets','backwpup_rsc_container','backwpup_msazure_container','backwpup_sugarsync_root'))))
-				add_filter('override_load_textdomain', create_function('$default, $domain, $mofile','if ($domain=="backwpup") return $default; else return true;'),1,3);
 			//Load text domain
 			load_plugin_textdomain('backwpup', false, dirname(plugin_basename( __FILE__ )).'/lang');
+			//register auto load
+			spl_autoload_register(array($this,'autoloader'));
 			//WP-Cron
-			add_filter('cron_schedules', create_function('$schedules','$schedules["backwpup"]=array("interval"=>240,"display"=> __("BackWPup", "backwpup"));return $schedules;'));
 			add_action('backwpup_cron',  array('BackWPup_Cron','run'));
 			if (is_main_site()) {
 				//start upgrade if needed

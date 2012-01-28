@@ -309,7 +309,7 @@ function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
 	$authurl='';
 	$query_args=array();
 
-	if (in_array($starttype, array('restarttime', 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
+	if (in_array($starttype, array( 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )))
 		$query_args['starttype']=$starttype;
 
 	if (in_array($starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext','apirun' )) && !empty($jobid))
@@ -331,7 +331,7 @@ function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
 			$url=str_replace('https://','https://'.$authurl,$url);
 			$url=str_replace('http://','http://'.$authurl,$url);
 		}
-	} elseif ($starttype=='cronrun' || $starttype=='restart' || $starttype=='restarttime') {
+	} elseif ($starttype=='cronrun' || $starttype=='restart') {
 		$oldnonce=backwpup_get_option('temp', $starttype.'_nonce');
 		if (!empty($oldnonce))
 			$query_args['_nonce']=$oldnonce;

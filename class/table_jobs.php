@@ -158,7 +158,12 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 						$runtime=current_time('timestamp')-backwpup_get_option('job_'.$jobid,'starttime');
 						$r .=  __('Running since:','backwpup').' '.$runtime.' '.__('sec.','backwpup');
 					} elseif (backwpup_get_option('job_'.$jobid,'activetype')=='wpcron') {
-						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),backwpup_get_option('job_'.$jobid,'cronnextrun')).' by WP-Cron';
+						if ($nextrun=wp_next_scheduled('backwpup_cron', array('main'=>'job_'.$jobid))) {
+							$offset=get_option('gmt_offset')*3600;
+							$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),$nextrun+$offset).' by WP-Cron';
+						} else {
+							$r .= __('Not scheduled!','backwpup');
+						}
 					} elseif (backwpup_get_option('job_'.$jobid,'activetype')=='backwpupapi') {
 						$r .=  date_i18n(get_option('date_format').' @ '.get_option('time_format'),backwpup_get_option('job_'.$jobid,'cronnextrun')).' by BackWPup Cron Service';
 					} else {

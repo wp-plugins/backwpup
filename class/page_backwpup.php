@@ -210,12 +210,6 @@ class BackWPup_Page_Backwpup {
 			backwpup_update_option('backwpup','check',false);
 		else
 			backwpup_update_option('backwpup','check',true);
-		//not relevant checks for job start
-		if (false !== $nextrun=wp_next_scheduled('backwpup_cron') && backwpup_get_option('cfg','apicronservicekey')=='') {
-			if (empty($nextrun) || $nextrun<(time()-(3600*24))) {  //check cron jobs work
-				$massage.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
-			}
-		}
 		if (file_exists(ABSPATH.'backwpup_db_restore.php') || file_exists(ABSPATH.'backwpup_db_restore.zip') || file_exists(ABSPATH.'.backwpup_restore')) {  //for restore file
 			$massage.=__("- BackWPup DB restore script found in Blog root please delete it, for security!","backwpup") .'<br />';
 		}
