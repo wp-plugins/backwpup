@@ -17,7 +17,7 @@ class BackWPup_Init {
 	 * @return nothing
 	 */
 	public static function upgrade() {
-		global $wpdb,$wp_roles;
+		global $wpdb;
 		//Set table collate
 		$charset_collate='';
 		if ( ! empty($wpdb->charset) )
@@ -107,9 +107,10 @@ class BackWPup_Init {
 		//make new schedule
 		wp_schedule_event(time(), 'backwpup', 'backwpup_cron');
 		//add user role
-		$wp_roles->add_cap( 'administrator', 'backwpup' );
+		$role = get_role( 'administrator' );
+		$role->add_cap( 'backwpup' );
 		//update version
-		backwpup_update_option('backwpup','md5',md5_file(dirname(__FILE__).'/../backwpup.php'));
+		update_option('backwpup_file_md5',md5_file(dirname(__FILE__).'/../backwpup.php'));
 		backwpup_update_option('backwpup','version',backwpup_get_version());
 	}
 
@@ -120,15 +121,16 @@ class BackWPup_Init {
 	 * @return nothing
 	 */
 	public static function deactivate() {
-		global $wpdb,$wp_roles;
+		global $wpdb;
 		wp_clear_scheduled_hook('backwpup_cron');
-		backwpup_update_option('backwpup','md5','');
+		delete_option('backwpup_file_md5');
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
 		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
 			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
 		do_action('backwpup_api_delete');
-		$wp_roles->remove_cap( 'administrator', 'backwpup' );
+		$role = get_role( 'administrator' );
+		$role->remove_cap( 'backwpup' );
 	}
 
 	/**
@@ -138,13 +140,15 @@ class BackWPup_Init {
 	 * @return nothing
 	 */
 	public static function uninstall() {
-		global $wpdb,$wp_roles;
+		global $wpdb;
 		do_action('backwpup_api_delete');
 		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
 			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));
+		delete_option('backwpup_file_md5');
 		$wpdb->query("DROP TABLE IF EXISTS `".$wpdb->prefix."backwpup`");
 		wp_clear_scheduled_hook('backwpup_cron');
-		$wp_roles->remove_cap( 'administrator', 'backwpup' );
+		$role = get_role( 'administrator' );
+		$role->remove_cap( 'backwpup' );
 	}
 
 

@@ -33,6 +33,15 @@ class BackWPup_Api {
 		add_action('backwpup_api_delete',  array($this,'delete'));
 	}
 
+
+	/**
+	 * @static
+	 * @return \BackWPup_Api
+	 */
+	public static function get_object(){
+		return new self;
+	}
+
 	/**
 	 *
 	 * API for cron trigger
