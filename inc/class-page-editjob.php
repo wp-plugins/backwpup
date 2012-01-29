@@ -368,27 +368,27 @@ class BackWPup_Page_Editjob {
 
 		$dests=explode(',',strtoupper(BACKWPUP_DESTS));
 		//add several metaboxes now, all metaboxes registered during load page can be switched off/on at "Screen Options" automatically, nothing special to do therefore
-		add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), array('BackWPup_Page_Metaboxes','backupfile'), get_current_screen()->id, 'side', 'default');
-		add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), array('BackWPup_Page_Metaboxes','sendlog'), get_current_screen()->id, 'side', 'default');
+		add_meta_box('backwpup_jobedit_backupfile', __('Backup File','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','backupfile'), get_current_screen()->id, 'side', 'default');
+		add_meta_box('backwpup_jobedit_sendlog', __('Send log','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','sendlog'), get_current_screen()->id, 'side', 'default');
 		if (in_array('FOLDER',$dests))
-			add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), array('BackWPup_Page_Metaboxes','destfolder'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('backwpup_jobedit_destfolder', __('Backup to Folder','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destfolder'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('MAIL',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), array('BackWPup_Page_Metaboxes','destmail'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destmail', __('Backup to E-Mail','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destmail'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('FTP',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), array('BackWPup_Page_Metaboxes','destftp'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destftp', __('Backup to FTP Server','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destftp'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('DROPBOX',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), array('BackWPup_Page_Metaboxes','destdropbox'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destdropbox', __('Backup to Dropbox','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destdropbox'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('SUGARSYNC',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), array('BackWPup_Page_Metaboxes','destsugarsync'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destsugarsync', __('Backup to SugarSync','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destsugarsync'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('S3',$dests))
-			add_meta_box('nosync_backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), array('BackWPup_Page_Metaboxes','dests3'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_dests3', __('Backup to Amazon S3','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','dests3'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('GSTORAGE',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), array('BackWPup_Page_Metaboxes','destgstorage'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destgstorage', __('Backup to Google storage','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destgstorage'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('MSAZURE',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), array('BackWPup_Page_Metaboxes','destazure'), get_current_screen()->id, 'normal', 'default');
+			add_meta_box('nosync_backwpup_jobedit_destazure', __('Backup to Micosoft Azure (Blob)','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destazure'), get_current_screen()->id, 'normal', 'default');
 		if (in_array('RSC',$dests))
-			add_meta_box('nosync_backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), array('BackWPup_Page_Metaboxes','destrsc'), get_current_screen()->id, 'normal', 'default');
-		add_filter( 'hidden_meta_boxes', array('BackWPup_Page_Metaboxes','displayneeded'));
+			add_meta_box('nosync_backwpup_jobedit_destrsc', __('Backup to Rackspace Cloud','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','destrsc'), get_current_screen()->id, 'normal', 'default');
+		add_filter( 'hidden_meta_boxes', array('BackWPup_Page_Editjob_Metaboxes','displayneeded'));
 
 		//add columns
 		add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
@@ -418,8 +418,8 @@ class BackWPup_Page_Editjob {
 			check_admin_referer('edit-job');
 
 		//may be needed to ensure that a special box is always available
-		add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), array('BackWPup_Page_Metaboxes','save'), get_current_screen()->id, 'side', 'high');
-		add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), array('BackWPup_Page_Metaboxes','schedule'), get_current_screen()->id, 'side', 'core');
+		add_meta_box('backwpup_jobedit_save', __('Job Type','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','save'), get_current_screen()->id, 'side', 'high');
+		add_meta_box('backwpup_jobedit_schedule', __('Job Schedule','backwpup'), array('BackWPup_Page_Editjob_Metaboxes','schedule'), get_current_screen()->id, 'side', 'core');
 
 		//generate jobid if not exists
 		if (empty($_REQUEST['jobid'])) {

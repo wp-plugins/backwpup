@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 /**
  *
  */
-class BackWPup_Table_Logs extends WP_List_Table {
+class BackWPup_Page_Logs_Table extends WP_List_Table {
 	/**
 	 *
 	 */

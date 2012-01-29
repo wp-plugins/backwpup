@@ -14,7 +14,7 @@ if (!defined('ABSPATH')) {
 function backwpup_get_version() {
 	$version=backwpup_get_option('backwpup','version');
 	if ($version==false || $version=='0.0') {
-		$plugin_data = get_file_data( realpath(dirname(__FILE__).'/backwpup.php'),  array('Version' => 'Version'), 'plugin' );
+		$plugin_data = get_file_data( realpath(dirname(__FILE__).'/../backwpup.php'),  array('Version' => 'Version'), 'plugin' );
 		$version=$plugin_data['Version'];
 		backwpup_update_option('backwpup','version',$version);
 	}
@@ -304,7 +304,7 @@ function backwpup_delete_option($main,$name) {
  * @return array|object [url] is the job url [header] for auth header or object form wp_remote_get()
  */
 function backwpup_jobrun_url($starttype,$jobid=0,$run=false) {
-	$url=plugins_url('',__FILE__).'/job.php';
+	$url=plugins_url('',dirname(__FILE__)).'/job.php';
 	$header='';
 	$authurl='';
 	$query_args=array();

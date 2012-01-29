@@ -11,7 +11,7 @@ class BackWpup_Page_Logs {
 	public static function load() {
 		global $backwpup_listtable;
 		//Create Table
-		$backwpup_listtable = new BackWPup_Table_Logs;
+		$backwpup_listtable = new BackWPup_Page_Logs_Table;
 
 		switch($backwpup_listtable->current_action()) {
 			case 'delete':

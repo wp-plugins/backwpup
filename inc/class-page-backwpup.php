@@ -13,7 +13,7 @@ class BackWPup_Page_Backwpup {
 	public static function load() {
 		global $backwpup_message,$backwpup_listtable,$wpdb;
 		//Create Table
-		$backwpup_listtable = new BackWPup_Table_Jobs;
+		$backwpup_listtable = new BackWPup_Page_Backwpup_Table;
 
 		switch($backwpup_listtable->current_action()) {
 			case 'delete': //Delete Job

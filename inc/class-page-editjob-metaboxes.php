@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 /**
  *
  */
-class BackWPup_Page_Metaboxes {
+class BackWPup_Page_Editjob_Metaboxes {
 	/**
 	 * @static
 	 * @param $main

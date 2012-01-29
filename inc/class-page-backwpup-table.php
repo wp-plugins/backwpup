@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 /**
  *
  */
-class BackWPup_Table_Jobs extends WP_List_Table {
+class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 
 	/**
 	 *

@@ -8,7 +8,7 @@ if (!defined('ABSPATH')) {
 /**
  *
  */
-class BackWPup_Table_Backups extends WP_List_Table {
+class BackWPup_Page_Backups_Table extends WP_List_Table {
 	
 	private $jobid=1;
 	private $dest='FOLDER';

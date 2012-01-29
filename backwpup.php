@@ -47,7 +47,7 @@ if( ! class_exists( 'BackWPup' ) ) {
 	}
 
 	//Load functions file
-	include_once(dirname(__FILE__).'/backwpup-functions.php');
+	include_once(dirname(__FILE__).'/inc/functions.php');
 
 	//not load translations for other text domains reduces memory and load time
 	if ((defined('DOING_CRON') && DOING_CRON ) || (defined('DOING_AJAX') && DOING_AJAX && isset($_POST['action']) && in_array($_POST['action'],array('backwpup_show_info','backwpup_working','backwpup_cron_text','backwpup_aws_buckets','backwpup_gstorage_buckets','backwpup_rsc_container','backwpup_msazure_container','backwpup_sugarsync_root'))))
@@ -154,20 +154,20 @@ if( ! class_exists( 'BackWPup' ) ) {
 			}
 			//External libs to load
 			if ('CF_Authentication' == $class_name) {
-				include_once(dirname(__FILE__).'/libs/rackspace/cloudfiles.php');
+				include_once(dirname(__FILE__).'/sdk/rackspace/cloudfiles.php');
 				return true;
 			}
 			if ('Microsoft_WindowsAzure_Storage_Blob' == $class_name) {
-				include_once(dirname(__FILE__).'/libs/Microsoft/AutoLoader.php');
+				include_once(dirname(__FILE__).'/sdk/Microsoft/AutoLoader.php');
 				return true;
 			}
 			if ('AmazonS3' == $class_name) {
-				include_once(dirname(__FILE__).'/libs/aws/sdk.class.php');
+				include_once(dirname(__FILE__).'/sdk/aws/sdk.class.php');
 				return true;
 			}
 			//BackWPup classes to load
 			if (substr($class_name,0,9)=='BackWPup_') {
-				$inc = dirname(__FILE__).'/class/'.strtolower(str_replace('BackWPup_','',$class_name)).'.php';
+				$inc = dirname(__FILE__).'/inc/class-'.strtolower(str_replace(array('BackWPup_','_'),array('','-'),$class_name)).'.php';
 				if (file_exists($inc)) {
 					include_once($inc);
 					return true;

@@ -8,7 +8,7 @@ class BackWPup_Page_Backups {
 	public static function load() {
 		global $backwpup_listtable,$backwpup_message;
 		//Create Table
-		$backwpup_listtable = new BackWPup_Table_Backups;
+		$backwpup_listtable = new BackWPup_Page_Backups_Table;
 
 		switch($backwpup_listtable->current_action()) {
 			case 'delete': //Delete Backup archives

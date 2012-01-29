@@ -1456,6 +1456,8 @@ class BackWPup_Job {
 		$header .= "------------------------------------------------------------" . $this->line_separator . $this->line_separator;
 		fwrite($fd,$header);
 		//get Plugins
+		if ( !function_exists( 'get_plugins' ) )
+			require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 		$plugins=get_plugins();
 		$plugins_active=get_option('active_plugins');
 		//write it to file
