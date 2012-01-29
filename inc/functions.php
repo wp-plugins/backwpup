@@ -38,7 +38,6 @@ function backwpup_default_option_settings($main,$name) {
 	//set defaults
 	if ($main=='backwpup') { //for settings
 		$default['backwpup']['version']='0.0';
-		$default['backwpup']['md5']=false;
 		$default['backwpup']['check']=false;
 	} elseif ($main=='cfg') { //for settings
 		$default['cfg']['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
@@ -167,8 +166,8 @@ function backwpup_default_option_settings($main,$name) {
 	if ($main=='working') {
 		$default['working']['data']=false;
 	}
-	if ($main=='temp') {
-		$default['temp']['apiapp']=false;
+	if ($main=='api') {
+		$default['api']['apiapp']=false;
 	}
 	//return defaults
 	if(isset($default[$main][$name]))
@@ -215,7 +214,7 @@ function backwpup_update_option($main,$name,$value) {
 	 else
 		$result=$wpdb->insert( $wpdb->prefix.'backwpup', array( 'main' => $main, 'name' => $name, 'value' => $value ), '%s' );
 	if ($result) {
-		if ($main!='working') {
+		if ($main!='working' && $main!='temp') {
 			$alloptions[$main][$name]=$value;
 			wp_cache_set( 'options', $alloptions, 'backwpup' );
 		}
@@ -242,7 +241,7 @@ function backwpup_get_option($main,$name,$default=false) {
 	$alloptions=wp_cache_get( 'options', 'backwpup' );
 	//load options to cache if empty
 	if ($alloptions==false) {
-		$option_cache_req = $wpdb->get_results( "SELECT main,name,value FROM ".$wpdb->prefix."backwpup WHERE main<>'working' ORDER BY main,name" );
+		$option_cache_req = $wpdb->get_results( "SELECT main,name,value FROM ".$wpdb->prefix."backwpup WHERE main<>'working' AND main<>'temp' ORDER BY main,name" );
 		if (is_array($option_cache_req)) {
 			foreach ($option_cache_req as $option)
 				$alloptions[$option->main][$option->name]=$option->value;

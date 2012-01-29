@@ -143,6 +143,7 @@ class BackWPup_Init {
 		do_action('backwpup_api_delete');
 		delete_site_transient( 'update_plugins' );
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='temp'");
+		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='api'");
 		$wpdb->query("DELETE FROM ".$wpdb->prefix."backwpup WHERE main='working'");
 		if (file_exists(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16)))
 			unlink(backwpup_get_option('cfg','tempfolder').'.backwpup_working_'.substr(md5(ABSPATH),16));

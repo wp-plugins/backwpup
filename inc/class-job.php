@@ -1189,6 +1189,7 @@ class BackWPup_Job {
 			//for better import with mysql client
 			$dbdumpfooter = $this->line_separator . "--" . $this->line_separator . "-- Delete not needed values on backwpup table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
 			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';" . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='api';" . $this->line_separator;
 			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';" . $this->line_separator . $this->line_separator . $this->line_separator;
 			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;" . $this->line_separator;
 			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;" . $this->line_separator;

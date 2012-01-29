@@ -91,7 +91,7 @@ class BackWPup_Api {
 		// Start checking for an update
 		$post=array();
 		$post['ACTION']='updatecheck';
-		$saved=backwpup_get_option('temp','updatecheck');
+		$saved=backwpup_get_option('api','updatecheck');
 		if (!empty($saved) && $saved['version']==backwpup_get_version() && (time()-$saved['time'])<=43200) {
 			$checked_data->response[$pluginbasename] = $saved['response'];
 			return $checked_data;
@@ -100,12 +100,12 @@ class BackWPup_Api {
 		if (!is_wp_error($raw_response) && 200 == wp_remote_retrieve_response_code($raw_response)) {
 			$response = unserialize(wp_remote_retrieve_body($raw_response));
 			if (is_object($response) && !empty($response->apiapps)) {
-				backwpup_update_option('temp','apiapp',$response->apiapps);
+				backwpup_update_option('api','apiapp',$response->apiapps);
 				unset($response->apiapps);
 			}
 			if (is_object($response) && !empty($response->slug)) {
 				$checked_data->response[$pluginbasename] = $response;
-				backwpup_update_option('temp','updatecheck',array('time'=>time(),'version'=>backwpup_get_version(),'response'=>$response));
+				backwpup_update_option('api','updatecheck',array('time'=>time(),'version'=>backwpup_get_version(),'response'=>$response));
 			}
 		}
 		return $checked_data;
@@ -125,7 +125,7 @@ class BackWPup_Api {
 			return false;
 		$post=array();
 		$post['ACTION']='updateinfo';
-		$saved=backwpup_get_option('temp','updateinfo');
+		$saved=backwpup_get_option('api','updateinfo');
 		if (!empty($saved) && $saved['version']==backwpup_get_version() && (time()-$saved['time'])<=43200)
 			return $saved['return'];
 		$request = wp_remote_post($this->apiurl, array( 'sslverify' => false, 'body'=>$post, 'headers'=>$this->headers));
@@ -136,7 +136,7 @@ class BackWPup_Api {
 			if ($res === false)
 				$res = new WP_Error('plugins_api_failed', __('An unknown error occurred'), $request['body']);
 			else
-				backwpup_update_option('temp','updateinfo',array('time'=>time(),'version'=>backwpup_get_version(),'return'=>$res));
+				backwpup_update_option('api','updateinfo',array('time'=>time(),'version'=>backwpup_get_version(),'return'=>$res));
 		}
 		return $res;
 	}
@@ -166,13 +166,13 @@ class BackWPup_Api {
 	 * @return bool|mixed
 	 */
 	public function app_keys($appkey,$defauft=false) {
-		$apiapp=backwpup_get_option('temp','apiapp');
+		$apiapp=backwpup_get_option('api','apiapp');
 		if (!$apiapp) {
-			backwpup_update_option('temp','updatecheck','');
+			backwpup_update_option('api','updatecheck','');
 			$data = new stdClass;
 			$data->checked = true;
 			$this->plugin_update_check($data);
-			$apiapp=backwpup_get_option('temp','apiapp');
+			$apiapp=backwpup_get_option('api','apiapp');
 		}
 		$apiapp=unserialize(backwpup_decrypt($apiapp,md5(trim(get_bloginfo('url')))));
 		if (!empty($apiapp[$appkey]))
