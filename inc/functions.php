@@ -40,6 +40,7 @@ function backwpup_default_option_settings($main,$name) {
 		$default['backwpup']['version']='0.0';
 		$default['backwpup']['check']=false;
 	} elseif ($main=='cfg') { //for settings
+		$default['cfg']['updateversiontype']='release';
 		$default['cfg']['mailsndemail']=sanitize_email(get_bloginfo( 'admin_email' ));
 		$default['cfg']['mailsndname']='BackWPup '.get_bloginfo('name');
 		$default['cfg']['showadminbar']=true;

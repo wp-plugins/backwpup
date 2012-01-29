@@ -18,8 +18,7 @@ class BackWPup_Api {
 	public function __construct() {
 		global $wp_version;
 		$blogurl=trim(get_bloginfo('url'));
-		$this->headers['User-Agent']='BackWPup/'.backwpup_get_version().' WordPress/'.$wp_version;
-		$this->headers['Authorization']='Basic '.base64_encode(backwpup_get_version().':'.md5($blogurl));
+		$this->headers['User-Agent']='BackWPup/'.backwpup_get_version().'; WordPress/'.$wp_version.'; '.$blogurl;
 		$this->headers['Referer']=$blogurl;
 		//Add filter for Plugin Updates
 		add_filter('pre_set_site_transient_update_plugins', array($this,'plugin_update_check'));
@@ -87,10 +86,10 @@ class BackWPup_Api {
 		$pluginbasename=plugin_basename(realpath(dirname(__FILE__).'/../backwpup.php'));
 		if (empty($checked_data->checked))
 			return $checked_data;
-
 		// Start checking for an update
 		$post=array();
 		$post['ACTION']='updatecheck';
+		$post['TYPE']=backwpup_get_option('cfg','updateversiontype');
 		$saved=backwpup_get_option('api','updatecheck');
 		if (!empty($saved) && $saved['version']==backwpup_get_version() && (time()-$saved['time'])<=43200) {
 			$checked_data->response[$pluginbasename] = $saved['response'];
@@ -125,6 +124,7 @@ class BackWPup_Api {
 			return false;
 		$post=array();
 		$post['ACTION']='updateinfo';
+		$post['TYPE']=backwpup_get_option('cfg','updateversiontype');
 		$saved=backwpup_get_option('api','updateinfo');
 		if (!empty($saved) && $saved['version']==backwpup_get_version() && (time()-$saved['time'])<=43200)
 			return $saved['return'];

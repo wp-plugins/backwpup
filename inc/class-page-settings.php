@@ -14,6 +14,13 @@ class BackWPup_Page_Settings {
 		global $backwpup_message;
 		if (isset($_POST['submit']) && isset($_POST['action']) && $_POST['action']=='update') {
 			check_admin_referer('backwpup-cfg');
+			$oldvalue=backwpup_get_option('cfg','updateversiontype');
+			backwpup_update_option('cfg','updateversiontype',($_POST['updateversiontype']!='dev' and $_POST['updateversiontype']!='beta' and $_POST['updateversiontype']!='rc') ? 'release' : $_POST['updateversiontype']);
+			if ($oldvalue!=$_POST['updateversiontype']) { //delete some thin if setting changed
+				backwpup_update_option('api','updatecheck',array());
+				backwpup_update_option('api','updateinfo',array());
+				delete_site_transient( 'update_plugins' );
+			}
 			backwpup_update_option('cfg','mailsndemail',sanitize_email($_POST['mailsndemail']));
 			backwpup_update_option('cfg','mailsndname',$_POST['mailsndname']);
 			backwpup_update_option('cfg','showadminbar',isset($_POST['showadminbar']) ? true : false);
@@ -101,6 +108,23 @@ class BackWPup_Page_Settings {
 			<form id="posts-filter" action="<?php echo backwpup_admin_url('admin.php')."?page=backwpupsettings";?>" method="post">
 				<?php wp_nonce_field('backwpup-cfg'); ?>
 				<input type="hidden" name="action" value="update" />
+
+				<h3><?php _e('Updates','backwpup'); ?></h3>
+				<p><?php _e('Wath type for Updates you would check for.','backwpup'); ?></p>
+				<table class="form-table">
+					<tr valign="top">
+						<th scope="row"><label for="updateversiontype"><?php _e('Update version type','backwpup'); ?></label></th>
+						<td>
+						<select name="updateversiontype" id="updateversiontype">
+							<option <?php selected(backwpup_get_option('cfg','updateversiontype'),'release',true);?> value="release"><?php _e('Released Versions','backwpup'); ?></option>
+							<option <?php selected(backwpup_get_option('cfg','updateversiontype'),'rc',true);?> value="rc"><?php _e('Release candidates','backwpup'); ?></option>
+							<option <?php selected(backwpup_get_option('cfg','updateversiontype'),'beta',true);?> value="beta"><?php _e('Beta Versions','backwpup'); ?></option>
+							<option <?php selected(backwpup_get_option('cfg','updateversiontype'),'dev',true);?> value="dev" <?php if (!defined('WP_DEBUG') || !WP_DEBUG) echo 'disabled="disabled"';?>><?php _e('Development Versions (Nightly Builds)','backwpup'); ?></option>
+						</select>
+						</td>
+					</tr>
+				</table>
+
 				<h3><?php _e('Send Mail','backwpup'); ?></h3>
 				<p><?php _e('Here you can set the options for email sending. The settings will be used in jobs for sending backups via email or for sending log files.','backwpup'); ?></p>
 				<table class="form-table">
@@ -233,7 +257,7 @@ class BackWPup_Page_Settings {
 						</td>
 					</tr>
 				</table>
-				<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
+				<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="<?php _e('Save Changes','backwpup'); ?>" /></p>
 			</form>
 		</div>
 		<?php
