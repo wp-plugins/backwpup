@@ -5,7 +5,13 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ */
 class BackWPup_Table_Logs extends WP_List_Table {
+	/**
+	 *
+	 */
 	function __construct() {
 		parent::__construct( array(
 			'plural' => 'logs',
@@ -13,7 +19,10 @@ class BackWPup_Table_Logs extends WP_List_Table {
 			'ajax' => true
 		) );
 	}
-	
+
+	/**
+	 * @return bool
+	 */
 	function ajax_user_can() {
 		return current_user_can(BACKWPUP_USER_CAPABILITY);
 	}	
@@ -60,6 +69,9 @@ class BackWPup_Table_Logs extends WP_List_Table {
 
 	}
 
+	/**
+	 * @return array
+	 */
 	function get_sortable_columns() {
 		return array(
 			'log'    => array('log',false),
@@ -69,13 +81,19 @@ class BackWPup_Table_Logs extends WP_List_Table {
 	function no_items() {
 		_e( 'No Logs.','backwpup');
 	}
-	
+
+	/**
+	 * @return array
+	 */
 	function get_bulk_actions() {
 		$actions = array();
 		$actions['delete'] = __( 'Delete' );
 		return $actions;
 	}
-	
+
+	/**
+	 * @return array
+	 */
 	function get_columns() {
 		$posts_columns = array();
 		$posts_columns['cb'] = '<input type="checkbox" />';
@@ -96,7 +114,13 @@ class BackWPup_Table_Logs extends WP_List_Table {
 			echo "\n\t", $this->single_row( backwpup_get_option('cfg','logfolder').$logfile, $logdata, $style );
 		}
 	}
-	
+
+	/**
+	 * @param $logfile
+	 * @param $logdata
+	 * @param string $style
+	 * @return string
+	 */
 	function single_row( $logfile, $logdata, $style = '' ) {
 		list( $columns, $hidden, $sortable ) = $this->get_column_info();
 		$r = "<tr id='".basename($logfile)."'$style>";

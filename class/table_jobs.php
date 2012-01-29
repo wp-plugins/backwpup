@@ -5,8 +5,14 @@ if (!defined('ABSPATH')) {
 	die();
 }
 
+/**
+ *
+ */
 class BackWPup_Table_Jobs extends WP_List_Table {
 
+	/**
+	 *
+	 */
 	function __construct() {
 		parent::__construct( array(
 			'plural' => 'jobs',
@@ -15,6 +21,9 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 		) );
 	}
 
+	/**
+	 * @return bool
+	 */
 	function ajax_user_can() {
 		return current_user_can('backwpup');
 	}
@@ -30,6 +39,9 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 		$mode = empty( $_GET['mode'] ) ? 'list' : $_GET['mode'];
 	}
 
+	/**
+	 * @param $which
+	 */
 	function pagination( $which ) {
 		global $mode;
 
@@ -43,6 +55,9 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 		_e( 'No Jobs.','backwpup');
 	}
 
+	/**
+	 * @return array
+	 */
 	function get_bulk_actions() {
 		$actions = array();
 		$actions['export'] = __( 'Export' );
@@ -51,6 +66,9 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 		return $actions;
 	}
 
+	/**
+	 * @return array
+	 */
 	function get_columns() {
 		$jobs_columns = array();
 		$jobs_columns['cb'] = '<input type="checkbox" />';
@@ -73,6 +91,12 @@ class BackWPup_Table_Jobs extends WP_List_Table {
 		}
 	}
 
+	/**
+	 * @param $jobid
+	 * @param $backupdata
+	 * @param string $style
+	 * @return string
+	 */
 	function single_row($jobid, $backupdata, $style = '' ) {
 		global $mode;
 

@@ -442,12 +442,12 @@ class BackWPup_Job {
 			$filepos = ftell($fd);
 			while ( !feof($fd) ) {
 				$line = fgets($fd);
-				if ( stripos($line, "<meta name=\"backwpup_errors\"") !== false ) {
+				if ( stripos($line, "<meta name=\"backwpup_errors\" content=\"") !== false ) {
 					fseek($fd, $filepos);
 					fwrite($fd, str_pad("<meta name=\"backwpup_errors\" content=\"" . $this->jobdata['ERROR'] . "\" />", 100) . $this->line_separator);
 					$found++;
 				}
-				if ( stripos($line, "<meta name=\"backwpup_warnings\"") !== false ) {
+				if ( stripos($line, "<meta name=\"backwpup_warnings\" content=\"") !== false ) {
 					fseek($fd, $filepos);
 					fwrite($fd, str_pad("<meta name=\"backwpup_warnings\" content=\"" . $this->jobdata['WARNING'] . "\" />", 100) . $this->line_separator);
 					$found++;
@@ -1007,7 +1007,7 @@ class BackWPup_Job {
 			trigger_error(sprintf(__('Can not create database dump file! "%s"', 'backwpup'), $this->jobdata['DBDUMPFILE']), E_USER_ERROR);
 			$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 			$this->_maintenance_mode(false);
-			return;
+			return false;
 		}
 
 
@@ -1223,6 +1223,7 @@ class BackWPup_Job {
 		//Back from maintenance
 		$this->_maintenance_mode(false);
 		$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
+		return true;
 	}
 
 	/**
@@ -1244,7 +1245,7 @@ class BackWPup_Job {
 			if ( !in_array($table, backwpup_get_option($this->jobdata['JOBMAIN'],'dbexclude')) )
 				$tablestobackup[] = $table;
 		}
-		//Set num of todos
+		//Set num
 		$this->jobdata['STEPTODO'] = sizeof($tablestobackup);
 
 		//check tables
@@ -1265,7 +1266,7 @@ class BackWPup_Job {
 				else
 					trigger_error(sprintf(__('Result of table check for %1$s is: %2$s', 'backwpup'), $table, $check->Msg_text), E_USER_ERROR);
 
-				//Try to Repair tabele
+				//Try to Repair table
 				if ( $check->Msg_text != 'OK' ) {
 					$repair = $wpdb->get_row('REPAIR TABLE `' . $table . '`');
 					if ( mysql_error() ) {
@@ -1630,6 +1631,7 @@ class BackWPup_Job {
 			}
 			@closedir($dir);
 		}
+		return true;
 	}
 
 	/**
@@ -2019,6 +2021,7 @@ class BackWPup_Job {
 		//Delete old Backupfiles
 		$backupfilelist = array();
 		$filecounter=0;
+		$files=array();
 		if ( $dir = @opendir($this->jobdata['BACKUPDIR']) ) { //make file list
 			while ( ($file = readdir($dir)) !== false ) {
 				if (is_file($this->jobdata['BACKUPDIR'].$file)) {
@@ -2079,6 +2082,11 @@ class BackWPup_Job {
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER_SYNC'; //set done
 	}
 
+	/**
+	 * @param string $folder
+	 * @param int $levels
+	 * @return bool
+	 */
 	protected function _dest_folder_sync_files($folder = '', $levels = 100) {
 		if ( empty($folder) )
 			return false;
@@ -2127,6 +2135,7 @@ class BackWPup_Job {
 		//sync new files
 		foreach($filestosync as $keyfile)
 			copy($keyfile,$folder . basename($keyfile));
+		return true;
 	}
 
 	/**
@@ -2179,6 +2188,7 @@ class BackWPup_Job {
 		try {
 			$backupfilelist=array();
 			$filecounter=0;
+			$files=array();
 			$metadata = $dropbox->metadata(backwpup_get_option($this->jobdata['JOBMAIN'],'dropedir'));
 			if (is_array($metadata)) {
 				foreach ($metadata['contents'] as $data) {
@@ -2246,7 +2256,7 @@ class BackWPup_Job {
 			} else {
 				trigger_error(__('PHP function to connect with SSL-FTP to server not exists!','backwpup'),E_USER_ERROR);
 				$this->jobdata['STEPSDONE'][]='DEST_FTP'; //set done
-				return;
+				return false;
 			}
 		} else { //make normal FTP connection if SSL not work
 			$ftp_conn_id = ftp_connect(backwpup_get_option($this->jobdata['JOBMAIN'],'ftphost'),backwpup_get_option($this->jobdata['JOBMAIN'],'ftphostport'),backwpup_get_option($this->jobdata['JOBMAIN'],'ftptimeout'));
@@ -2326,6 +2336,7 @@ class BackWPup_Job {
 
 		$backupfilelist=array();
 		$filecounter=0;
+		$files=array();
 		if ($filelist=ftp_nlist($ftp_conn_id, backwpup_get_option($this->jobdata['JOBMAIN'],'ftpdir'))) {
 			foreach($filelist as $file) {
 				if ( backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix') == substr(basename($file),0,strlen(backwpup_get_option($this->jobdata['JOBMAIN'],'fileprefix')))  ) {
@@ -2373,6 +2384,7 @@ class BackWPup_Job {
 
 		ftp_close($ftp_conn_id);
 		$this->jobdata['STEPDONE']++;
+		return true;
 	}
 
 	/**
@@ -2427,6 +2439,7 @@ class BackWPup_Job {
 			if ($s3->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'))) {
 				$backupfilelist=array();
 				$filecounter=0;
+				$files=array();
 				if (($contents = $s3->list_objects(backwpup_get_option($this->jobdata['JOBMAIN'],'awsBucket'),array('prefix'=>backwpup_get_option($this->jobdata['JOBMAIN'],'awsdir')))) !== false) {
 					foreach ($contents->body->Contents as $object) {
 						$file=basename($object->Key);
@@ -2516,6 +2529,7 @@ class BackWPup_Job {
 			if ($gstorage->if_bucket_exists(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'))) {
 				$backupfilelist=array();
 				$filecounter=0;
+				$files=array();
 				if (($contents = $gstorage->list_objects(backwpup_get_option($this->jobdata['JOBMAIN'],'GStorageBucket'),array('prefix'=>backwpup_get_option($this->jobdata['JOBMAIN'],'GStoragedir')))) !== false) {
 					foreach ($contents->body->Contents as $object) {
 						$file=basename($object->Key);
@@ -2631,6 +2645,7 @@ class BackWPup_Job {
 
 			$backupfilelist=array();
 			$filecounter=0;
+			$files=array();
 			$blobs = $storageClient->listBlobs(backwpup_get_option($this->jobdata['JOBMAIN'],'msazureContainer'),untrailingslashit(backwpup_get_option($this->jobdata['JOBMAIN'],'msazuredir')));
 			if (is_array($blobs)) {
 				foreach ($blobs as $blob) {
@@ -2731,6 +2746,7 @@ class BackWPup_Job {
 		try {
 			$backupfilelist=array();
 			$filecounter=0;
+			$files=array();
 			$contents = $backwpupcontainer->get_objects(0,NULL,NULL,backwpup_get_option($this->jobdata['JOBMAIN'],'rscdir'));
 			if (is_array($contents)) {
 				foreach ($contents as $object) {
