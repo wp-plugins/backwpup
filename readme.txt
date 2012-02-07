@@ -5,7 +5,7 @@ Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox,
 Requires at least: 3.2
 Tested up to: 3.3
 Stable tag: 2.1.7
- 
+
 WordPress Backup and more...
 
 == Description ==
@@ -81,7 +81,7 @@ Do backups and more for your WordPress Blog.
 * Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
 * Changed: License changed to GPLv3
 * Changed: Many code recode and added to classes
-* Updated: AWS lib to 1.5.1
+* Updated: AWS lib to 1.5.2
 * Updated: RSC lib to 1.7.10
 * Updated: MS azure lib to 4.1.0
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
@@ -327,7 +327,7 @@ Do backups and more for your WordPress Blog.
 * added php version to log header
 * added mysql version to log header
 
-= 1.2.0 = 
+= 1.2.0 =
 * Backup file size now in log file
 * Paged Logs Table
 * added Backup Archives Page

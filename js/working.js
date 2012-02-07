@@ -39,6 +39,7 @@ jQuery(document).ready( function($) {
 				}
 				$("#stopworking").each(function(index) {
 					$("#message").remove();
+					$("#wp-admin-bar-backwpup .blink").removeClass("blink");
 					System.exit(0);
 				});
 				setTimeout("backwpup_show_working()",1000);

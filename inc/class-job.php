@@ -1718,7 +1718,7 @@ class BackWPup_Job {
 			}
 			//add normal files
 			for ( $i = $this->jobdata['STEPDONE'] - 1; $i < $this->jobdata['STEPTODO'] - 1; $i ++ ) {
-				$foldername = trim( str_replace( $this->jobdata['REMOVEPATH'], '', $this->jobdata['FOLDERLIST'][$i] ) );
+				$foldername = ltrim( str_replace( $this->jobdata['REMOVEPATH'], '', $this->jobdata['FOLDERLIST'][$i] ),'/' );
 				if ( ! empty($foldername) ) {
 					if ( ! $zip->addEmptyDir( $foldername ) )
 						trigger_error( sprintf( __( 'Can not add dir "%s" to zip archive!', 'backwpup' ), $foldername ), E_USER_ERROR );
@@ -1726,7 +1726,7 @@ class BackWPup_Job {
 				$files = $this->_get_files_in_folder( $this->jobdata['FOLDERLIST'][$i] );
 				if ( count( $files ) > 0 ) {
 					foreach ( $files as $file ) {
-						$zipfilename = str_replace( $this->jobdata['REMOVEPATH'], '', $file );
+						$zipfilename = ltrim(str_replace( $this->jobdata['REMOVEPATH'], '', $file ),'/');
 						if ( ! $zip->addFile( $file, $zipfilename ) )
 							trigger_error( sprintf( __( 'Can not add "%s" to zip archive!', 'backwpup' ), $zipfilename ), E_USER_ERROR );
 						$this->_update_working_data();
@@ -1817,7 +1817,10 @@ class BackWPup_Job {
 			//add normal files
 			for ( $i = $this->jobdata['STEPDONE'] - 1; $i < $this->jobdata['STEPTODO'] - 1; $i ++ ) {
 				$files = $this->_get_files_in_folder( $this->jobdata['FOLDERLIST'][$i] );
-				if ( 0 == $zipbackupfile->add( $files, PCLZIP_OPT_REMOVE_PATH, $this->jobdata['REMOVEPATH'] ) )
+				$removepath='/';
+				if (is_array($files) && strstr($files[0],$this->jobdata['REMOVEPATH']))
+					$removepath=$this->jobdata['REMOVEPATH'];
+				if ( 0 == $zipbackupfile->add( $files, PCLZIP_OPT_REMOVE_PATH, $removepath ) )
 					trigger_error( sprintf( __( 'Zip archive add error: %s', 'backwpup' ), $zipbackupfile->errorInfo( true ) ), E_USER_ERROR );
 				$this->_update_working_data();
 				$this->jobdata['STEPDONE'] ++;
@@ -1852,14 +1855,11 @@ class BackWPup_Job {
 				$this->jobdata['STEPDONE'] = 1;
 			//add normal files
 			for ( $i = $this->jobdata['STEPDONE'] - 1; $i < $this->jobdata['STEPTODO'] - 1; $i ++ ) {
-				$foldername = trim( str_replace( $this->jobdata['REMOVEPATH'], '', $this->jobdata['FOLDERLIST'][$i] ) );
-				if ( ! empty($foldername) )
-					$this->_tar_foldername( $this->jobdata['FOLDERLIST'][$i], $foldername, $tarbackup );
 				$files = $this->_get_files_in_folder( $this->jobdata['FOLDERLIST'][$i] );
 				if ( count( $files ) > 0 ) {
 					foreach ( $files as $file )
 					{
-						$this->_tar_file( $file, str_replace( $this->jobdata['REMOVEPATH'], '', $file ), $tarbackup );
+						$this->_tar_file( $file, trim(str_replace( $this->jobdata['REMOVEPATH'], '', $file ),'/'), $tarbackup );
 					}
 				}
 				$this->jobdata['STEPDONE'] ++;
@@ -1968,75 +1968,6 @@ class BackWPup_Job {
 			}
 		}
 		fclose( $fd );
-	}
-
-	/**
-	 *
-	 * Helper for create_archive() to tar folder names
-	 *
-	 * @param string   $folder	 Orignal folder
-	 * @param string   $foldername Name in archive
-	 * @param resource $handle	 of archive
-	 */
-	protected function _tar_foldername( $folder, $foldername, $handle ) {
-		//split filename larger than 100 chars
-		if ( strlen( $foldername ) <= 100 ) {
-			$foldernameprefix = "";
-		} else {
-			$foldernameofset  = strlen( $foldername ) - 100;
-			$dividor          = strpos( $foldername, '/', $foldernameofset );
-			$foldername       = substr( $foldername, $dividor + 1 );
-			$foldernameprefix = substr( $foldername, 0, $dividor );
-			if ( strlen( $foldername ) > 100 )
-				trigger_error( sprintf( __( 'Folder name "%1$s" to long to save correctly in %2$s archive!', 'backwpup' ), $foldername, substr( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileformart' ), 1 ) ), E_USER_WARNING );
-			if ( strlen( $foldernameprefix ) > 155 )
-				trigger_error( sprintf( __( 'Folder path "%1$s" to long to save correctly in %2$s archive!', 'backwpup' ), $foldername, substr( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileformart' ), 1 ) ), E_USER_WARNING );
-		}
-		//get file stat
-		$folderstat = stat( $folder );
-		//Set file user/group name if linux
-		$folderowner = __( "Unknown", "backwpup" );
-		$foldergroup = __( "Unknown", "backwpup" );
-		if ( function_exists( 'posix_getpwuid' ) ) {
-			$info        = posix_getpwuid( $folderstat['uid'] );
-			$folderowner = $info['name'];
-			$info        = posix_getgrgid( $folderstat['gid'] );
-			$foldergroup = $info['name'];
-		}
-		// Generate the TAR header for this file
-		$header = pack( "a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
-			$foldername, //name of file  100
-			sprintf( "%07o", $folderstat['mode'] ), //file mode  8
-			sprintf( "%07o", $folderstat['uid'] ), //owner user ID  8
-			sprintf( "%07o", $folderstat['gid'] ), //owner group ID  8
-			sprintf( "%011o", 0 ), //length of file in bytes  12
-			sprintf( "%011o", $folderstat['mtime'] ), //modify time of file  12
-			"        ", //checksum for header  8
-			5, //type of file  0 or null = File, 5=Dir
-			"", //name of linked file  100
-			"ustar ", //USTAR indicator  6
-			"00", //USTAR version  2
-			$folderowner, //owner user name 32
-			$foldergroup, //owner group name 32
-			"", //device major number 8
-			"", //device minor number 8
-			$foldernameprefix, //prefix for file name 155
-			"" ); //fill block 512K
-
-		// Computes the unsigned Checksum of a folder's header
-		$checksum = 0;
-		for ( $i = 0; $i < 512; $i ++ )
-		{
-			$checksum += ord( substr( $header, $i, 1 ) );
-		}
-		$checksum = pack( "a8", sprintf( "%07o", $checksum ) );
-		$header   = substr_replace( $header, $checksum, 148, 8 );
-		if ( strtolower( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileformart' ) ) == '.tar.gz' )
-			gzwrite( $handle, $header );
-		elseif ( strtolower( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileformart' ) ) == '.tar.bz2' )
-			bzwrite( $handle, $header );
-		else
-			fwrite( $handle, $header );
 	}
 
 	/**
@@ -2183,7 +2114,7 @@ class BackWPup_Job {
 		try {
 			$dropbox = new BackWPup_Dest_Dropbox(backwpup_get_option( $this->jobdata['JOBMAIN'], 'droperoot' ));
 			// set the tokens
-			$dropbox->setOAuthTokens( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropetoken' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropesecret' ) );
+			$dropbox->setOAuthTokens( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropetoken' ), backwpup_decrypt(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropesecret' )) );
 			//get account info
 			$info = $dropbox->accountInfo();
 			if ( ! empty($info['uid']) ) {

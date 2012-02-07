@@ -88,7 +88,7 @@ class BackWPup_Page_Backups {
 						if ( backwpup_get_option( $main, 'dropetoken' ) && backwpup_get_option( $main, 'dropesecret' ) ) {
 							try {
 								$dropbox = new BackWPup_Dest_Dropbox(backwpup_get_option( $main, 'droperoot' ));
-								$dropbox->setOAuthTokens( backwpup_get_option( $main, 'dropetoken' ), backwpup_get_option( $main, 'dropesecret' ) );
+								$dropbox->setOAuthTokens( backwpup_get_option( $main, 'dropetoken' ), backwpup_decrypt(backwpup_get_option( $main, 'dropesecret' )) );
 								$dropbox->fileopsDelete( $backupfile );
 								//update file list
 								foreach ( $files as $key => $file ) {
@@ -228,7 +228,7 @@ class BackWPup_Page_Backups {
 				$main = 'job_' . (int) $_GET['jobid'];
 				try {
 					$dropbox = new BackWPup_Dest_Dropbox(backwpup_get_option( $main, 'droperoot' ));
-					$dropbox->setOAuthTokens( backwpup_get_option( $main, 'dropetoken' ), backwpup_get_option( $main, 'dropesecret' ) );
+					$dropbox->setOAuthTokens( backwpup_get_option( $main, 'dropetoken' ), backwpup_decrypt(backwpup_get_option( $main, 'dropesecret' )) );
 					$media = $dropbox->media( $_GET['file'] );
 					if ( ! empty($media['url']) )
 						header( "Location: " . $media['url'] );

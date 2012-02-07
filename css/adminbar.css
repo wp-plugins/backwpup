@@ -9,7 +9,7 @@
     margin-top: 6px;
 }
 
-#wp-admin-bar-backwpup_working>.ab-item, #wp-admin-bar-backwpup .blink {
+#wp-admin-bar-backwpup .blink {
 	-webkit-animation: blink .75s linear infinite;
 	-moz-animation: blink .75s linear infinite;
 	-ms-animation: blink .75s linear infinite;

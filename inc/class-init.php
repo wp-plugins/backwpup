@@ -45,7 +45,7 @@ class BackWPup_Init {
 				$cfg['tempfolder'] = $cfg['dirtemp'];
 			if ( ! empty($cfg['dirlogs']) )
 				$cfg['logfolder'] = $cfg['dirlogs'];
-			if ( ! empty($cfg['sugarpass']) )
+			if ( ! empty($cfg['httpauthpassword']) )
 				$cfg['httpauthpassword'] = backwpup_encrypt( base64_decode( $cfg['httpauthpassword'] ) );
 			if ( ! empty($cfg['apicronservice']) ) {
 				$wpdb->query( "UPDATE " . $wpdb->prefix . "backwpup SET value='backwpupapi' WHERE name='activetype' AND main LIKE 'job_%' AND value='wpcron'" );
@@ -72,6 +72,8 @@ class BackWPup_Init {
 					$jobvalue['ftppass'] = backwpup_encrypt( base64_decode( $jobvalue['ftppass'] ) );
 				if ( ! empty($jobvalue['sugarpass']) )
 					$jobvalue['sugarpass'] = backwpup_encrypt( base64_decode( $jobvalue['sugarpass'] ) );
+				if ( ! empty($jobvalue['dropesecret']) )
+					$jobvalue['dropesecret'] = backwpup_encrypt( $jobvalue['dropesecret'] );
 				if ( empty($jobvalue['activated']) )
 					$jobvalue['activetype'] = '';
 				else

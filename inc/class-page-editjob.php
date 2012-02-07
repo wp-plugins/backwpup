@@ -25,7 +25,7 @@ class BackWPup_Page_Editjob {
 					$oAuthStuff = $dropbox->oAuthAccessToken( $reqtoken['oAuthRequestToken'], $reqtoken['oAuthRequestTokenSecret'] );
 					//Save Tokens
 					backwpup_update_option( 'job_' . $jobid, 'dropetoken', $oAuthStuff['oauth_token'] );
-					backwpup_update_option( 'job_' . $jobid, 'dropesecret', $oAuthStuff['oauth_token_secret'] );
+					backwpup_update_option( 'job_' . $jobid, 'dropesecret', backwpup_encrypt($oAuthStuff['oauth_token_secret']) );
 					$backwpup_message .= __( 'Dropbox authentication complete!', 'backwpup' ) . '<br />';
 				} else {
 					$backwpup_message .= __( 'Wrong Token for DropBox authentication received!', 'backwpup' ) . '<br />';
