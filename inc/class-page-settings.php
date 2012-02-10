@@ -49,19 +49,19 @@ class BackWPup_Page_Settings {
 			if ( empty($_POST['jobrunmaxexectime']) or ! is_int( $_POST['jobrunmaxexectime'] ) )
 				$_POST['jobrunmaxexectime'] = 0;
 			backwpup_update_option( 'cfg', 'jobrunmaxexectime', $_POST['jobrunmaxexectime'] );
-			$_POST['logfolder'] = trailingslashit( str_replace( '\\', '/', $_POST['logfolder'] ) );
+			$_POST['logfolder'] = trailingslashit( str_replace( '\\', '/', trim(stripslashes($_POST['logfolder'])) ) );
+			if ( $_POST['logfolder'][0]=='.' || ($_POST['logfolder'][0]!='/' && !preg_match('#^[a-zA-Z]:/#', $_POST['logfolder'])))
+				$_POST['logfolder'] = trailingslashit( str_replace( '\\', '/', ABSPATH )) . $_POST['logfolder'];
 			//set def. folders
 			if ( ! isset($_POST['logfolder']) or $_POST['logfolder'] == '/' or empty($_POST['logfolder']) ) {
 				$rand               = substr( md5( md5( SECURE_AUTH_KEY ) ), - 5 );
 				$_POST['logfolder'] = str_replace( '\\', '/', trailingslashit( WP_CONTENT_DIR ) ) . 'backwpup-' . $rand . '-logs/';
 			}
-			if ( path_is_absolute( $_POST['logfolder'] ) )
-				$_POST['logfolder'] = rtrim( str_replace( '\\', '/', ABSPATH ), '/' ) . '/' . $_POST['logfolder'];
 			backwpup_update_option( 'cfg', 'logfolder', $_POST['logfolder'] );
-			$_POST['tempfolder'] = trailingslashit( str_replace( '\\', '/', $_POST['tempfolder'] ) );
-			if ( path_is_absolute( $_POST['tempfolder'] ) )
-				$_POST['tempfolder'] = rtrim( str_replace( '\\', '/', ABSPATH ), '/' ) . '/' . $_POST['tempfolder'];
-			if ( empty($_POST['tempfolder']) || BackWPup_File::check_open_basedir( $_POST['tempfolder'] ) ) {
+			$_POST['tempfolder'] = trailingslashit( str_replace( '\\', '/', trim(stripslashes($_POST['tempfolder'])) ) );
+			if ( $_POST['tempfolder'][0]=='.' || ($_POST['tempfolder'][0]!='/' && !preg_match('#^[a-zA-Z]:/#', $_POST['tempfolder'])))
+				$_POST['tempfolder'] = trailingslashit( str_replace( '\\', '/', ABSPATH )) . $_POST['tempfolder'];
+			if ( $_POST['tempfolder']=='/' || !BackWPup_File::check_open_basedir( $_POST['tempfolder'] ) ) {
 				if ( defined( 'WP_TEMP_DIR' ) )
 					$tempfolder = trim( WP_TEMP_DIR );
 				if ( empty($tempfolder) || ! BackWPup_File::check_open_basedir( $tempfolder ) || ! @is_writable( $tempfolder ) || ! @is_dir( $tempfolder ) )

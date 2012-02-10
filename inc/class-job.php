@@ -12,6 +12,7 @@ class BackWPup_Job {
 	private $line_separator = "\n";
 	private $jobstarttype = '';
 	private $jobdata = false;
+	private $scriptstarttime = 0;
 
 	/**
 	 *
@@ -21,6 +22,7 @@ class BackWPup_Job {
 	 * @param int   $jobid	 The id of job to start
 	 */
 	public function __construct( $starttype, $jobid = 0 ) {
+		$this->scriptstarttime = microtime(true);
 		$this->jobstarttype = $starttype;
 		if ( false !== strpos( PHP_OS, "WIN" ) or false !== strpos( PHP_OS, "OS/2" ) )
 			$this->line_separator = "\r\n";
@@ -115,7 +117,7 @@ class BackWPup_Job {
 		if ( $lasterror['type'] == E_ERROR or $lasterror['type'] == E_PARSE or $lasterror['type'] == E_CORE_ERROR or $lasterror['type'] == E_CORE_WARNING or $lasterror['type'] == E_COMPILE_ERROR or $lasterror['type'] == E_COMPILE_WARNING )
 			$this->_error_handler( $lasterror['type'], $lasterror['message'], $lasterror['file'], $lasterror['line'], false );
 		//Put sigterm to log
-		if ( ! empty($args[0]) )
+		if ( ! empty($args[0]))
 			$this->_error_handler( E_USER_ERROR, sprintf( __( 'Signal %d send to script!', 'backwpup' ), $args[0] ), __FILE__, __LINE__, false );
 		//no more restarts
 		$this->jobdata['RESTART'] ++;
@@ -137,7 +139,7 @@ class BackWPup_Job {
 		//Restart job
 		$this->_update_working_data( true );
 		$this->_error_handler( E_USER_NOTICE, sprintf( __( '%d. Script stop! Will started again now!', 'backwpup' ), $this->jobdata['RESTART'] ), __FILE__, __LINE__, false );
-		backwpup_jobrun_url( 'restart', '', true );
+		backwpup_jobrun_url( 'restart', 0, true );
 		exit;
 	}
 
@@ -512,8 +514,9 @@ class BackWPup_Job {
 			backwpup_update_option( 'working', 'data', $this->jobdata );
 		if ( backwpup_get_option( 'cfg', 'storeworkingdatain' ) == 'file' )
 			file_put_contents( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ), maybe_serialize( $this->jobdata ) );
-		if ( defined( 'STDIN' ) ) //make dots on cli mode
+		if ( defined( 'STDIN' ) ) {//make dots on cli mode
 			echo ".";
+		}
 		return true;
 	}
 

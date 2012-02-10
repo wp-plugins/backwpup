@@ -200,10 +200,9 @@ class BackWPup_Page_Editjob {
 			backwpup_update_option( $main, 'backuptype', $_POST['backuptype'] );
 			backwpup_update_option( $main, 'fileformart', $_POST['fileformart'] );
 			backwpup_update_option( $main, 'mailefilesize', isset($_POST['mailefilesize']) ? (float) $_POST['mailefilesize'] : 0 );
-			$_POST['backupdir'] = stripslashes( $_POST['backupdir'] );
-			if ( path_is_absolute( $_POST['backupdir'] ) )
-				$_POST['backupdir'] = rtrim( str_replace( '\\', '/', ABSPATH ), '/' ) . '/' . $_POST['backupdir'];
-			$_POST['backupdir'] = trailingslashit( str_replace( '//', '/', str_replace( '\\', '/', trim( $_POST['backupdir'] ) ) ) );
+			$_POST['backupdir'] = trailingslashit( str_replace( '//', '/', str_replace( '\\', '/', trim( stripslashes($_POST['backupdir']) ) ) ) );
+			if ( $_POST['backupdir'][0]=='.' || ($_POST['backupdir'][0]!='/' && !preg_match('#^[a-zA-Z]:/#', $_POST['backupdir'])))
+				$_POST['backupdir'] = trailingslashit( str_replace( '\\', '/', ABSPATH ) ). $_POST['backupdir'];
 			if ( $_POST['backupdir'] == '/' )
 				$_POST['backupdir'] = '';
 			backwpup_update_option( $main, 'backupdir', $_POST['backupdir'] );
