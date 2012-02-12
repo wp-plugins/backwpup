@@ -144,12 +144,28 @@ class BackWPup_Page_Backwpup {
 			'<p>' . __( 'Here can see some information about the jobs. How many can be switched with the view button. Also you can manage the jobs and abort working. With the links you have direct access to the last log or download.', 'backwpup' ) . '</p>'
 		) );
 
-		//add css for Admin Section
-		wp_enqueue_style( 'backwpup_backwpup', plugins_url( '', dirname( __FILE__ ) ) . '/css/backwpup.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
-		//add java for Admin Section
-		wp_enqueue_script( 'backwpup_backwpup', plugins_url( '', dirname( __FILE__ ) ) . '/js/backwpup.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), true );
-
 		$backwpup_listtable->prepare_items();
+	}
+
+	/**
+	 *
+	 * Output javascript
+	 *
+	 * @return nothing
+	 */
+	public static function javascript() {
+		wp_enqueue_script( 'backwpup_backwpup', plugins_url( '', dirname( __FILE__ ) ) . '/js/backwpup.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), true );
+		wp_localize_script('backwpup_backwpup','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
+	}
+
+	/**
+	 *
+	 * Output css
+	 *
+	 * @return nothing
+	 */
+	public static function css() {
+		wp_enqueue_style( 'backwpup_backwpup', plugins_url( '', dirname( __FILE__ ) ) . '/css/backwpup.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
 	}
 
 	/**

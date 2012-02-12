@@ -87,12 +87,26 @@ class BackWPup_Page_Settings {
 			'content'	=>
 			'<p>' . '</p>'
 		) );
+	}
 
-		//add css for Admin Section
+	/**
+	 *
+	 * Output javascript
+	 *
+	 * @return nothing
+	 */
+	public static function javascript() {
+		return;
+	}
+
+	/**
+	 *
+	 * Output css
+	 *
+	 * @return nothing
+	 */
+	public static function css() {
 		wp_enqueue_style( 'backwpup_settings', plugins_url( '', dirname( __FILE__ ) ) . '/css/settings.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
-		//add java for Admin Section
-		//wp_enqueue_script('backwpup_settings',plugins_url('',dirname(__FILE__)).'/js/settings.js','',((defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? time() : backwpup_get_version()),true);
-
 	}
 
 	public static function page() {

@@ -50,7 +50,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 	include_once(dirname( __FILE__ ) . '/inc/functions.php');
 
 	//not load translations for other text domains reduces memory and load time
-	if ( (defined( 'DOING_CRON' ) && DOING_CRON) || (defined( 'DOING_AJAX' ) && DOING_AJAX && isset($_POST['action']) && in_array( $_POST['action'], array( 'backwpup_show_info', 'backwpup_working', 'backwpup_cron_text', 'backwpup_aws_buckets', 'backwpup_gstorage_buckets', 'backwpup_rsc_container', 'backwpup_msazure_container', 'backwpup_sugarsync_root' ) )) )
+	if ( (defined( 'DOING_CRON' ) && DOING_CRON)  )
 		add_filter( 'override_load_textdomain', create_function( '$default, $domain, $mofile', 'if ($domain=="backwpup") return $default; else return true;' ), 1, 3 );
 
 	//Start Plugin
@@ -108,15 +108,15 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'init', array( $this, 'plugin_init' ) );
 				//load API
 				add_action( 'init', array( 'BackWPup_Api', 'get_object' ) );
-				//ajax actions
-				add_action( 'wp_ajax_backwpup_show_info', array( 'BackWPup_Ajax_Fileinfo', 'get_object' ) );
-				add_action( 'wp_ajax_backwpup_working', array( 'BackWPup_Ajax_Working', 'working' ) );
-				add_action( 'wp_ajax_backwpup_cron_text', array( 'BackWPup_Ajax_Editjob', 'cron_text' ) );
-				add_action( 'wp_ajax_backwpup_aws_buckets', array( 'BackWPup_Ajax_Editjob', 'aws_buckets' ) );
-				add_action( 'wp_ajax_backwpup_gstorage_buckets', array( 'BackWPup_Ajax_Editjob', 'gstorage_buckets' ) );
-				add_action( 'wp_ajax_backwpup_rsc_container', array( 'BackWPup_Ajax_Editjob', 'rsc_container' ) );
-				add_action( 'wp_ajax_backwpup_msazure_container', array( 'BackWPup_Ajax_Editjob', 'msazure_container' ) );
-				add_action( 'wp_ajax_backwpup_sugarsync_root', array( 'BackWPup_Ajax_Editjob', 'sugarsync_root' ) );
+				//ajax actions  now in ajax.php
+				//add_action( 'wp_ajax_backwpup_show_info', array( 'BackWPup_Ajax_Fileinfo', 'get_object' ) );
+				//add_action( 'wp_ajax_backwpup_working', array( 'BackWPup_Ajax_Working', 'working' ) );
+				//add_action( 'wp_ajax_backwpup_cron_text', array( 'BackWPup_Ajax_Editjob', 'cron_text' ) );
+				//add_action( 'wp_ajax_backwpup_aws_buckets', array( 'BackWPup_Ajax_Editjob', 'aws_buckets' ) );
+				//add_action( 'wp_ajax_backwpup_gstorage_buckets', array( 'BackWPup_Ajax_Editjob', 'gstorage_buckets' ) );
+				//add_action( 'wp_ajax_backwpup_rsc_container', array( 'BackWPup_Ajax_Editjob', 'rsc_container' ) );
+				//add_action( 'wp_ajax_backwpup_msazure_container', array( 'BackWPup_Ajax_Editjob', 'msazure_container' ) );
+				//add_action( 'wp_ajax_backwpup_sugarsync_root', array( 'BackWPup_Ajax_Editjob', 'sugarsync_root' ) );
 				//bypass Google Analytics by Yoast oauth
 				if ( isset($_GET['oauth_token']) && $_GET['page'] == 'backwpupeditjob' ) {
 					$_GET['oauth_token_backwpup'] = $_GET['oauth_token'];
@@ -187,24 +187,36 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			add_menu_page( __( 'BackWPup', 'backwpup' ), __( 'BackWPup', 'backwpup' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ), plugins_url( '', __FILE__ ) . '/css/BackWPup16.png' );
 			$page_hook = add_submenu_page( 'backwpup', __( 'Jobs', 'backwpup' ), __( 'Jobs', 'backwpup' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Backwpup', 'load' ) );
+			add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Backwpup', 'javascript' ));
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Backwpup', 'css' ));
 			$page_hook = add_submenu_page( 'backwpup', __( 'Add New', 'backwpup' ), __( 'Add New', 'backwpup' ), 'backwpup', 'backwpupeditjob', array( 'BackWPup_Page_Editjob', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Editjob', 'load' ) );
+			add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Editjob', 'javascript' ));
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Editjob', 'css' ));
 			if ( backwpup_get_workingdata( false ) ) {
 				$page_hook = add_submenu_page( 'backwpup', __( 'Working Job', 'backwpup' ), __( 'Working Job', 'backwpup' ), 'backwpup', 'backwpupworking', array( 'BackWPup_Page_Working', 'page' ) );
 				add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Working', 'load' ) );
+				add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Working', 'javascript' ));
+				add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Working', 'css' ));
 			}
 			elseif ( isset($_GET['page']) && $_GET['page'] == 'backwpupworking' ) {
 				$page_hook = add_submenu_page( 'backwpup', __( 'Watch Log', 'backwpup' ), __( 'Watch Log', 'backwpup' ), 'backwpup', 'backwpupworking', array( 'BackWPup_Page_Working', 'page' ) );
 				add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Working', 'load' ) );
+				add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Working', 'javascript' ));
+				add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Working', 'css' ));
 			}
 			$page_hook = add_submenu_page( 'backwpup', __( 'Logs', 'backwpup' ), __( 'Logs', 'backwpup' ), 'backwpup', 'backwpuplogs', array( 'BackWPup_Page_Logs', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Logs', 'load' ) );
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Logs', 'css' ));
 			$page_hook = add_submenu_page( 'backwpup', __( 'Backups', 'backwpup' ), __( 'Backups', 'backwpup' ), 'backwpup', 'backwpupbackups', array( 'BackWPup_Page_Backups', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Backups', 'load' ) );
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Backups', 'css' ));
 			$page_hook = add_submenu_page( 'backwpup', __( 'Tools', 'backwpup' ), __( 'Tools', 'backwpup' ), 'backwpup', 'backwpuptools', array( 'BackWPup_Page_Tools', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Tools', 'load' ) );
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Tools', 'css' ));
 			$page_hook = add_submenu_page( 'backwpup', __( 'Settings', 'backwpup' ), __( 'Settings', 'backwpup' ), 'backwpup', 'backwpupsettings', array( 'BackWPup_Page_Settings', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Settings', 'load' ) );
+			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Settings', 'css' ));
 		}
 
 		/**
@@ -253,5 +265,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'admin_bar_menu', array( 'BackWPup_Adminbar', 'adminbar' ), 100 );
 			}
 		}
+
 	}
 }

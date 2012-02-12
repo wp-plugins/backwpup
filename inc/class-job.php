@@ -273,6 +273,8 @@ class BackWPup_Job {
 		//create log file
 		$fd = fopen( $this->jobdata['LOGFILE'], 'w' );
 		fwrite( $fd, "<html>" . $this->line_separator . "<head>" . $this->line_separator );
+		fwrite( $fd, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />" . $this->line_separator );
+		fwrite( $fd, "<meta name=\"robots\" content=\"noindex, nofollow\" />" . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_version\" content=\"" . backwpup_get_version() . "\" />" . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_logtime\" content=\"" . current_time( 'timestamp' ) . "\" />" . $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_errors\" content=\"0\" />", 100 ) . $this->line_separator );

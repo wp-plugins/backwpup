@@ -51,11 +51,6 @@ if ( defined( 'STDIN' ) ) {
 		require_once('../../../wp-load.php');
 	} else {
 		$abspath = filter_input( INPUT_GET, 'ABSPATH', FILTER_SANITIZE_URL );
-		$abspath = rtrim( preg_replace( '/[^a-zA-Z0-9. :_\/-]/', '', trim( urldecode( $abspath ) ) ), '/' );
-		if ( substr( $abspath, 1, 1 ) == ':' )
-			$abspath = realpath( str_replace( array( '..' ), '', $abspath ) );
-		else
-			$abspath = realpath( '/' . ltrim( str_replace( array( ':', '..' ), '', $abspath ), '/' ) );
 		if ( ! empty($abspath) && is_dir( $abspath . '/' ) && file_exists( realpath( $abspath . '/wp-load.php' ) ) ) {
 			require_once(realpath( $abspath . '/wp-load.php' ));
 		} else {
@@ -72,9 +67,9 @@ if ( defined( 'STDIN' ) ) {
 	if ( (empty($jobid) || ! is_numeric( $jobid )) && in_array( $starttype, array( 'runnow', 'runnowalt', 'runext', 'apirun' ) ) )
 		wp_die( __( 'JOBID check', 'backwpup' ), __( 'JOBID check', 'backwpup' ), array( 'response' => 400 ) );
 
-	if ( in_array( $starttype, array( 'runnow', 'runnowalt' ) ) && (! backwpup_get_option( 'temp', $starttype . '_nonce_' . $jobid ) || $nonce != backwpup_get_option( 'temp', $starttype . '_nonce_' . $jobid )) )
+	if ( in_array( $starttype, array( 'runnow', 'runnowalt' ) ) && !wp_verify_nonce($nonce,$starttype . '_nonce_' . $jobid) )
 		wp_die( __( 'Nonce check', 'backwpup' ), __( 'Nonce check', 'backwpup' ), array( 'response' => 403 ) );
-	elseif ( $starttype == 'restart' && (! backwpup_get_option( 'temp', $starttype . '_nonce' ) || $nonce != backwpup_get_option( 'temp', $starttype . '_nonce' )) )
+	elseif ( $starttype == 'restart' && !wp_verify_nonce($nonce,$starttype . '_nonce') )
 		wp_die( __( 'Nonce check', 'backwpup' ), __( 'Nonce check', 'backwpup' ), array( 'response' => 403 ) );
 	elseif ( $starttype == 'apirun' && (! backwpup_get_option( 'cfg', 'apicronservicekey' ) || $nonce != backwpup_get_option( 'cfg', 'apicronservicekey' )) )
 		wp_die( __( 'Nonce check', 'backwpup' ), __( 'Nonce check', 'backwpup' ), array( 'response' => 403 ) );

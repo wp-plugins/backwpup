@@ -3,14 +3,14 @@ jQuery(document).ready( function($) {
 		var jobid = $(this).attr('id').replace('image-wait-',''),
 		    data = {
 				action: 'backwpup_show_info',
+				ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 				jobid: jobid,
 				mode: jQuery('input[name="mode"]').val(),
 				_ajax_nonce: jQuery('#backwpupajaxnonce').val()
 			};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
 			$('#image-wait-' + jobid).css('display','none');
 			$('#image-wait-' + jobid).after(response);
-		});		
-	});	
+		});
+	});
 });
-

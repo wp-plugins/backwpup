@@ -103,13 +103,29 @@ class BackWPup_Page_Tools {
 			'<p>' . '</p>'
 		) );
 
-		//add css for Admin Section
-		wp_enqueue_style( 'backwpup_tools', plugins_url( '', dirname( __FILE__ ) ) . '/css/tools.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
-		//add java for Admin Section
-		//wp_enqueue_script('backwpup_tools',plugins_url('',dirname(__FILE__)).'/js/tools.js','',((defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? time() : backwpup_get_version()),true);
-
-
 	}
+
+	/**
+	 *
+	 * Output javascript
+	 *
+	 * @return nothing
+	 */
+	public static function javascript() {
+		return;
+	}
+
+	/**
+	 *
+	 * Output css
+	 *
+	 * @return nothing
+	 */
+	public static function css() {
+		wp_enqueue_style( 'backwpup_tools', plugins_url( '', dirname( __FILE__ ) ) . '/css/tools.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
+	}
+
+
 
 	public static function page() {
 		global $wpdb;

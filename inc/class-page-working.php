@@ -31,12 +31,27 @@ class BackWPup_Page_Working {
 			'content'	=>
 			'<p>' . __( 'Here you see a working jobs or a logfile', 'backwpup' ) . '</p>'
 		) );
+	}
 
-		//add css for Admin Section
-		wp_enqueue_style( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/css/working.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
-		//add java for Admin Section
+	/**
+	 *
+	 * Output javascript
+	 *
+	 * @return nothing
+	 */
+	public static function javascript() {
 		wp_enqueue_script( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/js/working.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), true );
+		wp_localize_script('backwpup_working','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
+	}
 
+	/**
+	 *
+	 * Output css
+	 *
+	 * @return nothing
+	 */
+	public static function css() {
+		wp_enqueue_style( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/css/working.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
 	}
 
 	public static function page() {

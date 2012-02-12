@@ -340,12 +340,27 @@ class BackWPup_Page_Backups {
 											  'default' => 20,
 											  'option'  => 'backwpupbackups_per_page' ) );
 
-		//add css for Admin Section
-		wp_enqueue_style( 'backwpup_backups', plugins_url( '', dirname( __FILE__ ) ) . '/css/backups.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
-		//add java for Admin Section
-		//wp_enqueue_script('backwpup_backups',plugins_url('',dirname(__FILE__)).'/js/backups.js','',((defined('SCRIPT_DEBUG') && SCRIPT_DEBUG) ? time() : backwpup_get_version()),true);
-
 		$backwpup_listtable->prepare_items();
+	}
+
+	/**
+	 *
+	 * Output javascript
+	 *
+	 * @return nothing
+	 */
+	public static function javascript() {
+		return;
+	}
+
+	/**
+	 *
+	 * Output css
+	 *
+	 * @return nothing
+	 */
+	public static function css() {
+		wp_enqueue_style( 'backwpup_backups', plugins_url( '', dirname( __FILE__ ) ) . '/css/backups.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
 	}
 
 	public static function page() {

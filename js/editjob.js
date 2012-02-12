@@ -1,7 +1,7 @@
 jQuery(document).ready( function($) {
 
 	$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
-	
+
 	$('input[name="type[]"]').change(function() {
 		if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
             $('div[id^=backwpup_jobedit_dest]').show();
@@ -49,7 +49,7 @@ jQuery(document).ready( function($) {
             $('.sync').hide();
 		}
 	});
-	
+
 	if ($('input[name="backuptype"]:checked').val()=='sync') {
 		$('.nosync').hide();
         $('div[id^=nosync_backwpup_jobedit_dest]').hide();
@@ -110,9 +110,10 @@ jQuery(document).ready( function($) {
 		});
 		$('input[name="cronwday[]"]:checked').each(function() {
 			cronwday.push($(this).val());
-		});		
+		});
 		var data = {
 			action: 'backwpup_cron_text',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -120,9 +121,9 @@ jQuery(document).ready( function($) {
 			cronwday: cronwday,
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
 			$('#cron-text').replaceWith(response);
-		});		
+		});
 	}
 	$('input[name="cronminutes[]"]').change(function() {cronstampadvanced();});
 	$('input[name="cronhours[]"]').change(function() {cronstampadvanced();});
@@ -141,21 +142,21 @@ jQuery(document).ready( function($) {
 			cronhours.push($('select[name="moncronhours"]').val());
 			cronmday.push($('select[name="moncronmday"]').val());
 			cronmon.push('*');
-			cronwday.push('*');		
+			cronwday.push('*');
 		}
 		if ( 'week' == $('input[name="cronbtype"]:checked').val()) {
 			cronminutes.push($('select[name="weekcronminutes"]').val());
 			cronhours.push($('select[name="weekcronhours"]').val());
 			cronmday.push('*');
 			cronmon.push('*');
-			cronwday.push($('select[name="weekcronwday"]').val());	
+			cronwday.push($('select[name="weekcronwday"]').val());
 		}
 		if ( 'day' == $('input[name="cronbtype"]:checked').val()) {
 			cronminutes.push($('select[name="daycronminutes"]').val());
 			cronhours.push($('select[name="daycronhours"]').val());
 			cronmday.push('*');
 			cronmon.push('*');
-			cronwday.push('*');	
+			cronwday.push('*');
 		}
 		if ( 'hour' == $('input[name="cronbtype"]:checked').val()) {
 			cronminutes.push($('select[name="hourcronminutes"]').val());
@@ -163,9 +164,10 @@ jQuery(document).ready( function($) {
 			cronmday.push('*');
 			cronmon.push('*');
 			cronwday.push('*');
-		}	
+		}
 		var data = {
 			action: 'backwpup_cron_text',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -173,9 +175,9 @@ jQuery(document).ready( function($) {
 			cronwday: cronwday,
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
 			$('#cron-text').replaceWith(response);
-		});		
+		});
 	}
 	$('input[name="cronbtype"]').change(function() {cronstampbasic();});
 	$('select[name="moncronmday"]').change(function() {cronstampbasic();});
@@ -187,22 +189,23 @@ jQuery(document).ready( function($) {
 	$('select[name="daycronhours"]').change(function() {cronstampbasic();});
 	$('select[name="daycronminutes"]').change(function() {cronstampbasic();});
 	$('select[name="hourcronminutes"]').change(function() {cronstampbasic();});
-	
+
 
 	function awsgetbucket() {
         var data = {
 			action: 'backwpup_aws_buckets',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			awsAccessKey: $('#awsAccessKey').val(),
 			awsSecretKey: $('#awsSecretKey').val(),
 			awsselected: $('#awsBucketselected').val(),
             awsdisablessl: $('input[name="awsdisablessl"]:checked').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
 			$('#awsBucketerror').remove();
             $('#awsBucket').remove();
 			$('#awsBucketselected').after(response);
-		});		
+		});
 	}
 	$('#awsAccessKey').change(function() {awsgetbucket();});
 	$('#awsSecretKey').change(function() {awsgetbucket();});
@@ -211,52 +214,55 @@ jQuery(document).ready( function($) {
 	function gstoragegetbucket() {
 		var data = {
 			action: 'backwpup_gstorage_buckets',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			GStorageAccessKey: $('#GStorageAccessKey').val(),
 			GStorageSecret: $('#GStorageSecret').val(),
 			GStorageselected: $('#GStorageselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
             $('#GStorageBucketerror').remove();
             $('#GStorageBucket').remove();
 			$('#GStorageselected').after(response);
-		});		
+		});
 	}
 	$('#GStorageAccessKey').change(function() {gstoragegetbucket();});
-	$('#GStorageSecret').change(function() {gstoragegetbucket();});	
-	
+	$('#GStorageSecret').change(function() {gstoragegetbucket();});
+
 	function msazuregetcontainer() {
 		var data = {
 			action: 'backwpup_msazure_container',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			msazureHost: $('#msazureHost').val(),
 			msazureAccName: $('#msazureAccName').val(),
 			msazureKey: $('#msazureKey').val(),
 			msazureselected: $('#msazureContainerselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
             $('#msazureContainererror').remove();
             $('#msazureContainer').remove();
 			$('#msazureContainerselected').after(response);
-		});		
+		});
 	}
 	$('#msazureHost').change(function() {msazuregetcontainer();});
 	$('#msazureAccName').change(function() {msazuregetcontainer();});
 	$('#msazureKey').change(function() {msazuregetcontainer();});
-	
+
 	function rscgetcontainer() {
 		var data = {
 			action: 'backwpup_rsc_container',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			rscUsername: $('#rscUsername').val(),
 			rscAPIKey: $('#rscAPIKey').val(),
 			rscselected: $('#rscContainerselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
             $('#rscContainererror').remove();
             $('#rscContainer').remove();
 			$('#rscContainerselected').after(response);
-		});		
+		});
 	}
 	$('#rscUsername').change(function() {rscgetcontainer();});
 	$('#rscAPIKey').change(function() {rscgetcontainer();});
@@ -264,20 +270,21 @@ jQuery(document).ready( function($) {
 	function sugarsyncgetroot() {
 		var data = {
 			action: 'backwpup_sugarsync_root',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			sugaruser: $('#sugaruser').val(),
 			sugarpass: $('#sugarpass').val(),
 			sugarrootselected: $('#sugarrootselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(ajaxurl, data, function(response) {
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
             $('#sugarrooterror').remove();
             $('#sugarroot').remove();
 			$('#sugarrootselected').after(response);
-		});		
+		});
 	}
 	$('#sugaruser').change(function() {sugarsyncgetroot();});
 	$('#sugarpass').change(function() {sugarsyncgetroot();});
-	
+
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');
 	$('#title-prompt-text').click(function(){
@@ -294,4 +301,3 @@ jQuery(document).ready( function($) {
 	});
 
 });
-

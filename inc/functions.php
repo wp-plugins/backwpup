@@ -342,24 +342,12 @@ function backwpup_jobrun_url( $starttype, $jobid = 0, $run = false ) {
 			$url = str_replace( 'http://', 'http://' . $authurl, $url );
 		}
 	} elseif ( $starttype == 'cronrun' || $starttype == 'restart' ) {
-		$oldnonce = backwpup_get_option( 'temp', $starttype . '_nonce' );
-		if ( ! empty($oldnonce) )
-			$query_args['_nonce'] = $oldnonce;
-		else {
-			$query_args['_nonce'] = wp_generate_password( 12, false, false );
-			backwpup_update_option( 'temp', $starttype . '_nonce', $query_args['_nonce'] );
-		}
+		$query_args['_nonce'] = wp_create_nonce(  $starttype . '_nonce' );
 	} elseif ( backwpup_get_option( 'cfg', 'runnowalt' ) && $starttype == 'runnow' ) {
 		$url                = wp_nonce_url( backwpup_admin_url( 'admin.php' ), 'job-runnow' );
 		$query_args['page'] = 'backwpupworking';
 	} elseif ( $starttype == 'runnow' || $starttype == 'runnowalt' ) {
-		$oldnonce = backwpup_get_option( 'temp', $starttype . '_nonce_' . $jobid );
-		if ( ! empty($oldnonce) )
-			$query_args['_nonce'] = $oldnonce;
-		else {
-			$query_args['_nonce'] = wp_generate_password( 12, false, false );
-			backwpup_update_option( 'temp', $starttype . '_nonce_' . $jobid, $query_args['_nonce'] );
-		}
+		$query_args['_nonce'] = wp_create_nonce(  $starttype . '_nonce_' . $jobid );
 	}
 
 	$url = array( 'url'   => add_query_arg( $query_args, $url ),
@@ -469,7 +457,7 @@ function backwpup_read_logheader( $logfile ) {
  */
 function backwpup_admin_url( $url ) {
 	if ( is_multisite() && is_super_admin() )
-		return network_admin_url( $url );
+		return network_admin_url( $url);
 	return admin_url( $url );
 }
 

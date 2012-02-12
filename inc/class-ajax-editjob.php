@@ -23,8 +23,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			if ( empty($_POST['cronminutes']) || $_POST['cronminutes'][0] == '*' ) {
 				if ( ! empty($_POST['cronminutes'][1]) )
 					$_POST['cronminutes'] = array( '*/' . $_POST['cronminutes'][1] );
@@ -104,8 +102,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			$awsAccessKey  = $_POST['awsAccessKey'];
 			$awsSecretKey  = $_POST['awsSecretKey'];
 			$awsselected   = $_POST['awsselected'];
@@ -167,8 +163,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			$GStorageAccessKey = $_POST['GStorageAccessKey'];
 			$GStorageSecret    = $_POST['GStorageSecret'];
 			$GStorageselected  = $_POST['GStorageselected'];
@@ -228,8 +222,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			$rscUsername = $_POST['rscUsername'];
 			$rscAPIKey   = $_POST['rscAPIKey'];
 			$rscselected = $_POST['rscselected'];
@@ -285,8 +277,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			$msazureHost     = $_POST['msazureHost'];
 			$msazureAccName  = $_POST['msazureAccName'];
 			$msazureKey      = $_POST['msazureKey'];
@@ -342,8 +332,6 @@ class BackWPup_Ajax_Editjob {
 			$ajax = false;
 		} else {
 			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
-			if ( ! current_user_can( 'backwpup' ) )
-				die('-1');
 			$sugaruser         = $_POST['sugaruser'];
 			$sugarpass         = $_POST['sugarpass'];
 			$sugarrootselected = $_POST['sugarrootselected'];
