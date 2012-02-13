@@ -7,24 +7,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  *
- * Get (and set) Version number of BackWPup
- *
- * @return string Version
- */
-function backwpup_get_version() {
-	$version = backwpup_get_option( 'backwpup', 'version' );
-	if ( $version == false || $version == '0.0' ) {
-		$plugin_data = get_file_data( realpath( dirname( __FILE__ ) . '/../backwpup.php' ), array( 'Version' => 'Version' ), 'plugin' );
-		$version     = $plugin_data['Version'];
-		backwpup_update_option( 'backwpup', 'version', $version );
-	}
-	if ( empty($version) )
-		return '0.0';
-	return $version;
-}
-
-/**
- *
  * Get default option for BackWPup option
  *
  * @param string $main Main option name lowercase max 64 chars

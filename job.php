@@ -5,12 +5,6 @@ if ( empty($_GET['starttype']) && ! defined( 'STDIN' ) ) {
 	die();
 }
 ignore_user_abort( true );
-define('DONOTCACHEPAGE', true);
-define('DONOTCACHEDB', true);
-define('DONOTMINIFY', true);
-define('DONOTCDN', true);
-define('DONOTCACHCEOBJECT', true);
-define('W3TC_IN_MINIFY', false); //W3TC will not loaded
 define('DOING_CRON', true);
 //define E_DEPRECATED if PHP lower than 5.3
 if ( ! defined( 'E_DEPRECATED' ) )
@@ -75,9 +69,6 @@ if ( defined( 'STDIN' ) ) {
 		wp_die( __( 'Nonce check', 'backwpup' ), __( 'Nonce check', 'backwpup' ), array( 'response' => 403 ) );
 	elseif ( $starttype == 'runext' && (! backwpup_get_option( 'cfg', 'jobrunauthkey' ) || $nonce != backwpup_get_option( 'cfg', 'jobrunauthkey' )) )
 		wp_die( __( 'Nonce check', 'backwpup' ), __( 'Nonce check', 'backwpup' ), array( 'response' => 403 ) );
-	//delete nonce
-	backwpup_delete_option( 'temp', $starttype . '_nonce_' . $jobid );
-	backwpup_delete_option( 'temp', $starttype . '_nonce' );
 	//set max execution time
 	@set_time_limit( backwpup_get_option( 'cfg', 'jobrunmaxexectime' ) );
 }

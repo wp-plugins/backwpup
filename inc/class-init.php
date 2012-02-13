@@ -126,7 +126,7 @@ class BackWPup_Init {
 		$role->add_cap( 'backwpup' );
 		//update version
 		update_option( 'backwpup_file_md5', md5_file( dirname( __FILE__ ) . '/../backwpup.php' ) );
-		backwpup_update_option( 'backwpup', 'version', backwpup_get_version() );
+		backwpup_update_option( 'backwpup', 'version', BackWPup::get_plugin_data('Version') );
 	}
 
 	/**

@@ -49,10 +49,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 	//Load functions file
 	include_once(dirname( __FILE__ ) . '/inc/functions.php');
 
-	//not load translations for other text domains reduces memory and load time
-	if ( (defined( 'DOING_CRON' ) && DOING_CRON)  )
-		add_filter( 'override_load_textdomain', create_function( '$default, $domain, $mofile', 'if ($domain=="backwpup") return $default; else return true;' ), 1, 3 );
-
 	//Start Plugin
 	add_action( 'plugins_loaded', array( 'BackWPup', 'get_object' ) );
 
@@ -79,6 +75,8 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'admin_notices', create_function( '', 'echo "<div id=\"message\" class=\"error fade\"><strong>".__("BackWPup:", "backwpup")."</strong><br />".__("- PHP 5.2.4 or higher is needed!","backwpup")."</div>";' ) );
 				return;
 			}
+			//textdomain overide
+			add_filter( 'override_load_textdomain' , array($this,'overide_textdomain'), 1, 3 );
 			//Load text domain
 			load_plugin_textdomain( 'backwpup', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 			//register auto load
@@ -134,6 +132,38 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			return new self;
 		}
 
+		/**
+		 * @static
+		 *
+		 * @param bool $getdata
+		 *
+		 * @return array|string
+		 */
+		public static function get_plugin_data($getdata=false) {
+
+			$default_headers = array(
+				'Name' => 'Plugin Name',
+				'PluginURI' => 'Plugin URI',
+				'Version' => 'Version',
+				'Description' => 'Description',
+				'Author' => 'Author',
+				'AuthorURI' => 'Author URI',
+				'TextDomain' => 'Text Domain',
+				'DomainPath' => 'Domain Path',
+			);
+
+			$plugin_data = get_file_data( __FILE__, $default_headers, 'plugin' );
+			$plugin_data['BaseName']=plugin_basename(__FILE__);
+			$plugin_data['Folder']=dirname( plugin_basename( __FILE__ ) );
+			$plugin_data['URL']=plugins_url( '', __FILE__ );
+
+			if (empty($plugin_data['Version']))
+				$plugin_data['Version']='0.0';
+
+			if (!$getdata)
+				return $plugin_data;
+			return $plugin_data[$getdata];
+		}
 
 		/**
 		 *
@@ -144,13 +174,14 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		 * @return bool if class loaded or not
 		 */
 		public static function autoloader( $class_name ) {
-			//WordPress classes to load
-			if ( 'WP_List_Table' == $class_name ) {
-				include_once(ABSPATH . 'wp-admin/includes/class-wp-list-table.php');
+			//WordPress classes loader
+			$wpclass='/class-'.strtolower(str_replace('_','-',$class_name)).'.php';
+			if ( file_exists(ABSPATH .'wp-admin/includes'.$wpclass) ) {
+				include_once(ABSPATH .'wp-admin/includes'.$wpclass);
 				return true;
 			}
-			if ( 'PclZip' == $class_name ) {
-				include_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
+			if ( file_exists(ABSPATH . WPINC . $wpclass) ) {
+				include_once(ABSPATH . WPINC . $wpclass);
 				return true;
 			}
 			//External libs to load
@@ -261,9 +292,32 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		public function plugin_init() {
 			//add admin bar. Works only in init
 			if ( is_main_site() && is_admin_bar_showing() && ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && backwpup_get_option( 'cfg', 'showadminbar' ) ) {
-				wp_enqueue_style( "backwpupadmin", plugins_url( '', __FILE__ ) . "/css/adminbar.css", "", ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), "screen" );
+				wp_enqueue_style( "backwpupadmin", plugins_url( '', __FILE__ ) . "/css/adminbar.css", "", ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), "screen" );
 				add_action( 'admin_bar_menu', array( 'BackWPup_Adminbar', 'adminbar' ), 100 );
 			}
+		}
+
+		/**
+		 *
+		 * Textdomain overide
+		 *
+		 * @param $default
+		 * @param $domain
+		 * @param $mofile
+		 *
+		 * @return bool
+		 */
+		public function overide_textdomain($default, $domain, $mofile) {
+			if ( (defined( 'DOING_CRON' ) && DOING_CRON) ) {
+				global $l10n;
+				if ($domain=='backwpup') {
+					foreach (array_keys($l10n) as $domainkey)
+						unset($l10n[$domainkey]);
+				} else {
+					return true;
+				}
+			}
+			return $default;
 		}
 
 	}

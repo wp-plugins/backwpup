@@ -16,7 +16,7 @@ class BackWPup_Help {
 				'id'			=> 'plugininfo',
 				'title'		 => __( 'Plugin Info', 'backwpup' ),
 				'content'	   =>
-				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. ' . backwpup_get_version() . ', <a href="http://www.gnu.org/licenses/gpl-3.0" target="_blank">GPLv3</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>'
+				'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. ' . BackWPup::get_plugin_data('Version') . ', <a href="http://www.gnu.org/licenses/gpl-3.0" target="_blank">GPLv3</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>'
 			) );
 			get_current_screen()->set_help_sidebar(
 				'<p><strong>' . __( 'For more information:', 'backwpup' ) . '</strong></p>' .
@@ -28,7 +28,7 @@ class BackWPup_Help {
 			);
 		} elseif ( function_exists( 'add_contextual_help' ) ) { //for WP < 3.3 help
 			add_contextual_help( get_current_screen(),
-					'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. ' . backwpup_get_version() . ', <a href="http://www.gnu.org/licenses/gpl-3.0" target="_blank">GPLv3</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>' .
+					'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. ' . BackWPup::get_plugin_data('Version') . ', <a href="http://www.gnu.org/licenses/gpl-3.0" target="_blank">GPLv3</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>' .
 							'<p><strong>' . __( 'For more information:', 'backwpup' ) . '</strong></p><p>' .
 							' ' . __( '<a href="http://backwpup.com/manual/" target="_blank">Documentation</a>', 'backwpup' ) . ' |' .
 							' ' . __( '<a href="http://backwpup.com/faq/" target="_blank">FAQ</a>', 'backwpup' ) . ' |' .
@@ -48,8 +48,8 @@ class BackWPup_Help {
 	public static function add_tab( $tab = array() ) {
 		if ( method_exists( get_current_screen(), 'add_help_tab' ) )
 			get_current_screen()->add_help_tab( $tab );
-		elseif ( function_exists( 'add_contextual_help' ) ) //for WP < 3.3 help
-			add_contextual_help( get_current_screen(), '<p><strong>' . $tab['title'] . '</strong></p>' . content );
+		//elseif ( function_exists( 'add_contextual_help' ) ) //for WP < 3.3 help
+		//	add_contextual_help( get_current_screen(), '<p><strong>' . $tab['title'] . '</strong></p>' . $tab['content'] );
 	}
 
 }

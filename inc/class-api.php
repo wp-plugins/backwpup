@@ -18,7 +18,7 @@ class BackWPup_Api {
 	public function __construct() {
 		global $wp_version;
 		$blogurl                     = trim( get_bloginfo( 'url' ) );
-		$this->headers['User-Agent'] = 'BackWPup/' . backwpup_get_version() . '; WordPress/' . $wp_version . '; ' . $blogurl;
+		$this->headers['User-Agent'] = 'BackWPup/' . BackWPup::get_plugin_data('Version') . '; WordPress/' . $wp_version . '; ' . $blogurl;
 		$this->headers['Referer']    = $blogurl;
 		//Add filter for Plugin Updates
 		add_filter( 'pre_set_site_transient_update_plugins', array( $this, 'plugin_update_check' ) );
@@ -94,7 +94,7 @@ class BackWPup_Api {
 		$post['ACTION'] = 'updatecheck';
 		$post['TYPE']   = backwpup_get_option( 'cfg', 'updateversiontype' );
 		$saved          = backwpup_get_option( 'api', 'updatecheck' );
-		if ( ! empty($saved) && $saved['version'] == backwpup_get_version() && (time() - $saved['time']) <= 43200 ) {
+		if ( ! empty($saved) && $saved['version'] == BackWPup::get_plugin_data('Version') && (time() - $saved['time']) <= 43200 ) {
 			$checked_data->response[$pluginbasename] = $saved['response'];
 			return $checked_data;
 		}
@@ -110,7 +110,7 @@ class BackWPup_Api {
 			if ( is_object( $response ) && ! empty($response->slug) ) {
 				$checked_data->response[$pluginbasename] = $response;
 				backwpup_update_option( 'api', 'updatecheck', array( 'time'	=> time(),
-																	 'version' => backwpup_get_version(),
+																	 'version' => BackWPup::get_plugin_data('Version'),
 																	 'response'=> $response ) );
 			}
 		}
@@ -134,7 +134,7 @@ class BackWPup_Api {
 		$post['ACTION'] = 'updateinfo';
 		$post['TYPE']   = backwpup_get_option( 'cfg', 'updateversiontype' );
 		$saved          = backwpup_get_option( 'api', 'updateinfo' );
-		if ( ! empty($saved) && $saved['version'] == backwpup_get_version() && (time() - $saved['time']) <= 43200 )
+		if ( ! empty($saved) && $saved['version'] == BackWPup::get_plugin_data('Version') && (time() - $saved['time']) <= 43200 )
 			return $saved['return'];
 		$request = wp_remote_post( $this->apiurl, array( 'sslverify' => false,
 														 'body'	  => $post,
@@ -147,7 +147,7 @@ class BackWPup_Api {
 				$res = new WP_Error('plugins_api_failed', __( 'An unknown error occurred' ), $request['body']);
 			else
 				backwpup_update_option( 'api', 'updateinfo', array( 'time'   => time(),
-																	'version'=> backwpup_get_version(),
+																	'version'=> BackWPup::get_plugin_data('Version'),
 																	'return' => $res ) );
 		}
 		return $res;

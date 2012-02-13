@@ -418,7 +418,7 @@ class BackWPup_Page_Editjob {
 		wp_enqueue_script( 'common' );
 		wp_enqueue_script( 'wp-lists' );
 		wp_enqueue_script( 'postbox' );
-		wp_enqueue_script( 'backwpup_editjob', plugins_url( '', dirname( __FILE__ ) ) . '/js/editjob.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), true );
+		wp_enqueue_script( 'backwpup_editjob', plugins_url( '', dirname( __FILE__ ) ) . '/js/editjob.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), true );
 		wp_localize_script('backwpup_editjob','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
 	}
 
@@ -429,7 +429,7 @@ class BackWPup_Page_Editjob {
 	 * @return nothing
 	 */
 	public static function css() {
-		wp_enqueue_style( 'backwpup_editjob', plugins_url( '', dirname( __FILE__ ) ) . '/css/editjob.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
+		wp_enqueue_style( 'backwpup_editjob', plugins_url( '', dirname( __FILE__ ) ) . '/css/editjob.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), 'screen' );
 	}
 
 

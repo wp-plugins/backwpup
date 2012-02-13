@@ -40,7 +40,7 @@ class BackWPup_Page_Working {
 	 * @return nothing
 	 */
 	public static function javascript() {
-		wp_enqueue_script( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/js/working.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), true );
+		wp_enqueue_script( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/js/working.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), true );
 		wp_localize_script('backwpup_working','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
 	}
 
@@ -51,7 +51,7 @@ class BackWPup_Page_Working {
 	 * @return nothing
 	 */
 	public static function css() {
-		wp_enqueue_style( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/css/working.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : backwpup_get_version()), 'screen' );
+		wp_enqueue_style( 'backwpup_working', plugins_url( '', dirname( __FILE__ ) ) . '/css/working.css', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), 'screen' );
 	}
 
 	public static function page() {

@@ -21,6 +21,8 @@ require( ABSPATH . WPINC . '/formatting.php' );
 require( ABSPATH . WPINC . '/capabilities.php' );
 require( ABSPATH . WPINC . '/user.php' );
 require( ABSPATH . WPINC . '/meta.php' );
+require( ABSPATH . WPINC . '/general-template.php' );
+require( ABSPATH . WPINC . '/link-template.php' );
 //require( ABSPATH . WPINC . '/post.php' );  //must if current_user_can()
 // Define constants that rely on the API to obtain the default value.
 // Define must-use plugin directory constants, which may be overridden in the sunrise.php drop-in.
@@ -56,7 +58,8 @@ include_once(dirname(__FILE__).'/backwpup.php');
 load_plugin_textdomain( 'backwpup', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 //register auto load
 spl_autoload_register( array( 'BackWPup', 'autoloader' ) );
-
+//load Plugin api
+BackWPup_Api::get_object();
 
 @header( 'Content-Type: text/html; charset=' . get_option( 'blog_charset' ) );
 send_nosniff_header();
