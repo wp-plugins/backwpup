@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.2
 Tested up to: 3.3
-Stable tag: 2.1.7
+Stable tag: 2.1.8
 
 WordPress Backup and more...
 
@@ -87,6 +87,14 @@ Do backups and more for your WordPress Blog.
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
 * Removed: dump restore is now a extra file
 * Fixed: many bugs
+
+= 2.1.8 =
+* Updated AWS lib to 1.5.2
+* Security improvements
+* Updated MS Azure to 4.1.0
+* Updated RSC lib to 1.7.10
+* Updatet oAuth lib for Dropbox
+* increased memory on db dump
 
 = 2.1.7 =
 * New Logo
