@@ -108,13 +108,33 @@ class BackWPup_Page_Editjob {
 
 			backwpup_update_option( $main, 'mailaddresslog', sanitize_email( $_POST['mailaddresslog'] ) );
 			backwpup_update_option( $main, 'mailerroronly', (isset($_POST['mailerroronly']) && $_POST['mailerroronly'] == 1) ? true : false );
+			backwpup_update_option( $main, 'wpdbsettings',(isset($_POST['wpdbsettings']) && $_POST['wpdbsettings'] == 1) ? true : false );
+			if (!backwpup_get_option( $main, 'wpdbsettings')) {
+				backwpup_update_option( $main, 'dbhost', $_POST['dbhost'] );
+				backwpup_update_option( $main, 'dbuser', $_POST['dbuser'] );
+				backwpup_update_option( $main, 'dbpassword', backwpup_encrypt($_POST['dbpassword']) );
+				backwpup_update_option( $main, 'dbname', trim($_POST['dbname']) );
+				$charset=explode('_',trim($_POST['dbcollation']));
+				backwpup_update_option( $main, 'dbcharset', $charset[0] );
+				backwpup_update_option( $main, 'dbcollation', trim($_POST['dbcollation']) );
+			} else {
+				backwpup_delete_option( $main, 'dbhost' );
+				backwpup_delete_option( $main, 'dbuser' );
+				backwpup_delete_option( $main, 'dbpassword' );
+				backwpup_delete_option( $main, 'dbname' );
+				backwpup_delete_option( $main, 'dbcharset' );
+				backwpup_delete_option( $main, 'dbcollation' );
+			}
+			//connect to db
+			$backwpupsql=new wpdb(backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option($main, 'dbpassword' )),backwpup_get_option( $main, 'dbname' ),backwpup_get_option( $main, 'dbhost' ));
+			$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( $main, 'dbcharset' ),backwpup_get_option( $main, 'dbcollation' ));
 			$check_db_tables = array();
 			if ( isset($_POST['jobtabs']) ) {
 				foreach ( $_POST['jobtabs'] as $dbtable ) {
 					$check_db_tables[] = rawurldecode( $dbtable );
 				}
 			}
-			$tables    = $wpdb->get_col( 'SHOW TABLES FROM `' . DB_NAME . '`' );
+			$tables    = $backwpupsql->get_col( 'SHOW TABLES FROM `' . backwpup_get_option( $main, 'dbname' ) . '`' );
 			$dbexclude = array();
 			foreach ( $tables as $dbtable ) {
 				if ( ! in_array( $dbtable, $check_db_tables ) )
@@ -122,6 +142,7 @@ class BackWPup_Page_Editjob {
 			}
 			backwpup_update_option( $main, 'dbexclude', $dbexclude );
 			backwpup_update_option( $main, 'dbdumpfile', $_POST['dbdumpfile'] );
+			unset($backwpupsql);
 			if ( $_POST['dbdumpfilecompression'] == '' || $_POST['dbdumpfilecompression'] == 'gz' || $_POST['dbdumpfilecompression'] == 'bz2' )
 				backwpup_update_option( $main, 'dbdumpfilecompression', $_POST['dbdumpfilecompression'] );
 			backwpup_update_option( $main, 'maintenance', (isset($_POST['maintenance']) && $_POST['maintenance'] == 1) ? true : false );
@@ -461,7 +482,7 @@ class BackWPup_Page_Editjob {
 		<?php endif; ?>
 
 	<form name="editjob" id="editjob" method="post" action="<?php echo backwpup_admin_url( 'admin.php' ) . '?page=backwpupeditjob';?>">
-	<input type="hidden" name="jobid" value="<?php echo (int) $_REQUEST['jobid'];?>" />
+	<input type="hidden" id="jobid" name="jobid" value="<?php echo (int) $_REQUEST['jobid'];?>" />
 		<?php wp_nonce_field( 'edit-job' ); ?>
 		<?php wp_nonce_field( 'closedpostboxes', 'closedpostboxesnonce', false ); ?>
 		<?php wp_nonce_field( 'meta-box-order', 'meta-box-order-nonce', false ); ?>
@@ -501,20 +522,63 @@ class BackWPup_Page_Editjob {
 	</div>
 
 	<div id="databasejobs" class="stuffbox"<?php if ( ! in_array( "OPTIMIZE", backwpup_get_option( $main, 'type' ) ) && ! in_array( "DB", backwpup_get_option( $main, 'type' ) ) && ! in_array( "CHECK", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
-		<h3><label for="dbtables"><?php _e( 'Database Jobs', 'backwpup' ); ?></label></h3>
-
+		<h3><?php _e( 'Database Jobs', 'backwpup' ); ?></h3>
 		<div class="inside">
 			<div>
-				<b><?php _e( 'Database tables for use:', 'backwpup' ); ?></b>
-
-				<div id="dbtables">
+				<b><?php _e( 'Database connection for use:', 'backwpup' ); ?></b><br />
+				<input class="checkbox" type="checkbox"<?php checked( backwpup_get_option( $main, 'wpdbsettings' ), true, true );?> name="wpdbsettings" value="1" /> <?php _e( 'Use WordPress DB connection.', 'backwpup' );?><br />
+				<div id="dbconnection"<?php if (backwpup_get_option( $main, 'wpdbsettings' )) echo ' style="display:none;"';?>>
+					<?php _e( 'Host:', 'backwpup' );?><br />
+					<input class="text" type="text" id="dbhost" name="dbhost" value="<?php echo backwpup_get_option( $main, 'dbhost' );?>" /><br />
+					<?php _e( 'User:', 'backwpup' );?><br />
+					<input class="text" type="text" id="dbuser" name="dbuser" value="<?php echo backwpup_get_option( $main, 'dbuser' );?>" /><br />
+					<?php _e( 'Password:', 'backwpup' );?><br />
+					<input class="text" type="password" id="dbpassword" name="dbpassword" value="<?php echo backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' ));?>" /><br />
+					<?php _e( 'Collation:', 'backwpup' );?><br />
+						<select id="dbcollation" name="dbcollation">
+							<?php
+								$charset='';
+							  	$colations=$wpdb->get_results('SHOW COLLATION',ARRAY_A);
+							  	foreach($colations as $colation ) {
+									  if ($charset=='') {
+										  echo '<optgroup label="'.$colation['Charset'].'">';
+										  $charset=$colation['Charset'];
+									  }
+									if ($charset!=$colation['Charset']) {
+										echo '</optgroup>';
+										echo '<optgroup label="'.$colation['Charset'].'">';
+										$charset=$colation['Charset'];
+									}
+									$selected='';
+									if (backwpup_get_option( $main, 'dbcharset' )==$colation['Charset']) {
+										if (!backwpup_get_option( $main, 'dbcollation' ) && !empty($colation['Default']))
+											$selected=' selected="selected"';
+										if (backwpup_get_option($main, 'dbcollation' )==$colation['Collation'])
+											$selected=' selected="selected"';
+									}
+									echo '<option value="'.$colation['Collation'].'"'.$selected.'>'.$colation['Collation'].'</option>';
+							  	}
+								echo '</optgroup>';
+							?>
+						</select>
+					<br />
+					<?php _e( 'Database:', 'backwpup' );?><br />
 					<?php
-					$tables = $wpdb->get_col( 'SHOW TABLES FROM `' . DB_NAME . '`' );
-					foreach ( $tables as $table ) {
-						echo '	<input class="checkbox" type="checkbox"' . checked( ! in_array( $table, backwpup_get_option( $main, 'dbexclude' ) ), true, false ) . ' name="jobtabs[]" value="' . rawurlencode( $table ) . '"/> ' . $table . '<br />';
-					}
+					BackWPup_Ajax_Editjob::db_databases(array('dbselected'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
+														   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
+														   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' )));
 					?>
+					<br />
 				</div>
+				<b><?php _e( 'Database tables for use:', 'backwpup' ); ?></b>
+				<input type="button" id="dball" value="<?php _e( 'all', 'backwpup' ); ?>"> <input type="button" id="dbnone" value="<?php _e( 'none', 'backwpup' ); ?>"> <input type="button" id="dbwp" value="<?php echo $wpdb->prefix; ?>">
+
+				<?php
+				BackWPup_Ajax_Editjob::db_tables(array('dbname'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
+													   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
+													   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' ),'jobmain'=>$main));
+				?>
+
 			</div>
 						<span id="dbdump"<?php if ( ! in_array( "DB", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
 						<strong><?php _e( 'Filename for Dump:', 'backwpup' );?></strong> <input class="long-text" type="text" name="dbdumpfile" value="<?php echo backwpup_get_option( $main, 'dbdumpfile' );?>" />.sql

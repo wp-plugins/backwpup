@@ -984,7 +984,7 @@ class BackWPup_Job {
 	 * @return nothing
 	 */
 	private function db_dump() {
-		global $wpdb, $wp_version;
+		global $wpdb,$wp_version;
 
 		trigger_error( sprintf( __( '%d. Try for database dump...', 'backwpup' ), $this->jobdata['DB_DUMP']['STEP_TRY'] ), E_USER_NOTICE );
 
@@ -1009,6 +1009,13 @@ class BackWPup_Job {
 
 		//Set maintenance
 		$this->maintenance_mode( true );
+		//make a new DB connection
+		$backwpupsql=new wpdb(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbuser' ),backwpup_decrypt(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbpassword' )),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbhost' ));
+		if (!$backwpupsql->dbh)  {
+			trigger_error( sprintf( __( 'Can not connect to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_ERROR );
+		}
+		$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcharset' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcollation' ));
+		trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
 
 		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 			$file = gzopen( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'], 'wb9' );
@@ -1027,9 +1034,9 @@ class BackWPup_Job {
 
 		if ( $this->jobdata['STEPDONE'] == 0 ) {
 			//get tables to backup
-			$tables = $wpdb->get_col( "SHOW TABLES FROM `" . DB_NAME . "`" ); //get table status
-			if ( mysql_error() )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+			$tables = $backwpupsql->get_col( "SHOW TABLES FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" ); //get table status
+			if ( mysql_error($backwpupsql->dbh) )
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 			foreach ( $tables as $table ) {
 				if ( ! in_array( $table, backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )
 					$this->jobdata['DB_DUMP']['TABLES'][] = $table;
@@ -1037,9 +1044,9 @@ class BackWPup_Job {
 			$this->jobdata['STEPTODO'] = count( $this->jobdata['DB_DUMP']['TABLES'] );
 
 			//Get table status
-			$tablesstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`", ARRAY_A ); //get table status
-			if ( mysql_error() )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+			$tablesstatus = $backwpupsql->get_results( "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`", ARRAY_A ); //get table status
+			if ( mysql_error($backwpupsql->dbh) )
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 			foreach ( $tablesstatus as $tablestatus )
 			{
 				$this->jobdata['DB_DUMP']['TABLESTATUS'][$tablestatus['Name']] = $tablestatus;
@@ -1063,18 +1070,19 @@ class BackWPup_Job {
 			$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit( str_replace( '\\', '/', ABSPATH ) ) . $this->line_separator;
 			$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . $this->line_separator;
 			$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . $this->line_separator;
-			$dbdumpheader .= "-- Database Name: " . DB_NAME . $this->line_separator;
-			$dbdumpheader .= "-- Database charset: " . DB_CHARSET . $this->line_separator;
-			$dbdumpheader .= "-- Database collate: " . DB_COLLATE . $this->line_separator;
+			$dbdumpheader .= "-- Database Name: " . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . $this->line_separator;
 			$dbdumpheader .= "-- Dumped on: " . date_i18n( 'Y-m-d H:i.s' ) . $this->line_separator;
 			$dbdumpheader .= "-- ---------------------------------------------------------" . $this->line_separator . $this->line_separator;
 			//for better import with mysql client
 			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding() . "' */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding($backwpupsql->dbh)."'";
+				if (backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcollation' ))
+					$dbdumpheader .=" COLLATE '".backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcollation' )."'";
+				$dbdumpheader .=" */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $wpdb->get_var( "SELECT @@time_zone" ) . "' */;" . $this->line_separator;
+			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $backwpupsql->get_var( "SELECT @@time_zone" ) . "' */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . $this->line_separator;
 			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . $this->line_separator;
@@ -1099,12 +1107,11 @@ class BackWPup_Job {
 				$tablecreate = $this->line_separator . "--" . $this->line_separator . "-- Table structure for table $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
 				$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;" . $this->line_separator;
 				$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . $this->line_separator;
-				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding() . "' */;" . $this->line_separator;
+				$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding($backwpupsql->dbh) . "' */;" . $this->line_separator;
 				//Dump the table structure
-				$res = mysql_query( "SHOW CREATE TABLE `" . $table . "`" );
-				$wpdb->num_queries ++;
-				if ( mysql_error() ) {
-					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), "SHOW CREATE TABLE `" . $table . "`" ), E_USER_ERROR );
+				$res = mysql_query( "SHOW CREATE TABLE `" . $table . "`", $backwpupsql->dbh);
+				if ( mysql_error($backwpupsql->dbh) ) {
+					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), "SHOW CREATE TABLE `" . $table . "`" ), E_USER_ERROR );
 					return false;
 				}
 				$tablecreate .= mysql_result( $res, 0, 'Create Table' ) . ";" . $this->line_separator . $this->line_separator;
@@ -1131,11 +1138,10 @@ class BackWPup_Job {
 				$tabledata = '';
 
 				//get data from table
-				$result  = mysql_query( "SELECT * FROM `" . $table . "`" );
+				$result  = mysql_query( "SELECT * FROM `" . $table . "`", $backwpupsql->dbh );
 				$numrows = mysql_num_rows( $result );
-				$wpdb->num_queries ++;
-				if ( mysql_error() ) {
-					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), "SELECT * FROM `" . $table . "`" ), E_USER_ERROR );
+				if ( mysql_error($backwpupsql->dbh) ) {
+					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), "SELECT * FROM `" . $table . "`" ), E_USER_ERROR );
 					return false;
 				}
 				//get field information
@@ -1204,9 +1210,9 @@ class BackWPup_Job {
 		if ( $this->jobdata['STEPTODO'] == $this->jobdata['STEPDONE'] ) {
 			//for better import with mysql client
 			$dbdumpfooter = $this->line_separator . "--" . $this->line_separator . "-- Delete not needed values on backwpup table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
-			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';" . $this->line_separator;
-			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='api';" . $this->line_separator;
-			$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';" . $this->line_separator . $this->line_separator . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $backwpupsql->prefix . "backwpup` WHERE `main`='temp';" . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $backwpupsql->prefix . "backwpup` WHERE `main`='api';" . $this->line_separator;
+			$dbdumpfooter .= "DELETE FROM `" . $backwpupsql->prefix . "backwpup` WHERE `main`='working';" . $this->line_separator . $this->line_separator . $this->line_separator;
 			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;" . $this->line_separator;
 			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;" . $this->line_separator;
 			$dbdumpfooter .= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;" . $this->line_separator;
@@ -1237,6 +1243,8 @@ class BackWPup_Job {
 				trigger_error( sprintf( __( 'Added database dump "%1$s" with %2$s to backup file list', 'backwpup' ), $this->jobdata['DBDUMPFILE'], size_format( filesize( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] ), 2 ) ), E_USER_NOTICE );
 			}
 		}
+		//close db connection
+		unset($backwpupsqlh);
 		//Back from maintenance
 		$this->maintenance_mode( false );
 		$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
@@ -1248,16 +1256,23 @@ class BackWPup_Job {
 	 * @return nothing
 	 */
 	private function db_check() {
-		global $wpdb;
 		trigger_error( sprintf( __( '%d. Try for database check...', 'backwpup' ), $this->jobdata['DB_CHECK']['STEP_TRY'] ), E_USER_NOTICE );
 		if ( ! isset($this->jobdata['DB_CHECK']['DONETABLE']) || ! is_array( $this->jobdata['DB_CHECK']['DONETABLE'] ) )
 			$this->jobdata['DB_CHECK']['DONETABLE'] = array();
 
+		//make a new DB connection
+		$backwpupsql=new wpdb(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbuser' ),backwpup_decrypt(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbpassword' )),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbhost' ));
+		if (!$backwpupsql->dbh)  {
+			trigger_error( sprintf( __( 'Can not connect to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_ERROR );
+		}
+		$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcharset' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcollation' ));
+		trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
+
 		//to backup
 		$tablestobackup = array();
-		$tables         = $wpdb->get_col( "SHOW TABLES FROM `" . DB_NAME . "`" ); //get table status
-		if ( mysql_error() )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+		$tables         = $backwpupsql->get_col( "SHOW TABLES FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" ); //get table status
+		if ( mysql_error($backwpupsql->dbh) )
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 		foreach ( $tables as $table ) {
 			if ( ! in_array( $table, backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )
 				$tablestobackup[] = $table;
@@ -1271,9 +1286,9 @@ class BackWPup_Job {
 			foreach ( $tablestobackup as $table ) {
 				if ( in_array( $table, $this->jobdata['DB_CHECK']['DONETABLE'] ) )
 					continue;
-				$check = $wpdb->get_row( "CHECK TABLE `" . $table . "` MEDIUM" );
-				if ( mysql_error() ) {
-					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+				$check = $backwpupsql->get_row( "CHECK TABLE `" . $table . "` MEDIUM" );
+				if ( mysql_error($backwpupsql->dbh) ) {
+					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 					continue;
 				}
 				if ( $check->Msg_text == 'OK' )
@@ -1285,9 +1300,9 @@ class BackWPup_Job {
 
 				//Try to Repair table
 				if ( $check->Msg_text != 'OK' ) {
-					$repair = $wpdb->get_row( 'REPAIR TABLE `' . $table . '`' );
-					if ( mysql_error() ) {
-						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+					$repair = $backwpupsql->get_row( 'REPAIR TABLE `' . $table . '`' );
+					if ( mysql_error($backwpupsql->dbh) ) {
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 						continue;
 					}
 					if ( $repair->Msg_type == 'OK' )
@@ -1305,6 +1320,7 @@ class BackWPup_Job {
 		} else {
 			trigger_error( __( 'No tables to check', 'backwpup' ), E_USER_WARNING );
 		}
+		unset($backwpupsql);
 		$this->jobdata['STEPSDONE'][] = 'DB_CHECK'; //set done
 	}
 
@@ -1313,16 +1329,24 @@ class BackWPup_Job {
 	 * @return nothing
 	 */
 	private function db_optimize() {
-		global $wpdb;
 		trigger_error( sprintf( __( '%d. Try for database optimize...', 'backwpup' ), $this->jobdata['DB_OPTIMIZE']['STEP_TRY'] ), E_USER_NOTICE );
 		if ( ! isset($this->jobdata['DB_OPTIMIZE']['DONETABLE']) || ! is_array( $this->jobdata['DB_OPTIMIZE']['DONETABLE'] ) )
 			$this->jobdata['DB_OPTIMIZE']['DONETABLE'] = array();
 
+		//make a new DB connection
+		$backwpupsql=new wpdb(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbuser' ),backwpup_decrypt(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbpassword' )),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbhost' ));
+		if (!$backwpupsql->dbh)  {
+			trigger_error( sprintf( __( 'Can not connect to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_ERROR );
+		}
+		$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcharset' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcollation' ));
+		trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
+
+
 		//to backup
 		$tablestobackup = array();
-		$tables         = $wpdb->get_col( "SHOW TABLES FROM `" . DB_NAME . "`" ); //get table status
-		if ( mysql_error() )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+		$tables         = $backwpupsql->get_col( "SHOW TABLES FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" ); //get table status
+		if ( mysql_error($backwpupsql->dbh) )
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 		foreach ( $tables as $table ) {
 			if ( ! in_array( $table, backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )
 				$tablestobackup[] = $table;
@@ -1331,9 +1355,9 @@ class BackWPup_Job {
 		$this->jobdata['STEPTODO'] = count( $tablestobackup );
 
 		//get table status
-		$tablesstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`" );
-		if ( mysql_error() )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+		$tablesstatus = $backwpupsql->get_results( "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" );
+		if ( mysql_error($backwpupsql->dbh) )
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 		foreach ( $tablesstatus as $tablestatus )
 		{
 			$status[$tablestatus->Name] = $tablestatus;
@@ -1345,9 +1369,9 @@ class BackWPup_Job {
 				if ( in_array( $table, $this->jobdata['DB_OPTIMIZE']['DONETABLE'] ) )
 					continue;
 				if ( $status[$table]->Engine != 'InnoDB' ) {
-					$optimize = $wpdb->get_row( "OPTIMIZE TABLE `" . $table . "`" );
-					if ( mysql_error() )
-						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+					$optimize = $backwpupsql->get_row( "OPTIMIZE TABLE `" . $table . "`" );
+					if ( mysql_error($backwpupsql->dbh) )
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 					elseif ( strtolower( $optimize->Msg_type ) == 'error' )
 						trigger_error( sprintf( __( 'Result of table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_ERROR );
 					elseif ( strtolower( $optimize->Msg_type ) == 'warning' )
@@ -1355,9 +1379,9 @@ class BackWPup_Job {
 					else
 						trigger_error( sprintf( __( 'Result of table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_NOTICE );
 				} else {
-					$wpdb->get_row( "ALTER TABLE `" . $table . "` ENGINE='InnoDB'" );
-					if ( mysql_error() )
-						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error(), $wpdb->last_query ), E_USER_ERROR );
+					$backwpupsql->get_row( "ALTER TABLE `" . $table . "` ENGINE='InnoDB'" );
+					if ( mysql_error($backwpupsql->dbh) )
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql->dbh), $backwpupsql->last_query ), E_USER_ERROR );
 					else
 						trigger_error( sprintf( __( 'InnoDB Table %1$s optimize done', 'backwpup' ), $table ), E_USER_NOTICE );
 				}
@@ -1369,6 +1393,7 @@ class BackWPup_Job {
 		} else {
 			trigger_error( __( 'No tables to optimize', 'backwpup' ), E_USER_WARNING );
 		}
+		unset($backwpupsql);
 		$this->jobdata['STEPSDONE'][] = 'DB_OPTIMIZE'; //set done
 	}
 

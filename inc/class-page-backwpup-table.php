@@ -150,11 +150,13 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 				case 'info':
 					$r .= "<td $attributes>";
 					if ( in_array( 'DB', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'OPTIMIZE', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'CHECK', backwpup_get_option( 'job_' . $jobid, 'type' ) ) ) {
-						global $wpdb;
+						$backwpupsql=new wpdb(backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option('job_' . $jobid, 'dbpassword' )),backwpup_get_option( 'job_' . $jobid, 'dbname' ),backwpup_get_option( 'job_' . $jobid, 'dbhost' ));
+						$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( 'job_' . $jobid, 'dbcharset' ),backwpup_get_option('job_' . $jobid, 'dbcollation' ));
 						$dbsize = array( 'size'=> 0,
 										 'num' => 0,
 										 'rows'=> 0 );
-						$status = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`;", ARRAY_A );
+						$status = $backwpupsql->get_results( "SHOW TABLE STATUS FROM `" . backwpup_get_option( 'job_' . $jobid, 'dbname' ) . "`;", ARRAY_A );
+						unset($backwpupsql);
 						foreach ( $status as $tablevalue ) {
 							if ( ! in_array( $tablevalue['Name'], backwpup_get_option( 'job_' . $jobid, 'dbexclude' ) ) ) {
 								$dbsize['size'] = $dbsize['size'] + $tablevalue["Data_length"] + $tablevalue["Index_length"];

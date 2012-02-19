@@ -70,6 +70,26 @@ jQuery(document).ready( function($) {
         }
     });
 
+	$('#dball').click(function() {
+		$('#dbtables > input[type="checkbox"]').prop("checked", true);
+	});
+
+	$('#dbnone').click(function() {
+		$('#dbtables > input[type="checkbox"]').prop("checked", false);
+	});
+
+	$('#dbwp').click(function() {
+		$('#dbtables > input[type="checkbox"][value^="'+$('#dbwp').val()+'"]').prop("checked", true);
+	});
+
+	$('input[name="wpdbsettings"]').change(function() {
+		if ($('input[name="wpdbsettings"]:checked').val()=='1') {
+			$('#dbconnection').hide();
+		} else {
+			$('#dbconnection').show();
+		}
+	});
+
     $('input[name="fileprefix"]').keyup(function() {
         $('#backupfileprefix').replaceWith('<span id="backupfileprefix">'+$(this).val()+'</span>');
     });
@@ -284,6 +304,44 @@ jQuery(document).ready( function($) {
 	}
 	$('#sugaruser').change(function() {sugarsyncgetroot();});
 	$('#sugarpass').change(function() {sugarsyncgetroot();});
+
+
+	function db_tables() {
+		var data = {
+			action: 'backwpup_db_tables',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
+			dbname: $('#dbname').val(),
+			dbhost: $('#dbhost').val(),
+			dbuser: $('#dbuser').val(),
+			dbpassword: $('#dbpassword').val(),
+			jobmain: 'job_' + $('#jobid').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
+
+		};
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+			$('#dbtables').replaceWith(response);
+		});
+	}
+	$('#dbname').change(function() {db_tables();});
+
+	function db_databases() {
+		var data = {
+			action: 'backwpup_db_databases',
+			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
+			dbhost: $('#dbhost').val(),
+			dbuser: $('#dbuser').val(),
+			dbpassword: $('#dbpassword').val(),
+			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
+
+		};
+		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+			$('#dbname').replaceWith(response);
+			db_tables();
+		});
+	}
+	$('#dbhost').change(function() {db_databases();});
+	$('#dbuser').change(function() {db_databases();});
+	$('#dbpassword').change(function() {db_databases();});
 
 	if ( $('#title').val() == '' )
 		$('#title').siblings('#title-prompt-text').css('visibility', '');

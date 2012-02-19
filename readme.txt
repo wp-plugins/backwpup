@@ -64,6 +64,7 @@ Do backups and more for your WordPress Blog.
 * Added: new methods to start a job link/commandline
 * Added: Extra compression for dump and xml files
 * Added: changeable file name for dump and xml files
+* Added: Changeable DB connection to backup/check/repair other DB's
 * Added: not load text domains on job or ajax working for better performance and lower memory usage
 * Added: tool for script execution time test
 * Added: capability backwpup for Administrator to wp_roles

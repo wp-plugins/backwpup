@@ -86,6 +86,72 @@ class BackWPup_Ajax_Editjob {
 			return;
 	}
 
+
+	public static function db_tables( $args = '') {
+		if ( is_array( $args ) ) {
+			extract( $args );
+			$ajax = false;
+		} else {
+			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
+			$dbname  = $_POST['dbname'];
+			$dbhost  = $_POST['dbhost'];
+			$dbuser   = $_POST['dbuser'];
+			$dbpassword = $_POST['dbpassword'];
+			$jobmain = $_POST['jobmain'];
+			$ajax          = true;
+		}
+		$dbconnection=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword),true);
+		if (!$dbconnection or empty($dbname)) {
+			echo '<div id="dbtables"></div>';
+			if ( $ajax )
+				die();
+			else
+				return;
+		}
+		$res = mysql_query( 'SHOW TABLES FROM `' . $dbname . '`', $dbconnection );
+		echo '<div id="dbtables">';
+		while ( $table = mysql_fetch_row($res) ) {
+			echo '	<input class="checkbox" type="checkbox"' . checked( ! in_array( $table[0], backwpup_get_option( $jobmain, 'dbexclude' ) ), true, false ) . ' name="jobtabs[]" value="' . rawurlencode( $table[0] ) . '"/> ' . $table[0] . '<br />';
+		}
+		echo '</div>';
+		if ( $ajax )
+			die();
+		else
+			return;
+	}
+
+	public static function db_databases( $args = '') {
+		if ( is_array( $args ) ) {
+			extract( $args );
+			$ajax = false;
+		} else {
+			check_ajax_referer( 'backwpupeditjob_ajax_nonce' );
+			$dbselected  = (isset($_POST['dbname'])) ? $_POST['dbname']:'';
+			$dbhost  = $_POST['dbhost'];
+			$dbuser   = $_POST['dbuser'];
+			$dbpassword = $_POST['dbpassword'];
+			$ajax          = true;
+		}
+		$dbconnection=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword),true);
+		if (!$dbconnection) {
+			echo '<span id="dbname" style="color:red;">'.__('No DB connection!','backwpup').'</span>';
+			if ( $ajax )
+				die();
+			else
+				return;
+		}
+		$res = mysql_query( 'SHOW DATABASES',$dbconnection );
+		echo '<select id="dbname" name="dbname">';
+		while ($db = mysql_fetch_array($res) ) {
+			echo '<option' . selected( $db['Database'], $dbselected, false ) . ' value="' . $db['Database'] . '">' . $db['Database'] . '</option>';
+		}
+		echo '</select>';
+		if ( $ajax )
+			die();
+		else
+			return;
+	}
+
 	/**
 	 * ajax/normal get buckets select box
 	 *

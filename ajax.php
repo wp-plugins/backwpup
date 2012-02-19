@@ -90,6 +90,12 @@ switch ( $_POST['action'] ) {
 	case 'backwpup_sugarsync_root':
 		BackWPup_Ajax_Editjob::sugarsync_root();
 		break;
+	case 'backwpup_db_tables':
+		BackWPup_Ajax_Editjob::db_tables();
+		break;
+	case 'backwpup_db_databases':
+		BackWPup_Ajax_Editjob::db_databases();
+		break;
 }
 // Default status
 die( '0' );
