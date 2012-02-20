@@ -21,7 +21,6 @@ class BackWPup_Ajax_Working {
 		$logfile = filter_input( INPUT_POST, 'logfile', FILTER_SANITIZE_URL );
 		$logpos  = filter_input( INPUT_POST, 'logpos', FILTER_SANITIZE_NUMBER_INT );
 
-
 		if ( file_exists( $logfile . '.gz' ) )
 			$logfile .= '.gz';
 
@@ -29,7 +28,6 @@ class BackWPup_Ajax_Working {
 		if ( substr( basename( $logfile ), - 3 ) != '.gz' && substr( basename( $logfile ), - 8 ) != '.html.gz' && substr( basename( $logfile ), 0, 13 ) != 'backwpup_log_' )
 			die();
 
-		$log = '';
 		if ( file_exists( $logfile ) ) {
 			$backupdata = backwpup_get_workingdata();
 			if ( ! empty($backupdata) ) {
@@ -43,20 +41,29 @@ class BackWPup_Ajax_Working {
 				$errors       = $logheader['errors'];
 				$stepspersent = 100;
 				$steppersent  = 100;
-				$log .= '<span id="stopworking"></span>';
 			}
 
-			if ( strtolower( substr( $logfile, - 3 ) ) == '.gz' )
-				$logfiledata = gzfile( $logfile );
+			if ( strtolower( substr( $logfile, - 3 ) ) == '.gz' ) {
+				$gzlogfiledata = gzfile( $logfile );
+				$logfiledata = substr(implode('',$gzlogfiledata),$logpos);
+			} else {
+				$logfiledata = file_get_contents( $logfile,false,NULL,$logpos );
+			}
+			preg_match('/<body[^>]*>/si',$logfiledata,$match);
+			if (!empty($match[0]))
+				$startpos=strpos($logfiledata,$match[0])+strlen($match[0]);
 			else
-				$logfiledata = file( $logfile );
+				$startpos=0;
+			$endpos=stripos($logfiledata,'</body>');
+			$stop= '';
+			if ($endpos !== false)
+				$stop  = '<span id="stopworking"></span>';
+			if (false === $endpos)
+				$endpos=strlen( $logfiledata );
+			$length=strlen( $logfiledata )-(strlen( $logfiledata )-$endpos)-$startpos;
 
-			for ( $i = $logpos; $i < count( $logfiledata ); $i ++ ) {
-				if ( trim( $logfiledata[$i] ) != '</body>' && trim( $logfiledata[$i] ) != '</html>' )
-					$log .= $logfiledata[$i];
-			}
-			echo json_encode( array( 'logpos'	  => count( $logfiledata ),
-									 'LOG'		 => $log,
+			echo json_encode( array( 'logpos'	  => strlen( $logfiledata )+$logpos,
+									 'LOG'		 => substr($logfiledata,$startpos,$length).$stop,
 									 'WARNING'	 => $warnings,
 									 'ERROR'	   => $errors,
 									 'STEPSPERSENT'=> $stepspersent,

@@ -82,6 +82,7 @@ Do backups and more for your WordPress Blog.
 * Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
 * Changed: License changed to GPLv3
 * Changed: Many code recode and added to classes
+* Changed: Logs in HTML5 formart
 * Updated: AWS lib to 1.5.2
 * Updated: RSC lib to 1.7.10
 * Updated: MS azure lib to 4.1.0

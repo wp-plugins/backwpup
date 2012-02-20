@@ -4,8 +4,8 @@
 #showworking, #showlogfile{
 	background-color:black;
 	color:white;
-	font-family:fixedsys, monospace, Courier, monospace;
-	line-height: 15px;
+	font-family:Fixedsys,Courier,monospace;
+	line-height:15px;
 	font-size:12px;
 	border-color:#CEE1EF;
 	border-style:solid;
@@ -14,8 +14,9 @@
 	width:800px;
 	padding:2px 2px 2px 2px;
 	overflow:auto;
-	white-space:nowrap;
+	white-space:pre;
 	float:left;
+	display:block;
 }
 .warning {
 	background-color:tan;

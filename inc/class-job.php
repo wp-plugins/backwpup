@@ -271,9 +271,14 @@ class BackWPup_Job {
 		wp_clear_scheduled_hook( 'backwpup_cron', array( 'main'=> 'restart' ) );
 		wp_schedule_single_event( time() + 300, 'backwpup_cron', array( 'main'=> 'restart' ) );
 		//create log file
+		$charset= get_option('blog_charset');
+		if (empty($charset))
+			$charset = 'UTF-8';
+		$lang = str_replace('_', '-', get_locale());
 		$fd = fopen( $this->jobdata['LOGFILE'], 'w' );
-		fwrite( $fd, "<html>" . $this->line_separator . "<head>" . $this->line_separator );
-		fwrite( $fd, "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />" . $this->line_separator );
+		fwrite( $fd, "<!DOCTYPE html>". $this->line_separator ."<html lang=\"".$lang."\">" . $this->line_separator . "<head>" . $this->line_separator );
+		fwrite( $fd, "<meta charset=\"".$charset."\" />". $this->line_separator );
+		fwrite( $fd, "<title>" . sprintf( __( 'BackWPup log for %1$s from %2$s at %3$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ), date_i18n( get_option( 'date_format' ) ), date_i18n( get_option( 'time_format' ) ) ) . "</title>". $this->line_separator);
 		fwrite( $fd, "<meta name=\"robots\" content=\"noindex, nofollow\" />" . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_version\" content=\"" . BackWPup::get_plugin_data('Version') . "\" />" . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_logtime\" content=\"" . current_time( 'timestamp' ) . "\" />" . $this->line_separator );
@@ -287,37 +292,37 @@ class BackWPup_Job {
 		fwrite( $fd, "<style type=\"text/css\">" . $this->line_separator );
 		fwrite( $fd, ".warning {background-color:yellow;}" . $this->line_separator );
 		fwrite( $fd, ".error {background-color:red;}" . $this->line_separator );
-		fwrite( $fd, "#body {font-family:monospace;font-size:12px;white-space:nowrap;}" . $this->line_separator );
+		fwrite( $fd, "body {font-family:Fixedsys,Courier,monospace;font-size:12px;line-height:15px;background-color:black;color:white;white-space:pre;display:block;}" . $this->line_separator );
 		fwrite( $fd, "</style>" . $this->line_separator );
-		fwrite( $fd, "<title>" . sprintf( __( 'BackWPup log for %1$s from %2$s at %3$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ), date_i18n( get_option( 'date_format' ) ), date_i18n( get_option( 'time_format' ) ) ) . "</title>" . $this->line_separator . "</head>" . $this->line_separator . "<body id=\"body\">" . $this->line_separator );
-		fwrite( $fd, sprintf( __( '[INFO]: BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s' ), BackWPup::get_plugin_data('Version'), '&copy; 2009-' . date_i18n( 'Y' ), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version ) . "<br />" . $this->line_separator );
-		fwrite( $fd, __( '[INFO]: This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . "<br />" . $this->line_separator );
-		fwrite( $fd, __( '[INFO]: BackWPup job:', 'backwpup' ) . ' ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'jobid' ) . '. ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ) . '; ' . implode( '+', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) . "<br />" . $this->line_separator );
+		fwrite( $fd, "</head>" . $this->line_separator . "<body>" );
+		fwrite( $fd, sprintf( __( '[INFO] BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s' ), BackWPup::get_plugin_data('Version'), '&copy; 2009-' . date_i18n( 'Y' ), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version )  . $this->line_separator );
+		fwrite( $fd, __( '[INFO] This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' )  . $this->line_separator );
+		fwrite( $fd, __( '[INFO] BackWPup job:', 'backwpup' ) . ' ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'jobid' ) . '. ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ) . '; ' . implode( '+', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) )  . $this->line_separator );
 		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'activetype' ) != '' )
-			fwrite( $fd, __( '[INFO]: BackWPup cron:', 'backwpup' ) . ' ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'cron' ) . '; ' . date_i18n( 'D, j M Y @ H:i', backwpup_get_option( $this->jobdata['JOBMAIN'], 'cronnextrun' ) ) . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup cron:', 'backwpup' ) . ' ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'cron' ) . '; ' . date_i18n( 'D, j M Y @ H:i', backwpup_get_option( $this->jobdata['JOBMAIN'], 'cronnextrun' ) )  . $this->line_separator );
 		if ( $this->jobstarttype == 'cronrun' )
-			fwrite( $fd, __( '[INFO]: BackWPup job started from wp-cron', 'backwpup' ) . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started from wp-cron', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'runnow' or $this->jobstarttype == 'runnowalt' )
-			fwrite( $fd, __( '[INFO]: BackWPup job started manually', 'backwpup' ) . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started manually', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'runext' )
-			fwrite( $fd, __( '[INFO]: BackWPup job started external from url', 'backwpup' ) . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started external from url', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'apirun' )
-			fwrite( $fd, __( '[INFO]: BackWPup job started by its API', 'backwpup' ) . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started by its API', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'runcmd' )
-			fwrite( $fd, __( '[INFO]: BackWPup job started form commandline', 'backwpup' ) . "<br />" . $this->line_separator );
-		fwrite( $fd, __( '[INFO]: PHP ver.:', 'backwpup' ) . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS . "<br />" . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started form commandline', 'backwpup' )  . $this->line_separator );
+		fwrite( $fd, __( '[INFO] PHP ver.:', 'backwpup' ) . ' ' . phpversion() . '; ' . php_sapi_name() . '; ' . PHP_OS  . $this->line_separator );
 		if ( (bool) ini_get( 'safe_mode' ) )
-			fwrite( $fd, sprintf( __( '[INFO]: PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup' ), ini_get( 'max_execution_time' ) ) . "<br />" . $this->line_separator );
-		fwrite( $fd, sprintf( __( '[INFO]: MySQL ver.: %s', 'backwpup' ), $wpdb->get_var( "SELECT VERSION() AS version" ) ) . "<br />" . $this->line_separator );
+			fwrite( $fd, sprintf( __( '[INFO] PHP Safe mode is ON! Maximum script execution time is %1$d sec.', 'backwpup' ), ini_get( 'max_execution_time' ) )  . $this->line_separator );
+		fwrite( $fd, sprintf( __( '[INFO] MySQL ver.: %s', 'backwpup' ), $wpdb->get_var( "SELECT VERSION() AS version" ) )  . $this->line_separator );
 		if ( function_exists( 'curl_init' ) ) {
 			$curlversion = curl_version();
-			fwrite( $fd, sprintf( __( '[INFO]: curl ver.: %1$s; %2$s', 'backwpup' ), $curlversion['version'], $curlversion['ssl_version'] ) . "<br />" . $this->line_separator );
+			fwrite( $fd, sprintf( __( '[INFO] curl ver.: %1$s; %2$s', 'backwpup' ), $curlversion['version'], $curlversion['ssl_version'] )  . $this->line_separator );
 		}
-		fwrite( $fd, sprintf( __( '[INFO]: Temp folder is: %s', 'backwpup' ), backwpup_get_option( 'cfg', 'tempfolder' ) ) . "<br />" . $this->line_separator );
-		fwrite( $fd, sprintf( __( '[INFO]: Logfile folder is: %s', 'backwpup' ), backwpup_get_option( 'cfg', 'logfolder' ) ) . "<br />" . $this->line_separator );
-		fwrite( $fd, sprintf( __( '[INFO]: Backup type is: %s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuptype' ) ) . "<br />" . $this->line_separator );
+		fwrite( $fd, sprintf( __( '[INFO] Temp folder is: %s', 'backwpup' ), backwpup_get_option( 'cfg', 'tempfolder' ) )  . $this->line_separator );
+		fwrite( $fd, sprintf( __( '[INFO] Logfile folder is: %s', 'backwpup' ), backwpup_get_option( 'cfg', 'logfolder' ) ) . $this->line_separator );
+		fwrite( $fd, sprintf( __( '[INFO] Backup type is: %s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuptype' ) ) . $this->line_separator );
 		if ( ! empty($this->jobdata['BACKUPFILE']) && backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuptype' ) == 'archive' )
-			fwrite( $fd, sprintf( __( '[INFO]: Backup file is: %s', 'backwpup' ), $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] ) . "<br />" . $this->line_separator );
+			fwrite( $fd, sprintf( __( '[INFO] Backup file is: %s', 'backwpup' ), $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] )  . $this->line_separator );
 		fclose( $fd );
 		//test for destinations
 		if ( in_array( 'DB', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'FILE', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) ) {
@@ -412,7 +417,7 @@ class BackWPup_Job {
 			case E_USER_WARNING:
 				$this->jobdata['WARNING'] ++;
 				$adderrorwarning = true;
-				$messagetype     = "<span class=\"warning\">" . __( 'WARNING:', 'backwpup' );
+				$messagetype     = "<span class=\"warning\">" . __( 'WARNING:', 'backwpup' ). " ";
 				break;
 			case E_ERROR:
 			case E_PARSE:
@@ -421,27 +426,27 @@ class BackWPup_Job {
 			case E_USER_ERROR:
 				$this->jobdata['ERROR'] ++;
 				$adderrorwarning = true;
-				$messagetype     = "<span class=\"error\">" . __( 'ERROR:', 'backwpup' );
+				$messagetype     = "<span class=\"error\">" . __( 'ERROR:', 'backwpup' ). " ";
 				break;
 			case E_DEPRECATED:
 			case E_USER_DEPRECATED:
-				$messagetype = "<span>" . __( 'DEPRECATED:', 'backwpup' );
+				$messagetype = "<span>" . __( 'DEPRECATED:', 'backwpup' ). " ";
 				break;
 			case E_STRICT:
-				$messagetype = "<span>" . __( 'STRICT NOTICE:', 'backwpup' );
+				$messagetype = "<span>" . __( 'STRICT NOTICE:', 'backwpup' ). " ";
 				break;
 			case E_RECOVERABLE_ERROR:
-				$messagetype = "<span>" . __( 'RECOVERABLE ERROR:', 'backwpup' );
+				$messagetype = "<span>" . __( 'RECOVERABLE ERROR:', 'backwpup' ). " ";
 				break;
 			default:
-				$messagetype = "<span>" . $args[0] . ":";
+				$messagetype = "<span>" . $args[0] . ": ";
 				break;
 		}
 
 		//log line
 		$timestamp = "<span title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename( $args[2] ) . "|Mem: " . size_format( @memory_get_usage( true ), 2 ) . "|Mem Max: " . size_format( @memory_get_peak_usage( true ), 2 ) . "|Mem Limit: " . ini_get( 'memory_limit' ) . "|PID: " . getmypid() . "|Query's: " . get_num_queries() . "]\">[" . date_i18n( 'd-M-Y H:i:s' ) . "]</span> ";
 		//write log file
-		file_put_contents( $this->jobdata['LOGFILE'], $timestamp . $messagetype . " " . $args[1] . "</span><br />" . $this->line_separator, FILE_APPEND );
+		file_put_contents( $this->jobdata['LOGFILE'], $timestamp . $messagetype  . $args[1] . "</span>" . $this->line_separator, FILE_APPEND );
 
 		//write new log header
 		if ( $adderrorwarning ) {

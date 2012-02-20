@@ -71,24 +71,25 @@ class BackWPup_Page_Working {
 		if ( ! empty($backupdata) ) {
 			wp_nonce_field( 'backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 			//read logfile
-			if ( file_exists( $backupdata['LOGFILE'] ) && strtolower( substr( $backupdata['LOGFILE'], - 3 ) ) == '.gz' )
-				$logfiledata = gzfile( $backupdata['LOGFILE'] );
-			else
-				$logfiledata = file( $backupdata['LOGFILE'] );
-			echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"" . $backupdata['LOGFILE'] . "\">";
-			echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"" . count( $logfiledata ) . "\">";
-			echo "<div id=\"showworking\">";
-			$header = true;
-			foreach ( $logfiledata as $line ) {
-				$line = trim( $line );
-				if ( strripos( $line, '<body' ) !== false ) { //find end of header
-					$header = false;
-					continue;
-				}
-				if ( $header ) // jump over header
-					continue;
-				echo $line . "\n";
+			if ( file_exists( $backupdata['LOGFILE'] ) && strtolower( substr( $backupdata['LOGFILE'], - 3 ) ) == '.gz' ) {
+				$gzlogfiledata = gzfile(  $backupdata['LOGFILE'] );
+				$logfiledata = implode('',$gzlogfiledata);
+			} else {
+				$logfiledata = file_get_contents( $backupdata['LOGFILE'],false,NULL,0 );
 			}
+			preg_match('/<body[^>]*>/si',$logfiledata,$match);
+			if (!empty($match[0]))
+				$startpos=strpos($logfiledata,$match[0])+strlen($match[0]);
+			else
+				$startpos=0;
+			$endpos=stripos($logfiledata,'</body>');
+			if (empty($endpos))
+				$endpos=strlen( $logfiledata );
+			$length=strlen( $logfiledata )-(strlen( $logfiledata )-$endpos)-$startpos;
+			echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"" . $backupdata['LOGFILE'] . "\">";
+			echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"" . strlen( $logfiledata ) . "\">";
+			echo "<div id=\"showworking\">";
+			echo  substr($logfiledata,$startpos,$length);
 			echo "</div>";
 			echo "<div id=\"runniginfos\">";
 			$stylewarning = " style=\"display:none;\"";
@@ -108,22 +109,22 @@ class BackWPup_Page_Working {
 			//read logfile
 			$logfile     = $_GET['logfile'];
 			$logfiledata = array();
-			if ( file_exists( $logfile ) && strtolower( substr( $logfile, - 3 ) ) == '.gz' )
-				$logfiledata = gzfile( $logfile );
-			elseif ( file_exists( $logfile ) )
-				$logfiledata = file( $logfile );
-			$header = true;
-			foreach ( $logfiledata as $line ) {
-				$line = trim( $line );
-				if ( strripos( $line, '<body' ) !== false ) { //find header end
-					$header = false;
-					continue;
-				}
-				if ( $header ) // jump over header
-					continue;
-				if ( $line != '</body>' && $line != '</html>' && ! $header ) //no Footer
-					echo $line . "\n";
+			if ( file_exists( $logfile ) && strtolower( substr( $logfile, - 3 ) ) == '.gz' ) {
+				$gzlogfiledata = gzfile( $logfile );
+				$logfiledata = implode('',$gzlogfiledata);
+			} elseif ( file_exists( $logfile ) ) {
+				$logfiledata = file_get_contents( $logfile,false,NULL,0 );
 			}
+			preg_match('/<body[^>]*>/si',$logfiledata,$match);
+			if (!empty($match[0]))
+				$startpos=strpos($logfiledata,$match[0])+strlen($match[0]);
+			else
+				$startpos=0;
+			$endpos=stripos($logfiledata,'</body>');
+			if (false === $endpos)
+				$endpos=strlen( $logfiledata );
+			$length=strlen( $logfiledata )-(strlen( $logfiledata )-$endpos)-$startpos;
+			echo substr($logfiledata,$startpos,$length);
 			echo "</div>";
 			echo "<div class=\"clear\"></div>";
 		}
@@ -132,5 +133,3 @@ class BackWPup_Page_Working {
 	<?php
 	}
 }
-
-
