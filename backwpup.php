@@ -176,11 +176,11 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		public static function autoloader( $class_name ) {
 			//WordPress classes loader
 			$wpclass='/class-'.strtolower(str_replace('_','-',$class_name)).'.php';
-			if ( file_exists(ABSPATH .'wp-admin/includes'.$wpclass) ) {
+			if ( is_file(ABSPATH .'wp-admin/includes'.$wpclass) ) {
 				include_once(ABSPATH .'wp-admin/includes'.$wpclass);
 				return true;
 			}
-			if ( file_exists(ABSPATH . WPINC . $wpclass) ) {
+			if ( is_file(ABSPATH . WPINC . $wpclass) ) {
 				include_once(ABSPATH . WPINC . $wpclass);
 				return true;
 			}
@@ -200,7 +200,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			//BackWPup classes to load
 			if ( substr( $class_name, 0, 9 ) == 'BackWPup_' ) {
 				$inc = dirname( __FILE__ ) . '/inc/class-' . strtolower( str_replace( array( 'BackWPup_', '_' ), array( '', '-' ), $class_name ) ) . '.php';
-				if ( file_exists( $inc ) ) {
+				if ( is_file( $inc ) ) {
 					include_once($inc);
 					return true;
 				}

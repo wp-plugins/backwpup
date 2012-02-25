@@ -21,14 +21,14 @@ class BackWPup_Ajax_Working {
 		$logfile = filter_input( INPUT_POST, 'logfile', FILTER_SANITIZE_URL );
 		$logpos  = filter_input( INPUT_POST, 'logpos', FILTER_SANITIZE_NUMBER_INT );
 
-		if ( file_exists( $logfile . '.gz' ) )
+		if ( is_file( $logfile . '.gz' ) )
 			$logfile .= '.gz';
 
 		// check given file is a backwpup logfile
-		if ( substr( basename( $logfile ), - 3 ) != '.gz' && substr( basename( $logfile ), - 8 ) != '.html.gz' && substr( basename( $logfile ), 0, 13 ) != 'backwpup_log_' )
+		if ( (substr( basename( $logfile ), - 5) != '.html' || substr( basename( $logfile ), - 8 ) != '.html.gz') && substr( basename( $logfile ), 0, 13 ) != 'backwpup_log_' )
 			die();
 
-		if ( file_exists( $logfile ) ) {
+		if ( is_file( $logfile ) ) {
 			$backupdata = backwpup_get_workingdata();
 			if ( ! empty($backupdata) ) {
 				$warnings     = $backupdata['WARNING'];

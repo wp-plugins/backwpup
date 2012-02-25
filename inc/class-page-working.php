@@ -12,15 +12,17 @@ class BackWPup_Page_Working {
 	public static function load() {
 		nocache_headers(); //no cache
 
-		if ( isset($_GET['starttype']) && $_GET['starttype'] == 'runnow' && backwpup_get_option( 'cfg', 'runnowalt' ) && ! empty($_GET['jobid']) ) {
+		if ( isset($_GET['starttype']) && $_GET['starttype'] == 'runnow' && ! empty($_GET['jobid']) ) {
 			check_admin_referer( 'job-runnow' );
-			backwpup_jobrun_url( 'runnowalt', $_GET['jobid'], true );
+			backwpup_jobrun_url( 'runnow', $_GET['jobid'] );
+			sleep(1);  //for too fast sites ;)
 		}
 
 		if ( ! empty($_GET['logfile']) )
 			check_admin_referer( 'view-log_' . basename( trim( $_GET['logfile'] ) ) );
 
-		if ( ! empty($_GET['jobid']) )
+		//get last logfile from job
+		if ( ! empty($_GET['jobid']) && !isset($_GET['starttype']))
 			$_GET['logfile'] = backwpup_get_option( 'job_' . $_GET['jobid'], 'logfile' );
 
 		//add Help
@@ -60,6 +62,8 @@ class BackWPup_Page_Working {
 		<?php screen_icon(); ?>
 		<h2><?php echo esc_html( __( 'BackWPup Working', 'backwpup' ) ); ?></h2>
 		<?php
+		if ( backwpup_get_option('temp','starterror') )
+			echo '<div id="message" class="error fade"><p>'. __('Job start ERROR:'). ' '.backwpup_get_option('temp','starterror') . '</p></div>';
 		$backwpup_message = '';
 		$backupdata       = backwpup_get_workingdata();
 		if ( ! empty($backupdata) ) {
@@ -71,7 +75,7 @@ class BackWPup_Page_Working {
 		if ( ! empty($backupdata) ) {
 			wp_nonce_field( 'backwpupworking_ajax_nonce', 'backwpupworkingajaxnonce', false );
 			//read logfile
-			if ( file_exists( $backupdata['LOGFILE'] ) && strtolower( substr( $backupdata['LOGFILE'], - 3 ) ) == '.gz' ) {
+			if ( is_file( $backupdata['LOGFILE'] ) && strtolower( substr( $backupdata['LOGFILE'], - 3 ) ) == '.gz' ) {
 				$gzlogfiledata = gzfile(  $backupdata['LOGFILE'] );
 				$logfiledata = implode('',$gzlogfiledata);
 			} else {
@@ -104,15 +108,15 @@ class BackWPup_Page_Working {
 			echo "<div class=\"clear\"></div>";
 			echo "<div class=\"progressbar\"><div id=\"progressstep\" style=\"width:" . $backupdata['STEPSPERSENT'] . "%;\">" . $backupdata['STEPSPERSENT'] . "%</div></div>";
 			echo "<div class=\"progressbar\"><div id=\"progresssteps\" style=\"width:" . $backupdata['STEPPERSENT'] . "%;\">" . $backupdata['STEPPERSENT'] . "%</div></div>";
-		} elseif ( ! empty($_GET['logfile']) && file_exists( $_GET['logfile'] ) ) {
+		} elseif ( ! empty($_GET['logfile']) && is_file( $_GET['logfile'] ) ) {
 			echo '<div id="showlogfile">';
 			//read logfile
 			$logfile     = $_GET['logfile'];
 			$logfiledata = array();
-			if ( file_exists( $logfile ) && strtolower( substr( $logfile, - 3 ) ) == '.gz' ) {
+			if ( is_file( $logfile ) && strtolower( substr( $logfile, - 3 ) ) == '.gz' ) {
 				$gzlogfiledata = gzfile( $logfile );
 				$logfiledata = implode('',$gzlogfiledata);
-			} elseif ( file_exists( $logfile ) ) {
+			} elseif ( is_file( $logfile ) ) {
 				$logfiledata = file_get_contents( $logfile,false,NULL,0 );
 			}
 			preg_match('/<body[^>]*>/si',$logfiledata,$match);

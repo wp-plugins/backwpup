@@ -37,11 +37,11 @@ class BackWPup_Page_Tools {
 
 		if ( isset($_POST['dbrestoretooldel']) && $_POST['dbrestoretooldel'] == __( 'Delete restore tool from blog root...', 'backwpup' ) ) {
 			check_admin_referer( 'backwpup-tools' );
-			if ( file_exists( ABSPATH . 'backwpup_db_restore.zip' ) )
+			if ( is_file( ABSPATH . 'backwpup_db_restore.zip' ) )
 				unlink( ABSPATH . 'backwpup_db_restore.zip' );
-			if ( file_exists( ABSPATH . 'backwpup_db_restore.php' ) )
+			if ( is_file( ABSPATH . 'backwpup_db_restore.php' ) )
 				unlink( ABSPATH . 'backwpup_db_restore.php' );
-			if ( file_exists( ABSPATH . '.backwpup_restore' ) )
+			if ( is_file( ABSPATH . '.backwpup_restore' ) )
 				unlink( ABSPATH . '.backwpup_restore' );
 			$backwpup_message = __( 'Files for restore deleted!', 'backwpup' );
 		}
@@ -145,7 +145,7 @@ class BackWPup_Page_Tools {
 					<th scope="row"><?php _e( 'DB Restore', 'backwpup' ); ?></th>
 					<td>
 						<?php
-						if ( ! file_exists( ABSPATH . 'backwpup_db_restore.php' ) && is_writeable( ABSPATH ) ) {
+						if ( ! is_file( ABSPATH . 'backwpup_db_restore.php' ) && is_writeable( ABSPATH ) ) {
 							_e( 'Download manually DB restore tool: <a href="http://api.backwpup.com/download/backwpup_db_restore.zip">http://api.backwpup.com/download/backwpup_db_restore.zip</a>', 'backwpup' );
 							echo '<br />';
 							echo '<input type="submit" name="dbrestoretool" class="button-primary" value="' . __( 'Put DB restore tool to blog root...', 'backwpup' ) . '" /><br />';

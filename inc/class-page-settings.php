@@ -36,7 +36,6 @@ class BackWPup_Page_Settings {
 			backwpup_update_option( 'cfg', 'jobscriptretry', $_POST['jobscriptretry'] );
 			backwpup_update_option( 'cfg', 'maxlogs', abs( (int) $_POST['maxlogs'] ) );
 			backwpup_update_option( 'cfg', 'gzlogs', isset($_POST['gzlogs']) ? true : false );
-			backwpup_update_option( 'cfg', 'runnowalt', isset($_POST['runnowalt']) ? true : false );
 			backwpup_update_option( 'cfg', 'storeworkingdatain', (($_POST['storeworkingdatain'] == 'db' or $_POST['storeworkingdatain'] == 'file') ? $_POST['storeworkingdatain'] : 'db') );
 			backwpup_update_option( 'cfg', 'httpauthuser', $_POST['httpauthuser'] );
 			backwpup_update_option( 'cfg', 'httpauthpassword', backwpup_encrypt( $_POST['httpauthpassword'] ) );
@@ -193,20 +192,6 @@ class BackWPup_Page_Settings {
 
 	<p><?php _e( 'Here you can set Job related options.', 'backwpup' ); ?></p>
 	<table class="form-table">
-		<tr valign="top">
-			<th scope="row"><?php _e( 'Alternate run noe job start', 'backwpup' ); ?></th>
-			<td>
-				<fieldset>
-					<legend class="screen-reader-text">
-						<span><?php _e( 'Alternate run noe job start', 'backwpup' ); ?></span>
-					</legend>
-					<label for="runnowalt">
-						<input name="runnowalt" type="checkbox" id="runnowalt" value="1" <?php checked( backwpup_get_option( 'cfg', 'runnowalt' ), true ); ?> />
-						<?php _e( 'If problems with redirect on run now job start you can try this', 'backwpup' ); ?>
-					</label>
-				</fieldset>
-			</td>
-		</tr>
 		<tr valign="top">
 			<th scope="row">
 				<label for="storeworkingdatain"><?php _e( 'Where to store working data', 'backwpup' ); ?></label>

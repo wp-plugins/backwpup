@@ -1,13 +1,13 @@
 <?php
 define('SHORTINIT',true) ;   //load minimal WordPress
 define('DOING_AJAX', true);
-@chdir( dirname( __FILE__ ) );
-if ( is_file( '../../../wp-load.php' ) ) {
-	require_once('../../../wp-load.php');
+if ( is_file( dirname(dirname(dirname(dirname( __FILE__ )))).'/wp-load.php' ) ) {
+	require_once(dirname(dirname(dirname(dirname( __FILE__ )))).'/wp-load.php');
 } else {
 	$abspath = filter_input( INPUT_POST, 'ABSPATH', FILTER_SANITIZE_URL );
-	if ( ! empty($abspath) && is_dir( $abspath . '/' ) && file_exists( realpath( $abspath . '/wp-load.php' ) ) ) {
-		require_once(realpath( $abspath . '/wp-load.php' ));
+	$abspath = rtrim(realpath($abspath),'/\\');
+	if ( ! empty($abspath) && is_dir( $abspath . '/' ) && is_file( realpath( $abspath . '/wp-load.php' ) ) ) {
+		require_once($abspath . '/wp-load.php');
 	} else {
 		die('ABSPATH Check');
 	}

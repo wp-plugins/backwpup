@@ -139,7 +139,7 @@ class BackWPup_Job {
 		//Restart job
 		$this->update_working_data( true );
 		$this->error_handler( E_USER_NOTICE, sprintf( __( '%d. Script stop! Will started again now!', 'backwpup' ), $this->jobdata['RESTART'] ), __FILE__, __LINE__, false );
-		backwpup_jobrun_url( 'restart', 0, true );
+		backwpup_jobrun_url( 'restart');
 		exit;
 	}
 
@@ -305,7 +305,7 @@ class BackWPup_Job {
 		elseif ( $this->jobstarttype == 'runnow' or $this->jobstarttype == 'runnowalt' )
 			fwrite( $fd, __( '[INFO] BackWPup job started manually', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'runext' )
-			fwrite( $fd, __( '[INFO] BackWPup job started external from url', 'backwpup' )  . $this->line_separator );
+			fwrite( $fd, __( '[INFO] BackWPup job started from external url', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'apirun' )
 			fwrite( $fd, __( '[INFO] BackWPup job started by its API', 'backwpup' )  . $this->line_separator );
 		elseif ( $this->jobstarttype == 'runcmd' )
@@ -573,13 +573,13 @@ class BackWPup_Job {
 			$filesize = 0;
 
 		//clean up temp
-		if ( ! empty($this->jobdata['BACKUPFILE']) && file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['BACKUPFILE'] ) )
+		if ( ! empty($this->jobdata['BACKUPFILE']) && is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['BACKUPFILE'] ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['BACKUPFILE'] );
-		if ( ! empty($this->jobdata['DBDUMPFILE']) && file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] ) )
+		if ( ! empty($this->jobdata['DBDUMPFILE']) && is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] );
-		if ( ! empty($this->jobdata['WPEXPORTFILE']) && file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['WPEXPORTFILE'] ) )
+		if ( ! empty($this->jobdata['WPEXPORTFILE']) && is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['WPEXPORTFILE'] ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['WPEXPORTFILE'] );
-		if ( ! empty($this->jobdata['PLUGINLISTFILE']) && file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['PLUGINLISTFILE'] ) )
+		if ( ! empty($this->jobdata['PLUGINLISTFILE']) && is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['PLUGINLISTFILE'] ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['PLUGINLISTFILE'] );
 
 		//Update job options
@@ -664,7 +664,7 @@ class BackWPup_Job {
 		$this->jobdata['STEPDONE']    = 1;
 		$this->jobdata['STEPSDONE'][] = 'END'; //set done
 		backwpup_delete_option( 'working', 'data' ); //delete working data
-		if ( file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+		if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) );
 		if ( defined( 'STDIN' ) )
 			_e( 'Done!', 'backwpup' );
@@ -1599,36 +1599,36 @@ class BackWPup_Job {
 
 		//add extra files if selected
 		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupspecialfiles' ) ) {
-			if ( file_exists( ABSPATH . 'wp-config.php' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'wp-config.php' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', ABSPATH . 'wp-config.php' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( ABSPATH . 'wp-config.php' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'wp-config.php' ), E_USER_NOTICE );
-			} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
+			} elseif ( is_file( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', dirname( ABSPATH ) . '/wp-config.php' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( dirname( ABSPATH ) . '/wp-config.php' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'wp-config.php' ), E_USER_NOTICE );
 			}
-			if ( file_exists( ABSPATH . '.htaccess' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
+			if ( is_file( ABSPATH . '.htaccess' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', ABSPATH . '.htaccess' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( ABSPATH . '.htaccess' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), '.htaccess' ), E_USER_NOTICE );
 			}
-			if ( file_exists( ABSPATH . '.htpasswd' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
+			if ( is_file( ABSPATH . '.htpasswd' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', ABSPATH . '.htpasswd' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( ABSPATH . '.htpasswd' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), '.htpasswd' ), E_USER_NOTICE );
 			}
-			if ( file_exists( ABSPATH . 'robots.txt' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'robots.txt' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', ABSPATH . 'robots.txt' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( ABSPATH . 'robots.txt' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'robots.txt' ), E_USER_NOTICE );
 			}
-			if ( file_exists( ABSPATH . 'favicon.ico' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'favicon.ico' ) && ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuproot' ) ) {
 				$this->jobdata['EXTRAFILESTOBACKUP'][] = str_replace( '\\', '/', ABSPATH . 'favicon.ico' );
 				$this->jobdata['COUNT']['FILES'] ++;
 				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( ABSPATH . 'favicon.ico' );
@@ -1835,13 +1835,13 @@ class BackWPup_Job {
 			}
 			//Create Zip File
 			trigger_error( sprintf( __( '%d. Trying to create backup zip (PclZip) archive...', 'backwpup' ), $this->jobdata['CREATE_ARCHIVE']['STEP_TRY'] ), E_USER_NOTICE );
-			$this->need_free_memory( '10M' ); //10MB free memory for zip
+			$this->need_free_memory( '20M' ); //20MB free memory for zip
 			$zipbackupfile = new PclZip($this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE']);
 			//add extra files
 			if ( ! empty($this->jobdata['EXTRAFILESTOBACKUP']) && $this->jobdata['STEPDONE'] == 0 ) {
 				foreach ( $this->jobdata['EXTRAFILESTOBACKUP'] as $file ) {
 					if ( 0 == $zipbackupfile->add( array( array( PCLZIP_ATT_FILE_NAME		  => $file,
-																 PCLZIP_ATT_FILE_NEW_FULL_NAME => basename( $file ) ) ) )
+																 PCLZIP_ATT_FILE_NEW_FULL_NAME => basename( $file ) ) ),PCLZIP_OPT_TEMP_FILE_THRESHOLD, 5 )
 					)
 						trigger_error( sprintf( __( 'Zip archive add error: %s', 'backwpup' ), $zipbackupfile->errorInfo( true ) ), E_USER_ERROR );
 					$this->update_working_data();
@@ -1917,7 +1917,7 @@ class BackWPup_Job {
 		$this->jobdata['BACKUPFILESIZE'] = filesize( $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] );
 		if ( $this->jobdata['BACKUPFILESIZE'] )
 			trigger_error( sprintf( __( 'Archive size is %s', 'backwpup' ), size_format( $this->jobdata['BACKUPFILESIZE'], 2 ) ), E_USER_NOTICE );
-		trigger_error( sprintf( __( ' %1$d Files with %2$s in Archive', 'backwpup' ), $this->jobdata['COUNT']['FILES'] + $this->jobdata['COUNT']['FILESINFOLDER'], size_format( $this->jobdata['COUNT']['FILESIZE'] + $this->jobdata['COUNT']['FILESIZEINFOLDER'], 2 ) ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%1$d Files with %2$s in Archive', 'backwpup' ), $this->jobdata['COUNT']['FILES'] + $this->jobdata['COUNT']['FILESINFOLDER'], size_format( $this->jobdata['COUNT']['FILESIZE'] + $this->jobdata['COUNT']['FILESIZEINFOLDER'], 2 ) ), E_USER_NOTICE );
 	}
 
 	/**

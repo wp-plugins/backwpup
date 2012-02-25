@@ -13,9 +13,7 @@ jQuery(document).ready( function($) {
             },
 			dataType: 'json',
 			success: function(rundata) {
-				if ( 0 < rundata.logpos ) {
-					$('#logpos').val(rundata.logpos);
-				}
+				$('#logpos').val(rundata.logpos);
 				if ( '' != rundata.LOG ) {
 					$('#showworking').append(rundata.LOG);
 					$('#showworking').scrollTop(rundata.logpos*14);

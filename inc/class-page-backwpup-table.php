@@ -130,7 +130,7 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 						$actions['export'] = "<a href=\"" . wp_nonce_url( backwpup_admin_url( 'admin.php' ) . '?page=backwpup&action=export&jobs[]=' . $jobid, 'bulk-jobs' ) . "\">" . __( 'Export', 'backwpup' ) . "</a>";
 						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url( backwpup_admin_url( 'admin.php' ) . '?page=backwpup&action=delete&jobs[]=' . $jobid, 'bulk-jobs' ) . "\" onclick=\"return showNotice.warn();\">" . __( 'Delete' ) . "</a>";
 						if ( backwpup_get_option( 'backwpup', 'check' ) ) {
-							$url               = backwpup_jobrun_url( 'runnow', $jobid );
+							$url               = backwpup_jobrun_url( 'runnowlink', $jobid );
 							$actions['runnow'] = "<a href=\"" . $url['url'] . "\">" . __( 'Run now', 'backwpup' ) . "</a>";
 						}
 					} else {

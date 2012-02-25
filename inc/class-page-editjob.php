@@ -384,7 +384,7 @@ class BackWPup_Page_Editjob {
 			do_action( 'backwpup_api_cron_update' );
 
 			$_POST['jobid'] = backwpup_get_option( $main, 'jobid' );
-			$url            = backwpup_jobrun_url( 'runnow', backwpup_get_option( $main, 'jobid' ), false );
+			$url            = backwpup_jobrun_url( 'runnowlink', backwpup_get_option( $main, 'jobid' ));
 			$backwpup_message .= str_replace( '%1', backwpup_get_option( $main, 'name' ), __( 'Job \'%1\' changes saved.', 'backwpup' ) ) . ' <a href="' . backwpup_admin_url( 'admin.php' ) . '?page=backwpup">' . __( 'Jobs overview', 'backwpup' ) . '</a> | <a href="' . $url['url'] . '">' . __( 'Run now', 'backwpup' ) . '</a>';
 		}
 
@@ -509,7 +509,7 @@ class BackWPup_Page_Editjob {
 			<?php
 			if ( backwpup_get_option( 'cfg', 'jobrunauthkey' ) ) {
 				echo '<strong>' . __( 'External start link:', 'backwpup' ) . '</strong> ';
-				$url = backwpup_jobrun_url( 'runext', backwpup_get_option( $main, 'jobid' ), false );
+				$url = backwpup_jobrun_url( 'runext', backwpup_get_option( $main, 'jobid' ));
 				echo '<span>' . $url['url'] . '</span><br />';
 			}
 			echo '<strong>' . __( 'Commandline start:', 'backwpup' ) . '</strong> ';

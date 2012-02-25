@@ -154,7 +154,7 @@ class BackWPup_Init {
 		$wpdb->query( "DELETE FROM " . $wpdb->prefix . "backwpup WHERE main='temp'" );
 		$wpdb->query( "DELETE FROM " . $wpdb->prefix . "backwpup WHERE main='api'" );
 		$wpdb->query( "DELETE FROM " . $wpdb->prefix . "backwpup WHERE main='working'" );
-		if ( file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+		if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) );
 	}
 
@@ -180,7 +180,7 @@ class BackWPup_Init {
 		$role->remove_cap( 'backwpup' );
 		do_action( 'backwpup_api_delete' );
 		delete_site_transient( 'update_plugins' );
-		if ( file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+		if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
 			unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) );
 		$wpdb->query( "DROP TABLE IF EXISTS `" . $wpdb->prefix . "backwpup`" );
 	}

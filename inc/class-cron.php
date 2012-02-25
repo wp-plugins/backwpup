@@ -19,11 +19,42 @@ class BackWPup_Cron {
 				wp_schedule_single_event( time() + 300, 'backwpup_cron', array( 'main'=> 'restart' ) );
 				$not_worked_time = microtime( true ) - $workingdata['TIMESTAMP'];
 				if ( $not_worked_time > 300 ) {
+					if (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) {
+						define('DONOTCACHEPAGE', true);
+						define('DONOTCACHEDB', true);
+						define('DONOTMINIFY', true);
+						define('DONOTCDN', true);
+						//define('DONOTCACHCEOBJECT', true);
+						//define E_DEPRECATED if PHP lower than 5.3
+						if ( ! defined( 'E_DEPRECATED' ) )
+							define('E_DEPRECATED', 8192);
+						if ( ! defined( 'E_USER_DEPRECATED' ) )
+							define('E_USER_DEPRECATED', 16384);
+						//try to disable safe mode
+						@ini_set( 'safe_mode', '0' );
+						// Now user abort
+						@ini_set( 'ignore_user_abort', '0' );
+						ignore_user_abort( true );
+						@set_time_limit( backwpup_get_option( 'cfg', 'jobrunmaxexectime' ) );
+						new BackWPup_Job('restart');
+					} else {
+						backwpup_jobrun_url('restart');
+					}
+				}
+			} else {
+				//reschedule in 5 min
+				wp_schedule_single_event( time() + 300, 'backwpup_cron', array( 'main'=> $args ) );
+			}
+		} else {
+			if ( $args == 'restart' ) {
+				wp_clear_scheduled_hook( 'backwpup_cron', array( 'main'=> 'restart' ) );
+			} else {
+				if (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON) {
 					define('DONOTCACHEPAGE', true);
 					define('DONOTCACHEDB', true);
 					define('DONOTMINIFY', true);
 					define('DONOTCDN', true);
-					define('DONOTCACHCEOBJECT', true);
+					//define('DONOTCACHCEOBJECT', true);
 					//define E_DEPRECATED if PHP lower than 5.3
 					if ( ! defined( 'E_DEPRECATED' ) )
 						define('E_DEPRECATED', 8192);
@@ -35,37 +66,14 @@ class BackWPup_Cron {
 					@ini_set( 'ignore_user_abort', '0' );
 					ignore_user_abort( true );
 					@set_time_limit( backwpup_get_option( 'cfg', 'jobrunmaxexectime' ) );
-					new BackWPup_Job('restart');
+					//reschedule
+					$cronnxet = BackWPup_Cron::cron_next( backwpup_get_option( $args, 'cron' ) );
+					$offset   = get_option( 'gmt_offset' ) * 3600;
+					wp_schedule_single_event( $cronnxet - $offset, 'backwpup_cron', array( 'main'=> $args ) );
+					new BackWPup_Job('cronrun', backwpup_get_option( $args, 'jobid' ));
+				}  else {
+					backwpup_jobrun_url('cronrun',backwpup_get_option( $args, 'jobid' ));
 				}
-			} else {
-				//reschedule in 5 min
-				wp_schedule_single_event( time() + 300, 'backwpup_cron', array( 'main'=> $args ) );
-			}
-		} else {
-			if ( $args == 'restart' ) {
-				wp_clear_scheduled_hook( 'backwpup_cron', array( 'main'=> 'restart' ) );
-			} else {
-				define('DONOTCACHEPAGE', true);
-				define('DONOTCACHEDB', true);
-				define('DONOTMINIFY', true);
-				define('DONOTCDN', true);
-				define('DONOTCACHCEOBJECT', true);
-				//define E_DEPRECATED if PHP lower than 5.3
-				if ( ! defined( 'E_DEPRECATED' ) )
-					define('E_DEPRECATED', 8192);
-				if ( ! defined( 'E_USER_DEPRECATED' ) )
-					define('E_USER_DEPRECATED', 16384);
-				//try to disable safe mode
-				@ini_set( 'safe_mode', '0' );
-				// Now user abort
-				@ini_set( 'ignore_user_abort', '0' );
-				ignore_user_abort( true );
-				@set_time_limit( backwpup_get_option( 'cfg', 'jobrunmaxexectime' ) );
-				//reschedule
-				$cronnxet = BackWPup_Cron::cron_next( backwpup_get_option( $args, 'cron' ) );
-				$offset   = get_option( 'gmt_offset' ) * 3600;
-				wp_schedule_single_event( $cronnxet - $offset, 'backwpup_cron', array( 'main'=> $args ) );
-				new BackWPup_Job('cronrun', backwpup_get_option( $args, 'jobid' ));
 			}
 		}
 	}

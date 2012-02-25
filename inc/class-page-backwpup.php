@@ -89,7 +89,7 @@ class BackWPup_Page_Backwpup {
 				if ( ! $backupdata )
 					break;
 				backwpup_delete_option( 'working', 'data' ); //delete working data
-				if ( file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+				if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
 					unlink( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) );
 				if ( ! empty($backupdata['LOGFILE']) ) {
 					$timestamp = "<span title=\"[Type: " . E_USER_ERROR . "|Line: " . __LINE__ . "|File: " . basename( __FILE__ ) . "|PID: " . $backupdata['PID'] . "|Query's: " . $backupdata['COUNT']['SQLQUERRYS'] . "]\">[" . date_i18n( 'd-M-Y H:i:s' ) . "]</span> ";
@@ -124,13 +124,13 @@ class BackWPup_Page_Backwpup {
 					backwpup_update_option( $backupdata['JOBMAIN'], 'lastruntime', (current_time( 'timestamp' ) - $sarttime) );
 				}
 				//clean up temp
-				if ( ! empty($backupdata['BACKUPFILE']) && file_exists( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['BACKUPFILE'] ) )
+				if ( ! empty($backupdata['BACKUPFILE']) && is_file( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['BACKUPFILE'] ) )
 					unlink( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['BACKUPFILE'] );
-				if ( ! empty($backupdata['DBDUMPFILE']) && file_exists( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['DBDUMPFILE'] ) )
+				if ( ! empty($backupdata['DBDUMPFILE']) && is_file( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['DBDUMPFILE'] ) )
 					unlink( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['DBDUMPFILE'] );
-				if ( ! empty($backupdata['WPEXPORTFILE']) && file_exists( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['WPEXPORTFILE'] ) )
+				if ( ! empty($backupdata['WPEXPORTFILE']) && is_file( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['WPEXPORTFILE'] ) )
 					unlink( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['WPEXPORTFILE'] );
-				if ( ! empty($backupdata['PLUGINLISTFILE']) && file_exists( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['PLUGINLISTFILE'] ) )
+				if ( ! empty($backupdata['PLUGINLISTFILE']) && is_file( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['PLUGINLISTFILE'] ) )
 					unlink( backwpup_get_option( 'CFG', 'tempfolder' ) . $backupdata['PLUGINLISTFILE'] );
 				break;
 		}
@@ -230,7 +230,7 @@ class BackWPup_Page_Backwpup {
 			backwpup_update_option( 'backwpup', 'check', false );
 		else
 			backwpup_update_option( 'backwpup', 'check', true );
-		if ( file_exists( ABSPATH . 'backwpup_db_restore.php' ) || file_exists( ABSPATH . 'backwpup_db_restore.zip' ) || file_exists( ABSPATH . '.backwpup_restore' ) ) { //for restore file
+		if ( is_file( ABSPATH . 'backwpup_db_restore.php' ) || is_file( ABSPATH . 'backwpup_db_restore.zip' ) || is_file( ABSPATH . '.backwpup_restore' ) ) { //for restore file
 			$massage .= __( "- BackWPup DB restore script found in Blog root please delete it, for security!", "backwpup" ) . '<br />';
 		}
 		//look for sql dumps in blog root
@@ -258,6 +258,8 @@ class BackWPup_Page_Backwpup {
 		screen_icon();
 		echo "<h2>" . esc_html( __( 'BackWPup Jobs', 'backwpup' ) ) . "&nbsp;<a href=\"" . wp_nonce_url( backwpup_admin_url( 'admin.php' ) . '?page=backwpupeditjob', 'edit-job' ) . "\" class=\"button add-new-h2\">" . esc_html__( 'Add New', 'backwpup' ) . "</a></h2>";
 		$backwpup_error_message = self::env_check();
+		if ( backwpup_get_option('temp','starterror') )
+			echo '<div id="message" class="error fade"><p>'. __('Job start ERROR:'). ' '.backwpup_get_option('temp','starterror') . '</p></div>';
 		if ( ! empty($backwpup_error_message) )
 			echo '<div id="message" class="error fade"><strong>' . __( 'BackWPup:', 'backwpup' ) . '</strong><br />' . $backwpup_error_message . '</div>';
 		if ( isset($backwpup_message) && ! empty($backwpup_message) )

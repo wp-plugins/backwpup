@@ -296,22 +296,21 @@ function backwpup_delete_option( $main, $name ) {
  *
  * Get a url to run a job of BackWPup
  *
- * @param string $starttype Start types are 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart', 'restarttime'
+ * @param string $starttype Start types are 'runnow', 'runnowlink', 'cronrun', 'runext', 'runcmd', 'apirun', 'restart', 'restarttime'
  * @param int	$jobid	 The id of job to start else 0
- * @param bool   $run	   call the url no give back
  *
  * @return array|object [url] is the job url [header] for auth header or object form wp_remote_get()
  */
-function backwpup_jobrun_url( $starttype, $jobid = 0, $run = false ) {
+function backwpup_jobrun_url( $starttype, $jobid = 0  ) {
 	$url        = plugins_url( '', dirname( __FILE__ ) ) . '/job.php';
 	$header     = '';
-	$authurl    = '';
+	$authurl 	= '';
 	$query_args = array();
 
-	if ( in_array( $starttype, array( 'restart', 'runnow', 'runnowalt', 'cronrun', 'runext', 'apirun' ) ) )
+	if ( in_array( $starttype, array( 'restart', 'runnowalt', 'runnow', 'cronrun', 'runext', 'apirun' ) ) )
 		$query_args['starttype'] = $starttype;
 
-	if ( in_array( $starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext', 'apirun' ) ) && ! empty($jobid) )
+	if ( in_array( $starttype, array( 'runnowlink', 'runnow', 'runnowalt','cronrun', 'runext', 'apirun' ) ) && ! empty($jobid) )
 		$query_args['jobid'] = $jobid;
 
 	if ( backwpup_get_option( 'cfg', 'httpauthuser' ) && backwpup_get_option( 'cfg', 'httpauthpassword' ) ) {
@@ -319,36 +318,45 @@ function backwpup_jobrun_url( $starttype, $jobid = 0, $run = false ) {
 		$authurl = backwpup_get_option( 'cfg', 'httpauthuser' ) . ':' . backwpup_decrypt( backwpup_get_option( 'cfg', 'httpauthpassword' ) ) . '@';
 	}
 
-	if ( WP_PLUGIN_DIR != ABSPATH . 'wp-content/plugins' )
-		$query_args['ABSPATH'] = urlencode( str_replace( '\\', '/', ABSPATH ) );
+	if ( WP_PLUGIN_DIR != ABSPATH . 'wp-content/plugins' &&  $starttype != 'runnowlink')
+		$query_args['ABSPATH'] = urlencode( ABSPATH );
 
-	if ( $starttype == 'apirun' )
+	if ( $starttype == 'apirun' ) {
 		$query_args['_nonce'] = backwpup_get_option( 'cfg', 'apicronservicekey' );
-	elseif ( $starttype == 'runext' ) {
+	} elseif ( $starttype == 'runext' ) {
 		$query_args['_nonce'] = backwpup_get_option( 'cfg', 'jobrunauthkey' );
 		if ( ! empty($authurl) ) {
 			$url = str_replace( 'https://', 'https://' . $authurl, $url );
 			$url = str_replace( 'http://', 'http://' . $authurl, $url );
 		}
-	} elseif ( $starttype == 'cronrun' || $starttype == 'restart' ) {
-		$query_args['_nonce'] = wp_create_nonce(  $starttype . '_nonce' );
-	} elseif ( backwpup_get_option( 'cfg', 'runnowalt' ) && $starttype == 'runnow' ) {
+	} elseif ( $starttype == 'restart' ) {
+		$query_args['_nonce'] = wp_generate_password(12,false);
+		backwpup_update_option('temp',$starttype . '_nonce',$query_args['_nonce']) ;
+	} elseif ( $starttype == 'runnowlink' && (defined('ALTERNATE_WP_CRON') && ALTERNATE_WP_CRON)) {
+		$query_args['starttype'] = 'runnowalt';
+		$query_args['_nonce'] = wp_generate_password(12,false);
+		backwpup_update_option('temp','runnowalt_nonce_'. $jobid,$query_args['_nonce']) ;
+	} elseif ( $starttype == 'runnowlink') {
 		$url                = wp_nonce_url( backwpup_admin_url( 'admin.php' ), 'job-runnow' );
 		$query_args['page'] = 'backwpupworking';
-	} elseif ( $starttype == 'runnow' || $starttype == 'runnowalt' ) {
-		$query_args['_nonce'] = wp_create_nonce(  $starttype . '_nonce_' . $jobid );
+		$query_args['starttype'] = 'runnow';
+	} elseif ( $starttype == 'runnow' || $starttype == 'cronrun' ) {
+		$query_args['_nonce'] = wp_generate_password(12,false);
+		backwpup_update_option('temp',$starttype.'_nonce_'. $jobid,$query_args['_nonce']) ;
 	}
 
 	$url = array( 'url'   => add_query_arg( $query_args, $url ),
 				  'header'=> $header );
-	if ( $run ) {
-		return @wp_remote_get( $url['url'], array( 'timeout'   => 5,
-												   'blocking'  => true,
-												   'sslverify' => false,
+
+	if ( !in_array( $starttype, array( 'apirun', 'runnowlink','runext' ) )) {
+		backwpup_delete_option('temp','starterror');
+		return @wp_remote_get( $url['url'], array( 'timeout'   => 1,
+												   'blocking'  => false,
+												   'sslverify' => apply_filters( 'https_local_ssl_verify', true ),
 												   'headers'   => $url['header'],
 												   'user-agent'=> 'BackWPup' ) );
-	} else
-		return $url;
+	}
+	return $url;
 }
 
 /**
@@ -522,7 +530,7 @@ function backwpup_get_workingdata( $fulldata = true ) {
 		if ( backwpup_get_option( 'cfg', 'storeworkingdatain' ) == 'db' )
 			$workingdata = backwpup_get_option( 'working', 'data', false );
 		if ( backwpup_get_option( 'cfg', 'storeworkingdatain' ) == 'file' ) {
-			if ( file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+			if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
 				$workingdata = maybe_unserialize( file_get_contents( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) );
 		}
 		return $workingdata;
@@ -532,8 +540,10 @@ function backwpup_get_workingdata( $fulldata = true ) {
 			if ( $results == 1 )
 				return true;
 		}
-		if ( backwpup_get_option( 'cfg', 'storeworkingdatain' ) == 'file' && file_exists( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
-			return true;
+		if ( backwpup_get_option( 'cfg', 'storeworkingdatain' ) == 'file') {
+			if ( is_file( backwpup_get_option( 'cfg', 'tempfolder' ) . '.backwpup_working_' . substr( md5( ABSPATH ), 16 ) ) )
+				return true;
+		}
 		return false;
 	}
 }

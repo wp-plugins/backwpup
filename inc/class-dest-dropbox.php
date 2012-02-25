@@ -708,7 +708,7 @@ class BackWPup_OAuthSimple {
 		$return_array    = array();
 
 		foreach ( $this->_parameters as $paramName=> $paramValue ) {
-			if ( ! preg_match( '/\w+_secret/', $paramName ) || (strpos( $paramValue, '@' ) !== 0 && ! file_exists( substr( $paramValue, 1 ) )) ) {
+			if ( ! preg_match( '/\w+_secret/', $paramName ) || (strpos( $paramValue, '@' ) !== 0 && ! is_file( substr( $paramValue, 1 ) )) ) {
 				if ( is_array( $paramValue ) ) {
 					$normalized_keys[self::_oauthEscape( $paramName )] = array();
 					foreach ( $paramValue as $item )

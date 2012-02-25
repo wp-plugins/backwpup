@@ -92,26 +92,26 @@ class BackWPup_Ajax_Fileinfo {
 
 		//add extra files if selected
 		if ( backwpup_get_option( $this->jobmain, 'backupspecialfiles' ) ) {
-			if ( file_exists( ABSPATH . 'wp-config.php' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'wp-config.php' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( ABSPATH . 'wp-config.php' );
 				$this->countfiles ++;
-			} elseif ( file_exists( dirname( ABSPATH ) . '/wp-config.php' ) && ! file_exists( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
+			} elseif ( is_file( dirname( ABSPATH ) . '/wp-config.php' ) && ! is_file( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( dirname( ABSPATH ) . '/wp-config.php' );
 				$this->countfiles ++;
 			}
-			if ( file_exists( ABSPATH . '.htaccess' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
+			if ( is_file( ABSPATH . '.htaccess' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( ABSPATH . '.htaccess' );
 				$this->countfiles ++;
 			}
-			if ( file_exists( ABSPATH . '.htpasswd' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
+			if ( is_file( ABSPATH . '.htpasswd' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( ABSPATH . '.htpasswd' );
 				$this->countfiles ++;
 			}
-			if ( file_exists( ABSPATH . 'robots.txt' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'robots.txt' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( ABSPATH . 'robots.txt' );
 				$this->countfiles ++;
 			}
-			if ( file_exists( ABSPATH . 'favicon.ico' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
+			if ( is_file( ABSPATH . 'favicon.ico' ) && ! backwpup_get_option( $this->jobmain, 'backuproot' ) ) {
 				$this->countfilesize = $this->countfilesize + filesize( ABSPATH . 'favicon.ico' );
 				$this->countfiles ++;
 			}

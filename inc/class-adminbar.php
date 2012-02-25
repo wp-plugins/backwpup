@@ -55,7 +55,7 @@ class BackWPup_Adminbar {
 											'parent' => 'backwpup_jobs',
 											'title'  => $name,
 											'href'   => wp_nonce_url( backwpup_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . $job, 'edit-job' ) ) );
-			$url = backwpup_jobrun_url( 'runnow', $job );
+			$url = backwpup_jobrun_url( 'runnowlink', $job );
 			$wp_admin_bar->add_menu( array( 'id'	 => 'backwpup_jobs_runnow_' . $job,
 											'parent' => 'backwpup_jobs_' . $job,
 											'title'  => __( 'Run Now', 'backwpup' ),
