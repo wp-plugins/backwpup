@@ -362,7 +362,7 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
     <?PHP _e('Max. backup files in Dropbox folder:','backwpup'); ?><input name="dropemaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['dropemaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
   </div>
   <div class="destlinks">
-    <a name="dropbox" href="http://db.tt/Bm0l8dfn" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
+    <a name="dropbox" href="http://db.tt/vM8QBqgN" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
     <a href="https://www.dropbox.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
   </div>
   <br class="clear" />
