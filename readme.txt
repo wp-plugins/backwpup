@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.2
 Tested up to: 3.3
-Stable tag: 2.1.8
+Stable tag: 2.1.9
 
 WordPress Backup and more...
 
@@ -59,17 +59,17 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 3.0 =
-* Added: file sync with destination for backups
+* Added: file sync with destination for backups @todo
 * Added: own database table for backwpup
 * Added: new methods to start a job link/commandline
 * Added: Extra compression for dump and xml files
 * Added: changeable file name for dump and xml files
-* Added: Changeable DB connection to backup/check/repair other DB's
+* Added: changeable DB connection to backup/check/repair other DB's
 * Added: not load text domains on job or ajax working for better performance and lower memory usage
 * Added: tool for script execution time test
 * Added: capability backwpup for Administrator to wp_roles
 * Added: creation of a file with a list of installed plugins
-* Added: many little thinks
+* Added: a little security scanner   @todo
 * Improved: mysql dump
 * Improved: XML export
 * Improved: archive zipping
@@ -89,6 +89,10 @@ Do backups and more for your WordPress Blog.
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
 * Removed: dump restore is now a extra file
 * Fixed: many bugs
+
+= 2.1.9 =
+* bypass Google Analytics by Yoast oauth
+* improved working displaying
 
 = 2.1.8 =
 * Updated AWS lib to 1.5.2

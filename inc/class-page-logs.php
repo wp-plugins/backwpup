@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for BackWPup logs display page
  */
-class BackWpup_Page_Logs {
+class BackWPup_Page_Logs {
 	public static function load() {
 		global $backwpup_listtable;
 		//Create Table

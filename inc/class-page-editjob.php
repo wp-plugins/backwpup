@@ -618,12 +618,17 @@ class BackWPup_Page_Editjob {
 			else
 				echo ' <input class="radio" type="radio"' . checked( 'bz2', backwpup_get_option( $main, 'wpexportfilecompression' ), false ) . ' name="wpexportfilecompression" value="bz2" disabled="disabled" />' . __( 'BZip2', 'backwpup' );
 			?>
-			<br />&nbsp;<br />
+		</div>
+	</div>
+
+	<div id="wpplugin" class="stuffbox"<?php if ( ! in_array( "WPPLUGIN", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
+		<h3><label for="wpplugin"><?php _e( 'Wordpress Installed Plugin List', 'backwpup' ); ?></label></h3>
+
+		<div class="inside">
 			<?php _e( 'Filename for export a list of installed plugins:', 'backwpup' );?>
 			&nbsp;<input class="long-text" type="text" name="pluginlistfile" value="<?php echo backwpup_get_option( $main, 'pluginlistfile' );?>" />.txt&nbsp;
 		</div>
 	</div>
-
 
 	<div id="filebackup" class="stuffbox"<?php if ( ! in_array( "FILE", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
 		<h3><label for="filebackup"><?php _e( 'File Backup', 'backwpup' ); ?></label></h3>
@@ -734,6 +739,14 @@ class BackWPup_Page_Editjob {
 			<b><?php _e( 'Exclude files/folders from backup:', 'backwpup' ); ?></b><br />
 			<?php _e( 'Example:', 'backwpup' ); ?> /logs/,.log,.tmp,/temp/,....<br />
 			<input name="fileexclude" id="fileexclude" type="text" value="<?php echo backwpup_get_option( $main, 'fileexclude' );?>" class="large-text" /><br />
+		</div>
+	</div>
+
+	<div id="security" class="stuffbox"<?php if ( ! in_array( "SECURITY", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
+		<h3><label for="security"><?php _e( 'Little Security Scan', 'backwpup' ); ?></label></h3>
+
+		<div class="inside">
+
 		</div>
 	</div>
 

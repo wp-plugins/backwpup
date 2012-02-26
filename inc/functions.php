@@ -375,24 +375,30 @@ function backwpup_job_types( $type = array(), $echo = false ) {
 		foreach ( $type as $value ) {
 			switch ( $value ) {
 				case 'WPEXP':
-					$typename .= __( 'WP XML Export', 'backwpup' ) . "<br />";
+					$typename .= __( 'WP XML export', 'backwpup' ) . "<br />";
+					break;
+				case 'WPPLUGIN':
+					$typename .= __( 'Installed plugins file', 'backwpup' ) . "<br />";
 					break;
 				case 'FILE':
-					$typename .= __( 'File Backup', 'backwpup' ) . "<br />";
+					$typename .= __( 'File backup', 'backwpup' ) . "<br />";
 					break;
 				case 'DB':
-					$typename .= __( 'Database Backup', 'backwpup' ) . "<br />";
+					$typename .= __( 'Database backup', 'backwpup' ) . "<br />";
 					break;
 				case 'OPTIMIZE':
-					$typename .= __( 'Optimize Database Tables', 'backwpup' ) . "<br />";
+					$typename .= __( 'Optimize database tables', 'backwpup' ) . "<br />";
 					break;
 				case 'CHECK':
-					$typename .= __( 'Check Database Tables', 'backwpup' ) . "<br />";
+					$typename .= __( 'Check database tables', 'backwpup' ) . "<br />";
+					break;
+				case 'SECURITY':
+					$typename .= __( 'Little security check', 'backwpup' ) . "<br />";
 					break;
 			}
 		}
 	} else {
-		$typename = array( 'DB', 'WPEXP', 'FILE', 'OPTIMIZE', 'CHECK' );
+		$typename = array( 'DB', 'WPEXP','WPPLUGIN', 'FILE', 'OPTIMIZE', 'CHECK','SECURITY' );
 	}
 
 	if ( $echo )
@@ -410,8 +416,8 @@ function backwpup_job_types( $type = array(), $echo = false ) {
  * @return array|bool
  */
 function backwpup_read_logheader( $logfile ) {
-	$headers = array( "backwpup_version"		=> "version",
-					  "backwpup_logtime"		=> "logtime",
+	$usedmetas = array( "date"				=> "logtime",
+					  "backwpup_logtime"		=> "logtime",    //old value of date
 					  "backwpup_errors"		 => "errors",
 					  "backwpup_warnings"	   => "warnings",
 					  "backwpup_jobid"		  => "jobid",
@@ -419,26 +425,22 @@ function backwpup_read_logheader( $logfile ) {
 					  "backwpup_jobtype"		=> "type",
 					  "backwpup_jobruntime"	 => "runtime",
 					  "backwpup_backupfilesize" => "backupfilesize" );
-	if ( ! is_readable( $logfile ) )
-		return false;
-	//Read file
-	if ( strtolower( substr( $logfile, - 3 ) ) == ".gz" ) {
-		$fp        = gzopen( $logfile, 'r' );
-		$file_data = gzread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
-		gzclose( $fp );
-	} else {
-		$fp        = fopen( $logfile, 'r' );
-		$file_data = fread( $fp, 1536 ); // Pull only the first 1,5kiB of the file in.
-		fclose( $fp );
-	}
-	//get data form file
-	foreach ( $headers as $keyword => $field ) {
-		preg_match( '/(<meta name="' . $keyword . '" content="(.*)" \/>)/i', $file_data, $content );
-		if ( ! empty($content) )
-			$joddata[$field] = $content[2];
-		else
+	//get metadata of logfile
+	$metas=array();
+	if (is_file($logfile))
+		$metas=(array)get_meta_tags($logfile);
+	//only output needed data
+	foreach ( $usedmetas as $keyword => $field ) {
+		if ( isset($metas[$keyword]) ) {
+			$joddata[$field] = $metas[$keyword];
+		} else {
 			$joddata[$field] = '';
+		}
 	}
+	//convert date
+	if (isset($metas['date']))
+		$joddata['logtime']=strtotime($metas['date']);
+	//use file create dat if none
 	if ( empty($joddata['logtime']) )
 		$joddata['logtime'] = filectime( $logfile );
 	return $joddata;

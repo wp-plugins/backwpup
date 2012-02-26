@@ -3,7 +3,7 @@ jQuery(document).ready( function($) {
 	$('.if-js-closed').removeClass('if-js-closed').addClass('closed');
 
 	$('input[name="type[]"]').change(function() {
-		if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+		if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val() || 'WPPLUGIN' == $('#jobtype-select-WPPLUGIN:checked').val() ) {
             $('div[id^=backwpup_jobedit_dest]').show();
             if ($('input[name="backuptype"]:checked').val()=='sync') {
                 $('div[id^=nosync_backwpup_jobedit_dest]').hide();
@@ -34,6 +34,16 @@ jQuery(document).ready( function($) {
 		} else {
 			$('#filebackup').hide();
 		}
+		if ( 'WPPLUGIN' == $('#jobtype-select-WPPLUGIN:checked').val()) {
+			$('#wpplugin').show();
+		} else {
+			$('#wpplugin').hide();
+		}
+		if ( 'SECURITY' == $('#jobtype-select-SECURITY:checked').val()) {
+			$('#security').show();
+		} else {
+			$('#security').hide();
+		}
 	});
 
 	$('input[name="backuptype"]').change(function() {
@@ -43,7 +53,7 @@ jQuery(document).ready( function($) {
             $('.sync').show();
 		} else {
 			$('.nosync').show();
-            if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+            if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val() || 'WPPLUGIN' == $('#jobtype-select-WPPLUGIN:checked').val()) {
                 $('div[id^=nosync_backwpup_jobedit_dest]').show();
             }
             $('.sync').hide();
@@ -56,7 +66,7 @@ jQuery(document).ready( function($) {
         $('.sync').show();
 	} else {
         $('.nosync').show();
-        if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val()) {
+        if ( 'FILE' == $('#jobtype-select-FILE:checked').val() || 'DB' ==  $('#jobtype-select-DB:checked').val() || 'WPEXP' == $('#jobtype-select-WPEXP:checked').val() || 'WPPLUGIN' == $('#jobtype-select-WPPLUGIN:checked').val()) {
             $('div[id^=nosync_backwpup_jobedit_dest]').show();
         }
         $('.sync').hide();

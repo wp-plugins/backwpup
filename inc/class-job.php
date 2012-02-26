@@ -217,12 +217,10 @@ class BackWPup_Job {
 		//setup job steps
 		if ( in_array( 'DB', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
 			$this->jobdata['STEPS'][] = 'DB_DUMP';
-		if ( in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) ) {
-			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpexportfile' ) )
-				$this->jobdata['STEPS'][] = 'WP_EXPORT';
-			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'pluginlistfile' ) )
-				$this->jobdata['STEPS'][] = 'WP_PLUGIN_LIST';
-		}
+		if ( in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
+			$this->jobdata['STEPS'][] = 'WP_EXPORT';
+		if ( in_array( 'WPPLUGIN', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
+			$this->jobdata['STEPS'][] = 'WP_PLUGIN_LIST';
 		if ( in_array( 'FILE', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
 			$this->jobdata['STEPS'][] = 'FOLDER_LIST';
 		if ( in_array( 'DB', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'FILE', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) ) {
@@ -256,6 +254,8 @@ class BackWPup_Job {
 			$this->jobdata['STEPS'][] = 'DB_CHECK';
 		if ( in_array( 'OPTIMIZE', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
 			$this->jobdata['STEPS'][] = 'DB_OPTIMIZE';
+		if ( in_array( 'SECURITY', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
+			$this->jobdata['STEPS'][] = 'SECURITY';
 		$this->jobdata['STEPS'][] = 'END';
 		//mark all as not done
 		foreach ( $this->jobdata['STEPS'] as $step )
@@ -280,8 +280,11 @@ class BackWPup_Job {
 		fwrite( $fd, "<meta charset=\"".$charset."\" />". $this->line_separator );
 		fwrite( $fd, "<title>" . sprintf( __( 'BackWPup log for %1$s from %2$s at %3$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ), date_i18n( get_option( 'date_format' ) ), date_i18n( get_option( 'time_format' ) ) ) . "</title>". $this->line_separator);
 		fwrite( $fd, "<meta name=\"robots\" content=\"noindex, nofollow\" />" . $this->line_separator );
-		fwrite( $fd, "<meta name=\"backwpup_version\" content=\"" . BackWPup::get_plugin_data('Version') . "\" />" . $this->line_separator );
-		fwrite( $fd, "<meta name=\"backwpup_logtime\" content=\"" . current_time( 'timestamp' ) . "\" />" . $this->line_separator );
+		fwrite( $fd, "<meta name=\"copyright\" content=\"Copyright &copy; 2009 - ".date_i18n('Y')." Daniel H&uuml;sken\" />". $this->line_separator );
+		fwrite( $fd, "<meta name=\"generator\" content=\"BackWPup " . BackWPup::get_plugin_data('Version') . "\" />". $this->line_separator );
+		fwrite( $fd, "<meta http-equiv=\"cache-control\" content=\"no-cache\" />". $this->line_separator );
+		fwrite( $fd, "<meta http-equiv=\"pragma\" content=\"no-cache\" />". $this->line_separator );
+		fwrite( $fd, "<meta name=\"date\" content=\"".date_i18n('c')."\" />". $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_errors\" content=\"0\" />", 100 ) . $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_warnings\" content=\"0\" />", 100 ) . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_jobid\" content=\"" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'jobid' ) . "\" />" . $this->line_separator );
@@ -289,12 +292,9 @@ class BackWPup_Job {
 		fwrite( $fd, "<meta name=\"backwpup_jobtype\" content=\"" . implode( '+', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) . "\" />" . $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_backupfilesize\" content=\"0\" />", 100 ) . $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_jobruntime\" content=\"0\" />", 100 ) . $this->line_separator );
-		fwrite( $fd, "<style type=\"text/css\">" . $this->line_separator );
-		fwrite( $fd, ".warning {background-color:yellow;}" . $this->line_separator );
-		fwrite( $fd, ".error {background-color:red;}" . $this->line_separator );
-		fwrite( $fd, "body {font-family:Fixedsys,Courier,monospace;font-size:12px;line-height:15px;background-color:black;color:white;white-space:pre;display:block;}" . $this->line_separator );
-		fwrite( $fd, "</style>" . $this->line_separator );
-		fwrite( $fd, "</head>" . $this->line_separator . "<body>" );
+		fwrite( $fd, "<link rel=\"shortcut icon\" href=\"http://backwpup.com/favicon.ico\" type=\"image/x-icon\" />". $this->line_separator );
+		fwrite( $fd, "</head>" . $this->line_separator . "<body style=\"border-color:#CEE1EF;border-style:solid;border-width:5px;padding:2px;overflow:auto;\">"  );
+		fwrite( $fd, "<section style=\"font-family:Fixedsys,Courier,monospace;font-size:12px;line-height:15px;background-color:black;color:white;white-space:pre;display:block;\"><header>" );
 		fwrite( $fd, sprintf( __( '[INFO] BackWPup version %1$s, WordPress version %4$s Copyright %2$s %3$s' ), BackWPup::get_plugin_data('Version'), '&copy; 2009-' . date_i18n( 'Y' ), '<a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a>', $wp_version )  . $this->line_separator );
 		fwrite( $fd, __( '[INFO] This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' )  . $this->line_separator );
 		fwrite( $fd, __( '[INFO] BackWPup job:', 'backwpup' ) . ' ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'jobid' ) . '. ' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ) . '; ' . implode( '+', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) )  . $this->line_separator );
@@ -323,6 +323,7 @@ class BackWPup_Job {
 		fwrite( $fd, sprintf( __( '[INFO] Backup type is: %s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuptype' ) ) . $this->line_separator );
 		if ( ! empty($this->jobdata['BACKUPFILE']) && backwpup_get_option( $this->jobdata['JOBMAIN'], 'backuptype' ) == 'archive' )
 			fwrite( $fd, sprintf( __( '[INFO] Backup file is: %s', 'backwpup' ), $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] )  . $this->line_separator );
+		fwrite( $fd, '</header>' );
 		fclose( $fd );
 		//test for destinations
 		if ( in_array( 'DB', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) or in_array( 'FILE', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) ) {
@@ -409,7 +410,7 @@ class BackWPup_Job {
 		switch ( $args[0] ) {
 			case E_NOTICE:
 			case E_USER_NOTICE:
-				$messagetype = "<span>";
+				$messagetype = "<samp>";
 				break;
 			case E_WARNING:
 			case E_CORE_WARNING:
@@ -417,7 +418,7 @@ class BackWPup_Job {
 			case E_USER_WARNING:
 				$this->jobdata['WARNING'] ++;
 				$adderrorwarning = true;
-				$messagetype     = "<span class=\"warning\">" . __( 'WARNING:', 'backwpup' ). " ";
+				$messagetype     = "<samp style=\"background-color:tan;\" class=\"warning\">" . __( 'WARNING:', 'backwpup' ). " ";
 				break;
 			case E_ERROR:
 			case E_PARSE:
@@ -426,27 +427,27 @@ class BackWPup_Job {
 			case E_USER_ERROR:
 				$this->jobdata['ERROR'] ++;
 				$adderrorwarning = true;
-				$messagetype     = "<span class=\"error\">" . __( 'ERROR:', 'backwpup' ). " ";
+				$messagetype     = "<samp style=\"background-color:red;\" class=\"error\">" . __( 'ERROR:', 'backwpup' ). " ";
 				break;
 			case E_DEPRECATED:
 			case E_USER_DEPRECATED:
-				$messagetype = "<span>" . __( 'DEPRECATED:', 'backwpup' ). " ";
+				$messagetype = "<samp>" . __( 'DEPRECATED:', 'backwpup' ). " ";
 				break;
 			case E_STRICT:
-				$messagetype = "<span>" . __( 'STRICT NOTICE:', 'backwpup' ). " ";
+				$messagetype = "<samp>" . __( 'STRICT NOTICE:', 'backwpup' ). " ";
 				break;
 			case E_RECOVERABLE_ERROR:
-				$messagetype = "<span>" . __( 'RECOVERABLE ERROR:', 'backwpup' ). " ";
+				$messagetype = "<samp>" . __( 'RECOVERABLE ERROR:', 'backwpup' ). " ";
 				break;
 			default:
-				$messagetype = "<span>" . $args[0] . ": ";
+				$messagetype = "<samp>" . $args[0] . ": ";
 				break;
 		}
 
 		//log line
-		$timestamp = "<span title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename( $args[2] ) . "|Mem: " . size_format( @memory_get_usage( true ), 2 ) . "|Mem Max: " . size_format( @memory_get_peak_usage( true ), 2 ) . "|Mem Limit: " . ini_get( 'memory_limit' ) . "|PID: " . getmypid() . "|Query's: " . get_num_queries() . "]\">[" . date_i18n( 'd-M-Y H:i:s' ) . "]</span> ";
+		$timestamp = "<time datetime=\"" . date_i18n('c') . "\" title=\"[Type: " . $args[0] . "|Line: " . $args[3] . "|File: " . basename( $args[2] ) . "|Mem: " . size_format( @memory_get_usage( true ), 2 ) . "|Mem Max: " . size_format( @memory_get_peak_usage( true ), 2 ) . "|Mem Limit: " . ini_get( 'memory_limit' ) . "|PID: " . getmypid() . "|Query's: " . get_num_queries() . "]\">[" . date_i18n( 'd-M-Y H:i:s' ) . "]</time> ";
 		//write log file
-		file_put_contents( $this->jobdata['LOGFILE'], $timestamp . $messagetype  . $args[1] . "</span>" . $this->line_separator, FILE_APPEND );
+		file_put_contents( $this->jobdata['LOGFILE'], $timestamp . $messagetype  . $args[1] . "</samp>" . $this->line_separator, FILE_APPEND );
 
 		//write new log header
 		if ( $adderrorwarning ) {
@@ -618,7 +619,7 @@ class BackWPup_Job {
 		@ini_set( 'error_log', $this->jobdata['PHP']['INI']['ERROR_LOG'] );
 		@ini_set( 'display_errors', $this->jobdata['PHP']['INI']['DISPLAY_ERRORS'] );
 		//logfile end
-		file_put_contents( $this->jobdata['LOGFILE'], "</body>" . $this->line_separator . "</html>", FILE_APPEND );
+		file_put_contents( $this->jobdata['LOGFILE'], "</section></body>" . $this->line_separator . "</html>", FILE_APPEND );
 
 		//Send mail with log
 		$sendmail = false;
@@ -1536,6 +1537,23 @@ class BackWPup_Job {
 		$this->jobdata['STEPSDONE'][] = 'WP_PLUGIN_LIST'; //set done
 	}
 
+	/**
+	 * Makes a little security scan
+	 *
+	 * @return nothing
+	 */
+	private function security() {
+		$this->jobdata['STEPTODO'] = 1;
+		trigger_error( sprintf( __( '%d. Try for little security scan...', 'backwpup' ), $this->jobdata['SECURITY']['STEP_TRY'] ), E_USER_NOTICE );
+
+		//check folder permissions
+
+		//check blog url is a not good url
+
+
+		$this->jobdata['STEPDONE']    = 1;
+		$this->jobdata['STEPSDONE'][] = 'SECURITY'; //set done
+	}
 
 	/**
 	 * Generates a list of folder to backup
@@ -2060,83 +2078,6 @@ class BackWPup_Job {
 
 		$this->jobdata['STEPDONE'] ++;
 		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER'; //set done
-	}
-
-	private function dest_folder_sync() {
-		$this->jobdata['STEPTODO'] = count( $this->jobdata['FOLDERLIST'] );
-		trigger_error( sprintf( __( '%d. Try to sync files with folder...', 'backwpup' ), $this->jobdata['DEST_FOLDER_SYNC']['STEP_TRY'] ), E_USER_NOTICE );
-		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupsyncnodelete' ) )
-			trigger_error( __( 'No files/folder will deleted on destination!', 'backwpup' ) );
-		//create not existing folders
-		foreach ( $this->jobdata['FOLDERLIST'] as $folder ) {
-			$testfolder = str_replace( $this->jobdata['REMOVEPATH'], '', $folder );
-			if ( empty($testfolder) )
-				continue;
-			if ( ! is_dir( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ) . $testfolder ) )
-				wp_mkdir_p( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ) . $testfolder );
-		}
-		//sync folder by folder
-		$this->_dest_folder_sync_files( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ) );
-		$this->jobdata['STEPSDONE'][] = 'DEST_FOLDER_SYNC'; //set done
-	}
-
-	/**
-	 * @param string $folder
-	 * @param int	$levels
-	 *
-	 * @return bool
-	 */
-	private function _dest_folder_sync_files( $folder = '', $levels = 100 ) {
-		if ( empty($folder) )
-			return false;
-		if ( ! $levels )
-			return false;
-		$this->jobdata['STEPDONE'] ++;
-		$this->update_working_data();
-		$folder = trailingslashit( $folder );
-		//get files to sync
-		$filestosync = $this->get_files_in_folder( $this->jobdata['REMOVEPATH'] . trim( str_replace( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ), '', $folder ) ) );
-		if ( $folder == backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ) ) //add extra files to sync
-			$filestosync = array_merge( $filestosync, $this->jobdata['EXTRAFILESTOBACKUP'] );
-
-		if ( $dir = @opendir( $folder ) ) {
-			while ( ($file = readdir( $dir )) !== false ) {
-				if ( in_array( $file, array( '.', '..' ) ) )
-					continue;
-				if ( ! is_readable( $folder . $file ) ) {
-					trigger_error( sprintf( __( 'File or folder "%s" is not readable!', 'backwpup' ), $folder . $file ), E_USER_WARNING );
-				} elseif ( is_dir( $folder . $file ) ) {
-					$this->_dest_folder_sync_files( trailingslashit( $folder . $file ), $levels - 1 );
-					if ( ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupsyncnodelete' ) ) {
-						$testfolder = str_replace( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ), '', $folder . $file );
-						if ( ! in_array( $this->jobdata['REMOVEPATH'] . $testfolder, $this->jobdata['FOLDERLIST'] ) ) {
-							if ( rmdir( $folder . $file ) )
-								trigger_error( sprintf( __( 'Folder deleted %s', 'backwpup' ), $folder . $file ) );
-						}
-					}
-				} elseif ( is_file( $folder . $file ) ) {
-					$testfile = str_replace( backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupdir' ), '', $folder . $file );
-					if ( in_array( $this->jobdata['REMOVEPATH'] . $testfile, $filestosync ) ) {
-						if ( filesize( $this->jobdata['REMOVEPATH'] . $testfile ) != filesize( $folder . $file ) )
-							copy( $this->jobdata['REMOVEPATH'] . $testfile, $folder . $file );
-						foreach ( $filestosync as $key => $keyfile ) {
-							if ( $keyfile == $this->jobdata['REMOVEPATH'] . $testfile )
-								unset($filestosync[$key]);
-						}
-					} elseif ( ! backwpup_get_option( $this->jobdata['JOBMAIN'], 'backupsyncnodelete' ) ) {
-						if ( unlink( $folder . $file ) )
-							trigger_error( sprintf( __( 'File deleted %s', 'backwpup' ), $folder . $file ) );
-					}
-				}
-			}
-			@closedir( $dir );
-		}
-		//sync new files
-		foreach ( $filestosync as $keyfile )
-		{
-			copy( $keyfile, $folder . basename( $keyfile ) );
-		}
-		return true;
 	}
 
 	/**
