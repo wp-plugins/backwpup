@@ -106,15 +106,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'init', array( $this, 'plugin_init' ) );
 				//load API
 				add_action( 'init', array( 'BackWPup_Api', 'get_object' ) );
-				//ajax actions  now in ajax.php
-				//add_action( 'wp_ajax_backwpup_show_info', array( 'BackWPup_Ajax_Fileinfo', 'get_object' ) );
-				//add_action( 'wp_ajax_backwpup_working', array( 'BackWPup_Ajax_Working', 'working' ) );
-				//add_action( 'wp_ajax_backwpup_cron_text', array( 'BackWPup_Ajax_Editjob', 'cron_text' ) );
-				//add_action( 'wp_ajax_backwpup_aws_buckets', array( 'BackWPup_Ajax_Editjob', 'aws_buckets' ) );
-				//add_action( 'wp_ajax_backwpup_gstorage_buckets', array( 'BackWPup_Ajax_Editjob', 'gstorage_buckets' ) );
-				//add_action( 'wp_ajax_backwpup_rsc_container', array( 'BackWPup_Ajax_Editjob', 'rsc_container' ) );
-				//add_action( 'wp_ajax_backwpup_msazure_container', array( 'BackWPup_Ajax_Editjob', 'msazure_container' ) );
-				//add_action( 'wp_ajax_backwpup_sugarsync_root', array( 'BackWPup_Ajax_Editjob', 'sugarsync_root' ) );
 				//bypass Google Analytics by Yoast oauth
 				if ( isset($_GET['oauth_token']) && $_GET['page'] == 'backwpupeditjob' ) {
 					$_GET['oauth_token_backwpup'] = $_GET['oauth_token'];

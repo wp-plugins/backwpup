@@ -77,7 +77,6 @@ function backwpup_default_option_settings( $main, $name ) {
 		$default[$main]['dbuser']               	= DB_USER;
 		$default[$main]['dbpassword']               = backwpup_encrypt(DB_PASSWORD);
 		$default[$main]['dbcharset']               	= DB_CHARSET;
-		$default[$main]['dbcollation']              = DB_COLLATE;
 		$default[$main]['maintenance']              = false;
 		$default[$main]['wpexportfile']             = sanitize_key( get_bloginfo( 'name' ) ) . '.wordpress.%Y-%m-%d';
 		$default[$main]['pluginlistfile']           = sanitize_key( get_bloginfo( 'name' ) ) . '.pluginlist.%Y-%m-%d';

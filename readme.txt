@@ -14,9 +14,11 @@ Do backups and more for your WordPress Blog.
 
 * Database Backup
 * WordPress XML Export
+* Generate a file with installed plugins
 * Optimize Database
 * Check\Repair Database
 * File Backup
+* Little security scan
 * Backups in zip, tar, tar.gz, tar.bz2 format
 * Store backup to Folder
 * Store backup to FTP Server
@@ -65,6 +67,7 @@ Do backups and more for your WordPress Blog.
 * Added: Extra compression for dump and xml files
 * Added: changeable file name for dump and xml files
 * Added: changeable DB connection to backup/check/repair other DB's
+* Added: DB Views support
 * Added: not load text domains on job or ajax working for better performance and lower memory usage
 * Added: tool for script execution time test
 * Added: capability backwpup for Administrator to wp_roles

@@ -100,7 +100,7 @@ class BackWPup_Ajax_Editjob {
 			$jobmain = $_POST['jobmain'];
 			$ajax          = true;
 		}
-		$dbconnection=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword),true);
+		$dbconnection=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword));
 		if (!$dbconnection or empty($dbname)) {
 			echo '<div id="dbtables"></div>';
 			if ( $ajax )
@@ -108,10 +108,13 @@ class BackWPup_Ajax_Editjob {
 			else
 				return;
 		}
-		$res = mysql_query( 'SHOW TABLES FROM `' . $dbname . '`', $dbconnection );
+		$res = mysql_query( 'SHOW FULL TABLES FROM `' . $dbname . '`', $dbconnection );
 		echo '<div id="dbtables">';
 		while ( $table = mysql_fetch_row($res) ) {
-			echo '	<input class="checkbox" type="checkbox"' . checked( ! in_array( $table[0], backwpup_get_option( $jobmain, 'dbexclude' ) ), true, false ) . ' name="jobtabs[]" value="' . rawurlencode( $table[0] ) . '"/> ' . $table[0] . '<br />';
+			$tabletype='';
+			if ($table[1]!='BASE TABLE')
+				$tabletype=' (' . strtolower($table[1]) . ')';
+			echo '	<input class="checkbox" type="checkbox"' . checked( ! in_array( $table[0], backwpup_get_option( $jobmain, 'dbexclude' ) ), true, false ) . ' name="jobtabs[]" value="' . rawurlencode( $table[0] ) . '"/> ' . $table[0] . $tabletype.'<br />';
 		}
 		echo '</div>';
 		if ( $ajax )

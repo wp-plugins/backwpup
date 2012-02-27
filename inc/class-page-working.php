@@ -22,7 +22,7 @@ class BackWPup_Page_Working {
 			check_admin_referer( 'view-log_' . basename( trim( $_GET['logfile'] ) ) );
 
 		//get last logfile from job
-		if ( ! empty($_GET['jobid']) && !isset($_GET['starttype']))
+		if ( ! empty($_GET['jobid']))
 			$_GET['logfile'] = backwpup_get_option( 'job_' . $_GET['jobid'], 'logfile' );
 
 		//add Help

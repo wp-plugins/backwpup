@@ -175,8 +175,8 @@ class BackWPup_Page_Backwpup {
 		global $wpdb, $wp_version;
 		$massage = '';
 		// check MySQL Version
-		if ( version_compare( $wpdb->get_var( "SELECT VERSION() AS version" ), '5.0', '<' ) )
-			$massage .= __( "- MySQL 5.0 or higher is needed!", 'backwpup' ) . '<br />';
+		if ( version_compare( $wpdb->get_var( "SELECT VERSION() AS version" ), '5.0.7', '<' ) )  //mysql_charset()
+			$massage .= __( "- MySQL 5.0.7 or higher is needed!", 'backwpup' ) . '<br />';
 		// check logs folder
 		if ( ! BackWPup_File::check_open_basedir( backwpup_get_option( 'cfg', 'logfolder' ) ) ) //check open basedir
 			$massage .= sprintf( __( "- Log folder '%s' is not in open_basedir path!", 'backwpup' ), backwpup_get_option( 'cfg', 'logfolder' ) ) . '<br />';

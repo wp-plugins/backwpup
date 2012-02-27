@@ -101,7 +101,7 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 	 * @return string
 	 */
 	function single_row( $jobid, $backupdata, $style = '' ) {
-		global $mode;
+		global $mode,$wpdb;
 
 		list($columns, $hidden, $sortable) = $this->get_column_info();
 		$r = "<tr id=\"jodid-" . $jobid . "\"" . $style . ">";
@@ -150,14 +150,17 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 				case 'info':
 					$r .= "<td $attributes>";
 					if ( in_array( 'DB', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'OPTIMIZE', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'CHECK', backwpup_get_option( 'job_' . $jobid, 'type' ) ) ) {
-						$backwpupsql=new wpdb(backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option('job_' . $jobid, 'dbpassword' )),backwpup_get_option( 'job_' . $jobid, 'dbname' ),backwpup_get_option( 'job_' . $jobid, 'dbhost' ));
-						$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( 'job_' . $jobid, 'dbcharset' ),backwpup_get_option('job_' . $jobid, 'dbcollation' ));
+						if (!backwpup_get_option( 'job_' . $jobid, 'wpdbsettings')) {
+							$backwpupsql=mysql_connect(backwpup_get_option( 'job_' . $jobid, 'dbhost' ),backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option( 'job_' . $jobid, 'dbpassword' )),true);
+							mysql_set_charset( backwpup_get_option('job_' . $jobid, 'dbcharset' ), $backwpupsql );
+						} else {
+							$backwpupsql=$wpdb->dbh;
+						}
 						$dbsize = array( 'size'=> 0,
 										 'num' => 0,
 										 'rows'=> 0 );
-						$status = $backwpupsql->get_results( "SHOW TABLE STATUS FROM `" . backwpup_get_option( 'job_' . $jobid, 'dbname' ) . "`;", ARRAY_A );
-						unset($backwpupsql);
-						foreach ( $status as $tablevalue ) {
+						$res = mysql_query( "SHOW TABLE STATUS FROM `" . backwpup_get_option( 'job_' . $jobid, 'dbname' ) . "`" );
+						while ( $tablevalue=mysql_fetch_assoc($res) ) {
 							if ( ! in_array( $tablevalue['Name'], backwpup_get_option( 'job_' . $jobid, 'dbexclude' ) ) ) {
 								$dbsize['size'] = $dbsize['size'] + $tablevalue["Data_length"] + $tablevalue["Index_length"];
 								$dbsize['num'] ++;
@@ -169,6 +172,8 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 							$r .= sprintf( __( "DB Tables: %d", "backwpup" ), $dbsize['num'] ) . "<br />";
 							$r .= sprintf( __( "DB Rows: %d", "backwpup" ), $dbsize['rows'] ) . "<br />";
 						}
+						if (!backwpup_get_option( 'job_' . $jobid, 'wpdbsettings'))
+							mysql_close($backwpupsql);
 					}
 					if ( in_array( 'FILE', backwpup_get_option( 'job_' . $jobid, 'type' ) ) ) {
 						if ( false === ($files = get_transient( 'backwpup_file_info_' . $jobid )) )

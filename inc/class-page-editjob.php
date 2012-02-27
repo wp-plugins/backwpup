@@ -109,37 +109,33 @@ class BackWPup_Page_Editjob {
 			backwpup_update_option( $main, 'mailaddresslog', sanitize_email( $_POST['mailaddresslog'] ) );
 			backwpup_update_option( $main, 'mailerroronly', (isset($_POST['mailerroronly']) && $_POST['mailerroronly'] == 1) ? true : false );
 			backwpup_update_option( $main, 'wpdbsettings',(isset($_POST['wpdbsettings']) && $_POST['wpdbsettings'] == 1) ? true : false );
-			if (!backwpup_get_option( $main, 'wpdbsettings')) {
-				backwpup_update_option( $main, 'dbhost', $_POST['dbhost'] );
-				backwpup_update_option( $main, 'dbuser', $_POST['dbuser'] );
-				backwpup_update_option( $main, 'dbpassword', backwpup_encrypt($_POST['dbpassword']) );
-				backwpup_update_option( $main, 'dbname', trim($_POST['dbname']) );
-				$charset=explode('_',trim($_POST['dbcollation']));
-				backwpup_update_option( $main, 'dbcharset', $charset[0] );
-				backwpup_update_option( $main, 'dbcollation', trim($_POST['dbcollation']) );
-			} else {
-				backwpup_delete_option( $main, 'dbhost' );
-				backwpup_delete_option( $main, 'dbuser' );
-				backwpup_delete_option( $main, 'dbpassword' );
-				backwpup_delete_option( $main, 'dbname' );
-				backwpup_delete_option( $main, 'dbcharset' );
-				backwpup_delete_option( $main, 'dbcollation' );
-			}
+			backwpup_update_option( $main, 'dbhost', $_POST['dbhost'] );
+			backwpup_update_option( $main, 'dbuser', $_POST['dbuser'] );
+			backwpup_update_option( $main, 'dbpassword', backwpup_encrypt($_POST['dbpassword']) );
+			backwpup_update_option( $main, 'dbname', trim($_POST['dbname']) );
+			backwpup_update_option( $main, 'dbcharset', $_POST['dbcharset'] );
+
 			//connect to db
-			$backwpupsql=new wpdb(backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option($main, 'dbpassword' )),backwpup_get_option( $main, 'dbname' ),backwpup_get_option( $main, 'dbhost' ));
-			$backwpupsql->set_charset($backwpupsql->dbh,backwpup_get_option( $main, 'dbcharset' ),backwpup_get_option( $main, 'dbcollation' ));
+			if (!backwpup_get_option( $main, 'wpdbsettings')) {
+				$backwpupsql=mysql_connect(backwpup_get_option( $main, 'dbhost' ),backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' )),true);
+				mysql_set_charset( backwpup_get_option($main, 'dbcharset' ), $backwpupsql );
+			} else {
+				$backwpupsql=$wpdb->dbh;
+			}
 			$check_db_tables = array();
 			if ( isset($_POST['jobtabs']) ) {
 				foreach ( $_POST['jobtabs'] as $dbtable ) {
 					$check_db_tables[] = rawurldecode( $dbtable );
 				}
 			}
-			$tables    = $backwpupsql->get_col( 'SHOW TABLES FROM `' . backwpup_get_option( $main, 'dbname' ) . '`' );
+			$res = mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $main, 'dbname' ) . '`', $backwpupsql );
 			$dbexclude = array();
-			foreach ( $tables as $dbtable ) {
-				if ( ! in_array( $dbtable, $check_db_tables ) )
-					$dbexclude[] = $dbtable;
+			while ( $dbtable=mysql_fetch_row($res) ) {
+				if ( ! in_array( $dbtable[0], $check_db_tables ) )
+					$dbexclude[] = $dbtable[0];
 			}
+			if (!backwpup_get_option( $main, 'wpdbsettings'))
+				mysql_close($backwpupsql);
 			backwpup_update_option( $main, 'dbexclude', $dbexclude );
 			backwpup_update_option( $main, 'dbdumpfile', $_POST['dbdumpfile'] );
 			unset($backwpupsql);
@@ -534,29 +530,12 @@ class BackWPup_Page_Editjob {
 					<input class="text" type="text" id="dbuser" name="dbuser" value="<?php echo backwpup_get_option( $main, 'dbuser' );?>" /><br />
 					<?php _e( 'Password:', 'backwpup' );?><br />
 					<input class="text" type="password" id="dbpassword" name="dbpassword" value="<?php echo backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' ));?>" /><br />
-					<?php _e( 'Collation:', 'backwpup' );?><br />
-						<select id="dbcollation" name="dbcollation">
+					<?php _e( 'Charset:', 'backwpup' );?><br />
+						<select id="dbcharset" name="dbcharset">
 							<?php
-								$charset='';
-							  	$colations=$wpdb->get_results('SHOW COLLATION',ARRAY_A);
+							  	$colations=$wpdb->get_results('SHOW CHARACTER SET',ARRAY_A);
 							  	foreach($colations as $colation ) {
-									  if ($charset=='') {
-										  echo '<optgroup label="'.$colation['Charset'].'">';
-										  $charset=$colation['Charset'];
-									  }
-									if ($charset!=$colation['Charset']) {
-										echo '</optgroup>';
-										echo '<optgroup label="'.$colation['Charset'].'">';
-										$charset=$colation['Charset'];
-									}
-									$selected='';
-									if (backwpup_get_option( $main, 'dbcharset' )==$colation['Charset']) {
-										if (!backwpup_get_option( $main, 'dbcollation' ) && !empty($colation['Default']))
-											$selected=' selected="selected"';
-										if (backwpup_get_option($main, 'dbcollation' )==$colation['Collation'])
-											$selected=' selected="selected"';
-									}
-									echo '<option value="'.$colation['Collation'].'"'.$selected.'>'.$colation['Collation'].'</option>';
+									echo '<option value="'.$colation['Charset'].'" '.selected(backwpup_get_option( $main, 'dbcharset' ),$colation['Charset']).' title="'.$colation['Description'].'">'.$colation['Charset'].'</option>';
 							  	}
 								echo '</optgroup>';
 							?>
