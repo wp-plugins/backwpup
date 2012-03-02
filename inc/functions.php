@@ -38,7 +38,7 @@ function backwpup_default_option_settings( $main, $name ) {
 		$default['cfg']['jobrunauthkey']      = '';
 		$default['cfg']['apicronservicekey']  = '';
 		$default['cfg']['jobrunmaxexectime']  = 0;
-		$default['cfg']['storeworkingdatain'] = 'db';
+		$default['cfg']['storeworkingdatain'] = 'file';
 		if ( $name == 'tempfolder' ) {
 			if ( defined( 'WP_TEMP_DIR' ) ) //get temp folder
 				$default['cfg']['tempfolder'] = trim( WP_TEMP_DIR );
@@ -349,7 +349,7 @@ function backwpup_jobrun_url( $starttype, $jobid = 0  ) {
 
 	if ( !in_array( $starttype, array( 'apirun', 'runnowlink','runext' ) )) {
 		backwpup_delete_option('temp','starterror');
-		return @wp_remote_get( $url['url'], array( 'timeout'   => 1,
+		return @wp_remote_get( $url['url'], array( 'timeout'   => 10,
 												   'blocking'  => false,
 												   'sslverify' => apply_filters( 'https_local_ssl_verify', true ),
 												   'headers'   => $url['header'],
@@ -438,7 +438,7 @@ function backwpup_read_logheader( $logfile ) {
 	}
 	//convert date
 	if (isset($metas['date']))
-		$joddata['logtime']=strtotime($metas['date']);
+		$joddata['logtime']=strtotime($metas['date'])+(get_option( 'gmt_offset' )*3600);
 	//use file create dat if none
 	if ( empty($joddata['logtime']) )
 		$joddata['logtime'] = filectime( $logfile );
@@ -474,16 +474,15 @@ function backwpup_encrypt( $string, $key = '' ) {
 	if ( empty($string) )
 		return $string;
 	//only encrypt if needed
-	if ( strpos( $string, '$BackWPup$ENC1$' ) !== false )
+	if ( strpos( $string, '$BackWPup$BFCBC$' ) !== false )
 		return $string;
-	$result = '';
-	for ( $i = 0; $i < strlen( $string ); $i ++ ) {
-		$char    = substr( $string, $i, 1 );
-		$keychar = substr( $key, ($i % strlen( $key )) - 1, 1 );
-		$char    = chr( ord( $char ) + ord( $keychar ) );
-		$result .= $char;
-	}
-	return '$BackWPup$ENC1$' . base64_encode( $result );
+	return '$BackWPup$BFCBC$' . BackWPup_Blowfish::encrypt(
+		$string,
+		$key, # encryption key
+		BackWPup_Blowfish::BLOWFISH_MODE_CBC, # Encryption Mode
+		BackWPup_Blowfish::BLOWFISH_PADDING_RFC, # Padding Style
+		'$BackWPup$BFCBC$'  # Initialisation Vector - required for CBC
+	);
 }
 
 /**
@@ -500,20 +499,30 @@ function backwpup_decrypt( $string, $key = '' ) {
 		$key = md5( ABSPATH );
 	if ( empty($string) )
 		return $string;
-	//only decrypt if encrypted
-	if ( strpos( $string, '$BackWPup$ENC1$' ) !== false )
+	if ( strpos( $string, '$BackWPup$ENC1$' ) !== false )  {
 		$string = str_replace( '$BackWPup$ENC1$', '', $string );
-	else
-		return $string;
-	$result = '';
-	$string = base64_decode( $string );
-	for ( $i = 0; $i < strlen( $string ); $i ++ ) {
-		$char    = substr( $string, $i, 1 );
-		$keychar = substr( $key, ($i % strlen( $key )) - 1, 1 );
-		$char    = chr( ord( $char ) - ord( $keychar ) );
-		$result .= $char;
+		$result = '';
+		$string = base64_decode( $string );
+		for ( $i = 0; $i < strlen( $string ); $i ++ ) {
+			$char    = substr( $string, $i, 1 );
+			$keychar = substr( $key, ($i % strlen( $key )) - 1, 1 );
+			$char    = chr( ord( $char ) - ord( $keychar ) );
+			$result .= $char;
+		}
+		return $result;
 	}
-	return $result;
+	if ( strpos( $string, '$BackWPup$BFCBC$' ) !== false )  {
+		$string = str_replace( '$BackWPup$BFCBC$', '', $string );
+		return BackWPup_Blowfish::decrypt(
+			$string,
+			$key, # encryption key
+			BackWPup_Blowfish::BLOWFISH_MODE_CBC, # Encryption Mode
+			BackWPup_Blowfish::BLOWFISH_PADDING_RFC, # Padding Style
+			'$BackWPup$BFCBC$'  # Initialisation Vector - required for CBC
+		);
+	}
+	return $string;
+
 }
 
 /**

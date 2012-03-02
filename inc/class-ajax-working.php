@@ -54,10 +54,14 @@ class BackWPup_Ajax_Working {
 				$startpos=strpos($logfiledata,$match[0])+strlen($match[0]);
 			else
 				$startpos=0;
+
 			$endpos=stripos($logfiledata,'</body>');
 			$stop= '';
-			if ($endpos !== false)
+			if ($endpos !== false) {
 				$stop  = '<span id="stopworking"></span>';
+				$stepspersent = 100;
+				$steppersent  = 100;
+			}
 			if (false === $endpos)
 				$endpos=strlen( $logfiledata );
 			$length=strlen( $logfiledata )-(strlen( $logfiledata )-$endpos)-$startpos;

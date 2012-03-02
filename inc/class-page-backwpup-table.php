@@ -151,8 +151,8 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 					$r .= "<td $attributes>";
 					if ( in_array( 'DB', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'OPTIMIZE', backwpup_get_option( 'job_' . $jobid, 'type' ) ) || in_array( 'CHECK', backwpup_get_option( 'job_' . $jobid, 'type' ) ) ) {
 						if (!backwpup_get_option( 'job_' . $jobid, 'wpdbsettings')) {
-							$backwpupsql=mysql_connect(backwpup_get_option( 'job_' . $jobid, 'dbhost' ),backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option( 'job_' . $jobid, 'dbpassword' )),true);
-							mysql_set_charset( backwpup_get_option('job_' . $jobid, 'dbcharset' ), $backwpupsql );
+							$backwpupsql=@mysql_connect(backwpup_get_option( 'job_' . $jobid, 'dbhost' ),backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option( 'job_' . $jobid, 'dbpassword' )),true);
+							@mysql_set_charset( backwpup_get_option('job_' . $jobid, 'dbcharset' ), $backwpupsql );
 						} else {
 							$backwpupsql=$wpdb->dbh;
 						}

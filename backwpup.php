@@ -211,7 +211,10 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Backwpup', 'load' ) );
 			add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Backwpup', 'javascript' ));
 			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Backwpup', 'css' ));
-			$page_hook = add_submenu_page( 'backwpup', __( 'Add New', 'backwpup' ), __( 'Add New', 'backwpup' ), 'backwpup', 'backwpupeditjob', array( 'BackWPup_Page_Editjob', 'page' ) );
+			if ( isset($_GET['page']) && $_GET['page'] == 'backwpupeditjob' && !empty($_GET['jobid']))
+				$page_hook = add_submenu_page( 'backwpup', __( 'Edit Job', 'backwpup' ), __( 'Edit Job', 'backwpup' ), 'backwpup', 'backwpupeditjob', array( 'BackWPup_Page_Editjob', 'page' ) );
+			else
+				$page_hook = add_submenu_page( 'backwpup', __( 'Add New', 'backwpup' ), __( 'Add New', 'backwpup' ), 'backwpup', 'backwpupeditjob', array( 'BackWPup_Page_Editjob', 'page' ) );
 			add_action( 'load-' . $page_hook, array( 'BackWPup_Page_Editjob', 'load' ) );
 			add_action('admin_print_scripts-' . $page_hook,  array( 'BackWPup_Page_Editjob', 'javascript' ));
 			add_action('admin_print_styles-' . $page_hook,  array( 'BackWPup_Page_Editjob', 'css' ));

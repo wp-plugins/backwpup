@@ -274,9 +274,8 @@ class BackWPup_Job {
 		$charset= get_option('blog_charset');
 		if (empty($charset))
 			$charset = 'UTF-8';
-		$lang = str_replace('_', '-', get_locale());
 		$fd = fopen( $this->jobdata['LOGFILE'], 'w' );
-		fwrite( $fd, "<!DOCTYPE html>". $this->line_separator ."<html lang=\"".$lang."\">" . $this->line_separator . "<head>" . $this->line_separator );
+		fwrite( $fd, "<!DOCTYPE html>". $this->line_separator ."<html lang=\"".str_replace('_', '-', get_locale())."\">" . $this->line_separator . "<head>" . $this->line_separator );
 		fwrite( $fd, "<meta charset=\"".$charset."\" />". $this->line_separator );
 		fwrite( $fd, "<title>" . sprintf( __( 'BackWPup log for %1$s from %2$s at %3$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'name' ), date_i18n( get_option( 'date_format' ) ), date_i18n( get_option( 'time_format' ) ) ) . "</title>". $this->line_separator);
 		fwrite( $fd, "<meta name=\"robots\" content=\"noindex, nofollow\" />" . $this->line_separator );
@@ -284,7 +283,7 @@ class BackWPup_Job {
 		fwrite( $fd, "<meta name=\"generator\" content=\"BackWPup " . BackWPup::get_plugin_data('Version') . "\" />". $this->line_separator );
 		fwrite( $fd, "<meta http-equiv=\"cache-control\" content=\"no-cache\" />". $this->line_separator );
 		fwrite( $fd, "<meta http-equiv=\"pragma\" content=\"no-cache\" />". $this->line_separator );
-		fwrite( $fd, "<meta name=\"date\" content=\"".date_i18n('c')."\" />". $this->line_separator );
+		fwrite( $fd, "<meta name=\"date\" content=\"".date('c')."\" />". $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_errors\" content=\"0\" />", 100 ) . $this->line_separator );
 		fwrite( $fd, str_pad( "<meta name=\"backwpup_warnings\" content=\"0\" />", 100 ) . $this->line_separator );
 		fwrite( $fd, "<meta name=\"backwpup_jobid\" content=\"" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'jobid' ) . "\" />" . $this->line_separator );
@@ -1078,34 +1077,34 @@ class BackWPup_Job {
 				return;
 			}
 
-			$dbdumpheader = "-- ---------------------------------------------------------" . $this->line_separator;
-			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BackWPup::get_plugin_data('Version') . $this->line_separator;
-			$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken" . $this->line_separator;
-			$dbdumpheader .= "-- http://backwpup.com" . $this->line_separator;
+			$dbdumpheader = "-- ---------------------------------------------------------\n";    //For SQL always use \n as MySQL wants this on all platforms.
+			$dbdumpheader .= "-- Dumped with BackWPup ver.: " . BackWPup::get_plugin_data('Version') ."\n";
+			$dbdumpheader .= "-- Plugin for WordPress " . $wp_version . " by Daniel Huesken\n";
+			$dbdumpheader .= "-- http://backwpup.com\n";
 			if (backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpdbsettings')) {
-				$dbdumpheader .= "-- Blog Name: " . get_bloginfo( 'name' ) . $this->line_separator;
+				$dbdumpheader .= "-- Blog Name: " . get_bloginfo( 'name' ) . "\n";
 				if ( defined( 'WP_SITEURL' ) )
-					$dbdumpheader .= "-- Blog URL: " . trailingslashit( WP_SITEURL ) . $this->line_separator;
+					$dbdumpheader .= "-- Blog URL: " . trailingslashit( WP_SITEURL ) . "\n";
 				else
-					$dbdumpheader .= "-- Blog URL: " . trailingslashit( get_option( 'siteurl' ) ) . $this->line_separator;
-				$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit( str_replace( '\\', '/', ABSPATH ) ) . $this->line_separator;
-				$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . $this->line_separator;
-				$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . $this->line_separator;
+					$dbdumpheader .= "-- Blog URL: " . trailingslashit( get_option( 'siteurl' ) ) . "\n";
+				$dbdumpheader .= "-- Blog ABSPATH: " . trailingslashit( str_replace( '\\', '/', ABSPATH ) ) . "\n";
+				$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . "\n";
+				$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . "\n";
 			}
-			$dbdumpheader .= "-- Database Name: " . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . $this->line_separator;
-			$dbdumpheader .= "-- Dumped on: " . date_i18n( 'Y-m-d H:i.s' ) . $this->line_separator;
-			$dbdumpheader .= "-- ---------------------------------------------------------" . $this->line_separator . $this->line_separator;
+			$dbdumpheader .= "-- Database Name: " . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "\n";
+			$dbdumpheader .= "-- Dumped on: " . date_i18n( 'Y-m-d H:i.s' ) . "\n";
+			$dbdumpheader .= "-- ---------------------------------------------------------\n\n";
 			//for better import with mysql client
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding($backwpupsql)."' */;" . $this->line_separator;;
-			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . mysql_result ( mysql_query("SELECT @@time_zone", $backwpupsql ),0,0 ) . "' */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;" . $this->line_separator;
-			$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;" . $this->line_separator . $this->line_separator;
+			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";
+			$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n";
+			$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n";
+			$dbdumpheader .= "/*!40101 SET NAMES '" . mysql_client_encoding($backwpupsql)."' */;\n";
+			$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n";
+			$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . mysql_result ( mysql_query("SELECT @@time_zone", $backwpupsql ),0,0 ) . "' */;\n";
+			$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n";
+			$dbdumpheader .= "/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;\n";
+			$dbdumpheader .= "/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;\n";
+			$dbdumpheader .= "/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;\n\n";
 			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 				gzwrite( $file, $dbdumpheader );
 			elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
@@ -1124,18 +1123,18 @@ class BackWPup_Job {
 
 				if ($this->jobdata['DB_DUMP']['TABLETYPE'][$table]=='VIEW') {
 					trigger_error( sprintf( __( 'Dump database view "%s"', 'backwpup' ), $table ), E_USER_NOTICE );
-					$tablecreate = $this->line_separator . "--" . $this->line_separator . "-- View structure for $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
-					$tablecreate .= "DROP VIEW IF EXISTS `" . $table . "`;" . $this->line_separator;
-					$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . $this->line_separator;
-					$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding($backwpupsql) . "' */;" . $this->line_separator;
+					$tablecreate = "\n--\n-- View structure for " . $table . "\n--\n\n";
+					$tablecreate .= "DROP VIEW IF EXISTS `" . $table . "`;\n";
+					$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+					$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding($backwpupsql) . "' */;\n";
 					//Dump the view structure
 					$res = mysql_query( "SHOW CREATE VIEW `" . $table . "`", $backwpupsql);
 					if ( mysql_error($backwpupsql) ) {
 						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), "SHOW CREATE VIEW `" . $table . "`" ), E_USER_ERROR );
 						return false;
 					}
-					$tablecreate .= mysql_result( $res, 0, 'Create View' ) . ";" . $this->line_separator . $this->line_separator;
-					$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;" . $this->line_separator;
+					$tablecreate .= mysql_result( $res, 0, 'Create View' ) . ";\n\n";
+					$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
 
 					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 						gzwrite( $file, $tablecreate );
@@ -1145,18 +1144,18 @@ class BackWPup_Job {
 						fwrite( $file, $tablecreate );
 				} else {
 					trigger_error( sprintf( __( 'Dump database table "%s"', 'backwpup' ), $table ), E_USER_NOTICE );
-					$tablecreate = $this->line_separator . "--" . $this->line_separator . "-- Table structure for $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
-					$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;" . $this->line_separator;
-					$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;" . $this->line_separator;
-					$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding($backwpupsql) . "' */;" . $this->line_separator;
+					$tablecreate = "\n--\n-- Table structure for " . $table . "\n--\n\n";
+					$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;\n";
+					$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+					$tablecreate .= "/*!40101 SET character_set_client = '" . mysql_client_encoding($backwpupsql) . "' */;\n";
 					//Dump the table structure
 					$res = mysql_query( "SHOW CREATE TABLE `" . $table . "`", $backwpupsql);
 					if ( mysql_error($backwpupsql) ) {
 						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), "SHOW CREATE TABLE `" . $table . "`" ), E_USER_ERROR );
 						return false;
 					}
-					$tablecreate .= mysql_result( $res, 0, 'Create Table' ) . ";" . $this->line_separator . $this->line_separator;
-					$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;" . $this->line_separator;
+					$tablecreate .= mysql_result( $res, 0, 'Create Table' ) . ";\n\n";
+					$tablecreate .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
 
 					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 						gzwrite( $file, $tablecreate );
@@ -1167,10 +1166,10 @@ class BackWPup_Job {
 				}
 
 				if ($this->jobdata['DB_DUMP']['TABLETYPE'][$table]=='BASE TABLE') {
-					$tabledata = $this->line_separator . "--" . $this->line_separator . "-- Dumping data for table $table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
+					$tabledata = "\n--\n-- Dumping data for table " . $table . "\n--\n\n";
 
 					if ( $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
-						$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` DISABLE KEYS */;" . $this->line_separator;
+						$tabledata .= "/*!40000 ALTER TABLE `" . $table . "` DISABLE KEYS */;\n";
 
 					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 						gzwrite( $file, $tabledata );
@@ -1214,12 +1213,12 @@ class BackWPup_Job {
 							$values[] = $value;
 						}
 						if ( $this->jobdata['DB_DUMP']['QUERYLEN'] == 0 )
-							$dump = "INSERT INTO `" . $table . "` (`" . implode( "`, `", $fieldsarray ) . "`) VALUES " . $this->line_separator;
+							$dump = "INSERT INTO `" . $table . "` (`" . implode( "`, `", $fieldsarray ) . "`) VALUES \n";
 						if ( ($this->jobdata['DB_DUMP']['QUERYLEN'] + strlen( $dump )) <= 50000 && $this->jobdata['DB_DUMP']['ROWDONE'] != ($numrows - 1) ) { //new query in dump on more than 50000 chars.
-							$dump .= "(" . implode( ", ", $values ) . ")," . $this->line_separator;
+							$dump .= "(" . implode( ", ", $values ) . "),\n";
 							$this->jobdata['DB_DUMP']['QUERYLEN'] = $this->jobdata['DB_DUMP']['QUERYLEN'] + strlen( $dump );
 						} else {
-							$dump .= "(" . implode( ", ", $values ) . ");" . $this->line_separator;
+							$dump .= "(" . implode( ", ", $values ) . ");\n";
 							$this->jobdata['DB_DUMP']['QUERYLEN'] = 0;
 						}
 						if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
@@ -1233,7 +1232,7 @@ class BackWPup_Job {
 					}
 
 					if ( $this->jobdata['DB_DUMP']['TABLESTATUS'][$table]['Engine'] == 'MyISAM' )
-						$tabledata = "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;" . $this->line_separator;
+						$tabledata = "/*!40000 ALTER TABLE `" . $table . "` ENABLE KEYS */;\n";
 
 					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
 						gzwrite( $file, $tabledata );
@@ -1253,20 +1252,20 @@ class BackWPup_Job {
 
 		if ( $this->jobdata['STEPTODO'] == $this->jobdata['STEPDONE'] ) {
 			//for better import with mysql client
-			$dbdumpfooter = $this->line_separator . "--" . $this->line_separator . "-- Delete not needed values on backwpup table" . $this->line_separator . "--" . $this->line_separator . $this->line_separator;
 			if (backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpdbsettings')) {
-				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';" . $this->line_separator;
-				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='api';" . $this->line_separator;
-				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';" . $this->line_separator . $this->line_separator . $this->line_separator;
+				$dbdumpfooter = "\n--\n-- Delete not needed values on backwpup table\n--\n\n";
+				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='temp';\n";
+				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='api';\n";
+				$dbdumpfooter .= "DELETE FROM `" . $wpdb->prefix . "backwpup` WHERE `main`='working';\n\n";
 			}
-			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;" . $this->line_separator;
-			$dbdumpfooter .= "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;" . $this->line_separator;
+			$dbdumpfooter .= "/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n";
+			$dbdumpfooter .= "/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;\n";
+			$dbdumpfooter .= "/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;\n";
+			$dbdumpfooter .= "/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;\n";
+			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;\n";
+			$dbdumpfooter .= "/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;\n";
+			$dbdumpfooter .= "/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;\n";
+			$dbdumpfooter .= "/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;\n";
 
 			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' ) {
 				gzwrite( $file, $dbdumpfooter );
@@ -2282,7 +2281,7 @@ class BackWPup_Job {
 						$files[$filecounter]['filename']    = basename( $data['path'] );
 						$files[$filecounter]['downloadurl'] = backwpup_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloaddropbox&file=' . $data['path'] . '&jobid=' . $this->jobdata['JOBID'];
 						$files[$filecounter]['filesize']    = $data['bytes'];
-						$files[$filecounter]['time']        = strtotime( $data['modified'] );
+						$files[$filecounter]['time']        = strtotime( $data['modified'] )+(get_option( 'gmt_offset' )*3600);
 						$filecounter ++;
 					}
 				}
@@ -2425,7 +2424,7 @@ class BackWPup_Job {
 					if ( ! isset($time) || $time == - 1 ) {
 						$timestring = str_replace( array( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileprefix' ), '.tar.gz', '.tar.bz2', '.tar', '.zip' ), '', basename( $file ) );
 						list($dateex, $timeex) = explode( '_', $timestring );
-						$time = strtotime( $dateex . ' ' . str_replace( '-', ':', $timeex ) );
+						$time = strtotime( $dateex . ' ' . str_replace( '-', ':', $timeex ) )+(get_option( 'gmt_offset' )*3600);
 					}
 					$backupfilelist[$time] = basename( $file );
 				}
@@ -2526,7 +2525,7 @@ class BackWPup_Job {
 				if ( ($contents = $s3->list_objects( backwpup_get_option( $this->jobdata['JOBMAIN'], 'awsBucket' ), array( 'prefix'=> backwpup_get_option( $this->jobdata['JOBMAIN'], 'awsdir' ) ) )) !== false ) {
 					foreach ( $contents->body->Contents as $object ) {
 						$file       = basename( $object->Key );
-						$changetime = strtotime( $object->LastModified );
+						$changetime = strtotime( $object->LastModified )+(get_option( 'gmt_offset' )*3600);
 						if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileprefix' ) == substr( $file, 0, strlen( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileprefix' ) ) ) )
 							$backupfilelist[$changetime] = $file;
 						$files[$filecounter]['folder']      = "https://" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'awsBucket' ) . ".s3.amazonaws.com/" . dirname( (string) $object->Key ) . '/';
@@ -2618,7 +2617,7 @@ class BackWPup_Job {
 				if ( ($contents = $gstorage->list_objects( backwpup_get_option( $this->jobdata['JOBMAIN'], 'GStorageBucket' ), array( 'prefix'=> backwpup_get_option( $this->jobdata['JOBMAIN'], 'GStoragedir' ) ) )) !== false ) {
 					foreach ( $contents->body->Contents as $object ) {
 						$file       = basename( $object->Key );
-						$changetime = strtotime( $object->LastModified );
+						$changetime = strtotime( $object->LastModified )+(get_option( 'gmt_offset' )*3600);
 						if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileprefix' ) == substr( $file, 0, strlen( backwpup_get_option( $this->jobdata['JOBMAIN'], 'fileprefix' ) ) ) )
 							$backupfilelist[$changetime] = $file;
 						$files[$filecounter]['folder']      = "https://sandbox.google.com/storage/" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'GStorageBucket' ) . "/" . dirname( (string) $object->Key ) . '/';
@@ -2742,7 +2741,7 @@ class BackWPup_Job {
 					$files[$filecounter]['filename']    = basename( $blob->Name );
 					$files[$filecounter]['downloadurl'] = backwpup_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloadmsazure&file=' . $blob->Name . '&jobid=' . $this->jobdata['JOBID'];
 					$files[$filecounter]['filesize']    = $blob->size;
-					$files[$filecounter]['time']        = strtotime( $blob->lastmodified );
+					$files[$filecounter]['time']        = strtotime( $blob->lastmodified )+(get_option( 'gmt_offset' )*3600);
 					$filecounter ++;
 				}
 			}
@@ -2845,7 +2844,7 @@ class BackWPup_Job {
 					$files[$filecounter]['filename']    = basename( $object->name );
 					$files[$filecounter]['downloadurl'] = backwpup_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloadrsc&file=' . $object->name . '&jobid=' . $this->jobdata['JOBID'];
 					$files[$filecounter]['filesize']    = $object->content_length;
-					$files[$filecounter]['time']        = strtotime( $object->last_modified );
+					$files[$filecounter]['time']        = strtotime( $object->last_modified )+(get_option( 'gmt_offset' )*3600);
 					$filecounter ++;
 				}
 			}
@@ -2931,7 +2930,7 @@ class BackWPup_Job {
 					$files[$filecounter]['filename']    = (string) $getfile->displayName;
 					$files[$filecounter]['downloadurl'] = backwpup_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloadsugarsync&file=' . (string) $getfile->ref . '&jobid=' . $this->jobdata['JOBID'];
 					$files[$filecounter]['filesize']    = (int) $getfile->size;
-					$files[$filecounter]['time']        = strtotime( (string) $getfile->lastModified );
+					$files[$filecounter]['time']        = strtotime( (string) $getfile->lastModified )+(get_option( 'gmt_offset' )*3600);
 					$filecounter ++;
 				}
 			}

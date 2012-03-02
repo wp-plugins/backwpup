@@ -113,7 +113,7 @@ class BackWPup_Ajax_Editjob {
 		while ( $table = mysql_fetch_row($res) ) {
 			$tabletype='';
 			if ($table[1]!='BASE TABLE')
-				$tabletype=' (' . strtolower($table[1]) . ')';
+				$tabletype=' <i>(' . strtolower($table[1]) . ')</i>';
 			echo '	<input class="checkbox" type="checkbox"' . checked( ! in_array( $table[0], backwpup_get_option( $jobmain, 'dbexclude' ) ), true, false ) . ' name="jobtabs[]" value="' . rawurlencode( $table[0] ) . '"/> ' . $table[0] . $tabletype.'<br />';
 		}
 		echo '</div>';

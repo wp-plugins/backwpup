@@ -117,8 +117,8 @@ class BackWPup_Page_Editjob {
 
 			//connect to db
 			if (!backwpup_get_option( $main, 'wpdbsettings')) {
-				$backwpupsql=mysql_connect(backwpup_get_option( $main, 'dbhost' ),backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' )),true);
-				mysql_set_charset( backwpup_get_option($main, 'dbcharset' ), $backwpupsql );
+				$backwpupsql=@mysql_connect(backwpup_get_option( $main, 'dbhost' ),backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' )),true);
+				@mysql_set_charset( backwpup_get_option($main, 'dbcharset' ), $backwpupsql );
 			} else {
 				$backwpupsql=$wpdb->dbh;
 			}
@@ -128,7 +128,7 @@ class BackWPup_Page_Editjob {
 					$check_db_tables[] = rawurldecode( $dbtable );
 				}
 			}
-			$res = mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $main, 'dbname' ) . '`', $backwpupsql );
+			$res = @mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $main, 'dbname' ) . '`', $backwpupsql );
 			$dbexclude = array();
 			while ( $dbtable=mysql_fetch_row($res) ) {
 				if ( ! in_array( $dbtable[0], $check_db_tables ) )
