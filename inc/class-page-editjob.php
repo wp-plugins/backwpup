@@ -112,15 +112,18 @@ class BackWPup_Page_Editjob {
 			backwpup_update_option( $main, 'dbhost', $_POST['dbhost'] );
 			backwpup_update_option( $main, 'dbuser', $_POST['dbuser'] );
 			backwpup_update_option( $main, 'dbpassword', backwpup_encrypt($_POST['dbpassword']) );
-			backwpup_update_option( $main, 'dbname', trim($_POST['dbname']) );
+			backwpup_update_option( $main, 'dbname',  (!isset($_POST['dbname'])) ? '' : trim($_POST['dbname']) );
+			backwpup_update_option( $main, 'dbdumpetype',  (!isset($_POST['dbdumpetype'])) ? 'sql' : trim($_POST['dbdumpetype']) );
 			backwpup_update_option( $main, 'dbcharset', $_POST['dbcharset'] );
 
 			//connect to db
 			if (!backwpup_get_option( $main, 'wpdbsettings')) {
 				$backwpupsql=@mysql_connect(backwpup_get_option( $main, 'dbhost' ),backwpup_get_option( $main, 'dbuser' ),backwpup_decrypt(backwpup_get_option( $main, 'dbpassword' )),true);
 				@mysql_set_charset( backwpup_get_option($main, 'dbcharset' ), $backwpupsql );
+				$dbname=backwpup_get_option( $main, 'dbname' );
 			} else {
 				$backwpupsql=$wpdb->dbh;
+				$dbname=DB_NAME;
 			}
 			$check_db_tables = array();
 			if ( isset($_POST['jobtabs']) ) {
@@ -128,7 +131,7 @@ class BackWPup_Page_Editjob {
 					$check_db_tables[] = rawurldecode( $dbtable );
 				}
 			}
-			$res = @mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $main, 'dbname' ) . '`', $backwpupsql );
+			$res = @mysql_query( 'SHOW FULL TABLES FROM `' .  $dbname . '`', $backwpupsql );
 			$dbexclude = array();
 			while ( $dbtable=mysql_fetch_row($res) ) {
 				if ( ! in_array( $dbtable[0], $check_db_tables ) )
@@ -543,25 +546,36 @@ class BackWPup_Page_Editjob {
 					<br />
 					<?php _e( 'Database:', 'backwpup' );?><br />
 					<?php
-					BackWPup_Ajax_Editjob::db_databases(array('dbselected'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
-														   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
-														   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' )));
+						BackWPup_Ajax_Editjob::db_databases(array('dbselected'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
+															   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
+															   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' )));
 					?>
 					<br />
 				</div>
 				<b><?php _e( 'Database tables for use:', 'backwpup' ); ?></b>
 				<input type="button" id="dball" value="<?php _e( 'all', 'backwpup' ); ?>"> <input type="button" id="dbnone" value="<?php _e( 'none', 'backwpup' ); ?>"> <input type="button" id="dbwp" value="<?php echo $wpdb->prefix; ?>">
-
 				<?php
-				BackWPup_Ajax_Editjob::db_tables(array('dbname'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
-													   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
-													   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' ),'jobmain'=>$main));
+				if (!backwpup_get_option( $main, 'wpdbsettings' ))  {
+					BackWPup_Ajax_Editjob::db_tables(array('dbname'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
+														   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
+														   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' ),'jobmain'=>$main));
+				} else {
+					BackWPup_Ajax_Editjob::db_tables(array('dbname'=>DB_NAME,'dbuser' =>DB_USER,
+														   'dbpassword'=>DB_PASSWORD,'dbhost'=>DB_HOST,
+														   'dbcharset'=>DB_CHARSET,'jobmain'=>$main));
+				}
 				?>
 
 			</div>
 						<span id="dbdump"<?php if ( ! in_array( "DB", backwpup_get_option( $main, 'type' ) ) ) echo ' style="display:none;"';?>>
 						<strong><?php _e( 'Filename for Dump:', 'backwpup' );?></strong> <input class="long-text" type="text" name="dbdumpfile" value="<?php echo backwpup_get_option( $main, 'dbdumpfile' );?>" />.sql
-						<br /><strong><?php _e( 'Copmpression for dump:', 'backwpup' );?></strong>
+						<br /><strong><?php _e( 'Dump type:', 'backwpup' );?></strong>
+							<?php
+							echo ' <input class="radio" type="radio"' . checked( 'sql', backwpup_get_option( $main, 'dbdumpetype' ), false ) . ' name="dbdumpetype" value="sql" />' . __( 'SQL', 'backwpup' );
+							echo ' <input class="radio" type="radio"' . checked( 'xml', backwpup_get_option( $main, 'dbdumpetype' ), false ) . ' name="dbdumpetype" value="xml" />' . __( 'XML (phpMyAdmin schema)', 'backwpup' );
+							?>
+						</span><br />
+						<strong><?php _e( 'Copmpression for dump:', 'backwpup' );?></strong>
 							<?php
 							echo ' <input class="radio" type="radio"' . checked( '', backwpup_get_option( $main, 'dbdumpfilecompression' ), false ) . ' name="dbdumpfilecompression" value="" />' . __( 'none', 'backwpup' );
 							if ( function_exists( 'gzopen' ) )

@@ -70,6 +70,7 @@ function backwpup_default_option_settings( $main, $name ) {
 			}
 		}
 		$default[$main]['dbdumpfile']               = DB_NAME;
+		$default[$main]['dbdumpetype']              = 'sql';
 		$default[$main]['dbdumpfilecompression']    = '';
 		$default[$main]['wpdbsettings']             = true;
 		$default[$main]['dbhost']               	= DB_HOST;
@@ -474,15 +475,19 @@ function backwpup_encrypt( $string, $key = '' ) {
 	if ( empty($string) )
 		return $string;
 	//only encrypt if needed
-	if ( strpos( $string, '$BackWPup$BFCBC$' ) !== false )
+	if ( strpos( $string, '$BackWPup$ENC1$' ) !== false or strpos( $string, '$BackWPup$RIJNDAEL$' ) !== false)
 		return $string;
-	return '$BackWPup$BFCBC$' . BackWPup_Blowfish::encrypt(
-		$string,
-		$key, # encryption key
-		BackWPup_Blowfish::BLOWFISH_MODE_CBC, # Encryption Mode
-		BackWPup_Blowfish::BLOWFISH_PADDING_RFC, # Padding Style
-		'$BackWPup$BFCBC$'  # Initialisation Vector - required for CBC
-	);
+	if (!function_exists('mcrypt_encrypt'))  {
+		$result = '';
+		for($i=0; $i<strlen ($string); $i++) {
+			$char = substr($string, $i, 1);
+			$keychar = substr($key, ($i % strlen($key))-1, 1);
+			$char = chr(ord($char)+ord($keychar));
+			$result.=$char;
+		}
+		return '$BackWPup$ENC1$'.base64_encode($result);
+	}
+	return '$BackWPup$RIJNDAEL$' .base64_encode(mcrypt_encrypt(MCRYPT_RIJNDAEL_256, md5($key), $string, MCRYPT_MODE_CBC, md5(md5($key))));
 }
 
 /**
@@ -511,18 +516,11 @@ function backwpup_decrypt( $string, $key = '' ) {
 		}
 		return $result;
 	}
-	if ( strpos( $string, '$BackWPup$BFCBC$' ) !== false )  {
-		$string = str_replace( '$BackWPup$BFCBC$', '', $string );
-		return BackWPup_Blowfish::decrypt(
-			$string,
-			$key, # encryption key
-			BackWPup_Blowfish::BLOWFISH_MODE_CBC, # Encryption Mode
-			BackWPup_Blowfish::BLOWFISH_PADDING_RFC, # Padding Style
-			'$BackWPup$BFCBC$'  # Initialisation Vector - required for CBC
-		);
+	if ( strpos( $string, '$BackWPup$RIJNDAEL$' ) !== false )  {
+		$string = str_replace( '$BackWPup$RIJNDAEL$', '', $string );
+		return rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), base64_decode($string), MCRYPT_MODE_CBC, md5(md5($key))), "\0");
 	}
 	return $string;
-
 }
 
 /**

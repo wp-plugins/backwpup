@@ -68,6 +68,7 @@ Do backups and more for your WordPress Blog.
 * Added: changeable file name for dump and xml files
 * Added: changeable DB connection to backup/check/repair other DB's
 * Added: DB Views support
+* Added: Create DB dumps in XML formart (phpMyAdmin schema)
 * Added: not load text domains on job or ajax working for better performance and lower memory usage
 * Added: tool for script execution time test
 * Added: capability backwpup for Administrator to wp_roles
@@ -86,6 +87,7 @@ Do backups and more for your WordPress Blog.
 * Changed: License changed to GPLv3
 * Changed: Many code recode and added to classes
 * Changed: Logs in HTML5 formart
+* Changed: setttings export/import in XML formart
 * Updated: AWS lib to 1.5.2
 * Updated: RSC lib to 1.7.10
 * Updated: MS azure lib to 4.1.0

@@ -153,13 +153,15 @@ class BackWPup_Page_Backwpup_Table extends WP_List_Table {
 						if (!backwpup_get_option( 'job_' . $jobid, 'wpdbsettings')) {
 							$backwpupsql=@mysql_connect(backwpup_get_option( 'job_' . $jobid, 'dbhost' ),backwpup_get_option( 'job_' . $jobid, 'dbuser' ),backwpup_decrypt(backwpup_get_option( 'job_' . $jobid, 'dbpassword' )),true);
 							@mysql_set_charset( backwpup_get_option('job_' . $jobid, 'dbcharset' ), $backwpupsql );
+							$dbname= ackwpup_get_option( 'job_' . $jobid, 'dbname' );
 						} else {
 							$backwpupsql=$wpdb->dbh;
+							$dbname= DB_NAME;
 						}
 						$dbsize = array( 'size'=> 0,
 										 'num' => 0,
 										 'rows'=> 0 );
-						$res = mysql_query( "SHOW TABLE STATUS FROM `" . backwpup_get_option( 'job_' . $jobid, 'dbname' ) . "`" );
+						$res = mysql_query( "SHOW TABLE STATUS FROM `" . $dbname . "`" );
 						while ( $tablevalue=mysql_fetch_assoc($res) ) {
 							if ( ! in_array( $tablevalue['Name'], backwpup_get_option( 'job_' . $jobid, 'dbexclude' ) ) ) {
 								$dbsize['size'] = $dbsize['size'] + $tablevalue["Data_length"] + $tablevalue["Index_length"];

@@ -171,33 +171,43 @@ class BackWPup_Page_Tools {
 				<tr valign="top">
 					<?php
 					if ( isset($_POST['upload']) && is_uploaded_file( $_FILES['importfile']['tmp_name'] ) && $_POST['upload'] == __( 'Upload', 'backwpup' ) ) {
+						move_uploaded_file($_FILES['importfile']['tmp_name'],backwpup_get_option('cfg','tempfolder').'BackWPup.xml');
 						echo "<th scope=\"row\"><label for=\"maxlogs\">" . __( 'Select jobs to import', 'backwpup' ) . "</label></th><td>";
-						$import = file_get_contents( $_FILES['importfile']['tmp_name'] );
+						$xml=simplexml_load_file( backwpup_get_option('cfg','tempfolder').'BackWPup.xml');
+						//print_r($xml);
 						$jobids = $wpdb->get_col( "SELECT value FROM `" . $wpdb->prefix . "backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value ASC" );
-						foreach ( unserialize( $import ) as $jobid => $jobvalue ) {
-							echo "<select name=\"importtype[" . $jobid . "]\" title=\"" . __( 'Import Type', 'backwpup' ) . "\"><option value=\"not\">" . __( 'No Import', 'backwpup' ) . "</option>";
-							if ( in_array( $jobid, $jobids ) )
+						foreach ( $xml->job as $job ) {
+							echo "<select name=\"importtype[" . $job->attributes()->id . "]\" title=\"" . __( 'Import Type', 'backwpup' ) . "\"><option value=\"not\">" . __( 'No Import', 'backwpup' ) . "</option>";
+							if ( in_array( $job->attributes()->id, $jobids ) )
 								echo "<option value=\"over\">" . __( 'Overwrite', 'backwpup' ) . "</option><option value=\"append\">" . __( 'Append', 'backwpup' ) . "</option>";
 							else
 								echo "<option value=\"over\">" . __( 'Import', 'backwpup' ) . "</option>";
 							echo "</select>";
-							echo '&nbsp;<span class="description">' . $jobid . ". " . $jobvalue['name'] . '</span><br />';
+							echo '&nbsp;<span class="description">' . $job->attributes()->id . ". " . $job->name . '</span><br />';
 						}
-						echo "<input type=\"hidden\" name=\"importfile\" value=\"" . urlencode( $import ) . "\" />";
 						echo "<input type=\"submit\" name=\"import\" class=\"button-primary\" value=\"" . __( 'Import', 'backwpup' ) . "\" />";
 					}
-					if ( isset($_POST['import']) && $_POST['import'] == __( 'Import', 'backwpup' ) && ! empty($_POST['importfile']) ) {
+					if ( isset($_POST['import']) && $_POST['import'] == __( 'Import', 'backwpup' ) && ! empty($_POST['importtype']) ) {
 						echo "<th scope=\"row\"><label for=\"maxlogs\">" . __( 'Import', 'backwpup' ) . "</label></th><td>";
-						$import = maybe_unserialize( trim( urldecode( $_POST['importfile'] ) ) );
+						$xml=simplexml_load_file( backwpup_get_option('cfg','tempfolder').'BackWPup.xml');
+						unlink(backwpup_get_option('cfg','tempfolder').'BackWPup.xml');
+						//print_r($xml);
 						foreach ( $_POST['importtype'] as $id => $type ) {
-							if ( $type == 'over' )
-								$import[$id]['jobid'] = $id;
+							if ( $type == 'not' || empty($type) )
+								continue;
+							//get data from xml
+							foreach ( $xml->job as $key=>$job ) {
+								  if ($job->attributes()->id!=$id)
+									  	continue;
+								  foreach ( $job as $key=>$option ) {
+									 	$import[$id][$key]=maybe_unserialize(htmlspecialchars_decode((string)$option));
+								  }
+								  break;
+							}
 							if ( $type == 'append' ) {
 								$import[$id]['jobid'] = $wpdb->get_var( "SELECT value FROM `" . $wpdb->prefix . "backwpup` WHERE main LIKE 'job_%' AND name='jobid' ORDER BY value DESC LIMIT 1", 0, 0 );
 								$import[$id]['jobid'] ++;
 							}
-							if ( $type == 'not' || empty($type) )
-								continue;
 							$import[$id]['activetype'] = '';
 							unset($import[$id]['cronnextrun']);
 							unset($import[$id]['starttime']);

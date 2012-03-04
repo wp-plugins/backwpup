@@ -52,35 +52,50 @@ class BackWPup_Page_Backwpup {
 				}
 				break;
 			case 'export': //Copy Job
-				$jobsexport = array();
-				if ( is_array( $_GET['jobs'] ) ) {
-					check_admin_referer( 'bulk-jobs' );
-					foreach ( $_GET['jobs'] as $jobid ) {
-						$options = $wpdb->get_results( "SELECT name,value FROM `" . $wpdb->prefix . "backwpup` WHERE main='job_" . $jobid . "' ORDER BY name ASC" );
-						foreach ( $options as $option ) {
-							if ( $option->name == "activetype" )
-								$option->value = '';
-							if ( $option->name == "logfile" || $option->name == "starttime" or
-									$option->name == "lastbackupdownloadurl" || $option->name == "lastruntime" or
-									$option->name == "lastrun" || $option->name == "cronnextrun"
-							)
-								continue;
-							$jobsexport[$jobid][$option->name] = maybe_unserialize( $option->value );
-						}
-					}
-				}
-				$export = maybe_serialize( $jobsexport );
+				check_admin_referer( 'bulk-jobs' );
+				if (!is_array( $_GET['jobs']))
+					break;
 				header( "Pragma: public" );
 				header( "Expires: 0" );
 				header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );
-				header( "Content-Type: text/plain" );
+				header( "Content-Type: text/xml" );
 				header( "Content-Type: application/force-download" );
 				header( "Content-Type: application/octet-stream" );
 				header( "Content-Type: application/download" );
-				header( "Content-Disposition: attachment; filename=" . sanitize_key( get_bloginfo( 'name' ) ) . "_BackWPupExport.txt;" );
-				header( "Content-Transfer-Encoding: 8bit" );
-				header( "Content-Length: " . strlen( $export ) );
-				echo $export;
+				header( "Content-Disposition: attachment; filename=" . sanitize_key( get_bloginfo( 'name' ) ) . "_BackWPup.xml;" );
+				$charset= get_option('blog_charset');
+				if (empty($charset))
+					$charset = 'UTF-8';
+				echo "<?xml version=\"1.0\" encoding=\"".$charset."\"?>\n";
+				echo "<backwpup_xml_export version=\"".BackWPup::get_plugin_data('Version')."\" plugin=\"BackWPup\" url=\"http://backwpup.com\">\n";
+				echo "\t<config>\n";
+				$options = $wpdb->get_results( "SELECT name,value FROM `" . $wpdb->prefix . "backwpup` WHERE main='cfg' ORDER BY name ASC" );
+				foreach ( $options as $option ) {
+					if (strpos( $option->value, '$BackWPup$BFCBC$' ) !== false or strpos( $option->value, '$BackWPup$ENC1$' ) !== false)
+						$option->value=backwpup_decrypt($option->value);
+					echo "\t\t<".$option->name.">".htmlspecialchars($option->value)."</".$option->name.">\n";
+				}
+				echo "\t</config>\n";
+				foreach ( $_GET['jobs'] as $jobid ) {
+					$options = $wpdb->get_results( "SELECT name,value FROM `" . $wpdb->prefix . "backwpup` WHERE main='job_" . $jobid . "' ORDER BY name ASC" );
+					echo "\t<job id=\"".$jobid."\">\n";
+					foreach ( $options as $option ) {
+						if ( $option->name == "activetype" )
+							$option->value = '';
+						if ( $option->name == "logfile" || $option->name == "starttime" or
+								$option->name == "lastbackupdownloadurl" || $option->name == "lastruntime" or
+								$option->name == "lastrun" || $option->name == "cronnextrun"
+						)
+							continue;
+						if (strpos( $option->value, '$BackWPup$BFCBC$' ) !== false or strpos( $option->value, '$BackWPup$ENC1$' ) !== false)
+							 $option->value=backwpup_decrypt($option->value);
+						echo "\t\t<".$option->name.">".$option->value."</".$option->name.">\n";
+
+					}
+					echo "\t</job>\n";
+				}
+
+				echo "</backwpup_xml_export>";
 				die();
 				break;
 			case 'abort': //Abort Job

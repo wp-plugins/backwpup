@@ -216,7 +216,10 @@ class BackWPup_Job {
 		$this->jobdata['STEPS'] = array();
 		//setup job steps
 		if ( in_array( 'DB', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
-			$this->jobdata['STEPS'][] = 'DB_DUMP';
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpetype' )=='xml')
+				$this->jobdata['STEPS'][] = 'DB_DUMP_XML';
+			else
+				$this->jobdata['STEPS'][] = 'DB_DUMP';
 		if ( in_array( 'WPEXP', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
 			$this->jobdata['STEPS'][] = 'WP_EXPORT';
 		if ( in_array( 'WPPLUGIN', backwpup_get_option( $this->jobdata['JOBMAIN'], 'type' ) ) )
@@ -1031,9 +1034,11 @@ class BackWPup_Job {
 				$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 				return false;
 			}
+			$dbname= backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' );
 			trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
 		} else {
 			$backwpupsql=$wpdb->dbh;
+			$dbname= DB_NAME;
 		}
 
 		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
@@ -1053,9 +1058,9 @@ class BackWPup_Job {
 
 		if ( $this->jobdata['STEPDONE'] == 0 ) {
 			//get tables to backup
-			$res = mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`', $backwpupsql );
+			$res = mysql_query( 'SHOW FULL TABLES FROM `' .  $dbname . '`', $backwpupsql );
 			if ( mysql_error($backwpupsql) )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`' ), E_USER_ERROR );
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  $dbname . '`' ), E_USER_ERROR );
 			while ( $table = mysql_fetch_row($res) ) {
 				if ( ! in_array( $table[0], backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )
 					$this->jobdata['DB_DUMP']['TABLES'][] = $table[0];
@@ -1064,9 +1069,9 @@ class BackWPup_Job {
 			$this->jobdata['STEPTODO'] = count( $this->jobdata['DB_DUMP']['TABLES'] );
 
 			//Get table status
-			$res = mysql_query(  "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`", $backwpupsql );
+			$res = mysql_query(  "SHOW TABLE STATUS FROM `" . $dbname . "`", $backwpupsql );
 			if ( mysql_error($backwpupsql) )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql),  "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" ), E_USER_ERROR );
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql),  "SHOW TABLE STATUS FROM `" . $dbname . "`" ), E_USER_ERROR );
 			while ( $tablestatus= mysql_fetch_assoc($res) ) {
 				$this->jobdata['DB_DUMP']['TABLESTATUS'][$tablestatus['Name']] = $tablestatus;
 			}
@@ -1091,7 +1096,7 @@ class BackWPup_Job {
 				$dbdumpheader .= "-- Blog Charset: " . get_option( 'blog_charset' ) . "\n";
 				$dbdumpheader .= "-- Table Prefix: " . $wpdb->prefix . "\n";
 			}
-			$dbdumpheader .= "-- Database Name: " . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "\n";
+			$dbdumpheader .= "-- Database Name: " . $dbname . "\n";
 			$dbdumpheader .= "-- Dumped on: " . date_i18n( 'Y-m-d H:i.s' ) . "\n";
 			$dbdumpheader .= "-- ---------------------------------------------------------\n\n";
 			//for better import with mysql client
@@ -1298,6 +1303,307 @@ class BackWPup_Job {
 	}
 
 	/**
+	 * Dumps the Database in xml
+	 * @return nothing
+	 */
+	private function db_dump_xml() {
+		global $wpdb,$wp_version;
+
+		trigger_error( sprintf( __( '%d. Try for database XML dump...', 'backwpup' ), $this->jobdata['DB_DUMP_XML']['STEP_TRY'] ), E_USER_NOTICE );
+
+		if ( ! isset($this->jobdata['DB_DUMP_XML']['TABLES']) || ! is_array( $this->jobdata['DB_DUMP_XML']['TABLES'] ) )
+			$this->jobdata['DB_DUMP_XML']['TABLES'] = array();
+
+		//build filename
+		if ( empty($this->jobdata['DBDUMPFILE']) ) {
+			$datevars                    = array( '%d', '%D', '%l', '%N', '%S', '%w', '%z', '%W', '%F', '%m', '%M', '%n', '%t', '%L', '%o', '%Y', '%a', '%A', '%B', '%g', '%G', '%h', '%H', '%i', '%s', '%u', '%e', '%I', '%O', '%P', '%T', '%Z', '%c', '%U' );
+			$datevalues                  = array( date_i18n( 'd' ), date_i18n( 'D' ), date_i18n( 'l' ), date_i18n( 'N' ), date_i18n( 'S' ), date_i18n( 'w' ), date_i18n( 'z' ), date_i18n( 'W' ), date_i18n( 'F' ), date_i18n( 'm' ), date_i18n( 'M' ), date_i18n( 'n' ), date_i18n( 't' ), date_i18n( 'L' ), date_i18n( 'o' ), date_i18n( 'Y' ), date_i18n( 'a' ), date_i18n( 'A' ), date_i18n( 'B' ), date_i18n( 'g' ), date_i18n( 'G' ), date_i18n( 'h' ), date_i18n( 'H' ), date_i18n( 'i' ), date_i18n( 's' ), date_i18n( 'u' ), date_i18n( 'e' ), date_i18n( 'I' ), date_i18n( 'O' ), date_i18n( 'P' ), date_i18n( 'T' ), date_i18n( 'Z' ), date_i18n( 'c' ), date_i18n( 'U' ) );
+			$this->jobdata['DBDUMPFILE'] = str_replace( $datevars, $datevalues, backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfile' ) );
+			//check compression
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' && ! function_exists( 'gzopen' ) )
+				backwpup_update_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression', '' );
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' && ! function_exists( 'bzopen' ) )
+				backwpup_update_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression', '' );
+			//add file ending
+			$this->jobdata['DBDUMPFILE'] .= '.xml';
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' || backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+				$this->jobdata['DBDUMPFILE'] .= '.' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' );
+		}
+
+		//Set maintenance
+		$this->maintenance_mode( true );
+		//make a new DB connection
+		if (!backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpdbsettings')) {
+			$backwpupsql=mysql_connect(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbhost' ),backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbuser' ),backwpup_decrypt(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbpassword' )),true);
+			if (!$backwpupsql)  {
+				trigger_error( sprintf( __( 'Can not connect to MySQL Server %1$s: %2$s', 'backwpup' ), $this->jobdata['JOBMAIN'], 'dbhost' ),mysql_error($backwpupsql), E_USER_ERROR );
+				$this->maintenance_mode( false );
+				$this->jobdata['STEPSDONE'][] = 'DB_DUMP_XML'; //set done
+				return false;
+			}
+			mysql_set_charset( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbcharset' ), $backwpupsql );
+			$backwpupdblink=mysql_select_db(backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ));
+			if (!$backwpupdblink)  {
+				trigger_error( sprintf( __( 'Can not connect to database %1$s: %2$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ),mysql_error($backwpupsql) ), E_USER_ERROR );
+				$this->maintenance_mode( false );
+				$this->jobdata['STEPSDONE'][] = 'DB_DUMP_XML'; //set done
+				return false;
+			}
+			$dbname= backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' );
+			trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
+		} else {
+			$backwpupsql=$wpdb->dbh;
+			$dbname= DB_NAME;
+		}
+
+		if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+			$file = gzopen( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'], 'wb9' );
+		elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+			$file = bzopen( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'], 'w' );
+		else
+			$file = fopen( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'], 'wb' );
+
+		if ( ! $file ) {
+			trigger_error( sprintf( __( 'Can not create database dump file! "%s"', 'backwpup' ), $this->jobdata['DBDUMPFILE'] ), E_USER_ERROR );
+			$this->jobdata['STEPSDONE'][] = 'DB_DUMP_XML'; //set done
+			$this->maintenance_mode( false );
+			return false;
+		}
+
+
+		if ( $this->jobdata['STEPDONE'] == 0 ) {
+			//get tables to backup
+			$res = mysql_query( 'SHOW FULL TABLES FROM `' .  $dbname . '`', $backwpupsql );
+			if ( mysql_error($backwpupsql) )
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  $dbname . '`' ), E_USER_ERROR );
+			while ( $table = mysql_fetch_row($res) ) {
+				if ( ! in_array( $table[0], backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )
+					$this->jobdata['DB_DUMP_XML']['TABLES'][] = $table[0];
+				$this->jobdata['DB_DUMP_XML']['TABLETYPE'][$table[0]] = $table[1];
+			}
+			$this->jobdata['STEPTODO'] = count( $this->jobdata['DB_DUMP_XML']['TABLES'] )*2;
+
+			//Get table status
+			$res = mysql_query(  "SHOW TABLE STATUS FROM `" . $dbname . "`", $backwpupsql );
+			if ( mysql_error($backwpupsql) )
+				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql),  "SHOW TABLE STATUS FROM `" . $dbname . "`" ), E_USER_ERROR );
+			while ( $tablestatus= mysql_fetch_assoc($res) ) {
+				$this->jobdata['DB_DUMP_XML']['TABLESTATUS'][$tablestatus['Name']] = $tablestatus;
+			}
+
+			if ( count( $this->jobdata['DB_DUMP_XML']['TABLES'] ) == 0 ) {
+				trigger_error( __( 'No tables to dump', 'backwpup' ), E_USER_WARNING );
+				$this->jobdata['STEPSDONE'][] = 'DB_DUMP_XML'; //set done
+				return;
+			}
+			//get charset
+			$charset= get_option('blog_charset');
+			if (empty($charset))
+				$charset = 'UTF-8';
+			//create header
+			$dbdumpheader = '<?xml version="1.0" encoding="'.$charset.'"?>'.$this->line_separator;
+			$dbdumpheader .= '<!--'.$this->line_separator;
+			$dbdumpheader .= "- Dumped with BackWPup ver.: " . BackWPup::get_plugin_data('Version') .$this->line_separator;
+			$dbdumpheader .= "- Plugin for WordPress " . $wp_version . " by Daniel Hüsken".$this->line_separator;
+			$dbdumpheader .= "- http://backwpup.com".$this->line_separator;
+			if (backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpdbsettings')) {
+				$dbdumpheader .= "- Blog Name: " . get_bloginfo( 'name' ) .$this->line_separator;
+				if ( defined( 'WP_SITEURL' ) )
+					$dbdumpheader .= "- Blog URL: " . trailingslashit( WP_SITEURL ) .$this->line_separator;
+				else
+					$dbdumpheader .= "- Blog URL: " . trailingslashit( get_option( 'siteurl' ) ) .$this->line_separator;
+				$dbdumpheader .= "- Blog ABSPATH: " . trailingslashit( str_replace( '\\', '/', ABSPATH ) ) .$this->line_separator;
+				$dbdumpheader .= "- Blog Charset: " . get_option( 'blog_charset' ) .$this->line_separator;
+				$dbdumpheader .= "- Table Prefix: " . $wpdb->prefix .$this->line_separator;
+			}
+			$dbdumpheader .= "- Database Name: " . $dbname .$this->line_separator;
+			$dbdumpheader .= "- Dumped on: " . date_i18n( 'Y-m-d H:i.s' ) .$this->line_separator;
+			$dbdumpheader .= "-->".$this->line_separator.$this->line_separator;
+			//for better import with mysql client
+			$dbdumpheader .= '<pma_xml_export version="1.0" xmlns:pma="http://www.phpmyadmin.net/some_doc_url/">'.$this->line_separator;
+			$dbdumpheader .= "\t<!-- "  .$this->line_separator;
+			$dbdumpheader .= "\t- Structure schemas" .$this->line_separator;
+			$dbdumpheader .= "\t-->" .$this->line_separator;
+			$dbdumpheader .= "\t<pma:structure_schemas>" .$this->line_separator;
+			$dbdumpheader .= "\t\t<pma:database name=\"".$dbname."\" collation=\"\" charset=\"".mysql_client_encoding($backwpupsql)."\">" .$this->line_separator;
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+				gzwrite( $file, $dbdumpheader );
+			elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+				bzwrite( $file, $dbdumpheader );
+			else
+				fwrite( $file, $dbdumpheader );
+		}
+
+		if ( ($this->jobdata['STEPTODO']/2) > $this->jobdata['STEPDONE'] ) {
+			foreach ( $this->jobdata['DB_DUMP_XML']['TABLES'] as $tablekey => $table ) {
+
+				$this->update_working_data();
+				if ( ! isset($this->jobdata['DB_DUMP_XML']['ROWDONE']) )
+					$this->jobdata['DB_DUMP_XML']['ROWDONE'] = 0;
+
+				if ($this->jobdata['DB_DUMP_XML']['TABLETYPE'][$table]=='VIEW') {
+					trigger_error( sprintf( __( 'Dump database create view "%s"', 'backwpup' ), $table ), E_USER_NOTICE );
+					$tablecreate = "\t\t\t<pma:view name=\"" . $table . "\">".$this->line_separator;
+					//Dump the view structure
+					$res = mysql_query( "SHOW CREATE VIEW `" . $table . "`", $backwpupsql);
+					if ( mysql_error($backwpupsql) ) {
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), "SHOW CREATE VIEW `" . $table . "`" ), E_USER_ERROR );
+						return false;
+					}
+					$tablecreate .= "\t\t\t\t".str_replace("\n",$this->line_separator."\t\t\t\t",mysql_result( $res, 0, 'Create View' )).';'.$this->line_separator;
+					$tablecreate .= "\t\t\t</pma:view>".$this->line_separator;
+
+					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+						gzwrite( $file, $tablecreate );
+					elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+						bzwrite( $file, $tablecreate );
+					else
+						fwrite( $file, $tablecreate );
+				} else {
+					trigger_error( sprintf( __( 'Dump database create table "%s"', 'backwpup' ), $table ), E_USER_NOTICE );
+					$tablecreate = "\t\t\t<pma:table name=\"" . $table . "\">".$this->line_separator;
+					//Dump the table structure
+					$res = mysql_query( "SHOW CREATE TABLE `" . $table . "`", $backwpupsql);
+					if ( mysql_error($backwpupsql) ) {
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), "SHOW CREATE TABLE `" . $table . "`" ), E_USER_ERROR );
+						return false;
+					}
+					$tablecreate .= "\t\t\t\t".str_replace("\n",$this->line_separator."\t\t\t\t",mysql_result( $res, 0, 'Create Table' )).';'.$this->line_separator;
+					$tablecreate .= "\t\t\t</pma:view>".$this->line_separator;
+
+					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+						gzwrite( $file, $tablecreate );
+					elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+						bzwrite( $file, $tablecreate );
+					else
+						fwrite( $file, $tablecreate );
+				}
+
+				unset($this->jobdata['DB_DUMP_XML']['TABLES'][$tablekey]);
+				$this->jobdata['DB_DUMP_XML']['TABLESDUMP'][]=$table;
+				$this->jobdata['STEPDONE'] ++;
+				$this->jobdata['DB_DUMP_XML']['ROWDONE'] = 0;
+
+			}
+			$tablecreateend = "\t\t</pma:database>".$this->line_separator;
+			$tablecreateend .= "\t</pma:structure_schemas>".$this->line_separator.$this->line_separator;
+			$tablecreateend .= "\t<!--".$this->line_separator;
+			$tablecreateend .= "\t- Datenbank: '".$dbname."'".$this->line_separator;
+			$tablecreateend .= "\t-->".$this->line_separator;
+			$tablecreateend .= "\t<database name=\"".$dbname."\">".$this->line_separator;
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+				gzwrite( $file, $tablecreateend );
+			elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+				bzwrite( $file, $tablecreateend );
+			else
+				fwrite( $file, $tablecreateend );
+		}
+
+		//make table data dumps
+		if ( $this->jobdata['STEPTODO'] != $this->jobdata['STEPDONE'] ) {
+			foreach ( $this->jobdata['DB_DUMP_XML']['TABLESDUMP'] as $tablekey => $table ) {
+
+				$this->update_working_data();
+				if ( ! isset($this->jobdata['DB_DUMP_XML']['ROWDONE']) )
+					$this->jobdata['DB_DUMP_XML']['ROWDONE'] = 0;
+
+				if ($this->jobdata['DB_DUMP_XML']['TABLETYPE'][$table]=='BASE TABLE') {
+					trigger_error( sprintf( __( 'Dump table "%s" data', 'backwpup' ), $table ), E_USER_NOTICE );
+					if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+						gzwrite( $file, "\t\t<!-- Tabelle ".$table." -->".$this->line_separator );
+					elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+						bzwrite( $file, "\t\t<!-- Tabelle ".$table." -->".$this->line_separator );
+					else
+						fwrite( $file, "\t\t<!-- Tabelle ".$table." -->".$this->line_separator );
+
+					//get data from table
+					$result  = mysql_query( "SELECT * FROM `" . $table . "`", $backwpupsql );
+					if ( mysql_error($backwpupsql) ) {
+						trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), "SELECT * FROM `" . $table . "`" ), E_USER_ERROR );
+						return false;
+					}
+					//get field information
+					$fieldsarray = array();
+					$fieldinfo   = array();
+					$fields      = mysql_num_fields( $result );
+					for ( $i = 0; $i < $fields; $i ++ ) {
+						$fieldsarray[$i]             = mysql_field_name( $result, $i );
+						$fieldinfo[$fieldsarray[$i]] = mysql_fetch_field( $result, $i );
+					}
+
+					$count = 0;
+					while ( $data = mysql_fetch_assoc( $result ) ) {
+						if ( $this->jobdata['DB_DUMP_XML']['ROWDONE'] > $count )
+							continue;
+
+						$dump="\t\t<table name=\"".$table."\">".$this->line_separator;
+
+						foreach ( $data as $key => $value ) {
+							if ( is_null( $value ) || ! isset($value) ) // Make Value NULL to string NULL
+								$value = "NULL";
+							elseif ( $fieldinfo[$key]->numeric == 1 && $fieldinfo[$key]->type != 'timestamp' && $fieldinfo[$key]->blob != 1 ) //is value numeric no esc
+								$value = empty($value) ? 0 : $value;
+							else
+								$value=htmlspecialchars($value);
+							$dump .="\t\t\t<column name=\"".$key."\">".$value."</column>".$this->line_separator;
+
+						}
+						$dump .="\t\t</table>".$this->line_separator;
+
+						if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' )
+							gzwrite( $file, $dump );
+						elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' )
+							bzwrite( $file, $dump );
+						else
+							fwrite( $file, $dump );
+						$this->jobdata['DB_DUMP_XML']['ROWDONE'] ++;
+						$count ++;
+					}
+
+					mysql_free_result( $result );
+				}
+
+				unset($this->jobdata['DB_DUMP_XML']['TABLESDUMP'][$tablekey]);
+				$this->jobdata['STEPDONE'] ++;
+				$this->jobdata['DB_DUMP_XML']['ROWDONE'] = 0;
+			}
+		}
+
+		if ( $this->jobdata['STEPTODO'] == $this->jobdata['STEPDONE'] ) {
+			$dbdumpfooter = "\t</database>".$this->line_separator;
+			$dbdumpfooter .= "</pma_xml_export>".$this->line_separator;
+
+			if ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'gz' ) {
+				gzwrite( $file, $dbdumpfooter );
+				gzclose( $file );
+			} elseif ( backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbdumpfilecompression' ) == 'bz2' ) {
+				bzwrite( $file, $dbdumpfooter );
+				bzclose( $file );
+			} else {
+				fwrite( $file, $dbdumpfooter );
+				fclose( $file );
+			}
+
+			trigger_error( __( 'Database XML dump done!', 'backwpup' ), E_USER_NOTICE );
+
+			//add database file to backup files
+			if ( is_readable( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] ) ) {
+				$this->jobdata['EXTRAFILESTOBACKUP'][] = backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'];
+				$this->jobdata['COUNT']['FILES'] ++;
+				$this->jobdata['COUNT']['FILESIZE'] = $this->jobdata['COUNT']['FILESIZE'] + @filesize( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] );
+				trigger_error( sprintf( __( 'Added database XML dump "%1$s" with %2$s to backup file list', 'backwpup' ), $this->jobdata['DBDUMPFILE'], size_format( filesize( backwpup_get_option( 'cfg', 'tempfolder' ) . $this->jobdata['DBDUMPFILE'] ), 2 ) ), E_USER_NOTICE );
+			}
+		}
+		//close db connection
+		if (!backwpup_get_option( $this->jobdata['JOBMAIN'], 'wpdbsettings'))
+			mysql_close($backwpupsql);
+		//Back from maintenance
+		$this->maintenance_mode( false );
+		$this->jobdata['STEPSDONE'][] = 'DB_DUMP_XML'; //set done
+		return true;
+	}
+
+	/**
 	 * Checks the Database
 	 * @return nothing
 	 */
@@ -1324,16 +1630,18 @@ class BackWPup_Job {
 				$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 				return false;
 			}
+			$dbname=backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' );
 			trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
 		} else {
 			$backwpupsql=$wpdb->dbh;
+			$dbname=DB_NAME;
 		}
 
 		//to check
 		$tablestobackup = array();
-		$res = mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`', $backwpupsql );
+		$res = mysql_query( 'SHOW FULL TABLES FROM `' .  $dbname . '`', $backwpupsql );
 		if ( mysql_error($backwpupsql) )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`' ), E_USER_ERROR );
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  $dbname . '`' ), E_USER_ERROR );
 		while ( $table = mysql_fetch_row($res) ) {
 			if ( ! in_array( $table[0], backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )  {
 				$tablestobackup[]  = $table[0];
@@ -1420,16 +1728,18 @@ class BackWPup_Job {
 				$this->jobdata['STEPSDONE'][] = 'DB_DUMP'; //set done
 				return false;
 			}
+			$dbname=backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' );
 			trigger_error( sprintf( __( 'Connected to database %1$s', 'backwpup' ), backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) ), E_USER_NOTICE );
 		} else {
 			$backwpupsql=$wpdb->dbh;
+			$dbname=DB_NAME;
 		}
 
 		//to check
 		$tablestobackup = array();
-		$res = mysql_query( 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`', $backwpupsql );
+		$res = mysql_query( 'SHOW FULL TABLES FROM `' . $dbname . '`', $backwpupsql );
 		if ( mysql_error($backwpupsql) )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . '`' ), E_USER_ERROR );
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql), 'SHOW FULL TABLES FROM `' .  $dbname . '`' ), E_USER_ERROR );
 		while ( $table = mysql_fetch_row($res) ) {
 			if ( ! in_array( $table[0], backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbexclude' ) ) )  {
 				$tablestobackup[]  = $table[0];
@@ -1440,9 +1750,9 @@ class BackWPup_Job {
 		$this->jobdata['STEPTODO'] = sizeof( $tablestobackup );
 
 		//Get table status
-		$res = mysql_query(  "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`", $backwpupsql );
+		$res = mysql_query(  "SHOW TABLE STATUS FROM `" . $dbname . "`", $backwpupsql );
 		if ( mysql_error($backwpupsql) )
-			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql),  "SHOW TABLE STATUS FROM `" . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dbname' ) . "`" ), E_USER_ERROR );
+			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), mysql_error($backwpupsql),  "SHOW TABLE STATUS FROM `" . $dbname . "`" ), E_USER_ERROR );
 		while ( $tablestatus= mysql_fetch_assoc($res) ) {
 			$status[$tablestatus['Name']] = $tablestatus;
 		}
