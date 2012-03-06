@@ -143,7 +143,6 @@ jQuery(document).ready( function($) {
 		});
 		var data = {
 			action: 'backwpup_cron_text',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -151,7 +150,7 @@ jQuery(document).ready( function($) {
 			cronwday: cronwday,
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
 			$('#cron-text').replaceWith(response);
 		});
 	}
@@ -197,7 +196,6 @@ jQuery(document).ready( function($) {
 		}
 		var data = {
 			action: 'backwpup_cron_text',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			cronminutes: cronminutes,
 			cronhours: cronhours,
 			cronmday: cronmday,
@@ -205,7 +203,7 @@ jQuery(document).ready( function($) {
 			cronwday: cronwday,
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
 			$('#cron-text').replaceWith(response);
 		});
 	}
@@ -224,14 +222,13 @@ jQuery(document).ready( function($) {
 	function awsgetbucket() {
         var data = {
 			action: 'backwpup_aws_buckets',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			awsAccessKey: $('#awsAccessKey').val(),
 			awsSecretKey: $('#awsSecretKey').val(),
 			awsselected: $('#awsBucketselected').val(),
             awsdisablessl: $('input[name="awsdisablessl"]:checked').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
 			$('#awsBucketerror').remove();
             $('#awsBucket').remove();
 			$('#awsBucketselected').after(response);
@@ -244,13 +241,12 @@ jQuery(document).ready( function($) {
 	function gstoragegetbucket() {
 		var data = {
 			action: 'backwpup_gstorage_buckets',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			GStorageAccessKey: $('#GStorageAccessKey').val(),
 			GStorageSecret: $('#GStorageSecret').val(),
 			GStorageselected: $('#GStorageselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
             $('#GStorageBucketerror').remove();
             $('#GStorageBucket').remove();
 			$('#GStorageselected').after(response);
@@ -262,14 +258,13 @@ jQuery(document).ready( function($) {
 	function msazuregetcontainer() {
 		var data = {
 			action: 'backwpup_msazure_container',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			msazureHost: $('#msazureHost').val(),
 			msazureAccName: $('#msazureAccName').val(),
 			msazureKey: $('#msazureKey').val(),
 			msazureselected: $('#msazureContainerselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
             $('#msazureContainererror').remove();
             $('#msazureContainer').remove();
 			$('#msazureContainerselected').after(response);
@@ -282,13 +277,12 @@ jQuery(document).ready( function($) {
 	function rscgetcontainer() {
 		var data = {
 			action: 'backwpup_rsc_container',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			rscUsername: $('#rscUsername').val(),
 			rscAPIKey: $('#rscAPIKey').val(),
 			rscselected: $('#rscContainerselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
             $('#rscContainererror').remove();
             $('#rscContainer').remove();
 			$('#rscContainerselected').after(response);
@@ -300,13 +294,12 @@ jQuery(document).ready( function($) {
 	function sugarsyncgetroot() {
 		var data = {
 			action: 'backwpup_sugarsync_root',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			sugaruser: $('#sugaruser').val(),
 			sugarpass: $('#sugarpass').val(),
 			sugarrootselected: $('#sugarrootselected').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
             $('#sugarrooterror').remove();
             $('#sugarroot').remove();
 			$('#sugarrootselected').after(response);
@@ -319,34 +312,43 @@ jQuery(document).ready( function($) {
 	function db_tables() {
 		var data = {
 			action: 'backwpup_db_tables',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			dbname: $('#dbname').val(),
 			dbhost: $('#dbhost').val(),
 			dbuser: $('#dbuser').val(),
 			dbpassword: $('#dbpassword').val(),
+			wpdbsettings: $('#wpdbsettings:checked').val(),
 			jobmain: 'job_' + $('#jobid').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		console.log(data._ajax_nonce);
+		$.post(ajaxurl, data, function(response) {
 			$('#dbtables').replaceWith(response);
 		});
 	}
 	$('#dbname').change(function() {db_tables();});
+	$('#wpdbsettings').change(function() {
+		if ($('#wpdbsettings:checked').val()) {
+			db_tables();
+		}  else {
+			db_databases();
+		}
+	});
+
 
 	function db_databases() {
 		var data = {
 			action: 'backwpup_db_databases',
-			ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
 			dbhost: $('#dbhost').val(),
 			dbuser: $('#dbuser').val(),
 			dbpassword: $('#dbpassword').val(),
 			_ajax_nonce: $('#backwpupeditjobajaxnonce').val()
 
 		};
-		$.post(BackWPup.ajaxurl.replace( /\\/g, '/' ), data, function(response) {
+		$.post(ajaxurl, data, function(response) {
 			$('#dbname').replaceWith(response);
 			db_tables();
+			$('#dbname').change(function() {db_tables();});
 		});
 	}
 	$('#dbhost').change(function() {db_databases();});

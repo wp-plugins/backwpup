@@ -26,7 +26,7 @@ Do backups and more for your WordPress Blog.
 * Store backup to Google Storage
 * Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
-* Store backup to DropBox
+* Store backup to Dropbox
 * Store backup to SugarSync
 * Send Log/Backup by Email
 * Multisite Support only as Network Admin
@@ -88,7 +88,7 @@ Do backups and more for your WordPress Blog.
 * Changed: Many code recode and added to classes
 * Changed: Logs in HTML5 formart
 * Changed: setttings export/import in XML formart
-* Updated: AWS lib to 1.5.2
+* Updated: AWS lib to 1.5.3
 * Updated: RSC lib to 1.7.10
 * Updated: MS azure lib to 4.1.0
 * Removed: mail send options, please use a plugin like 'WP Mail SMTP'
@@ -247,9 +247,9 @@ Do backups and more for your WordPress Blog.
 * Dropbox improvements and bug fixes
 
 = 1.6.1 =
-* Now use web OAuth login for DropBox! Best thanks to Tijs Verkoyen for his great DropBox class.
-* Only DropBox OAuth tokens are saved!
-* Check DropBox Quota/Upload Filesize on Job run
+* Now use web OAuth login for Dropbox! Best thanks to Tijs Verkoyen for his great Dropbox class.
+* Only Dropbox OAuth tokens are saved!
+* Check Dropbox Quota/Upload Filesize on Job run
 * fixed bug in .tar with file/folder names longer than 100 chars
 * changed user capability back to '10' when working with WP lower than 3.0
 * bug fixes for old WP versions
@@ -258,7 +258,7 @@ Do backups and more for your WordPress Blog.
 * bug fixes
 
 = 1.6.0 =
-* new DropBox class to use all functions (download, delete, list)
+* new Dropbox class to use all functions (download, delete, list)
 * added useful links in job edit page
 * renamed functions.php to resolve problems arising from other plugins
 * general improvements
@@ -288,13 +288,13 @@ Do backups and more for your WordPress Blog.
 * Bug fixes and improvements
 
 = 1.4.1 =
-* DropBox changes
+* Dropbox changes
 * fixed problem on send log with email
 * Security fix (thanks Massa Danilo)
 
 = 1.4.0 =
 * make SSL-FTP as option
-* added DropBox support (zlli)
+* added Dropbox support (zlli)
 
 = 1.3.6 =
 * long file list no longer displayed in logs.

@@ -75,8 +75,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'admin_notices', create_function( '', 'echo "<div id=\"message\" class=\"error fade\"><strong>".__("BackWPup:", "backwpup")."</strong><br />".__("- PHP 5.2.4 or higher is needed!","backwpup")."</div>";' ) );
 				return;
 			}
-			//textdomain overide
-			add_filter( 'override_load_textdomain' , array($this,'overide_textdomain'), 1, 3 );
 			//Load text domain
 			load_plugin_textdomain( 'backwpup', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 			//register auto load
@@ -112,6 +110,17 @@ if ( ! class_exists( 'BackWPup' ) ) {
 					unset($_GET['oauth_token']);
 					unset($_REQUEST['oauth_token']);
 				}
+				//ajax calls
+				add_action('wp_ajax_backwpup_show_info', array('BackWPup_Ajax_Fileinfo','get_object'));
+				add_action('wp_ajax_backwpup_working', array('BackWPup_Ajax_Working','working'));
+				add_action('wp_ajax_backwpup_cron_text', array('BackWPup_Ajax_Editjob','cron_text'));
+				add_action('wp_ajax_backwpup_aws_buckets', array('BackWPup_Ajax_Editjob','aws_buckets'));
+				add_action('wp_ajax_backwpup_gstorage_buckets', array('BackWPup_Ajax_Editjob','gstorage_buckets'));
+				add_action('wp_ajax_backwpup_rsc_container', array('BackWPup_Ajax_Editjob','rsc_container'));
+				add_action('wp_ajax_backwpup_msazure_container', array('BackWPup_Ajax_Editjob','msazure_container'));
+				add_action('wp_ajax_backwpup_sugarsync_root', array('BackWPup_Ajax_Editjob','sugarsync_root'));
+				add_action('wp_ajax_backwpup_db_tables', array('BackWPup_Ajax_Editjob','db_tables'));
+				add_action('wp_ajax_backwpup_db_databases', array('BackWPup_Ajax_Editjob','db_databases'));
 			}
 		}
 
@@ -289,29 +298,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				wp_enqueue_style( "backwpupadmin", plugins_url( '', __FILE__ ) . "/css/adminbar.css", "", ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), "screen" );
 				add_action( 'admin_bar_menu', array( 'BackWPup_Adminbar', 'adminbar' ), 100 );
 			}
-		}
-
-		/**
-		 *
-		 * Textdomain overide
-		 *
-		 * @param $default
-		 * @param $domain
-		 * @param $mofile
-		 *
-		 * @return bool
-		 */
-		public function overide_textdomain($default, $domain, $mofile) {
-			if ( (defined( 'DOING_CRON' ) && DOING_CRON) ) {
-				global $l10n;
-				if ($domain=='backwpup') {
-					foreach (array_keys($l10n) as $domainkey)
-						unset($l10n[$domainkey]);
-				} else {
-					return true;
-				}
-			}
-			return $default;
 		}
 
 	}

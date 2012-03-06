@@ -223,7 +223,7 @@ class BackWPup_Page_Backups {
 					die();
 				}
 				break;
-			case 'downloaddropbox': //Download DropBox Backup
+			case 'downloaddropbox': //Download Dropbox Backup
 				check_admin_referer( 'download-backup' );
 				$main = 'job_' . (int) $_GET['jobid'];
 				try {

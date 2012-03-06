@@ -361,15 +361,13 @@ class BackWPup_Job {
 				trigger_error( sprintf( __( 'Can not create folder: %1$s', 'backwpup' ), $folder ), E_USER_ERROR );
 				return false;
 			}
-			//create .htaccess for apache and index.html/php for other
+			//create .htaccess for apache and index.php for other
 			if ( strtolower( substr( $_SERVER["SERVER_SOFTWARE"], 0, 6 ) ) == "apache" ) { //check for apache webserver
 				if ( ! is_file( $folder . '/.htaccess' ) )
 					file_put_contents( $folder . '/.htaccess', "Order allow,deny" . $this->line_separator . "deny from all" );
 			} else {
-				if ( ! is_file( $folder . '/index.html' ) )
-					file_put_contents( $folder . '/index.html', $this->line_separator );
 				if ( ! is_file( $folder . '/index.php' ) )
-					file_put_contents( $folder . '/index.php', $this->line_separator );
+					file_put_contents( $folder . '/index.php', '<?php'.$this->line_separator.'header( $_SERVER["SERVER_PROTOCOL"] . " 404 Not Found" );'.$this->line_separator.'header( "Status: 404 Not Found" );'.$this->line_separator.'die();'.$this->line_separator );
 			}
 		}
 		//check backup dir
@@ -1943,29 +1941,6 @@ class BackWPup_Job {
 		//check folder permissions
 
 		//check blog url is a not good url
-		//Google Safe Browsing Lookup API v3
-		trigger_error( sprintf( __( 'Google Safe Browsing check for: %s', 'backwpup' ), get_bloginfo( 'url' ) ), E_USER_NOTICE );
-		$raw_response = wp_remote_get( 'https://sb-ssl.google.com/safebrowsing/api/lookup?client=BackWPup&apikey=ABQIAAAAYZ4dGTfemlJ9EjcqnoNNPBR-i1txqffFGis34_Ilz8gxF0ZQ-w&appver='.BackWPup::get_plugin_data('Version').'&pver=3.0&url='.urlencode(get_bloginfo( 'url' )), array( 'sslverify' => false ) );
-		switch ( wp_remote_retrieve_response_code( $raw_response ) ) {
-			case 200:
-				trigger_error( sprintf( __( 'Google Safe Browsing check: %s', 'backwpup' ), wp_remote_retrieve_body( $raw_response ) ), E_USER_ERROR );
-				break;
-			case 204:
-				trigger_error(  __( 'Google Safe Browsing check: OK', 'backwpup' ), E_USER_NOTICE );
-				break;
-			case 400:
-				trigger_error( __( 'Google Safe Browsing check: The HTTP request was not correctly formed!', 'backwpup' ), E_USER_WARNING );
-				break;
-			case 401:
-				trigger_error(  __( 'Google Safe Browsing check: The apikey is not authorized', 'backwpup' ), E_USER_WARNING );
-				break;
-			case 503:
-				trigger_error(  __( 'Google Safe Browsing check: The server cannot handle the request. Besides the normal server failures, it could also indicate that the client has been “throttled” by sending too many requests', 'backwpup' ), E_USER_WARNING );
-				break;
-			default:
-				trigger_error( sprintf( __( 'Google Safe Browsing check: %d %s', 'backwpup' ), wp_remote_retrieve_response_code( $raw_response ), wp_remote_retrieve_body( $raw_response ) ), E_USER_ERROR );
-				break;
-		}
 		//MyWot API v0.4
 		trigger_error( sprintf( __( 'MyWot check for: %s', 'backwpup' ),get_bloginfo( 'url' ) ), E_USER_NOTICE );
 		$raw_response = wp_remote_get( 'http://api.mywot.com/0.4/public_query2?url='.urlencode(get_bloginfo( 'url' )), array( 'sslverify' => false ) );
@@ -1996,7 +1971,7 @@ class BackWPup_Job {
 				break;
 		}
 		trigger_error( sprintf( __( 'Sucuri check for: %s', 'backwpup' ),get_bloginfo( 'url' ) ), E_USER_NOTICE );
-		$scan = wp_remote_get('http://sitecheck.sucuri.net/scanner/?scan=' . urlencode( get_bloginfo( 'url' ) ) . '&serialized',array('timeout' => 45,'redirection' => 5));
+		$scan = wp_remote_get('http://sitecheck.sucuri.net/scanner/?scan=' . urlencode( get_bloginfo( 'url' ) ) . '&frombackwpup&serialized',array('timeout' => 45,'redirection' => 5));
 		trigger_error( json_encode(unserialize(wp_remote_retrieve_body( $scan ))), E_USER_NOTICE );
 
 		$this->jobdata['STEPDONE']    = 1;
@@ -2529,12 +2504,12 @@ class BackWPup_Job {
 	}
 
 	/**
-	 * Backup destination DropBox for archives
+	 * Backup destination Dropbox for archives
 	 * @return nothing
 	 */
 	private function dest_dropbox() {
 		$this->jobdata['STEPTODO'] = 2 + $this->jobdata['BACKUPFILESIZE'];
-		trigger_error( sprintf( __( '%d. Try to sending backup file to DropBox...', 'backwpup' ), $this->jobdata['DEST_DROPBOX']['STEP_TRY'] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Try to sending backup file to Dropbox...', 'backwpup' ), $this->jobdata['DEST_DROPBOX']['STEP_TRY'] ), E_USER_NOTICE );
 		try {
 			$dropbox = new BackWPup_Dest_Dropbox(backwpup_get_option( $this->jobdata['JOBMAIN'], 'droperoot' ));
 			// set the tokens
@@ -2542,22 +2517,22 @@ class BackWPup_Job {
 			//get account info
 			$info = $dropbox->accountInfo();
 			if ( ! empty($info['uid']) ) {
-				trigger_error( sprintf( __( 'Authed with DropBox from %s', 'backwpup' ), $info['display_name'] . ' (' . $info['email'] . ')' ), E_USER_NOTICE );
+				trigger_error( sprintf( __( 'Authed with Dropbox from %s', 'backwpup' ), $info['display_name'] . ' (' . $info['email'] . ')' ), E_USER_NOTICE );
 			}
 			//Check Quota
 			$dropboxfreespase = $info['quota_info']['quota'] - $info['quota_info']['shared'] - $info['quota_info']['normal'];
 			if ( $this->jobdata['BACKUPFILESIZE'] > $dropboxfreespase ) {
-				trigger_error( __( 'No free space left on DropBox!!!', 'backwpup' ), E_USER_ERROR );
+				trigger_error( __( 'No free space left on Dropbox!!!', 'backwpup' ), E_USER_ERROR );
 				$this->jobdata['STEPSDONE'][] = 'DEST_DROPBOX'; //set done
 				return;
 			} else {
-				trigger_error( sprintf( __( '%s free on DropBox', 'backwpup' ), size_format( $dropboxfreespase, 2 ) ), E_USER_NOTICE );
+				trigger_error( sprintf( __( '%s free on Dropbox', 'backwpup' ), size_format( $dropboxfreespase, 2 ) ), E_USER_NOTICE );
 			}
 			//set callback function
 			$dropbox->setProgressFunction( array( $this, 'curl_read_callback' ) );
 			$this->jobdata['STEPDONE'] = 0;
 			// put the file
-			trigger_error( __( 'Upload to DropBox now started... ', 'backwpup' ), E_USER_NOTICE );
+			trigger_error( __( 'Upload to Dropbox now started... ', 'backwpup' ), E_USER_NOTICE );
 			$response = $dropbox->upload( $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'], backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropedir' ) . $this->jobdata['BACKUPFILE'] );
 			if ( $response['bytes'] == filesize( $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] ) ) {
 				backwpup_update_option( $this->jobdata['JOBMAIN'], 'lastbackupdownloadurl', backwpup_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloaddropbox&file=' . backwpup_get_option( $this->jobdata['JOBMAIN'], 'dropedir' ) . $this->jobdata['BACKUPFILE'] . '&jobid=' . $this->jobdata['JOBID'] );
@@ -2568,11 +2543,11 @@ class BackWPup_Job {
 				if ( $response['bytes'] != filesize( $this->jobdata['BACKUPDIR'] . $this->jobdata['BACKUPFILE'] ) )
 					trigger_error( __( 'Uploaded file size and local file size not the same!!!', 'backwpup' ), E_USER_ERROR );
 				else
-					trigger_error( sprintf( __( 'Error on transfer backup to DropBox: %s', 'backwpup' ), $response['error'] ), E_USER_ERROR );
+					trigger_error( sprintf( __( 'Error on transfer backup to Dropbox: %s', 'backwpup' ), $response['error'] ), E_USER_ERROR );
 				return;
 			}
 		} catch ( Exception $e ) {
-			$this->error_handler( E_USER_ERROR, sprintf( __( 'DropBox API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
+			$this->error_handler( E_USER_ERROR, sprintf( __( 'Dropbox API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
 			return;
 		}
 		try {
@@ -2610,15 +2585,15 @@ class BackWPup_Job {
 							}
 							$numdeltefiles ++;
 						} else
-							trigger_error( sprintf( __( 'Error on delete file on DropBox: %s', 'backwpup' ), $file ), E_USER_ERROR );
+							trigger_error( sprintf( __( 'Error on delete file on Dropbox: %s', 'backwpup' ), $file ), E_USER_ERROR );
 					}
 					if ( $numdeltefiles > 0 )
-						trigger_error( sprintf( _n( 'One file deleted on DropBox', '%d files deleted on DropBox', $numdeltefiles, 'backwpup' ), $numdeltefiles ), E_USER_NOTICE );
+						trigger_error( sprintf( _n( 'One file deleted on Dropbox', '%d files deleted on Dropbox', $numdeltefiles, 'backwpup' ), $numdeltefiles ), E_USER_NOTICE );
 				}
 			}
 			backwpup_update_option( 'temp', $this->jobdata['JOBID'] . '_DROPBOX', $files );
 		} catch ( Exception $e ) {
-			$this->error_handler( E_USER_ERROR, sprintf( __( 'DropBox API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
+			$this->error_handler( E_USER_ERROR, sprintf( __( 'Dropbox API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
 			return;
 		}
 		$this->jobdata['STEPDONE'] ++;

@@ -170,7 +170,6 @@ class BackWPup_Page_Backwpup {
 	 */
 	public static function javascript() {
 		wp_enqueue_script( 'backwpup_backwpup', plugins_url( '', dirname( __FILE__ ) ) . '/js/backwpup.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), true );
-		wp_localize_script('backwpup_backwpup','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
 	}
 
 	/**

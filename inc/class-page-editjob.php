@@ -10,7 +10,7 @@ class BackWPup_Page_Editjob {
 	public static function load() {
 		global $backwpup_message;
 		//Save Dropbox auth
-		if ( isset($_GET['auth']) && $_GET['auth'] == 'DropBox' ) {
+		if ( isset($_GET['auth']) && $_GET['auth'] == 'Dropbox' ) {
 			$jobid = (int) $_GET['jobid'];
 			if ( ! wp_verify_nonce( $_GET['_wpnonce'], 'edit-job' ) ) {
 				wp_nonce_ays( 'edit-job' );
@@ -28,10 +28,10 @@ class BackWPup_Page_Editjob {
 					backwpup_update_option( 'job_' . $jobid, 'dropesecret', backwpup_encrypt($oAuthStuff['oauth_token_secret']) );
 					$backwpup_message .= __( 'Dropbox authentication complete!', 'backwpup' ) . '<br />';
 				} else {
-					$backwpup_message .= __( 'Wrong Token for DropBox authentication received!', 'backwpup' ) . '<br />';
+					$backwpup_message .= __( 'Wrong Token for Dropbox authentication received!', 'backwpup' ) . '<br />';
 				}
 			} else {
-				$backwpup_message .= __( 'No DropBox authentication received!', 'backwpup' ) . '<br />';
+				$backwpup_message .= __( 'No Dropbox authentication received!', 'backwpup' ) . '<br />';
 			}
 			backwpup_delete_option( 'temp', 'dropboxauth' );
 			$_POST['jobid'] = $jobid;
@@ -312,7 +312,7 @@ class BackWPup_Page_Editjob {
 			backwpup_update_option( $main, 'rscdir', $_POST['rscdir'] );
 			backwpup_update_option( $main, 'rscmaxbackups', isset($_POST['rscmaxbackups']) ? (int) $_POST['rscmaxbackups'] : 0 );
 			backwpup_update_option( $main, 'mailaddress', isset($_POST['mailaddress']) ? sanitize_email( $_POST['mailaddress'] ) : '' );
-
+			delete_transient( 'backwpup_file_info_' . backwpup_get_option($main,'jobid'));
 
 			if ( ! empty($_POST['newawsBucket']) && ! empty($_POST['awsAccessKey']) && ! empty($_POST['awsSecretKey']) ) { //create new s3 bucket if needed
 				try {
@@ -361,17 +361,17 @@ class BackWPup_Page_Editjob {
 			}
 
 
-			if ( isset($_POST['authbutton']) && $_POST['authbutton'] == __( 'Delete DropBox authentication!', 'backwpup' ) ) {
+			if ( isset($_POST['authbutton']) && $_POST['authbutton'] == __( 'Delete Dropbox authentication!', 'backwpup' ) ) {
 				backwpup_update_option( $main, 'dropetoken', '' );
 				backwpup_update_option( $main, 'dropesecret', '' );
 				$backwpup_message .= __( 'Dropbox authentication deleted!', 'backwpup' ) . '<br />';
 			}
 
-			//get DropBox auth
-			if ( isset($_POST['authbutton']) && $_POST['authbutton'] == __( 'DropBox authenticate!', 'backwpup' ) ) {
+			//get Dropbox auth
+			if ( isset($_POST['authbutton']) && $_POST['authbutton'] == __( 'Dropbox authenticate!', 'backwpup' ) ) {
 				$dropbox = new BackWPup_Dest_Dropbox(backwpup_get_option( $main, 'droperoot' ));
 				// let the user authorize (user will be redirected)
-				$response = $dropbox->oAuthAuthorize( backwpup_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . backwpup_get_option( $main, 'jobid' ) . '&auth=DropBox&_wpnonce=' . wp_create_nonce( 'edit-job' ) );
+				$response = $dropbox->oAuthAuthorize( backwpup_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . backwpup_get_option( $main, 'jobid' ) . '&auth=Dropbox&_wpnonce=' . wp_create_nonce( 'edit-job' ) );
 				// save oauth_token_secret
 				backwpup_update_option( 'temp', 'dropboxauth', array( 'oAuthRequestToken'	   => $response['oauth_token'],
 																	  'oAuthRequestTokenSecret' => $response['oauth_token_secret'] ) );
@@ -439,7 +439,6 @@ class BackWPup_Page_Editjob {
 		wp_enqueue_script( 'wp-lists' );
 		wp_enqueue_script( 'postbox' );
 		wp_enqueue_script( 'backwpup_editjob', plugins_url( '', dirname( __FILE__ ) ) . '/js/editjob.js', '', ((defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG) ? time() : BackWPup::get_plugin_data('Version')), true );
-		wp_localize_script('backwpup_editjob','BackWPup',array('ajaxurl'=>plugins_url( '', dirname( __FILE__ ) ) . '/ajax.php','abspath'=>ABSPATH));
 	}
 
 	/**
@@ -525,7 +524,7 @@ class BackWPup_Page_Editjob {
 		<div class="inside">
 			<div>
 				<b><?php _e( 'Database connection for use:', 'backwpup' ); ?></b><br />
-				<input class="checkbox" type="checkbox"<?php checked( backwpup_get_option( $main, 'wpdbsettings' ), true, true );?> name="wpdbsettings" value="1" /> <?php _e( 'Use WordPress DB connection.', 'backwpup' );?><br />
+				<input class="checkbox" type="checkbox"<?php checked( backwpup_get_option( $main, 'wpdbsettings' ), true, true );?> id="wpdbsettings" name="wpdbsettings" value="1" /> <?php _e( 'Use WordPress DB connection.', 'backwpup' );?><br />
 				<div id="dbconnection"<?php if (backwpup_get_option( $main, 'wpdbsettings' )) echo ' style="display:none;"';?>>
 					<?php _e( 'Host:', 'backwpup' );?><br />
 					<input class="text" type="text" id="dbhost" name="dbhost" value="<?php echo backwpup_get_option( $main, 'dbhost' );?>" /><br />
@@ -558,11 +557,11 @@ class BackWPup_Page_Editjob {
 				if (!backwpup_get_option( $main, 'wpdbsettings' ))  {
 					BackWPup_Ajax_Editjob::db_tables(array('dbname'=>backwpup_get_option( $main, 'dbname' ),'dbuser' =>backwpup_get_option( $main, 'dbuser' ),
 														   'dbpassword'=>backwpup_get_option( $main, 'dbpassword' ),'dbhost'=>backwpup_get_option( $main, 'dbhost' ),
-														   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' ),'jobmain'=>$main));
+														   'dbcharset'=>backwpup_get_option( $main, 'dbcharset' ),'jobmain'=>$main,'wpdbsettings'=>false));
 				} else {
-					BackWPup_Ajax_Editjob::db_tables(array('dbname'=>DB_NAME,'dbuser' =>DB_USER,
-														   'dbpassword'=>DB_PASSWORD,'dbhost'=>DB_HOST,
-														   'dbcharset'=>DB_CHARSET,'jobmain'=>$main));
+					BackWPup_Ajax_Editjob::db_tables(array('wpdbsettings'=>true,'dbname'=>'','dbuser' =>'',
+														   'dbpassword'=>'','dbhost'=>'',
+														   'dbcharset'=>'','jobmain'=>$main));
 				}
 				?>
 
@@ -739,7 +738,8 @@ class BackWPup_Page_Editjob {
 		<h3><label for="security"><?php _e( 'Little Security Scan', 'backwpup' ); ?></label></h3>
 
 		<div class="inside">
-
+			<a href="http://affl.sucuri.net/?affl=bc82a571ded9f03886f26d51a16b5eb4" target="_blank"><img src="http://sucuri.net/images/sucuri-mw.png" title="<?php _e( 'Scan by Sucuri', 'backwpup' );?>" style="float:right;"></a>
+			<br class="clear" />
 		</div>
 	</div>
 

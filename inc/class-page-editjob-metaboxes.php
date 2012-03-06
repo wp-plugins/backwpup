@@ -473,24 +473,24 @@ class BackWPup_Page_Editjob_Metaboxes {
 		<b><?php _e( 'Root:', 'backwpup' ); ?></b>&nbsp;
 		<select name="droperoot" id="droperoot">
 			<option <?php selected( backwpup_get_option( $main, 'droperoot' ), 'sandbox', true ); ?> value="sandbox"><?php _e( 'Sandbox (App folder)', 'backwpup' ); ?></option>
-			<option <?php selected( backwpup_get_option( $main, 'droperoot' ), 'dropbox', true ); ?> value="dropbox"><?php _e( 'DropBox (full DropBox)', 'backwpup' ); ?></option>
+			<option <?php selected( backwpup_get_option( $main, 'droperoot' ), 'dropbox', true ); ?> value="dropbox"><?php _e( 'Dropbox (full Dropbox)', 'backwpup' ); ?></option>
 		</select><br />
 		<b><?php _e( 'Login:', 'backwpup' ); ?></b>&nbsp;
 		<span style="color:red;"><?php _e( 'Not authenticated!', 'backwpup' ); ?></span>
-		<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'DropBox authenticate!', 'backwpup' ); ?>" />
+		<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Dropbox authenticate!', 'backwpup' ); ?>" />
 		<br />
 		<?php } else { ?>
 		<input name="droperoot" type="hidden" value="<?php echo backwpup_get_option( $main, 'droperoot' );?>" />
-		<b><?php _e( 'Root:', 'backwpup' ); ?></b>&nbsp;<?php echo (backwpup_get_option( $main, 'droperoot' ) == 'sandbox') ? _e( 'Sandbox (App folder)', 'backwpup' ) : _e( 'DropBox (full DropBox)', 'backwpup' ); ?>
+		<b><?php _e( 'Root:', 'backwpup' ); ?></b>&nbsp;<?php echo (backwpup_get_option( $main, 'droperoot' ) == 'sandbox') ? _e( 'Sandbox (App folder)', 'backwpup' ) : _e( 'Dropbox (full Dropbox)', 'backwpup' ); ?>
 		<br />
 		<b><?php _e( 'Login:', 'backwpup' ); ?></b>&nbsp;
 		<span style="color:green;"><?php _e( 'Authenticated!', 'backwpup' ); ?></span>
-		<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Delete DropBox authentication!', 'backwpup' ); ?>" />
+		<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Delete Dropbox authentication!', 'backwpup' ); ?>" />
 		<br />
 		<?php } ?><br />
 		<b><?php _e( 'Folder:', 'backwpup' ); ?></b><br />
 		<input name="dropedir" type="text" value="<?php echo backwpup_get_option( $main, 'dropedir' );?>" class="user large-text" /><br />
-		<span class="nosync"><?php _e( 'Max. backup files in DropBox folder:', 'backwpup' ); ?>
+		<span class="nosync"><?php _e( 'Max. backup files in Dropbox folder:', 'backwpup' ); ?>
 			<input name="dropemaxbackups" type="text" size="3" value="<?php echo backwpup_get_option( $main, 'dropemaxbackups' );?>" class="small-text" /><span class="description"><?php _e( '(Oldest files will be deleted first.)', 'backwpup' );?></span><br /></span>
 		<span class="sync"><input class="checkbox" value="1" type="checkbox" <?php checked( backwpup_get_option( $main, 'dropesyncnodelete' ), true ); ?> name="dropesyncnodelete" /> <?php _e( 'Do not delete files on sync destination!', 'backwpup' ); ?>
 			<br /></span>

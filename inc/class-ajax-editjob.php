@@ -88,6 +88,7 @@ class BackWPup_Ajax_Editjob {
 
 
 	public static function db_tables( $args = '') {
+		global $wpdb;
 		if ( is_array( $args ) ) {
 			extract( $args );
 			$ajax = false;
@@ -98,17 +99,23 @@ class BackWPup_Ajax_Editjob {
 			$dbuser   = $_POST['dbuser'];
 			$dbpassword = $_POST['dbpassword'];
 			$jobmain = $_POST['jobmain'];
+			$wpdbsettings = (isset($_POST['wpdbsettings']) && $_POST['wpdbsettings']==1) ? true : false;
 			$ajax          = true;
 		}
-		$dbconnection=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword));
-		if (!$dbconnection or empty($dbname)) {
-			echo '<div id="dbtables"></div>';
-			if ( $ajax )
-				die();
-			else
-				return;
+		if ($wpdbsettings)  {
+			$backwpupsql=$wpdb->dbh;
+			$dbname= DB_NAME;
+		} else {
+			$backwpupsql=@mysql_connect($dbhost,$dbuser,backwpup_decrypt($dbpassword));
+			if (!$backwpupsql or empty($dbname)) {
+				echo '<div id="dbtables"></div>';
+				if ( $ajax )
+					die();
+				else
+					return;
+			}
 		}
-		$res = mysql_query( 'SHOW FULL TABLES FROM `' . $dbname . '`', $dbconnection );
+		$res = mysql_query( 'SHOW FULL TABLES FROM `' . $dbname . '`', $backwpupsql );
 		echo '<div id="dbtables">';
 		while ( $table = mysql_fetch_row($res) ) {
 			$tabletype='';

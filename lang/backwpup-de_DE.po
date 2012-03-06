@@ -1197,7 +1197,7 @@ msgstr "Konto erstellen"
 
 #@ backwpup
 #: job/dest_dropbox.php:33
-msgid "No free space left on DropBox!!!"
+msgid "No free space left on Dropbox!!!"
 msgstr "Kein freier Speicherplatz mehr &uuml;brig auf Dropbox!!!"
 
 #@ backwpup
@@ -1459,7 +1459,7 @@ msgstr "dropbox"
 
 #@ backwpup
 #: pages/func_backwpupeditjob.php:358
-msgid "sandbox (disabled by DropBox)"
+msgid "sandbox (disabled by Dropbox)"
 msgstr "sandbox (deaktiviert von Dropbox)"
 
 #@ backwpup
@@ -2101,38 +2101,38 @@ msgstr "Es gibt keine Datenbanktabellen zum Optimieren"
 #@ backwpup
 #: job/dest_dropbox.php:6
 #, php-format
-msgid "%d. Try to sending backup file to DropBox..."
+msgid "%d. Try to sending backup file to Dropbox..."
 msgstr "%d. Versuche Datensicherungsdatei zur Dropbox zu senden ..."
 
 #@ backwpup
 #: job/dest_dropbox.php:28
 #, php-format
-msgid "Authed with DropBox from %s"
+msgid "Authed with Dropbox from %s"
 msgstr "Authentifiziert mit Dropbox von %s"
 
 #@ backwpup
 #: job/dest_dropbox.php:37
 #, php-format
-msgid "%s free on DropBox"
+msgid "%s free on Dropbox"
 msgstr "%s frei in der Dropbox"
 
 #@ backwpup
 #: job/dest_dropbox.php:42
-msgid "Upload to DropBox now started... "
+msgid "Upload to Dropbox now started... "
 msgstr "Hochladen zur Dropbox hat begonnen ... "
 
 #@ backwpup
 #: job/dest_dropbox.php:54
 #: job/dest_dropbox.php:79
 #, php-format
-msgid "DropBox API: %s"
+msgid "Dropbox API: %s"
 msgstr "Dropbox-API: %s"
 
 #@ backwpup
 #: job/dest_dropbox.php:75
 #, php-format
-msgid "One file deleted on DropBox"
-msgid_plural "%d files deleted on DropBox"
+msgid "One file deleted on Dropbox"
+msgid_plural "%d files deleted on Dropbox"
 msgstr[0] "Eine Datei in der Dropbox gel&ouml;scht"
 msgstr[1] "%d Dateien in der Dropbox gel&ouml;scht"
 

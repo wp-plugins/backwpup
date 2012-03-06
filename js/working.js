@@ -2,11 +2,10 @@ jQuery(document).ready( function($) {
 	backwpup_show_working = function() {
 		$.ajax({
 			type: 'POST',
-			url: BackWPup.ajaxurl.replace( /\\/g, '/' ),
+			url: ajaxurl,
 			cache: false,
             data: {
                 action: 'backwpup_working',
-				ABSPATH: BackWPup.abspath.replace( /\\/g, '/' ),
                 logfile: $('#logfile').val(),
                 logpos:  $('#logpos').val(),
                 _ajax_nonce: $('#backwpupworkingajaxnonce').val()

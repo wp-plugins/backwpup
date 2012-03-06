@@ -701,23 +701,23 @@ msgid "File deleted %s"
 msgstr ""
 
 #: inc/class-job.php:2118
-msgid "%d. Try to sending backup file to DropBox..."
+msgid "%d. Try to sending backup file to Dropbox..."
 msgstr ""
 
 #: inc/class-job.php:2126
-msgid "Authed with DropBox from %s"
+msgid "Authed with Dropbox from %s"
 msgstr ""
 
 #: inc/class-job.php:2131
-msgid "No free space left on DropBox!!!"
+msgid "No free space left on Dropbox!!!"
 msgstr ""
 
 #: inc/class-job.php:2135
-msgid "%s free on DropBox"
+msgid "%s free on Dropbox"
 msgstr ""
 
 #: inc/class-job.php:2141
-msgid "Upload to DropBox now started... "
+msgid "Upload to Dropbox now started... "
 msgstr ""
 
 #: inc/class-job.php:2147 inc/class-job.php:2400 inc/class-job.php:2492
@@ -730,20 +730,20 @@ msgid "Uploaded file size and local file size not the same!!!"
 msgstr ""
 
 #: inc/class-job.php:2152
-msgid "Error on transfer backup to DropBox: %s"
+msgid "Error on transfer backup to Dropbox: %s"
 msgstr ""
 
 #: inc/class-job.php:2156 inc/class-job.php:2202
-msgid "DropBox API: %s"
+msgid "Dropbox API: %s"
 msgstr ""
 
 #: inc/class-job.php:2194
-msgid "Error on delete file on DropBox: %s"
+msgid "Error on delete file on Dropbox: %s"
 msgstr ""
 
 #: inc/class-job.php:2197
-msgid "One file deleted on DropBox"
-msgid_plural "%d files deleted on DropBox"
+msgid "One file deleted on Dropbox"
+msgid_plural "%d files deleted on Dropbox"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -1768,7 +1768,7 @@ msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:476
 #: inc/class-page-editjob-metaboxes.php:484
-msgid "DropBox (full DropBox)"
+msgid "Dropbox (full Dropbox)"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:478
@@ -1781,7 +1781,7 @@ msgid "Not authenticated!"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:480 inc/class-page-editjob.php:351
-msgid "DropBox authenticate!"
+msgid "Dropbox authenticate!"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:487
@@ -1789,7 +1789,7 @@ msgid "Authenticated!"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:488 inc/class-page-editjob.php:344
-msgid "Delete DropBox authentication!"
+msgid "Delete Dropbox authentication!"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:491
@@ -1798,7 +1798,7 @@ msgid "Folder:"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:493
-msgid "Max. backup files in DropBox folder:"
+msgid "Max. backup files in Dropbox folder:"
 msgstr ""
 
 #: inc/class-page-editjob-metaboxes.php:509
@@ -1815,11 +1815,11 @@ msgid "Dropbox authentication complete!"
 msgstr ""
 
 #: inc/class-page-editjob.php:31
-msgid "Wrong Token for DropBox authentication received!"
+msgid "Wrong Token for Dropbox authentication received!"
 msgstr ""
 
 #: inc/class-page-editjob.php:34
-msgid "No DropBox authentication received!"
+msgid "No Dropbox authentication received!"
 msgstr ""
 
 #: inc/class-page-editjob.php:305

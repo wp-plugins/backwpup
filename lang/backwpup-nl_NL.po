@@ -1467,8 +1467,8 @@ msgstr "Sandbox (App map)"
 #: inc/class-page-editjob-metaboxes.php:476
 #: inc/class-page-editjob-metaboxes.php:484
 #@ backwpup
-msgid "DropBox (full DropBox)"
-msgstr "DropBox (volledige DropBox)"
+msgid "Dropbox (full Dropbox)"
+msgstr "Dropbox (volledige Dropbox)"
 
 #: inc/class-page-editjob-metaboxes.php:478
 #: inc/class-page-editjob-metaboxes.php:486
@@ -1484,8 +1484,8 @@ msgstr "Niet aangemeld!"
 #: inc/class-page-editjob-metaboxes.php:480
 #: inc/class-page-editjob.php:351
 #@ backwpup
-msgid "DropBox authenticate!"
-msgstr "Aanmelden bij DropBox!"
+msgid "Dropbox authenticate!"
+msgstr "Aanmelden bij Dropbox!"
 
 #: inc/class-page-editjob-metaboxes.php:487
 #@ backwpup
@@ -1495,8 +1495,8 @@ msgstr "Aangemeld!"
 #: inc/class-page-editjob-metaboxes.php:488
 #: inc/class-page-editjob.php:344
 #@ backwpup
-msgid "Delete DropBox authentication!"
-msgstr "Afmelden bij DropBox!"
+msgid "Delete Dropbox authentication!"
+msgstr "Afmelden bij Dropbox!"
 
 #: inc/class-page-editjob-metaboxes.php:491
 #: inc/class-page-editjob-metaboxes.php:519
@@ -1506,8 +1506,8 @@ msgstr "Map:"
 
 #: inc/class-page-editjob-metaboxes.php:493
 #@ backwpup
-msgid "Max. backup files in DropBox folder:"
-msgstr "Max. aantal backup-bestanden in DropBox-map:"
+msgid "Max. backup files in Dropbox folder:"
+msgstr "Max. aantal backup-bestanden in Dropbox-map:"
 
 #: inc/class-page-editjob-metaboxes.php:509
 #: inc/class-page-editjob-metaboxes.php:536
@@ -1682,12 +1682,12 @@ msgstr "Dropbox aanmelding gelukt!"
 
 #: inc/class-page-editjob.php:31
 #@ backwpup
-msgid "Wrong Token for DropBox authentication received!"
+msgid "Wrong Token for Dropbox authentication received!"
 msgstr "Onjuist token voor Dropbox aanmelding ontvangen!"
 
 #: inc/class-page-editjob.php:34
 #@ backwpup
-msgid "No DropBox authentication received!"
+msgid "No Dropbox authentication received!"
 msgstr "Geen Dropbox aanmelding ontvangen!"
 
 #: inc/class-page-editjob.php:305
@@ -2642,30 +2642,30 @@ msgstr "Bestand verwijderd %s"
 #: inc/class-job.php:2118
 #, php-format
 #@ backwpup
-msgid "%d. Try to sending backup file to DropBox..."
-msgstr "%d. Backup-bestand naar DropBox verzenden..."
+msgid "%d. Try to sending backup file to Dropbox..."
+msgstr "%d. Backup-bestand naar Dropbox verzenden..."
 
 #: inc/class-job.php:2126
 #, php-format
 #@ backwpup
-msgid "Authed with DropBox from %s"
-msgstr "Aangemeld bij DropBox met %s"
+msgid "Authed with Dropbox from %s"
+msgstr "Aangemeld bij Dropbox met %s"
 
 #: inc/class-job.php:2131
 #@ backwpup
-msgid "No free space left on DropBox!!!"
-msgstr "Geen vrije ruimte op DropBox!!"
+msgid "No free space left on Dropbox!!!"
+msgstr "Geen vrije ruimte op Dropbox!!"
 
 #: inc/class-job.php:2135
 #, php-format
 #@ backwpup
-msgid "%s free on DropBox"
-msgstr "%s vrij op DropBox"
+msgid "%s free on Dropbox"
+msgstr "%s vrij op Dropbox"
 
 #: inc/class-job.php:2141
 #@ backwpup
-msgid "Upload to DropBox now started... "
-msgstr "Verzending naar DropBox gestart..."
+msgid "Upload to Dropbox now started... "
+msgstr "Verzending naar Dropbox gestart..."
 
 #: inc/class-job.php:2147
 #: inc/class-job.php:2400
@@ -2685,29 +2685,29 @@ msgstr "Bestandsgrootte locale en verzonden bestand ongelijk!!!"
 #: inc/class-job.php:2152
 #, php-format
 #@ backwpup
-msgid "Error on transfer backup to DropBox: %s"
-msgstr "Fout tijdens verzending backup-bestand naar DropBox: %s"
+msgid "Error on transfer backup to Dropbox: %s"
+msgstr "Fout tijdens verzending backup-bestand naar Dropbox: %s"
 
 #: inc/class-job.php:2156
 #: inc/class-job.php:2202
 #, php-format
 #@ backwpup
-msgid "DropBox API: %s"
-msgstr "DropBox API: %s"
+msgid "Dropbox API: %s"
+msgstr "Dropbox API: %s"
 
 #: inc/class-job.php:2194
 #, php-format
 #@ backwpup
-msgid "Error on delete file on DropBox: %s"
-msgstr "Fout bij verwijderen bestand van DropBox: %s"
+msgid "Error on delete file on Dropbox: %s"
+msgstr "Fout bij verwijderen bestand van Dropbox: %s"
 
 #: inc/class-job.php:2197
 #, php-format
 #@ backwpup
-msgid "One file deleted on DropBox"
-msgid_plural "%d files deleted on DropBox"
-msgstr[0] "Een bestand verwijderd van DropBox"
-msgstr[1] "%d bestanden verwijderd van DropBox"
+msgid "One file deleted on Dropbox"
+msgid_plural "%d files deleted on Dropbox"
+msgstr[0] "Een bestand verwijderd van Dropbox"
+msgstr[1] "%d bestanden verwijderd van Dropbox"
 
 #: inc/class-job.php:2214
 #, php-format
