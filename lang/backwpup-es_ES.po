@@ -520,31 +520,31 @@ msgstr "los ficheros de copia de seguridad antiguos han sido borrados."
 
 #: app/backwpup_dojob.php:1352
 msgid "Can not load curl extension is needed for Dropbox!"
-msgstr "No se puede cargar la extensión curl, necesaria para Dropbox."
+msgstr "No se puede cargar la extensión curl, necesaria para DropBox."
 
 #: app/backwpup_dojob.php:1366
-msgid "Authed to Dropbox API from "
-msgstr "Autentificado con el API de Dropbox desde"
+msgid "Authed to DropBox API from "
+msgstr "Autentificado con el API de DropBox desde"
 
 #: app/backwpup_dojob.php:1368
-msgid "Can not Auth with Dropbox API:"
-msgstr "No se puede autentificar con el API de Dropbox:"
+msgid "Can not Auth with DropBox API:"
+msgstr "No se puede autentificar con el API de DropBox:"
 
 #: app/backwpup_dojob.php:1376
-msgid "Backup File transferred to Dropbox."
-msgstr "Fichero de copia de seguridad transferido a Dropbox."
+msgid "Backup File transferred to DropBox."
+msgstr "Fichero de copia de seguridad transferido a DropBox."
 
 #: app/backwpup_dojob.php:1378
-msgid "Can not transfere Backup file to Dropbox:"
-msgstr "No se puede transferir la copia de seguridad a Dropbox:"
+msgid "Can not transfere Backup file to DropBox:"
+msgstr "No se puede transferir la copia de seguridad a DropBox:"
 
 #: app/backwpup_dojob.php:1399
-msgid "files deleted on Dropbox Folder!"
-msgstr "ficheros borrados en el directorio de Dropbox."
+msgid "files deleted on DropBox Folder!"
+msgstr "ficheros borrados en el directorio de DropBox."
 
 #: app/backwpup_dojob.php:1403
-msgid "Dropbox API:"
-msgstr "API de Dropbox:"
+msgid "DropBox API:"
+msgstr "API de DropBox:"
 
 #: app/backwpup_dojob.php:1505
 msgid "Jobname:"
@@ -1226,7 +1226,7 @@ msgstr "Directorio:"
 
 #: app/options-edit-job.php:438
 msgid "Max. Backup Files in Dopbox Folder:"
-msgstr "Número máximo de ficheros de copia de seguridad en el directorio de Dropbox:"
+msgstr "Número máximo de ficheros de copia de seguridad en el directorio de DropBox:"
 
 #: app/options-edit-job.php:444
 msgid "Backup to E-Mail"
@@ -1695,5 +1695,5 @@ msgstr "Realiza los cambios en Blogurl y ABSPATH si son necesarios."
 msgid "Restore Done. Please delete the SQL file after Restore."
 msgstr "Restauración realizada. Por favor, borra el fichero SQL después de restaurar."
 
-#~ msgid "Connect to Dropbox ..."
-#~ msgstr "Conectar a Dropbox..."
+#~ msgid "Connect to DropBox ..."
+#~ msgstr "Conectar a DropBox..."

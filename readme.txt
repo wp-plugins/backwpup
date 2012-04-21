@@ -3,7 +3,7 @@ Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.2
-Tested up to: 3.3
+Tested up to: 3.3.2
 Stable tag: 2.1.10
 
 WordPress Backup and more...
@@ -14,11 +14,9 @@ Do backups and more for your WordPress Blog.
 
 * Database Backup
 * WordPress XML Export
-* Generate a file with installed plugins
 * Optimize Database
 * Check\Repair Database
 * File Backup
-* Little security scan
 * Backups in zip, tar, tar.gz, tar.bz2 format
 * Store backup to Folder
 * Store backup to FTP Server
@@ -49,9 +47,9 @@ Do backups and more for your WordPress Blog.
 * Support: http://backwpup.com/forums
 
 = DE =
-* FAQ: http://de.backwpup.com/faq
-* Manual:  http://de.backwpup.com/manual
-* Support: http://de.backwpup.com/forums
+* FAQ: http://backwpup.de/faq
+* Manual:  http://backwpup.de/manual
+* Support: http://backwpup.de/forums
 
 == Screenshots ==
 1. Job Page
@@ -60,41 +58,6 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
-= 3.0 =
-* Added: file sync with destination for backups @todo
-* Added: own database table for backwpup
-* Added: new methods to start a job link/commandline
-* Added: Extra compression for dump and xml files
-* Added: changeable file name for dump and xml files
-* Added: changeable DB connection to backup/check/repair other DB's
-* Added: DB Views support
-* Added: Create DB dumps in XML formart (phpMyAdmin schema)
-* Added: not load text domains on job or ajax working for better performance and lower memory usage
-* Added: tool for script execution time test
-* Added: capability backwpup for Administrator to wp_roles
-* Added: creation of a file with a list of installed plugins
-* Added: a little security scanner   @todo
-* Improved: mysql dump
-* Improved: XML export
-* Improved: archive zipping
-* Improved: don't look for file extensions on deletion and use file time not name
-* Improved: Password encryption/security
-* Improved: Performance all needed classes will auto loaded
-* Improved: WP-Cron entry's and handling
-* Improved: many little thinks
-* Changed: the job runs now in the WordPress environment again
-* Changed: manually job start works with a redirect 'define('ALTERNATE_WP_CRON', true);' not longer needed
-* Changed: License changed to GPLv3
-* Changed: Many code recode and added to classes
-* Changed: Logs in HTML5 formart
-* Changed: setttings export/import in XML formart
-* Updated: AWS lib to 1.5.3
-* Updated: RSC lib to 1.7.10
-* Updated: MS azure lib to 4.1.0
-* Removed: mail send options, please use a plugin like 'WP Mail SMTP'
-* Removed: dump restore is now a extra file
-* Fixed: many bugs
-
 = 2.1.10 =
 * typo fix
 * add robots noindex,nofollow in log header
@@ -122,7 +85,7 @@ Do backups and more for your WordPress Blog.
 
 = 2.1.6 =
 * fixed Dropbox with no path problem
-* fixed Dropbox path with whitespace
+* fixed Dropbox path with witespace
 * Updated AWS lib to 1.4.5
 * 2. fix for security vulnerability
 
@@ -167,7 +130,7 @@ Do backups and more for your WordPress Blog.
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)
-* Uses now WP_TEMP_DIR for getting temp folder
+* Uses now ‘WP_TEMP_DIR’ for getting temp folder
 * Updated AWS lib to 1.3.6
 * Job runs now in UTC time. Time outputs will convert.
 * Many languge strings changed for better translation
@@ -254,9 +217,9 @@ Do backups and more for your WordPress Blog.
 * Dropbox improvements and bug fixes
 
 = 1.6.1 =
-* Now use web OAuth login for Dropbox! Best thanks to Tijs Verkoyen for his great Dropbox class.
-* Only Dropbox OAuth tokens are saved!
-* Check Dropbox Quota/Upload Filesize on Job run
+* Now use web OAuth login for DropBox! Best thanks to Tijs Verkoyen for his great DropBox class.
+* Only DropBox OAuth tokens are saved!
+* Check DropBox Quota/Upload Filesize on Job run
 * fixed bug in .tar with file/folder names longer than 100 chars
 * changed user capability back to '10' when working with WP lower than 3.0
 * bug fixes for old WP versions
@@ -265,7 +228,7 @@ Do backups and more for your WordPress Blog.
 * bug fixes
 
 = 1.6.0 =
-* new Dropbox class to use all functions (download, delete, list)
+* new DropBox class to use all functions (download, delete, list)
 * added useful links in job edit page
 * renamed functions.php to resolve problems arising from other plugins
 * general improvements
@@ -295,13 +258,13 @@ Do backups and more for your WordPress Blog.
 * Bug fixes and improvements
 
 = 1.4.1 =
-* Dropbox changes
+* DropBox changes
 * fixed problem on send log with email
 * Security fix (thanks Massa Danilo)
 
 = 1.4.0 =
 * make SSL-FTP as option
-* added Dropbox support (zlli)
+* added DropBox support (zlli)
 
 = 1.3.6 =
 * long file list no longer displayed in logs.
@@ -353,7 +316,7 @@ Do backups and more for your WordPress Blog.
 * added php version to log header
 * added mysql version to log header
 
-= 1.2.0 =
+= 1.2.0 = 
 * Backup file size now in log file
 * Paged Logs Table
 * added Backup Archives Page
