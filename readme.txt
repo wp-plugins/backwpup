@@ -1,9 +1,9 @@
 === BackWPup ===
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
-Tags: backup, admin, file, Database, mysql, Cron, ftp, S3, export, xml,  multisite, Rackspace, Cloud, Azure, DropBox, SugarSync, Google, Storage
-Requires at least: 3.1
-Tested up to: 3.3
+Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
+Requires at least: 3.2
+Tested up to: 3.3.2
 Stable tag: 2.1.10
 
 WordPress Backup and more...
@@ -24,7 +24,7 @@ Do backups and more for your WordPress Blog.
 * Store backup to Google Storage
 * Store backup to Microsoft Azure (Blob)
 * Store backup to RackSpaceCloud
-* Store backup to DropBox
+* Store backup to Dropbox
 * Store backup to SugarSync
 * Send Log/Backup by Email
 * Multisite Support only as Network Admin
@@ -41,9 +41,15 @@ Do backups and more for your WordPress Blog.
 3. Activate the Plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
+= EN =
 * FAQ: http://backwpup.com/faq
 * Manual:  http://backwpup.com/manual
-* Support: http://backwpup.com/forum
+* Support: http://backwpup.com/forums
+
+= DE =
+* FAQ: http://backwpup.de/faq
+* Manual:  http://backwpup.de/manual
+* Support: http://backwpup.de/forums
 
 == Screenshots ==
 1. Job Page
