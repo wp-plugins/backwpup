@@ -264,7 +264,7 @@ function backwpup_check_open_basedir($dir) {
 
 //Backwpup API
 function backwpup_api($active=false) {
-	global $wp_version;
+	include(ABSPATH . WPINC . '/version.php'); // include an unmodified $wp_version
 	$cfg=get_option('backwpup');
 	$blugurl=get_option('siteurl');
 	if (defined('WP_SITEURL'))
@@ -273,9 +273,8 @@ function backwpup_api($active=false) {
 	$post['WP_VER']=$wp_version;
 	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
 	if (!empty($cfg['apicronservice']))  {
-		$post['ACTION']='cronupdate';
 		$post['OFFSET']=get_option('gmt_offset');
-		if (!empty($cfg['apicronservice']) and !empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
+		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
 			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
 		$jobs=get_option('backwpup_jobs');
 		if (!empty($jobs)) {

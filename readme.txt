@@ -60,6 +60,8 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.11 =
+
 = 2.1.10 =
 * typo fix
 * add robots noindex,nofollow in log header
