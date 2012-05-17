@@ -1,6 +1,7 @@
 #icon-backwpup {
 	background: url('BackWPup32.png') no-repeat;
 }
+
 #cron-min, #cron-hour, #cron-day, #cron-month, #cron-weekday  {
 	overflow:auto;
 	white-space:nowrap;

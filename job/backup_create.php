@@ -96,7 +96,7 @@ function backup_create() {
 			need_free_memory(2097152); //2MB free memory for tar
 			$files=$filelist[$index];
 			//check file readable
-			if (!is_readable($files['FILE']) or empty($files['FILE'])) {
+			if ( empty($files['FILE']) or !file_exists($files['FILE']) or !is_readable($files['FILE'])) {
 				trigger_error(sprintf(__('File "%s" not readable!','backwpup'),$files['FILE']),E_USER_WARNING);
 				$WORKING['STEPDONE']++;
 				continue;
@@ -163,20 +163,27 @@ function backup_create() {
 			}
 
 			// read/write files in 512K Blocks
-			$fd=fopen($files['FILE'],'rb');
-			while(!feof($fd)) {
-				$filedata=fread($fd,512);
-				if (strlen($filedata)>0) {
-					if (strtolower($STATIC['JOB']['fileformart'])=='.tar.gz') {
-						gzwrite($tarbackup,pack("a512", $filedata));
-					} elseif (strtolower($STATIC['JOB']['fileformart'])=='.tar.bz2') {
-						bzwrite($tarbackup,pack("a512", $filedata));
-					} else {
-						fwrite($tarbackup,pack("a512", $filedata));
+			if ($fd=fopen($files['FILE'],'rb')) {
+				if (!flock($fd, LOCK_EX | LOCK_NB)) {
+					trigger_error( sprintf( __( 'File "%1$s" is locked and can\'t unlocked. Skipped!', 'backwpup' ), $files['FILE']), E_USER_WARNING );
+					fclose($fd);
+					$WORKING['STEPDONE']++;
+					continue;
+				}
+				while(!feof($fd)) {
+					$filedata=fread($fd,512);
+					if (strlen($filedata)>0) {
+						if (strtolower($STATIC['JOB']['fileformart'])=='.tar.gz') {
+							gzwrite($tarbackup,pack("a512", $filedata));
+						} elseif (strtolower($STATIC['JOB']['fileformart'])=='.tar.bz2') {
+							bzwrite($tarbackup,pack("a512", $filedata));
+						} else {
+							fwrite($tarbackup,pack("a512", $filedata));
+						}
 					}
 				}
+				fclose($fd);
 			}
-			fclose($fd);
 			$WORKING['STEPDONE']++;
 			update_working_file();
 		}

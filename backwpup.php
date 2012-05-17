@@ -64,7 +64,7 @@ if (is_multisite())
 else
 	add_action('admin_notices', 'backwpup_admin_notice');
 //add cron intervals
-add_filter('cron_schedules', 'backwpup_intervals');
+add_filter('cron_schedules', 'backwpup_intervals',20);
 //call activation settings
 backwpup_plugin_activate(); 	
 //Check if plugin can activated
@@ -98,7 +98,7 @@ if (backwpup_env_checks()) {
 	if (!empty($cfg['disablewpcron']))
 		define('DISABLE_WP_CRON',true);
 	//bypass Google Analytics by Yoast oauth
-	if ( isset($_GET['oauth_token']) && $_GET['page'] == 'backwpupeditjob' ) {
+	if ( isset($_GET['oauth_token']) && isset($_GET['page']) && $_GET['page'] == 'backwpupeditjob' ) {
 		$_GET['oauth_token_backwpup'] = $_GET['oauth_token'];
 		unset($_GET['oauth_token']);
 		unset($_REQUEST['oauth_token']);

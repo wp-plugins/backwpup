@@ -2,9 +2,9 @@
 Contributors: danielhuesken
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
-Requires at least: 3.2
-Tested up to: 3.3.2
-Stable tag: 2.1.10
+Requires at least: 3.1
+Tested up to: 3.4
+Stable tag: 2.1.11
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,9 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.1.11 =
+* fixed bug in contextual help
+* Updated AWS lib to 1.5.6
+* changes for WordPress 3.4
 
 = 2.1.10 =
 * typo fix

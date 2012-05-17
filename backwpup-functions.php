@@ -137,7 +137,7 @@ function backwpup_contextual_help($help='') {
 			add_contextual_help( $current_screen,$help.
 					'<p><a href="http://backwpup.de" target="_blank">BackWPup</a> v. ' . BACKWPUP_VERSION . ', <a href="http://www.gnu.org/licenses/gpl-2.0" target="_blank">GPLv2</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>' .
 							'<p><strong>' . __( 'For more information:', 'backwpup' ) . '</strong></p><p>' .
-							' <a href="' . BackWPup::get_plugin_data('PluginURI') . '" target="_blank">' . BackWPup::get_plugin_data('Name') . '</a> |' .
+							' <a href="http://backwpup.de" target="_blank">BackWPup</a> |' .
 							' <a href="http://backwpup.de/handbuch/" target="_blank">'.__('Documentation', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.de/faq/" target="_blank">'.__('FAQ', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.de/forums/" target="_blank">'.__('Support Forums', 'backwpup').'</a> |' .
@@ -149,7 +149,7 @@ function backwpup_contextual_help($help='') {
 			add_contextual_help( $current_screen,$help.
 					'<p><a href="http://backwpup.com" target="_blank">BackWPup</a> v. ' . BACKWPUP_VERSION . ', <a href="http://www.gnu.org/licenses/gpl-2.0" target="_blank">GPLv2</a> &copy 2009-' . date( 'Y' ) . ' <a href="http://danielhuesken.de" target="_blank">Daniel H&uuml;sken</a></p><p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>' .
 							'<p><strong>' . __( 'For more information:', 'backwpup' ) . '</strong></p><p>' .
-							' <a href="' . BackWPup::get_plugin_data('PluginURI') . '" target="_blank">' . BackWPup::get_plugin_data('Name') . '</a> |' .
+							' <a href="http://backwpup.com" target="_blank">BackWPup</a> |' .
 							' <a href="http://backwpup.com/manual/" target="_blank">'.__('Documentation', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.com/faq/" target="_blank">'.__('FAQ', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.com/forums/" target="_blank">'.__('Support Forums', 'backwpup').'</a> |' .
@@ -190,7 +190,7 @@ function backwpup_plugin_activate() {
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-	if (false !== strpos($cfg['mailhost'],':')) 
+	if (isset($cfg['mailhost']) && false !== strpos($cfg['mailhost'],':')) 
 		list($cfg['mailhost'],$cfg['mailhostport'])=explode(':',$cfg['mailhost'],2);
 	if (!isset($cfg['mailhost'])) $cfg['mailhost']='';
 	if (!isset($cfg['mailhostport'])) $cfg['mailhostport']=25;
@@ -266,10 +266,7 @@ function backwpup_check_open_basedir($dir) {
 function backwpup_api($active=false) {
 	include(ABSPATH . WPINC . '/version.php'); // include an unmodified $wp_version
 	$cfg=get_option('backwpup');
-	$blugurl=get_option('siteurl');
-	if (defined('WP_SITEURL'))
-		$blugurl=WP_SITEURL;
-	$post['URL']=$blugurl;
+	$post['URL']=site_url();
 	$post['WP_VER']=$wp_version;
 	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
 	if (!empty($cfg['apicronservice']))  {
@@ -537,11 +534,11 @@ function backwpup_add_adminbar() {
     /* Add the main siteadmin menu item */
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	if (backwpup_get_working_file()) 
-		$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
-    $wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
-	$wp_admin_bar->add_menu(array( 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
+		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working','parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs', 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs', 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_backups', 'parent' => 'backwpup', 'title' => __('Backups','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupbackups'));
+	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_newjob', 'parent' => 'new-content', 'title' => __('BackWPup Job','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupeditjob'));
 }
 
 function backwpup_get_upload_dir() {

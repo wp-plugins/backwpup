@@ -115,9 +115,8 @@ function __aws_sdk_ua_callback()
 // INTERMEDIARY CONSTANTS
 
 define('CFRUNTIME_NAME', 'aws-sdk-php');
-define('CFRUNTIME_VERSION', '1.5.3');
-// define('CFRUNTIME_BUILD', gmdate('YmdHis', filemtime(__FILE__))); // @todo: Hardcode for release.
-define('CFRUNTIME_BUILD', '20120222005519');
+define('CFRUNTIME_VERSION', 'Gershwin');
+define('CFRUNTIME_BUILD', '20120515180000');
 define('CFRUNTIME_USERAGENT', CFRUNTIME_NAME . '/' . CFRUNTIME_VERSION . ' PHP/' . PHP_VERSION . ' ' . str_replace(' ', '_', php_uname('s')) . '/' . str_replace(' ', '_', php_uname('r')) . ' Arch/' . php_uname('m') . ' SAPI/' . php_sapi_name() . ' Integer/' . PHP_INT_MAX . ' Build/' . CFRUNTIME_BUILD . __aws_sdk_ua_callback());
 
 
@@ -128,7 +127,7 @@ define('CFRUNTIME_USERAGENT', CFRUNTIME_NAME . '/' . CFRUNTIME_VERSION . ' PHP/'
  * Core functionality and default settings shared across all SDK classes. All methods and properties in this
  * class are inherited by the service-specific classes.
  *
- * @version 2012.02.21
+ * @version 2012.04.19
  * @license See the included NOTICE.md file for more information.
  * @copyright See the included NOTICE.md file for more information.
  * @link http://aws.amazon.com/php/ PHP Developer Center
@@ -690,6 +689,38 @@ class CFRuntime
 	{
 		$this->registered_streaming_write_callback = $callback;
 		return $this;
+	}
+
+	/**
+	 * Fetches and caches STS credentials. This is meant to be used by the constructor, and is not to be
+	 * manually invoked.
+	 *
+	 * @param CacheCore $cache (Required) The a reference to the cache object that is being used to handle the caching.
+	 * @param array $options (Required) The options that were passed into the constructor.
+	 * @return mixed The data to be cached, or NULL.
+	 */
+	public function cache_sts_credentials($cache, $options)
+	{
+		$token = new AmazonSTS($options);
+		$response = $token->get_session_token();
+
+		if ($response->isOK())
+		{
+			// Update the expiration
+			$expiration_time = strtotime((string) $response->body->GetSessionTokenResult->Credentials->Expiration);
+			$expiration_duration = round(($expiration_time - time()) * 0.85);
+			$cache->expire_in($expiration_duration);
+
+			// Return the important data
+			return array(
+				'key'     => (string) $response->body->GetSessionTokenResult->Credentials->AccessKeyId,
+				'secret'  => (string) $response->body->GetSessionTokenResult->Credentials->SecretAccessKey,
+				'token'   => (string) $response->body->GetSessionTokenResult->Credentials->SessionToken,
+				'expires' => (string) $response->body->GetSessionTokenResult->Credentials->Expiration,
+			);
+		}
+
+		return null;
 	}
 
 

@@ -78,7 +78,7 @@ class Array2DOM
 		{
 			if (is_string($key) && !is_numeric($key))
 			{
-				if ($key == self::ATTRIBUTES)
+				if ($key === self::ATTRIBUTES)
 				{
 					foreach ($value as $attributeName => $attributeValue)
 					{
@@ -121,7 +121,7 @@ class Array2DOM
 						$value = $value ? 'true' : 'false';
 					}
 
-					$element->appendChild(self::createDOMElement((string) $value, $key, $document));
+					$element->appendChild(self::createDOMElement($value, $key, $document));
 				}
 			}
 			else
@@ -145,13 +145,13 @@ class Array2DOM
 		{
 			$item = $domNode->childNodes->item($i);
 
-			if ($item->nodeType == XML_ELEMENT_NODE)
+			if ($item->nodeType === XML_ELEMENT_NODE)
 			{
 				$arrayElement = array();
 
 				for ($attributeIndex = 0; !is_null($attribute = $item->attributes->item($attributeIndex)); $attributeIndex++)
 				{
-					if ($attribute->nodeType == XML_ATTRIBUTE_NODE)
+					if ($attribute->nodeType === XML_ATTRIBUTE_NODE)
 					{
 						$arrayElement[self::ATTRIBUTES][$attribute->nodeName] = $attribute->nodeValue;
 					}
@@ -170,7 +170,7 @@ class Array2DOM
 
 				$array[$item->nodeName][] = $arrayElement;
 			}
-			elseif ($item->nodeType == XML_CDATA_SECTION_NODE || ($item->nodeType == XML_TEXT_NODE && trim($item->nodeValue) != ''))
+			elseif ($item->nodeType === XML_CDATA_SECTION_NODE || ($item->nodeType === XML_TEXT_NODE && trim($item->nodeValue) !== ''))
 			{
 				return $item->nodeValue;
 			}
