@@ -234,18 +234,8 @@ function backwpup_plugin_deactivate() {
 
 //get temp dir
 function backwpup_get_temp() {
-	//get temp dirs like wordpress get_temp_dir()
-	if (defined('WP_TEMP_DIR'))
-		$tempfolder=WP_TEMP_DIR;
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder)) 
-		$tempfolder=sys_get_temp_dir();									//normal temp dir
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder)) 
-		$tempfolder=ini_get('upload_tmp_dir');							//if sys_get_temp_dir not work
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !is_dir($tempfolder)) 
-		$tempfolder=WP_CONTENT_DIR.'/';
-	if (empty($tempfolder) or !backwpup_check_open_basedir($tempfolder) or !@is_writable($tempfolder) or !@is_dir($tempfolder)) 		
-		$tempfolder=get_temp_dir();
-	return rtrim(str_replace('\\','/',realpath(trim($tempfolder))),'/').'/.backwpup_'.substr(crc32(ABSPATH),1).'/';
+	$backwpuptmpfolder=str_replace('\\','/',dirname(__FILE__).'/tmp/');
+	return trailingslashit($backwpuptmpfolder);
 }
 //checks the dir is in openbasedir
 function backwpup_check_open_basedir($dir) {
@@ -329,7 +319,7 @@ function backwpup_cron() {
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
 			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword'])));
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
-			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 3, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('BackWPupJobTemp'=>backwpup_get_temp(), 'nonce'=> $infile['WORKING']['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
+			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 3, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('nonce'=> $infile['WORKING']['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
 	} else {
 		$jobs=get_option('backwpup_jobs');
@@ -753,6 +743,15 @@ function backwpup_env_checks() {
 	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 
 		$message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 		$checks=false;
+	}
+	if (!is_dir(backwpup_get_temp())) { // create logs folder if it not exists
+		@mkdir(untrailingslashit(backwpup_get_temp()),0777,true);
+	}
+	if (!is_dir(backwpup_get_temp())) { // check logs folder
+		$message.=sprintf(__("- Temp folder '%s' does not exists!",'backwpup'),backwpup_get_temp()).'<br />';
+	}
+	if (!is_writable(backwpup_get_temp())) { // check logs folder
+		$message.=sprintf(__("- Temp folder '%s' is not writeable!",'backwpup'),backwpup_get_temp()).'<br />';
 	}
 	if (!empty($cfg['dirlogs']) and !is_dir($cfg['dirlogs'])) { // create logs folder if it not exists
 		@mkdir(untrailingslashit($cfg['dirlogs']),0777,true);

@@ -1,13 +1,18 @@
 <?PHP
 //Set a constance for not direkt loding in other files
-define('BACKWPUP_JOBRUN_FOLDER', dirname(__FILE__).'/');
+define('BACKWPUP_JOBRUN_FOLDER', str_replace('\\','/',dirname(__FILE__).'/'));
+//set temp dir
+$STATIC['TEMPDIR']=BACKWPUP_JOBRUN_FOLDER.'../tmp/';
+$STATIC['TEMPDIR']=realpath($STATIC['TEMPDIR']).'/';
+//check temp dir
+if (empty($STATIC['TEMPDIR']) || !is_dir($STATIC['TEMPDIR']) || !is_writable($STATIC['TEMPDIR']))
+	die($STATIC['TEMPDIR'].'Temp dir not writable!!! Job aborted!');
+//write PHP log	
+@ini_set( 'error_log', $STATIC['TEMPDIR'].'php_error.log' );
+@ini_set( 'display_errors', 'Off' );
+@ini_set( 'log_errors', 'On' );
 // get needed functions for the jobrun
 require_once(BACKWPUP_JOBRUN_FOLDER.'job_functions.php');
-//get temp dir
-$STATIC['TEMPDIR']=filter_input( INPUT_POST, 'BackWPupJobTemp', FILTER_SANITIZE_URL );	
-$STATIC['TEMPDIR']=rtrim(realpath($STATIC['TEMPDIR']),'/\\').'/';
-if (empty($STATIC['TEMPDIR']) || !is_dir($STATIC['TEMPDIR']) || !is_writable($STATIC['TEMPDIR']))
-	die('Temp dir not writable!!! Job aborted!');
 //read runningfile and config
 $runningfile=get_working_file();
 if ($runningfile['JOBID']>0 and $runningfile['WORKING']['NONCE']==$_POST['nonce']) {
@@ -22,11 +27,6 @@ if ($runningfile['JOBID']>0 and $runningfile['WORKING']['NONCE']==$_POST['nonce'
 	unset($staticfile);
 } else {
 	die('Hack ?');
-}
-//check are temp dirs the same
-if ($STATIC['TEMPDIR']!=trim($_POST['BackWPupJobTemp'])) {
-	delete_working_file();
-	die('Temp dir not correct!');
 }
 ob_end_clean();
 header("Connection: close");

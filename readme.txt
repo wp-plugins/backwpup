@@ -60,6 +60,10 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.12 =
+* always check existing .htaccess in log/temp/backup folder
+* set tmp folder fix to plugindir/tmp
+
 = 2.1.11 =
 * fixed bug in contextual help
 * Updated AWS lib to 1.5.6

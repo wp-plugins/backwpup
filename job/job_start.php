@@ -14,14 +14,8 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	//clean var
 	$backwpup_static = array();
 	$backwpup_working = array();
-	//get and create temp dir
+	//get temp dir
 	$backwpup_static['TEMPDIR']=backwpup_get_temp();
-	if (!is_dir($backwpup_static['TEMPDIR'])) {
-		if (!mkdir(rtrim($backwpup_static['TEMPDIR'],'/'),0777,true)) {
-			trigger_error(printf(__('Can not create temp folder: %s','backwpup'),$backwpup_static['TEMPDIR']),E_USER_ERROR);
-			return false;
-		}		
-	}
 	if (!is_writable($backwpup_static['TEMPDIR'])) {
 		trigger_error(__("Temp dir not writeable","backwpup"),E_USER_ERROR);
 		return false;
@@ -36,16 +30,11 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 			}
 			closedir($dir);
 		}
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_static['TEMPDIR'].'.htaccess')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpup_static['TEMPDIR'].'index.html')) 
-				file_put_contents($backwpup_static['TEMPDIR'].'index.html',"\n");
-			if (!is_file($backwpup_static['TEMPDIR'].'index.php'))
-				file_put_contents($backwpup_static['TEMPDIR'].'index.php',"\n");
-		}	
+		//create .htaccess for apache and index.php for folder security
+		if (!is_file($backwpup_static['TEMPDIR'].'.htaccess')) 
+			file_put_contents($backwpup_static['TEMPDIR'].'.htaccess',"<Files \"*\">\n<IfModule mod_access.c>\nDeny from all\n</IfModule>\n<IfModule !mod_access_compat>\n<IfModule mod_authz_host.c>\nDeny from all\n</IfModule>\n</IfModule>\n<IfModule mod_access_compat>\nDeny from all\n</IfModule>\n</Files>");
+		if (!is_file($backwpup_static['TEMPDIR'].'index.php')) 			
+			file_put_contents($backwpup_static['TEMPDIR'].'index.php',"\n");	
 	}	
 	//Write running file to prevent dobble runnging
 	file_put_contents($backwpup_static['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$jobid,'LOGFILE'=>'','STEPSPERSENT'=>0,'STEPPERSENT'=>0,'WORKING'=>array('PID'=>0))));
@@ -117,17 +106,13 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 			trigger_error(printf(__('Can not create folder for log files: %s','backwpup'),$backwpup_static['CFG']['dirlogs']),E_USER_ERROR);
 			return false;
 		}
-		//create .htaccess for apache and index.html for other
-		if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'.htaccess')) 
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'.htaccess',"Order allow,deny\ndeny from all");
-		} else {
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'index.html')) 
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'index.html',"\n");
-			if (!is_file($backwpup_static['CFG']['dirlogs'].'index.php'))
-				file_put_contents($backwpup_static['CFG']['dirlogs'].'index.php',"\n");
-		}			
 	}
+	//create .htaccess for apache and index.php for folder security
+	if (!is_file($backwpup_static['CFG']['dirlogs'].'.htaccess')) 
+		file_put_contents($backwpup_static['CFG']['dirlogs'].'.htaccess',"<Files \"*\">\n<IfModule mod_access.c>\nDeny from all\n</IfModule>\n<IfModule !mod_access_compat>\n<IfModule mod_authz_host.c>\nDeny from all\n</IfModule>\n</IfModule>\n<IfModule mod_access_compat>\nDeny from all\n</IfModule>\n</Files>"); 
+	if (!is_file($backwpup_static['CFG']['dirlogs'].'index.php'))		
+		file_put_contents($backwpup_static['CFG']['dirlogs'].'index.php',"\n");		
+	
 	if (!is_writable($backwpup_static['CFG']['dirlogs'])) {
 		trigger_error(__("Log folder not writeable!","backwpup"),E_USER_ERROR);
 		return false;
@@ -185,17 +170,12 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 					trigger_error(sprintf(__('Can not create folder for backups: %1$s','backwpup'),$backwpup_static['JOB']['backupdir']),E_USER_ERROR);
 					return false;
 				}
-				//create .htaccess for apache and index.html for other
-				if (strtolower(substr($_SERVER["SERVER_SOFTWARE"],0,6))=="apache") {  //check if it a apache webserver
-					if (!is_file($backwpup_static['JOB']['backupdir'].'.htaccess')) 
-						file_put_contents($backwpup_static['JOB']['backupdir'].'.htaccess',"Order allow,deny\ndeny from all");
-				} else {
-					if (!is_file($backwpup_static['JOB']['backupdir'].'index.html')) 
-						file_put_contents($backwpup_static['JOB']['backupdir'].'index.html',"\n");
-					if (!is_file($backwpup_static['JOB']['backupdir'].'index.php'))
-						file_put_contents($backwpup_static['JOB']['backupdir'].'index.php',"\n");
-				}			
 			}
+			//create .htaccess and index.php for folder security
+			if (!is_file($backwpup_static['JOB']['backupdir'].'.htaccess')) 
+				file_put_contents($backwpup_static['JOB']['backupdir'].'.htaccess',"<Files \"*\">\n<IfModule mod_access.c>\nDeny from all\n</IfModule>\n<IfModule !mod_access_compat>\n<IfModule mod_authz_host.c>\nDeny from all\n</IfModule>\n</IfModule>\n<IfModule mod_access_compat>\nDeny from all\n</IfModule>\n</Files>");
+			if (!is_file($backwpup_static['JOB']['backupdir'].'index.php')) 				
+				file_put_contents($backwpup_static['JOB']['backupdir'].'index.php',"\n");				
 		}
 		//check backup dir				
 		if (!is_writable($backwpup_static['JOB']['backupdir'])) {
@@ -262,7 +242,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	if (!empty($backwpup_static['CFG']['httpauthuser']) and !empty($backwpup_static['CFG']['httpauthpassword']))
 		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.base64_decode($backwpup_static['CFG']['httpauthpassword'])));
 	if (!$backwpup_static['WP']['ALTERNATE_CRON'])
-		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('BackWPupJobTemp'=>$backwpup_static['TEMPDIR'], 'nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
+		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
 	
 	return $backwpup_static['LOGFILE'];
 }

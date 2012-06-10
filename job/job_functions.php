@@ -556,7 +556,7 @@ function job_shutdown($signal='') {
 				$host = $urlParsed['host'];
 				$port = (!empty($urlParsed['port'])) ? $urlParsed['port'] : 80;
 			}
-			$query=http_build_query(array('BackWPupJobTemp'=>$STATIC['TEMPDIR'],'nonce'=>$WORKING['NONCE'],'type'=>'restart'));
+			$query=http_build_query(array('nonce'=>$WORKING['NONCE'],'type'=>'restart'));
 			$path=(isset($urlParsed['path']) ? $urlParsed['path'] : '/').(isset($urlParsed['query']) ? '?' . $urlParsed['query'] : '');
 			$header = "POST ".$path." HTTP/1.1\r\n";
 			$header.= "Host: ".$urlParsed['host']."\r\n";
