@@ -63,6 +63,7 @@ Do backups and more for your WordPress Blog.
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder
 * set tmp folder fix to plugindir/tmp
+* removed input_filter function
 
 = 2.1.11 =
 * fixed bug in contextual help
