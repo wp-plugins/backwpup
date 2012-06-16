@@ -55,7 +55,7 @@ function db_dump() {
 				if (in_array($table, $WORKING['DB_DUMP']['DONETABLE']))
 					continue;
 				trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);
-				need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*3); //get more memory if needed
+				need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*4); //get more memory if needed
 				_db_dump_table($table,$status[$table],$file);
 				$WORKING['DB_DUMP']['DONETABLE'][]=$table;
 				$WORKING['STEPDONE']=count($WORKING['DB_DUMP']['DONETABLE']);
