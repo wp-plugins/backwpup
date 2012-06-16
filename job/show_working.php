@@ -50,19 +50,18 @@ function backwpup_read_logheader($logfile) {
 	return $joddata;
 }
 
-$logfile=filter_input( INPUT_POST, 'logfile', FILTER_SANITIZE_URL );
-$logfile=realpath($logfile);
+$logfile=realpath($_POS['logfile']);
 if (substr($logfile,-5)!='.html' && substr(basename($logfile),0,13)!='backwpup_log_')
 	die();
 if (is_file($logfile.'.gz'))
 	$logfile.='.gz';
 	
-$backwpupjobtemp=filter_input( INPUT_POST, 'BackWPupJobTemp', FILTER_SANITIZE_URL );	
-$backwpupjobtemp=rtrim(realpath($backwpupjobtemp),'/\\');
+$backwpupjobtemp=str_replace('\\','/',dirname(__FILE__).'/../tmp/');
+$backwpupjobtemp=rtrim(realpath($STATIC['TEMPDIR']),'/');	
 
 $log='';
 if (is_file($logfile)) {
-	$logpos=filter_input( INPUT_POST, 'logpos', FILTER_SANITIZE_NUMBER_INT );
+	$logpos=(int)$_POST['logpos'];
 	$logfilarray=backwpup_read_logfile($logfile);
 	$newpos=count($logfilarray);
 	for ($i=$logpos;$i<count($logfilarray);$i++)

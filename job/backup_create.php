@@ -164,12 +164,6 @@ function backup_create() {
 
 			// read/write files in 512K Blocks
 			if ($fd=fopen($files['FILE'],'rb')) {
-				if (!flock($fd, LOCK_EX | LOCK_NB)) {
-					trigger_error( sprintf( __( 'File "%1$s" is locked and can\'t unlocked. Skipped!', 'backwpup' ), $files['FILE']), E_USER_WARNING );
-					fclose($fd);
-					$WORKING['STEPDONE']++;
-					continue;
-				}
 				while(!feof($fd)) {
 					$filedata=fread($fd,512);
 					if (strlen($filedata)>0) {
