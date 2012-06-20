@@ -56,8 +56,10 @@ declare(ticks=1);
 //set timezone
 date_default_timezone_set('UTC');
 // set charakter encoding
-if (!@mb_internal_encoding($STATIC['WP']['CHARSET']))
-	mb_internal_encoding('UTF-8');
+if ( function_exists( 'mb_internal_encoding' ) ) {
+	if (!@mb_internal_encoding($STATIC['WP']['CHARSET']))
+		mb_internal_encoding('UTF-8');
+}
 //set function for PHP user defineid error handling
 set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 //Get type and check job runs

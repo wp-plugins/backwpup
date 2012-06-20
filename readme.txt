@@ -64,6 +64,7 @@ Do backups and more for your WordPress Blog.
 * always check existing .htaccess in log/temp/backup folder
 * set tmp folder fix to plugindir/tmp
 * removed input_filter function
+* fixed problem with mb_string funktion on job start
 
 = 2.1.11 =
 * fixed bug in contextual help
