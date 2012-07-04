@@ -5,10 +5,8 @@ function dest_ftp() {
 		$WORKING['STEPSDONE'][]='DEST_FTP'; //set done	
 		return;
 	}
-	$WORKING['STEPTODO']=2;
+	$WORKING['STEPTODO']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 	trigger_error(sprintf(__('%d. try to sending backup file to a FTP Server...','backwpup'),$WORKING['DEST_FTP']['STEP_TRY']),E_USER_NOTICE);
-
-	need_free_memory(filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])*1.5);
 
 	if ($STATIC['JOB']['ftpssl']) { //make SSL FTP connection
 		if (function_exists('ftp_ssl_connect')) {
@@ -74,7 +72,7 @@ function dest_ftp() {
 	else
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
 	
-	if ($WORKING['STEPDONE']==0) {
+	if ($WORKING['STEPDONE']<$WORKING['STEPTODO']) {
 		//test ftp dir and create it f not exists
 		$ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
 		foreach ($ftpdirs as $ftpdir) {
@@ -91,13 +89,25 @@ function dest_ftp() {
 			}
 		}
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
-		if (ftp_put($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile'], $STATIC['JOB']['backupdir'].$STATIC['backupfile'], FTP_BINARY)) { //transfere file
-			$WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
+		$fp = fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'], 'r');
+		//delete if new try
+		@ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile']);
+		$ret = ftp_nb_fput($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile'], $fp, FTP_BINARY,$WORKING['STEPDONE']);
+		while ($ret == FTP_MOREDATA) {
+		   $WORKING['STEPDONE']=ftell($fp);
+		   update_working_file();
+		   $ret = ftp_nb_continue($ftp_conn_id);
+		}
+		if ($ret != FTP_FINISHED) {
+		    trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
+			return false;		   
+		} else {
+		    $WORKING['STEPDONE']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);
-			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".base64_decode($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
+			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".base64_decode($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
 			$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
-		} else
-			trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
+		}
+		fclose($fp);		
 	}
 	
 	if ($STATIC['JOB']['ftpmaxbackups']>0) { //Delete old backups

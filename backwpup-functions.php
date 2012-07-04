@@ -989,6 +989,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
 		$jobsettings['ftphost']='';
 	
+	$jobsettings['ftphost']=str_replace(array('http://','ftp://'),'',$jobsettings['ftphost']);
+	
 	if (!isset($jobsettings['ftphostport']) or !is_int($jobsettings['ftphostport']))
 		$jobsettings['ftphostport']=21;
 

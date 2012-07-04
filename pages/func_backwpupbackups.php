@@ -477,10 +477,10 @@ function backwpup_get_backup_files($jobid,$dest) {
             continue;
           $files[$filecounter]['JOBID']=$jobid;
           $files[$filecounter]['DEST']=$dest;
-          $files[$filecounter]['folder']="ftp://".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].dirname($ftpfiles)."/";
+		  $files[$filecounter]['folder']="ftp://".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].dirname($ftpfiles)."/";
           $files[$filecounter]['file']=$ftpfiles;
           $files[$filecounter]['filename']=basename($ftpfiles);
-          $files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].rawurlencode($ftpfiles);
+		  $files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].$ftpfiles;
           $files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
           $files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
           $filecounter++;

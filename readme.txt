@@ -65,6 +65,7 @@ Do backups and more for your WordPress Blog.
 * set tmp folder fix to plugindir/tmp
 * removed input_filter function
 * fixed problem with mb_string funktion on job start
+* reduced needed memory for FTP upload to 0.
 
 = 2.1.11 =
 * fixed bug in contextual help
