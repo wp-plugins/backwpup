@@ -26,12 +26,8 @@ function backwpup_menu_page() {
 	//Set pages that exists
 	$menupages=array('backwpup','backwpupeditjob','backwpupworking','backwpuplogs','backwpupbackups','backwpuptools','backwpupsettings');
 	//check called page exists
-	if (!empty($_REQUEST['page']) and in_array($_REQUEST['page'],$menupages)) {
-		$page=$_REQUEST['page'];
-		//check page file exists
-		if (is_file(dirname(__FILE__).'/pages/page_'.$page.'.php')) 
-			require_once(dirname(__FILE__).'/pages/page_'.$page.'.php');
-	}
+	if (!empty($_REQUEST['page']) and in_array($_REQUEST['page'],$menupages)) 
+		require_once(dirname(__FILE__).'/pages/page_'.$_REQUEST['page'].'.php');
 }
 
 function backwpup_menu_page_header() {
@@ -42,36 +38,33 @@ function backwpup_menu_page_header() {
 	//Set pages that exists
 	$menupages=array('backwpup','backwpupeditjob','backwpupworking','backwpuplogs','backwpupbackups','backwpuptools','backwpupsettings');
 	//check called page exists
-	if (!empty($_REQUEST['page']) and in_array($_REQUEST['page'],$menupages)) {
-		$page=$_REQUEST['page'];
-		//check page file exists
-		if (is_file(dirname(__FILE__).'/pages/page_'.$page.'.php')) {
-			//Css for Admin Section
-			if (is_file(dirname(__FILE__).'/css/'.$page.'.css')) {
-				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-					wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',time(),'screen');
-				else
-					wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',BACKWPUP_VERSION,'screen');
-			}
-			//add java
-			if (is_file(dirname(__FILE__).'/js/31'.$page.'.js') and version_compare($wp_version, '3.2', '<')) {
-				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',time(),true);
-				else
-					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',BACKWPUP_VERSION,true);
-			} elseif (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
-				if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
-					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',time(),true);
-				else
-					wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',BACKWPUP_VERSION,true);
-			}
-			//incude functions
-			if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php')) 
-				require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
-			//include code
-			if (is_file(dirname(__FILE__).'/pages/header_'.$page.'.php')) 
-				require_once(dirname(__FILE__).'/pages/header_'.$page.'.php');
+	$page=$_REQUEST['page'];
+	if (!empty($page) and in_array($page,$menupages)) {		
+		//Css for Admin Section
+		if (is_file(dirname(__FILE__).'/css/'.$page.'.css')) {
+			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
+				wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',time(),'screen');
+			else
+				wp_enqueue_style($page,BACKWPUP_PLUGIN_BASEURL.'/css/'.$page.'.css','',BACKWPUP_VERSION,'screen');
 		}
+		//add java
+		if (is_file(dirname(__FILE__).'/js/31'.$page.'.js') and version_compare($wp_version, '3.2', '<')) {
+			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
+				wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',time(),true);
+			else
+				wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/31'.$page.'.js','',BACKWPUP_VERSION,true);
+		} elseif (is_file(dirname(__FILE__).'/js/'.$page.'.js')) {
+			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
+				wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',time(),true);
+			else
+				wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',BACKWPUP_VERSION,true);
+		}
+		//incude functions
+		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php')) 
+			require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
+		//include code
+		if (is_file(dirname(__FILE__).'/pages/header_'.$page.'.php')) 
+			require_once(dirname(__FILE__).'/pages/header_'.$page.'.php');		
 	}
 }
 
