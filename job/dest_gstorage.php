@@ -24,8 +24,8 @@ function dest_gstorage() {
       $result=(array)$result;
       if ($result["status"]=200 and $result["status"]<300)  {
         $WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-        trigger_error(sprintf(__('Backup transferred to %s','backwpup'),"https://sandbox.google.com/storage/".$STATIC['JOB']['GStorageBucket']."/".$STATIC['JOB']['GStoragedir'].$STATIC['backupfile']),E_USER_NOTICE);
-        $STATIC['JOB']['lastbackupdownloadurl']="https://sandbox.google.com/storage/" . $STATIC['JOB']['GStorageBucket'] . "/" . $STATIC['JOB']['GStoragedir'] . $STATIC['backupfile'];
+        trigger_error(sprintf(__('Backup transferred to %s','backwpup'),"https://storage.cloud.google.com/".$STATIC['JOB']['GStorageBucket']."/".$STATIC['JOB']['GStoragedir'].$STATIC['backupfile']),E_USER_NOTICE);
+        $STATIC['JOB']['lastbackupdownloadurl']="https://storage.cloud.google.com/" . $STATIC['JOB']['GStorageBucket'] . "/" . $STATIC['JOB']['GStoragedir'] . $STATIC['backupfile'];
         $WORKING['STEPSDONE'][]='DEST_GSTORAGE'; //set done
       } else {
         trigger_error(sprintf(__('Can not transfer backup to GStorage! (%1$d) %2$s','backwpup'),$result["status"],$result["Message"]),E_USER_ERROR);

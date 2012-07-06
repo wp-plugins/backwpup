@@ -379,10 +379,10 @@ function backwpup_get_backup_files($jobid,$dest) {
           foreach ($contents->body->Contents as $object) {
             $files[$filecounter]['JOBID']=$jobid;
             $files[$filecounter]['DEST']=$dest;
-            $files[$filecounter]['folder']="https://sandbox.google.com/storage/".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';  
+            $files[$filecounter]['folder']="https://storage.cloud.google.com/".$jobvalue['GStorageBucket']."/".dirname((string)$object->Key).'/';  
             $files[$filecounter]['file']=(string)$object->Key;
             $files[$filecounter]['filename']=basename($object->Key);
-            $files[$filecounter]['downloadurl']="https://sandbox.google.com/storage/".$jobvalue['GStorageBucket']."/".(string)$object->Key;
+            $files[$filecounter]['downloadurl']="https://storage.cloud.google.com/".$jobvalue['GStorageBucket']."/".(string)$object->Key;
             $files[$filecounter]['filesize']=(string)$object->Size;
             $files[$filecounter]['time']=strtotime($object->LastModified);
             $filecounter++;              

@@ -62,10 +62,12 @@ Do backups and more for your WordPress Blog.
 == Changelog ==
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder
-* set tmp folder fix to plugindir/tmp
+* set tmp folder to plugindir/tmp-XXX
 * removed input_filter function
 * fixed problem with mb_string funktion on job start
 * reduced needed memory for FTP upload to 0.
+* Updated Google Storage Url's
+* Updated AWS lib to 1.5.8.1
 
 = 2.1.11 =
 * fixed bug in contextual help

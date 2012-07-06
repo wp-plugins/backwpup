@@ -287,7 +287,7 @@ function backwpup_jobedit_metabox_destgstorage($jobvalue) {
   <div class="destlinks">
     <a href="http://code.google.com/apis/storage/docs/signup.html" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
     <a href="https://code.google.com/apis/console/" target="_blank"><?PHP _e('Find Keys','backwpup'); ?></a><br />
-    <a href="https://sandbox.google.com/storage/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
+    <a href="https://storage.cloud.google.com/" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
   </div>
   <br class="clear" />
   <?PHP
