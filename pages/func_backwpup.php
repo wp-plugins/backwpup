@@ -253,5 +253,4 @@ function backwpup_show_info_td() {
 	die();
 }
 //add ajax function
-add_action('wp_ajax_backwpup_show_info_td', 'backwpup_show_info_td');	
-?>
+add_action('wp_ajax_backwpup_show_info_td', 'backwpup_show_info_td');

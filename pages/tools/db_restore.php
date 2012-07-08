@@ -90,8 +90,3 @@ if (!empty($oldblogabspath) and $oldblogabspath!=$blogabspath) {
 		echo __('ERROR:','backwpup').' '.sprintf(__('BackWPup database error %1$s for query %2$s','backwpup'), $sqlerr, "UPDATE ".$wpdb->prefix."options SET option_value = replace(option_value, '".untrailingslashit($oldblogabspath)."', '".untrailingslashit($blogabspath)."');")."<br />\n";
 }
 echo __('Restore Done. Please delete the SQL file after restoring.','backwpup')."<br />";
-
-
-
-
-?>

@@ -49,4 +49,3 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 
 //add Help
 backwpup_contextual_help();
-?>

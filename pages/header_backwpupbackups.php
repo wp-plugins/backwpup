@@ -327,4 +327,3 @@ backwpup_contextual_help(__('Here you see a list of backup files. Change the des
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpupbackups_per_page') );
 
 $backwpup_listtable->prepare_items();
-?>

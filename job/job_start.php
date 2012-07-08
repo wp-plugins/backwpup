@@ -246,4 +246,3 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	
 	return $backwpup_static['LOGFILE'];
 }
-?>

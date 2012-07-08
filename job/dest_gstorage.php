@@ -69,4 +69,3 @@ function dest_gstorage() {
   
   $WORKING['STEPDONE']++;
 }
-?>

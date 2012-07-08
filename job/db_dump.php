@@ -148,4 +148,3 @@ function _db_dump_table($table,$status,$file) {
 	if ($status['Engine']=='MyISAM')
 		fwrite($file, "/*!40000 ALTER TABLE ".$table." ENABLE KEYS */;\n");
 }
-?>

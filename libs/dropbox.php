@@ -759,5 +759,3 @@ class BackWPup_OAuthSimple {
 class BackWPup_OAuthSimpleException extends Exception {
 
 }
-
-?>

@@ -4,4 +4,3 @@ if (!defined('ABSPATH'))
 
 //add Help
 backwpup_contextual_help();
-?>

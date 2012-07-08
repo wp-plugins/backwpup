@@ -94,4 +94,3 @@ function dest_rsc() {
 
 	$WORKING['STEPDONE']++;
 }
-?>

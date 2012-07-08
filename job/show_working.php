@@ -50,14 +50,15 @@ function backwpup_read_logheader($logfile) {
 	return $joddata;
 }
 
-$logfile=realpath($_POS['logfile']);
+$logfile=realpath($_POST['logfile']);
 if (substr($logfile,-5)!='.html' && substr(basename($logfile),0,13)!='backwpup_log_')
 	die();
+
 if (is_file($logfile.'.gz'))
 	$logfile.='.gz';
 	
 $backwpupjobtemp=str_replace('\\','/',dirname(__FILE__).'/../tmp/');
-$backwpupjobtemp=rtrim(realpath($STATIC['TEMPDIR']),'/');	
+$backwpupjobtemp=rtrim(realpath($backwpupjobtemp),'/');	
 
 $log='';
 if (is_file($logfile)) {
@@ -86,4 +87,3 @@ if (is_file($logfile)) {
 	echo json_encode(array('logpos'=>$logpos,'LOG'=>$log,'WARNING'=>$warnings,'ERROR'=>$errors,'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent));
 }
 die();
-?>

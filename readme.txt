@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.4
-Stable tag: 2.1.11
+Stable tag: 2.1.12
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,10 +62,10 @@ Do backups and more for your WordPress Blog.
 == Changelog ==
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder
-* set tmp folder to plugindir/tmp-XXX
+* set tmp folder to plugindir/tmp
 * removed input_filter function
 * fixed problem with mb_string funktion on job start
-* reduced needed memory for FTP upload to 0.
+* reduced needed memory for FTP upload.
 * Updated Google Storage Url's
 * Updated AWS lib to 1.5.8.1
 

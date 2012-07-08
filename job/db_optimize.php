@@ -45,5 +45,3 @@ function db_optimize() {
 	}
 	$WORKING['STEPSDONE'][]='DB_OPTIMIZE'; //set done
 }
-
-?>

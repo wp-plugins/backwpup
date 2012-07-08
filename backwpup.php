@@ -104,4 +104,3 @@ if (backwpup_env_checks()) {
 		unset($_REQUEST['oauth_token']);
 	}
 }
-?>

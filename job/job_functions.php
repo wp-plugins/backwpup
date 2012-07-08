@@ -574,4 +574,3 @@ function job_shutdown($signal='') {
 	}
 	exit;
 }
-?>

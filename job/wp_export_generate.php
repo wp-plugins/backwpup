@@ -17,5 +17,4 @@ if (is_file(trim($infile['ABSPATH']).'wp-load.php') and $_POST['nonce']==$infile
 	require_once(trim($infile['ABSPATH']).'wp-load.php'); /** Setup WordPress environment */
 	require_once(trim($infile['ABSPATH']).'wp-admin/includes/export.php');
 	export_wp();
-} 
-?>
+}

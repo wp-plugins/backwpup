@@ -68,4 +68,3 @@ function dest_sugarsync() {
 
 	$WORKING['STEPDONE']++;
 }
-?>

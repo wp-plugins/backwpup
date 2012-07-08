@@ -131,5 +131,3 @@ function _get_exclude_dirs($folder) {
 	}
 	return $excludedir;
 }
-
-?>

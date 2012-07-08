@@ -57,4 +57,3 @@ function dest_msazure() {
 		
 	$WORKING['STEPDONE']++;
 }
-?>

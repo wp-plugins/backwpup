@@ -1136,5 +1136,4 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['dropesignmethod']);
 		
 	return $jobsettings;
-}	
-?>
+}

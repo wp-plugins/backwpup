@@ -61,4 +61,3 @@ backwpup_contextual_help(__('Here you can manage the log files of the jobs. You 
 add_screen_option( 'per_page', array('label' => __('Logs','backwpup'), 'default' => 20, 'option' =>'backwpuplogs_per_page') );
 
 $backwpup_listtable->prepare_items();
-?>

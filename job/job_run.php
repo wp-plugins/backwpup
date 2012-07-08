@@ -168,4 +168,3 @@ foreach($WORKING['STEPS'] as $step) {
 }
 //close mysql
 mysql_close($mysqlconlink);
-?>

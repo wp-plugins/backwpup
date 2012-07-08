@@ -13,5 +13,4 @@ echo "<input type=\"hidden\" name=\"page\" value=\"backwpupbackups\" />";
 $backwpup_listtable->display();
 echo "<div id=\"ajax-response\"></div>";
 echo "</form>"; 
-echo "</div>";	
-?>
+echo "</div>";

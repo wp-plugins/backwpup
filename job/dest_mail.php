@@ -60,4 +60,3 @@ function dest_mail() {
 	}
 	$WORKING['STEPSDONE'][]='DEST_MAIL'; //set done
 }
-?>

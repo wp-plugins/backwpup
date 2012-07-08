@@ -28,5 +28,3 @@ function dest_folder() {
 	$WORKING['STEPDONE']++;
 	$WORKING['STEPSDONE'][]='DEST_FOLDER'; //set done
 }
-
-?>

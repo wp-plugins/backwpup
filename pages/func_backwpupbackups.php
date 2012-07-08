@@ -493,6 +493,3 @@ function backwpup_get_backup_files($jobid,$dest) {
   }
   return $files;
 }
-
-
-?>

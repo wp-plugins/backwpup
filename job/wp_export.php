@@ -85,4 +85,3 @@ function wp_export() {
 	$WORKING['STEPDONE']=1;
 	$WORKING['STEPSDONE'][]='WP_EXPORT'; //set done
 }
-?>

@@ -62,4 +62,3 @@ function db_check() {
 	}
 	$WORKING['STEPSDONE'][]='DB_CHECK'; //set done
 }
-?>

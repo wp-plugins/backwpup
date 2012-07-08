@@ -22,5 +22,3 @@ function backwpup_read_logfile($logfile) {
 	}
 	return $lines;
 }
-
-?>

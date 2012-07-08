@@ -136,4 +136,3 @@ if (!empty($doaction)) {
 backwpup_contextual_help(__('Here is the job overview with some information. You can see some further information of the jobs, how many can be switched with the view button. Also you can manage the jobs or abbort working jobs. Some links are added to have direct access to the last log or download.','backwpup'));
 
 $backwpup_listtable->prepare_items();
-?>

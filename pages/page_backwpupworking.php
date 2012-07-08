@@ -20,7 +20,6 @@ if (!defined('ABSPATH'))
 			echo "<input type=\"hidden\" name=\"alternate_wp_cron_nonce\" id=\"alternate_wp_cron_nonce\" value=\"".$infile['WORKING']['NONCE']."\">";
 		}
 		echo "<input type=\"hidden\" name=\"logfile\" id=\"logfile\" value=\"".trim($_GET['logfile'])."\">";
-		echo "<input type=\"hidden\" name=\"backwpupjobtemp\" id=\"backwpupjobtemp\" value=\"".backwpup_get_temp()."\">";
 		echo "<input type=\"hidden\" name=\"logpos\" id=\"logpos\" value=\"".count($logfilarray)."\">";
 		echo "<input type=\"hidden\" name=\"backwpupworkingajaxurl\" id=\"backwpupworkingajaxurl\" value=\"".BACKWPUP_PLUGIN_BASEURL."/job/show_working.php\">";			
 		echo "<div id=\"showworking\">";

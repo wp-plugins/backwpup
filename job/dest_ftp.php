@@ -51,6 +51,34 @@ function dest_ftp() {
 	if (!$loginok)
 		return false;
 
+	//SYSTYPE
+	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' SYST'),E_USER_NOTICE);
+	$systype=ftp_systype($ftp_conn_id);
+	if ($systype) 
+		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$systype),E_USER_NOTICE);
+	else
+		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
+
+	//test ftp dir and create it f not exists
+	$ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
+	foreach ($ftpdirs as $ftpdir) {
+		if (empty($ftpdir))
+			continue;
+		if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
+			if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
+				trigger_error(sprintf(__('FTP Folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
+				ftp_chdir($ftp_conn_id, $ftpdir);
+			} else {
+				trigger_error(sprintf(__('FTP Folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
+				return false;
+			}
+		}
+	}
+	
+	//delete file on ftp if new try
+	if ($WORKING['STEPDONE']==0)
+		@ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile']);
+	
 	//PASV
 	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' PASV'),E_USER_NOTICE);
 	if ($STATIC['JOB']['ftppasv']) {
@@ -64,34 +92,10 @@ function dest_ftp() {
 		else
 			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Can not Entering Normal Mode','backwpup')),E_USER_WARNING);		
 	}
-	//SYSTYPE
-	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' SYST'),E_USER_NOTICE);
-	$systype=ftp_systype($ftp_conn_id);
-	if ($systype) 
-		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$systype),E_USER_NOTICE);
-	else
-		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
 	
 	if ($WORKING['STEPDONE']<$WORKING['STEPTODO']) {
-		//test ftp dir and create it f not exists
-		$ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
-		foreach ($ftpdirs as $ftpdir) {
-			if (empty($ftpdir))
-				continue;
-			if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
-				if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
-					trigger_error(sprintf(__('FTP Folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
-					ftp_chdir($ftp_conn_id, $ftpdir);
-				} else {
-					trigger_error(sprintf(__('FTP Folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
-					return false;
-				}
-			}
-		}
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 		$fp = fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'], 'r');
-		//delete if new try
-		@ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile']);
 		$ret = ftp_nb_fput($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile'], $fp, FTP_BINARY,$WORKING['STEPDONE']);
 		while ($ret == FTP_MOREDATA) {
 		   $WORKING['STEPDONE']=ftell($fp);
@@ -136,4 +140,3 @@ function dest_ftp() {
 	$WORKING['STEPDONE']++;
 
 }
-?>

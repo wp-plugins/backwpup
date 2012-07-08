@@ -8,7 +8,6 @@ jQuery(document).ready( function($) {
 				async: false,
 				data: {
 					nonce: $('#alternate_wp_cron_nonce').val(),
-					BackWPupJobTemp: $('#backwpupjobtemp').val(),
 					type:  'javastart'
 				}
 			});
@@ -21,7 +20,6 @@ jQuery(document).ready( function($) {
 				cache: false,
 				data: {
 					logfile: $('#logfile').val(),
-					BackWPupJobTemp: $('#backwpupjobtemp').val(),
 					logpos:  $('#logpos').val()
 				},
 				dataType: 'json',

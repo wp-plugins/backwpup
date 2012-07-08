@@ -72,4 +72,3 @@ function dest_s3() {
   
   $WORKING['STEPDONE']++;
 }
-?>
