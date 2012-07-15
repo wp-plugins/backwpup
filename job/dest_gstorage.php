@@ -20,9 +20,9 @@ function dest_gstorage() {
         $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
       trigger_error(__('Upload to GStorage now started... ','backwpup'),E_USER_NOTICE);  
       //transfere file to GStorage
-      $result=$gstorage->create_mpu_object($STATIC['JOB']['GStorageBucket'], $STATIC['JOB']['GStoragedir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => 'private','partSize'=>26214400,'curlopts'=>$curlops));
+      $result=$gstorage->create_object($STATIC['JOB']['GStorageBucket'], $STATIC['JOB']['GStoragedir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => 'private','curlopts'=>$curlops));
       $result=(array)$result;
-      if ($result["status"]=200 and $result["status"]<300)  {
+      if ($result["status"]>=200 and $result["status"]<300)  {
         $WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
         trigger_error(sprintf(__('Backup transferred to %s','backwpup'),"https://storage.cloud.google.com/".$STATIC['JOB']['GStorageBucket']."/".$STATIC['JOB']['GStoragedir'].$STATIC['backupfile']),E_USER_NOTICE);
         $STATIC['JOB']['lastbackupdownloadurl']="https://storage.cloud.google.com/" . $STATIC['JOB']['GStorageBucket'] . "/" . $STATIC['JOB']['GStoragedir'] . $STATIC['backupfile'];

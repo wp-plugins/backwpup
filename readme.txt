@@ -61,7 +61,8 @@ Do backups and more for your WordPress Blog.
 
 == Changelog ==
 = 2.1.13 =
-*
+* twaked Gstorage upload thx Kevin
+* fixed bug in xml generation
 
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder

@@ -23,9 +23,9 @@ function dest_s3() {
         $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
       trigger_error(__('Upload to Amazon S3 now started... ','backwpup'),E_USER_NOTICE);  
       //transfere file to S3
-      $result=$s3->create_mpu_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'partSize'=>26214400,'curlopts'=>$curlops));
+      $result=$s3->create_object($STATIC['JOB']['awsBucket'], $STATIC['JOB']['awsdir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => AmazonS3::ACL_PRIVATE,'storage' => $storage,'curlopts'=>$curlops));
       $result=(array)$result;
-      if ($result["status"]=200 and $result["status"]<300)  {
+      if ($result["status"]>=200 and $result["status"]<300)  {
         $WORKING['STEPTODO']=1+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
         trigger_error(sprintf(__('Backup transferred to %s','backwpup'),$result["header"]["_info"]["url"]),E_USER_NOTICE);
         $STATIC['JOB']['lastbackupdownloadurl']=$STATIC['WP']['ADMINURL'].'?page=backwpupbackups&action=downloads3&file='.$STATIC['JOB']['awsdir'].$STATIC['backupfile'].'&jobid='.$STATIC['JOB']['jobid'];
