@@ -63,6 +63,9 @@ Do backups and more for your WordPress Blog.
 = 2.1.13 =
 * twaked Gstorage upload thx Kevin
 * fixed bug in xml generation
+* changed base64 function to prevent false positive massages of scanners
+* removed batch files from MS Azure SDK
+* use PLAINTEXT for Dropbox oAuth sing method see https://www.dropbox.com/developers/blog/20
 
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder

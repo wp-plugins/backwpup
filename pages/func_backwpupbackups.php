@@ -318,7 +318,7 @@ function backwpup_get_backup_files($jobid,$dest) {
       require_once (dirname(__FILE__).'/../libs/sugarsync.php');
     if (class_exists('SugarSync')) {
       try {
-        $sugarsync = new SugarSync($jobvalue['sugaruser'],base64_decode($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+        $sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_base64($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
         $dirid=$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
         $user=$sugarsync->user();
         $dir=$sugarsync->showdir($dirid);
@@ -460,11 +460,11 @@ function backwpup_get_backup_files($jobid,$dest) {
     $loginok=false;
     if ($ftp_conn_id) {
       //FTP Login
-      if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], base64_decode($jobvalue['ftppass']))) {
+      if (@ftp_login($ftp_conn_id, $jobvalue['ftpuser'], backwpup_base64($jobvalue['ftppass']))) {
         $loginok=true;
       } else { //if PHP ftp login don't work use raw login
         ftp_raw($ftp_conn_id,'USER '.$jobvalue['ftpuser']);
-        $return=ftp_raw($ftp_conn_id,'PASS '.base64_decode($jobvalue['ftppass']));
+        $return=ftp_raw($ftp_conn_id,'PASS '.backwpup_base64($jobvalue['ftppass']));
         if (substr(trim($return[0]),0,3)<=400)
           $loginok=true;
       }
@@ -480,7 +480,7 @@ function backwpup_get_backup_files($jobid,$dest) {
 		  $files[$filecounter]['folder']="ftp://".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].dirname($ftpfiles)."/";
           $files[$filecounter]['file']=$ftpfiles;
           $files[$filecounter]['filename']=basename($ftpfiles);
-		  $files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(base64_decode($jobvalue['ftppass']))."@".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].$ftpfiles;
+		  $files[$filecounter]['downloadurl']="ftp://".rawurlencode($jobvalue['ftpuser']).":".rawurlencode(backwpup_base64($jobvalue['ftppass']))."@".$jobvalue['ftphost'].':'.$jobvalue['ftphostport'].$ftpfiles;
           $files[$filecounter]['filesize']=ftp_size($ftp_conn_id,$ftpfiles);
           $files[$filecounter]['time']=ftp_mdtm($ftp_conn_id,$ftpfiles);
           $filecounter++;

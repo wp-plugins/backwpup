@@ -71,7 +71,7 @@ echo '</select>';
 <tr valign="top" class="mailsmtp" <?PHP if ($cfg['mailmethod']!='SMTP') echo 'style="display:none;"';?>> 
 <th scope="row"><label for="mailpass"><?PHP _e('SMTP password','backwpup'); ?></label></th> 
 <td> 
-<input name="mailpass" id="mailpass" type="password" value="<?PHP echo base64_decode($cfg['mailpass']);?>" class="regular-text" />
+<input name="mailpass" id="mailpass" type="password" value="<?PHP echo backwpup_base64($cfg['mailpass']);?>" class="regular-text" />
 </td> 
 </tr>
 </table> 
@@ -142,7 +142,7 @@ echo '</select>';
 </tr>
 <tr valign="top"> 
 <th scope="row"><label for="httpauthpassword"><?PHP _e('Password:','backwpup'); ?></label></th>
-<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo base64_decode($cfg['httpauthpassword']);?>" class="regular-text" />
+<td><input name="httpauthpassword" type="password" id="httpauthpassword" value="<?PHP echo backwpup_base64($cfg['httpauthpassword']);?>" class="regular-text" />
 </tr>
 </table>
 

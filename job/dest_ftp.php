@@ -34,14 +34,14 @@ function dest_ftp() {
 	//FTP Login
 	$loginok=false;
 	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' USER '.$STATIC['JOB']['ftpuser']),E_USER_NOTICE);
-	if ($loginok=ftp_login($ftp_conn_id, $STATIC['JOB']['ftpuser'], base64_decode($STATIC['JOB']['ftppass']))) {
+	if ($loginok=ftp_login($ftp_conn_id, $STATIC['JOB']['ftpuser'], backwpup_base64($STATIC['JOB']['ftppass']))) {
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),' User '.$STATIC['JOB']['ftpuser'].' logged in.'),E_USER_NOTICE);
 	} else { //if PHP ftp login don't work use raw login
 		$return=ftp_raw($ftp_conn_id,'USER '.$STATIC['JOB']['ftpuser']); 
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$return[0]),E_USER_NOTICE);
 		if (substr(trim($return[0]),0,3)<=400) {
 			trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' PASS *******'),E_USER_NOTICE);
-			$return=ftp_raw($ftp_conn_id,'PASS '.base64_decode($STATIC['JOB']['ftppass']));
+			$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_base64($STATIC['JOB']['ftppass']));
 			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$return[0]),E_USER_NOTICE);
 			if (substr(trim($return[0]),0,3)<=400) 
 				$loginok=true;
@@ -108,7 +108,7 @@ function dest_ftp() {
 		} else {
 		    $WORKING['STEPDONE']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);
-			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".base64_decode($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
+			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".backwpup_base64($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
 			$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
 		}
 		fclose($fp);		

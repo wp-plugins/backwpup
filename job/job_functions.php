@@ -49,6 +49,12 @@ function update_option($option='backwpup_jobs',$data) {
 	}
 	return true;
 }
+//base64 replacement
+function backwpup_base64($data) {
+	if (preg_match('%^[a-zA-Z0-9/+]*={0,2}$%', $data))
+		$data=base64_decode($data);
+	return $data;
+}
 
 // add to file list
 function add_file($files) {
@@ -432,7 +438,7 @@ function job_end() {
 			$phpmailer->Port=$STATIC['CFG']['mailhostport'];
 			$phpmailer->SMTPSecure=$STATIC['CFG']['mailsecure'];
 			$phpmailer->Username=$STATIC['CFG']['mailuser'];
-			$phpmailer->Password=base64_decode($STATIC['CFG']['mailpass']);
+			$phpmailer->Password=backwpup_base64($STATIC['CFG']['mailpass']);
 			if (!empty($STATIC['CFG']['mailuser']) and !empty($STATIC['CFG']['mailpass']))
 				$phpmailer->SMTPAuth=true;
 			$phpmailer->IsSMTP();
@@ -542,7 +548,7 @@ function job_shutdown($signal='') {
 			curl_setopt($ch, CURLOPT_USERAGENT, 'BackWPup');
 			if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) {
 				curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-				curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
+				curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.backwpup_base64($STATIC['CFG']['httpauthpassword']));
 			}
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 3);
 			curl_exec($ch);
@@ -564,7 +570,7 @@ function job_shutdown($signal='') {
 			$header.= "Content-Type: application/x-www-form-urlencoded\r\n";
 			$header.= "Content-Length: ".strlen($query)."\r\n";
 			if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) 
-				$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']))."\r\n";
+				$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.backwpup_base64($STATIC['CFG']['httpauthpassword']))."\r\n";
 			$header.= "Connection: Close\r\n\r\n";
 			$header.=$query;
 			$fp=fsockopen($host, $port, $errno, $errstr, 3);

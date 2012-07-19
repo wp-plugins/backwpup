@@ -255,7 +255,7 @@ function backwpup_api($active=false) {
 	if (!empty($cfg['apicronservice']))  {
 		$post['OFFSET']=get_option('gmt_offset');
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
-			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword']));
+			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.backwpup_base64($cfg['httpauthpassword']));
 		$jobs=get_option('backwpup_jobs');
 		if (!empty($jobs)) {
 			foreach ($jobs as $jobid => $jobvalue) {
@@ -310,7 +310,7 @@ function backwpup_cron() {
 		$infile=backwpup_get_working_file();
 		$httpauthheader='';
 		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword']))
-			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($cfg['httpauthuser'].':'.base64_decode($cfg['httpauthpassword'])));
+			$httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($cfg['httpauthuser'].':'.backwpup_base64($cfg['httpauthpassword'])));
 		if (!empty($infile['timestamp']) and $infile['timestamp']<$revtime) {
 			wp_remote_post(BACKWPUP_PLUGIN_BASEURL.'/job/job_run.php', array('timeout' => 3, 'blocking' => false, 'sslverify' => false,'headers'=>$httpauthheader, 'body'=>array('nonce'=> $infile['WORKING']['NONCE'],'type'=>'restarttime'), 'user-agent'=>'BackWPup') );
 		}
@@ -722,6 +722,12 @@ function backwpup_admin_url($url) {
 	} else {
 		return admin_url($url);
 	}
+}
+
+function backwpup_base64($data) {
+	if (preg_match('%^[a-zA-Z0-9/+]*={0,2}$%', $data))
+		$data=base64_decode($data);
+	return $data;
 }
 
 function backwpup_env_checks() {

@@ -90,7 +90,7 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
   $checedtables=array();
   if (isset($_POST['jobtabs'])) {
     foreach ($_POST['jobtabs'] as $dbtable) {
-      $checedtables[]=base64_decode($dbtable);
+      $checedtables[]=backwpup_base64($dbtable);
     }
   }
   global $wpdb;

@@ -234,7 +234,7 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
   <b><?PHP _e('Username:','backwpup'); ?></b><br />
   <input name="ftpuser" type="text" value="<?PHP echo $jobvalue['ftpuser'];?>" class="user large-text" /><br />
   <b><?PHP _e('Password:','backwpup'); ?></b><br />
-  <input name="ftppass" type="password" value="<?PHP echo base64_decode($jobvalue['ftppass']);?>" class="password large-text" /><br />
+  <input name="ftppass" type="password" value="<?PHP echo backwpup_base64($jobvalue['ftppass']);?>" class="password large-text" /><br />
   <b><?PHP _e('Folder on Server:','backwpup'); ?></b><br />
   <input name="ftpdir" type="text" value="<?PHP echo $jobvalue['ftpdir'];?>" class="large-text" /><br />
   <?PHP if (!is_numeric($jobvalue['ftpmaxbackups'])) $jobvalue['ftpmaxbackups']=0; ?>
@@ -375,10 +375,10 @@ function backwpup_jobedit_metabox_destsugarsync($jobvalue) {
     <b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
     <input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
     <b><?PHP _e('Password:','backwpup'); ?></b><br />
-    <input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo base64_decode($jobvalue['sugarpass']);?>" class="large-text" /><br />
+    <input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo backwpup_base64($jobvalue['sugarpass']);?>" class="large-text" /><br />
     <b><?PHP _e('Root:','backwpup'); ?></b><br />
     <input id="sugarrootselected" name="sugarrootselected" type="hidden" value="<?PHP echo $jobvalue['sugarroot'];?>" />
-    <?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>base64_decode($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
+    <?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>backwpup_base64($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
     <b><?PHP _e('Folder:','backwpup'); ?></b><br />
     <input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
     <?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />

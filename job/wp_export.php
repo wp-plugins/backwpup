@@ -28,7 +28,7 @@ function wp_export() {
 		} 
 		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) {
 			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-			curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']));
+			curl_setopt($ch, CURLOPT_USERPWD, $STATIC['CFG']['httpauthuser'].':'.backwpup_base64($STATIC['CFG']['httpauthpassword']));
 		}
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 300);
 		$return=curl_exec($ch);
@@ -60,7 +60,7 @@ function wp_export() {
 		$header.= "Content-Type: application/x-www-form-urlencoded\r\n";
 		$header.= "Content-Length: ".strlen($query)."\r\n";
 		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) 
-			$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.base64_decode($STATIC['CFG']['httpauthpassword']))."\r\n";
+			$header.= "Authorization: Basic ".base64_encode($STATIC['CFG']['httpauthuser'].':'.backwpup_base64($STATIC['CFG']['httpauthpassword']))."\r\n";
 		$header.= "Connection: Close\r\n\r\n";
 		$header.=$query;
 		$fp=fsockopen($host, $port, $errno, $errstr, 300);

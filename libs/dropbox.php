@@ -117,7 +117,7 @@ class backwpup_Dropbox {
 		//request tokens
 		$OAuthSign = $this->OAuthObject->sign(array(
 			'path'    	=>self::API_URL.self::API_VERSION_URL.'oauth/request_token',
-			'method' 	=>'HMAC-SHA1',
+			'method' 	=>'PLAINTEXT',
 			'action'	=>'GET',
 			'parameters'=>array('oauth_callback'=>$callback_url)));
 		$ch = curl_init();
@@ -157,7 +157,7 @@ class backwpup_Dropbox {
 		 $OAuthSign = $this->OAuthObject->sign(array(
 			'path'      => self::API_URL.self::API_VERSION_URL.'oauth/access_token',
 			'action'	=>'GET',
-			'method' 	=>'HMAC-SHA1',
+			'method' 	=>'PLAINTEXT',
 			'parameters'=>array('oauth_token'    => $oauth_token),
 			'signatures'=>array('oauth_token'=>$oauth_token,'oauth_secret'=>$oauth_token_secret)));
 		$ch = curl_init();
@@ -197,7 +197,7 @@ class backwpup_Dropbox {
 			'path'      => $url,
 			'parameters'=> $args,
 			'action'=> $method,
-			'method' => 'HMAC-SHA1',
+			'method' => 'PLAINTEXT',
 			'signatures'=> $this->OAuthToken));
 		
 		/* Header*/

@@ -8,7 +8,7 @@ function dest_sugarsync() {
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 	
 	try {
-		$sugarsync = new SugarSync($STATIC['JOB']['sugaruser'],base64_decode($STATIC['JOB']['sugarpass']),$STATIC['BACKWPUP']['SUGARSYNC_ACCESSKEY'], $STATIC['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']);
+		$sugarsync = new SugarSync($STATIC['JOB']['sugaruser'],backwpup_base64($STATIC['JOB']['sugarpass']),$STATIC['BACKWPUP']['SUGARSYNC_ACCESSKEY'], $STATIC['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']);
 		//Check Quota
 		$user=$sugarsync->user();
 		if (!empty($user->nickname)) {

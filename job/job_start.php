@@ -240,7 +240,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	//Run job
 	$httpauthheader='';
 	if (!empty($backwpup_static['CFG']['httpauthuser']) and !empty($backwpup_static['CFG']['httpauthpassword']))
-		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.base64_decode($backwpup_static['CFG']['httpauthpassword'])));
+		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.backwpup_base64($backwpup_static['CFG']['httpauthpassword'])));
 	if (!$backwpup_static['WP']['ALTERNATE_CRON'])
 		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
 	

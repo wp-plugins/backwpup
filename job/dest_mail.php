@@ -15,7 +15,7 @@ function dest_mail() {
 		$phpmailer->Port=$STATIC['CFG']['mailhostport'];
 		$phpmailer->SMTPSecure=$STATIC['CFG']['mailsecure'];
 		$phpmailer->Username=$STATIC['CFG']['mailuser'];
-		$phpmailer->Password=base64_decode($STATIC['CFG']['mailpass']);
+		$phpmailer->Password=backwpup_base64($STATIC['CFG']['mailpass']);
 		if (!empty($STATIC['CFG']['mailuser']) and !empty($STATIC['CFG']['mailpass']))
 			$phpmailer->SMTPAuth=true;
 		$phpmailer->IsSMTP();
