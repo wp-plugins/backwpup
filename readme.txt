@@ -65,7 +65,7 @@ Do backups and more for your WordPress Blog.
 * fixed bug in xml generation
 * changed base64 function to prevent false positive massages of scanners
 * removed batch files from MS Azure SDK
-* use PLAINTEXT for Dropbox oAuth sing method see https://www.dropbox.com/developers/blog/20
+* changed Dropbox oAuth see https://www.dropbox.com/developers/blog/20
 
 = 2.1.12 =
 * always check existing .htaccess in log/temp/backup folder
