@@ -196,12 +196,10 @@ function backwpup_plugin_activate() {
 	if (!isset($cfg['maxlogs']) or !is_int($cfg['maxlogs'])) $cfg['maxlogs']=50;
 	if (!function_exists('gzopen') or !isset($cfg['gzlogs'])) $cfg['gzlogs']=false;
 	if (!class_exists('ZipArchive') or !isset($cfg['phpzip'])) $cfg['phpzip']=false;
-	if (!isset($cfg['apicronservice']) or !is_bool($cfg['apicronservice'])) $cfg['apicronservice']=false;
 	if (!isset($cfg['dirlogs']) or empty($cfg['dirlogs']) or !is_dir($cfg['dirlogs'])) {
 		$rand = substr( md5( md5( SECURE_AUTH_KEY ) ), -5 );
 		$cfg['dirlogs']=str_replace('\\','/',trailingslashit(WP_CONTENT_DIR)).'backwpup-'.$rand.'-logs/';
 	}
-	if (!isset($cfg['disablewpcron']) or !is_bool($cfg['disablewpcron'])) $cfg['disablewpcron']=false;
 	if (!isset($cfg['httpauthuser'])) $cfg['httpauthuser']='';
 	if (!isset($cfg['httpauthpassword'])) $cfg['httpauthpassword']='';
 	//remove old option
@@ -209,10 +207,13 @@ function backwpup_plugin_activate() {
 	unset($cfg['logfilelist']);
 	unset($cfg['jobscriptruntime']);
 	unset($cfg['jobscriptruntimelong']);
+	unset($cfg['apicronservice']);
+	unset($cfg['disablewpcron']);
 	update_option('backwpup',$cfg);
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
 	delete_option('backwpup_last_activate');
+	delete_site_transient('backwpup_api_update');
 	backwpup_api(true);
 }
 
@@ -246,25 +247,17 @@ function backwpup_check_open_basedir($dir) {
 }
 
 //Backwpup API
-function backwpup_api($active=false) {
+function backwpup_api($active=true) {
 	include(ABSPATH . WPINC . '/version.php'); // include an unmodified $wp_version
-	$cfg=get_option('backwpup');
-	$post['URL']=site_url();
-	$post['WP_VER']=$wp_version;
-	$post['BACKWPUP_VER']=BACKWPUP_VERSION;
-	if (!empty($cfg['apicronservice']))  {
-		$post['OFFSET']=get_option('gmt_offset');
-		if (!empty($cfg['httpauthuser']) and !empty($cfg['httpauthpassword'])) 
-			$post['httpauth']=base64_encode($cfg['httpauthuser'].':'.backwpup_base64($cfg['httpauthpassword']));
-		$jobs=get_option('backwpup_jobs');
-		if (!empty($jobs)) {
-			foreach ($jobs as $jobid => $jobvalue) {
-				if ($jobvalue['activated'] and !empty($jobvalue['cron']))
-					$post["JOBCRON[".$jobid."]"]=$jobvalue['cron'];
-			}
+	if ($active) {
+		if (!get_site_transient( 'backwpup_api_update' )) {
+			set_site_transient('backwpup_api_update',true,3600*24*14); //only all 14 Days
+			wp_remote_post( BACKWPUP_API_URL, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'body'=>array('URL'=>home_url(),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION), 'user-agent'=>'BackWPup/'.BACKWPUP_VERSION.'; WordPress/'.$wp_version.'; ' . home_url()) );
 		}
+	} elseif (!$active) {
+		delete_site_transient('backwpup_api_update');
+		wp_remote_post( BACKWPUP_API_URL, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'body'=>array('URL'=>home_url(),'ACTION'=>'delete'), 'user-agent'=>'BackWPup/0.0.0; WordPress/'.$wp_version.'; ' . home_url()) );
 	}
-	wp_remote_post( BACKWPUP_API_URL, array('timeout' => 15, 'blocking' => false, 'sslverify' => false, 'body'=>$post, 'user-agent'=>'BackWPup '.BACKWPUP_VERSION) );
 }
 
 //add edit setting to plugins page
@@ -1110,11 +1103,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
 		$jobsettings['dropemaxbackups']=0;	
 		
-	if (!isset($jobsettings['sugaruser']) or !is_string($jobsettings['sugaruser']))
-		$jobsettings['sugaruser']='';
-
-	if (!isset($jobsettings['sugarpass']) or !is_string($jobsettings['sugarpass']))
-		$jobsettings['sugarpass']='';		
+	if (!isset($jobsettings['sugarrefreshtoken']) or !is_string($jobsettings['sugarrefreshtoken']))
+		$jobsettings['sugarrefreshtoken']='';		
 
 	if (!isset($jobsettings['sugarroot']) or !is_string($jobsettings['sugarroot']))
 		$jobsettings['sugarroot']='';
@@ -1140,6 +1130,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['dropepass']);	
 	unset($jobsettings['dbtables']);
 	unset($jobsettings['dropesignmethod']);
+	unset($jobsettings['sugarpass']);
+	unset($jobsettings['sugaruser']);
 		
 	return $jobsettings;
 }

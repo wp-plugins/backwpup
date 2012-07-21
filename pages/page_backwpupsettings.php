@@ -146,26 +146,6 @@ echo '</select>';
 </tr>
 </table>
 
-<h3><?PHP _e('WP-Cron','backwpup'); ?></h3>
-<p><?PHP _e('If you would use the cron job of your hoster you must point it to the url:','backwpup'); echo ' <i>'.get_option('siteurl').'/wp-cron.php</i>'; ?></p>
-<table class="form-table"> 
-<tr valign="top"> 
-<th scope="row"><?PHP _e('Disable WP-Cron','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Disable WP-Cron','backwpup'); ?></span></legend><label for="disablewpcron"> 
-<input name="disablewpcron" type="checkbox" id="disablewpcron" value="1" <?php checked($cfg['disablewpcron'],true); ?> /> 
-<?PHP _e('Use your host\'s Cron Job and disable WP-Cron','backwpup'); ?></label> 
-</fieldset></td>
-</tr>
-<tr valign="top"> 
-<th scope="row"><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></th> 
-<td><fieldset><legend class="screen-reader-text"><span><?PHP _e('Use cron service of backwpup.com','backwpup'); ?></span></legend><label for="apicronservice"> 
-<input name="apicronservice" type="checkbox" id="apicronservice" value="1" <?php checked($cfg['apicronservice'],true); ?> />
-<?PHP _e('If you check this, the job schedule will submited to backwpup.com. Backwpup.com will call your blog wp-cron.php to start. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start cron behind a basic authentication, on that the http authentication data will transferd too! Please make a little donation for the plugin if you use this servcie. The service can be removed by me without a massage.','backwpup'); ?><br />
-<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_new"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" title="PayPal - The safer, easier way to pay online!"></a>
-</label> 
-</fieldset>
-</td>
-</table>
 <p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"  /></p>
 </form>
 </div>

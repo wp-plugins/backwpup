@@ -13,7 +13,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
       //Get Access Tokens
       require_once (dirname(__FILE__).'/../libs/dropbox.php');
       $jobs=get_option('backwpup_jobs');
-      $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
+      $dropbox = new backwpup_Dropbox('dropbox');
       $oAuthStuff = $dropbox->oAuthAccessToken($reqtoken['oAuthRequestToken'],$reqtoken['oAuthRequestTokenSecret']);
       //Save Tokens
       $jobs[$jobid]['dropetoken']=$oAuthStuff['oauth_token'];
@@ -31,7 +31,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 }
 
 //Save Job settings
-if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel'])) and !empty($_POST['jobid'])) {
+if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
   check_admin_referer('edit-job');
   $jobvalues['jobid']=(int) $_POST['jobid'];
   $jobvalues['type']= implode('+',(array)$_POST['type']);
@@ -147,8 +147,6 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
   $jobvalues['msazureContainer']=isset($_POST['msazureContainer']) ? $_POST['msazureContainer'] : '';
   $jobvalues['msazuredir']=isset($_POST['msazuredir']) ? stripslashes($_POST['msazuredir']) : '';
   $jobvalues['msazuremaxbackups']=isset($_POST['msazuremaxbackups']) ? (int)$_POST['msazuremaxbackups'] : 0;
-  $jobvalues['sugaruser']=isset($_POST['sugaruser']) ? $_POST['sugaruser'] : '';
-  $jobvalues['sugarpass']=isset($_POST['sugarpass']) ? base64_encode($_POST['sugarpass']) : '';
   $jobvalues['sugardir']=isset($_POST['sugardir']) ? stripslashes($_POST['sugardir']) : '';
   $jobvalues['sugarroot']=isset($_POST['sugarroot']) ? $_POST['sugarroot'] : '';
   $jobvalues['sugarmaxbackups']=isset($_POST['sugarmaxbackups']) ? (int)$_POST['sugarmaxbackups'] : 0;
@@ -223,6 +221,36 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
     $jobvalues['dropesecret']='';
     $backwpup_message.=__('Dropbox authentication deleted!','backwpup').'<br />';
   }
+  
+	if (!empty($_POST['sugaremail']) && !empty($_POST['sugarpass']) && $_POST['authbutton']==__( 'Sugarsync authenticate!', 'backwpup' )) {
+		if (!class_exists('SugarSync'))
+			include_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+		try {
+			$sugarsync = new SugarSync();
+			$refresh_token=$sugarsync->get_Refresh_Token($_POST['sugaremail'],$_POST['sugarpass']);
+			if (!empty($refresh_token)) {
+				$jobvalues['sugarrefreshtoken']=$refresh_token;
+				$backwpup_message.=__('SugarSync authentication complete!','backwpup').'<br />';
+			}
+		} catch ( Exception $e ) {
+			$backwpup_message.= 'SUGARSYNC: ' . $e->getMessage() . '<br />';
+		}
+	}
+	if ($_POST['authbutton']==__( 'Delete Sugarsync authentication!', 'backwpup' )) {
+		$jobvalues['sugarrefreshtoken']='';
+		$backwpup_message.=__('SugarSync authentication deleted!','backwpup').'<br />';
+	}
+	if ($_POST['authbutton']==__( 'Create Sugarsync Account', 'backwpup' )) {
+		if (!class_exists('SugarSync'))
+			include_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+		try {
+			$sugarsync = new SugarSync();
+			$sugarsync->create_account($_POST['sugaremail'],$_POST['sugarpass']);
+			$backwpup_message.=__('SugarSync account created!','backwpup').'<br />';
+		} catch ( Exception $e ) {
+			$backwpup_message.= 'SUGARSYNC: ' . $e->getMessage() . '<br />';
+		}
+	}
 
   //save chages
   $jobs=get_option('backwpup_jobs'); //Load Settings
@@ -245,7 +273,7 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
   //get dropbox auth  
   if (isset($_POST['dropboxauth']) and !empty($_POST['dropboxauth'])) {
     require_once (dirname(__FILE__).'/../libs/dropbox.php');
-    $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
+    $dropbox = new backwpup_Dropbox('dropbox');
     // let the user authorize (user will be redirected)
     $response = $dropbox->oAuthAuthorize(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalues['jobid'].'&dropboxauth=AccessToken&_wpnonce='.wp_create_nonce('edit-job'));
     // save oauth_token_secret 
@@ -253,9 +281,6 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
     //forward to auth page
     wp_redirect($response['authurl']);
   }  
-  
-  //make api call to backwpup.com
-  backwpup_api(true);
   
   $_POST['jobid']=$jobvalues['jobid'];
   $backwpup_message.=str_replace('%1',$jobvalues['name'],__('Job \'%1\' changes saved.', 'backwpup')).' <a href="'.backwpup_admin_url('admin.php').'?page=backwpup">'.__('Jobs overview.', 'backwpup').'</a>';

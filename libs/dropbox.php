@@ -36,14 +36,12 @@ class backwpup_Dropbox {
 	
 	private $root = 'sandbox';
 	private $ProgressFunction = false;
-	private $oauth_app_key ='';
-    private $oauth_app_secret ='';
+	private $oauth_app_key ='q2jbt0unkkc54u2';
+    private $oauth_app_secret ='t5hlbxtz473hchy';
     private $oauth_token  ='';
     private $oauth_token_secret ='';
 	
-	public function __construct($applicationKey, $applicationSecret,$dropbox=false) {
-		$this->oauth_app_key    = $applicationKey;
-        $this->oauth_app_secret = $applicationSecret;
+	public function __construct($dropbox=false) {
 		if ($dropbox)
 			$this->root = 'dropbox';
 		else

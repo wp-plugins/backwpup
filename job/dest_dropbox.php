@@ -8,7 +8,7 @@ function dest_dropbox() {
   require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
   try {
     //set boxtype and authkeys
-    $dropbox = new backwpup_Dropbox($STATIC['BACKWPUP']['DROPBOX_APP_KEY'], $STATIC['BACKWPUP']['DROPBOX_APP_SECRET'],'dropbox');
+    $dropbox = new backwpup_Dropbox('dropbox');
     
     // set the tokens 
     $dropbox->setOAuthTokens($STATIC['JOB']['dropetoken'],$STATIC['JOB']['dropesecret']);

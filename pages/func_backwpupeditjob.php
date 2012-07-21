@@ -369,27 +369,61 @@ function backwpup_jobedit_metabox_destdropbox($jobvalue) {
   <?PHP
 }
 
-function backwpup_jobedit_metabox_destsugarsync($jobvalue) {
-  ?>
-  <div class="dests">
-    <b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
-    <input id="sugaruser" name="sugaruser" type="text" value="<?PHP echo $jobvalue['sugaruser'];?>" class="large-text" /><br />
-    <b><?PHP _e('Password:','backwpup'); ?></b><br />
-    <input id="sugarpass" name="sugarpass" type="password" value="<?PHP echo backwpup_base64($jobvalue['sugarpass']);?>" class="large-text" /><br />
-    <b><?PHP _e('Root:','backwpup'); ?></b><br />
-    <input id="sugarrootselected" name="sugarrootselected" type="hidden" value="<?PHP echo $jobvalue['sugarroot'];?>" />
-    <?PHP if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) backwpup_get_sugarsync_root(array('sugaruser'=>$jobvalue['sugaruser'],'sugarpass'=>backwpup_base64($jobvalue['sugarpass']),'sugarrootselected'=>$jobvalue['sugarroot'])); ?><br />
-    <b><?PHP _e('Folder:','backwpup'); ?></b><br />
-    <input name="sugardir" type="text" value="<?PHP echo $jobvalue['sugardir'];?>" class="large-text" /><br />
-    <?PHP _e('Max. backup files in folder:','backwpup'); ?><input name="sugarmaxbackups" type="text" size="3" value="<?PHP echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will be deleted first.)','backwpup');?></span><br />
-  </div>
-  <div class="destlinks">
-    <a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?PHP _e('Create Account','backwpup'); ?></a><br />
-    <a href="https://sugarsync.com" target="_blank"><?PHP _e('Webinterface','backwpup'); ?></a><br />
-  </div>
-  <br class="clear" />
-  <?PHP
+function backwpup_jobedit_metabox_destsugarsync( $jobvalue ) {
+	?>
+	<div class="dests">
+		<?php if ( ! $jobvalue['sugarrefreshtoken'] ) { ?>
+			<b><?php _e( 'E-mail address:', 'backwpuppro' ); ?></b><br />
+			<input id="sugaremail" name="sugaremail" type="text" value="<?php if (isset($_POST['sugaremail'])) echo $_POST['sugaremail'];?>" class="large-text" /><br />
+			<b><?php _e( 'Password:', 'backwpuppro' ); ?></b><br />
+			<input id="sugarpass" name="sugarpass" type="password" value="<?php if (isset($_POST['sugarpass'])) echo $_POST['sugarpass'];?>" class="large-text" /><br />
+			<br />
+			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Sugarsync authenticate!', 'backwpuppro' ); ?>" />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="authbutton" class="button" value="<?php _e( 'Create Sugarsync Account', 'backwpuppro' ); ?>" />
+			<br />
+		<?php } else { ?>
+			<b><?php _e( 'Login:', 'backwpuppro' ); ?></b>&nbsp;
+			<span style="color:green;"><?php _e( 'Authenticated!', 'backwpuppro' ); ?></span>
+			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Delete Sugarsync authentication!', 'backwpuppro' ); ?>" />
+			<br />
+			<b><?php _e( 'Root:', 'backwpuppro' ); ?></b>
+			<?php
+			if (!class_exists('SugarSync'))
+				include_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
+			try {
+				$sugarsync   = new SugarSync($jobvalue['sugarrefreshtoken']);
+				$user        = $sugarsync->user();
+				$syncfolders = $sugarsync->get( $user->syncfolders );
+				if ( ! is_object( $syncfolders ) )
+					echo '<span style="color:red;">'.__( 'No Syncfolders found!', 'backwpuppro' ).'</span>';
+			} catch ( Exception $e ) {
+				echo '<span style="color:red;">'.$e->getMessage().'</span>';
+			}
+			if ( isset($syncfolders) && is_object( $syncfolders ) ) {
+				echo '<select name="sugarroot" id="sugarroot">';
+				foreach ( $syncfolders->collection as $roots ) {
+					echo "<option " . selected( strtolower($jobvalue['sugarroot'] ), strtolower( $roots->ref ), false ) . " value=\"" . $roots->ref . "\">" . $roots->displayName . "</option>";
+				}
+				echo '</select>';
+			}
+			?>
+		<?php } ?>
+		
+		<br />
+		<b><?php _e( 'Folder:', 'backwpuppro' ); ?></b><br />
+		<input name="sugardir" type="text" value="<?php echo $jobvalue['sugardir'];?>" class="large-text" /><br />
+		<span class="nosync"><?php _e( 'Max. backup files in folder:', 'backwpuppro' ); ?>
+			<input name="sugarmaxbackups" type="text" size="3" value="<?php echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?php _e( '(Oldest files will be deleted first.)', 'backwpuppro' );?></span><br /></span>
+			<br /></span>
+	</div>
+	<div class="destlinks">
+		<a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?php _e( 'Create Account', 'backwpuppro' ); ?></a><br />
+		<a href="https://sugarsync.com" target="_blank"><?php _e( 'Webinterface', 'backwpuppro' ); ?></a><br />
+	</div>
+	<br class="clear" />
+	<?php
 }
+
 function backwpup_jobedit_metabox_destmail($jobvalue) {
   ?>
   <b><?PHP _e('E-mail address:','backwpup'); ?></b><br />
@@ -774,7 +808,7 @@ function backwpup_get_sugarsync_root($args='') {
   }
 
   try {
-    $sugarsync = new SugarSync($sugaruser,$sugarpass,BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+    $sugarsync = new SugarSync($sugaruser,$sugarpass);
     $user=$sugarsync->user();
     $syncfolders=$sugarsync->get($user->syncfolders);
   } catch (Exception $e) {

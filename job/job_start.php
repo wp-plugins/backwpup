@@ -75,10 +75,6 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 	$backwpup_static['BACKWPUP']['PLUGIN_BASEDIR']=BACKWPUP_PLUGIN_BASEDIR;
 	$backwpup_static['BACKWPUP']['VERSION']=BACKWPUP_VERSION;
 	$backwpup_static['BACKWPUP']['BACKWPUP_DESTS']=BACKWPUP_DESTS;
-	$backwpup_static['BACKWPUP']['DROPBOX_APP_KEY']=BACKWPUP_DROPBOX_APP_KEY;
-	$backwpup_static['BACKWPUP']['DROPBOX_APP_SECRET']=BACKWPUP_DROPBOX_APP_SECRET;
-	$backwpup_static['BACKWPUP']['SUGARSYNC_ACCESSKEY']=BACKWPUP_SUGARSYNC_ACCESSKEY;
-	$backwpup_static['BACKWPUP']['SUGARSYNC_PRIVATEACCESSKEY']=BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY;
 	//Set config data
 	$backwpup_static['CFG']=get_option('backwpup');
 	//check exists gzip functions
@@ -214,7 +210,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 			$backwpup_working['STEPS'][]='DEST_FTP';
 		if (!empty($backwpup_static['JOB']['dropetoken']) and !empty($backwpup_static['JOB']['dropesecret']) and in_array('DROPBOX',explode(',',strtoupper(BACKWPUP_DESTS))))
 			$backwpup_working['STEPS'][]='DEST_DROPBOX';
-		if (!empty($backwpup_static['JOB']['sugaruser']) and !empty($backwpup_static['JOB']['sugarpass']) and !empty($backwpup_static['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))		
+		if (!empty($backwpup_static['JOB']['sugarrefreshtoken']) and !empty($backwpup_static['JOB']['sugarroot']) and in_array('SUGARSYNC',explode(',',strtoupper(BACKWPUP_DESTS))))		
 			$backwpup_working['STEPS'][]='DEST_SUGARSYNC';
 		if (!empty($backwpup_static['JOB']['awsAccessKey']) and !empty($backwpup_static['JOB']['awsSecretKey']) and !empty($backwpup_static['JOB']['awsBucket']) and in_array('S3',explode(',',strtoupper(BACKWPUP_DESTS))))
 			$backwpup_working['STEPS'][]='DEST_S3';
@@ -243,6 +239,7 @@ function backwpup_jobstart($jobid='',$cronstart=false) {
 		 $httpauthheader=array( 'Authorization' => 'Basic '.base64_encode($backwpup_static['CFG']['httpauthuser'].':'.backwpup_base64($backwpup_static['CFG']['httpauthpassword'])));
 	if (!$backwpup_static['WP']['ALTERNATE_CRON'])
 		wp_remote_post($backwpup_static['JOBRUNURL'], array('timeout' => 3, 'blocking' => false, 'sslverify' => false, 'headers'=>$httpauthheader ,'body'=>array('nonce'=>$backwpup_working['NONCE'], 'type'=>'start'), 'user-agent'=>'BackWPup'));
-	
+	//call api
+	backwpup_api(false);
 	return $backwpup_static['LOGFILE'];
 }

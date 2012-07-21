@@ -15,7 +15,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['mailhostport']=empty($_POST['mailhostport']) ? 25 : (int)$_POST['mailhostport'];
 	$cfg['mailuser']=$_POST['mailuser'];
 	$cfg['mailpass']=base64_encode($_POST['mailpass']);
-	$cfg['disablewpcron']=isset($_POST['disablewpcron']) ? true : false;
 	$cfg['showadminbar']=isset($_POST['showadminbar']) ? true : false;
     if (100>$_POST['jobstepretry'] and 0<$_POST['jobstepretry']) 
 		$cfg['jobstepretry']=(int)$_POST['jobstepretry'];
@@ -28,7 +27,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	$cfg['maxlogs']=abs((int)$_POST['maxlogs']);
 	$cfg['gzlogs']=isset($_POST['gzlogs']) ? true : false;
 	$cfg['phpzip']=isset($_POST['phpzip']) ? true : false;
-	$cfg['apicronservice']=isset($_POST['apicronservice']) ? true : false;
 	$cfg['httpauthuser']=$_POST['httpauthuser'];
 	$cfg['httpauthpassword']=base64_encode($_POST['httpauthpassword']);
 	$cfg['dirlogs']=trailingslashit(str_replace('//','/',str_replace('\\','/',stripslashes(trim($_POST['dirlogs'])))));
@@ -44,7 +42,6 @@ if (isset($_POST['submit']) and isset($_POST['action']) and $_POST['action']=='u
 	}
 	if (update_option('backwpup',$cfg))
 		$backwpup_message=__('Settings saved', 'backwpup');
-	backwpup_api(true);
 }
 
 //add Help

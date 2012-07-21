@@ -70,7 +70,7 @@ if (!empty($doaction)) {
           require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
         if (!empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
           try {
-            $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY,  BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
+            $dropbox = new backwpup_Dropbox('dropbox');
             $dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
             $dropbox->fileopsDelete($backupfile);
             unset($dropbox);
@@ -82,9 +82,9 @@ if (!empty($doaction)) {
         if (!class_exists('SugarSync'))
           require_once (realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
         if (class_exists('SugarSync')) {
-          if (!empty($jobvalue['sugaruser']) and !empty($jobvalue['sugarpass'])) {
+          if (!empty($jobvalue['sugarrefreshtoken'])) {
             try {
-              $sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_base64($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+              $sugarsync = new SugarSync($jobvalue['sugarrefreshtoken']);
               $sugarsync->delete(urldecode($backupfile));
               unset($sugarsync);
             } catch (Exception $e) {
@@ -201,7 +201,7 @@ if (!empty($doaction)) {
     $jobs=get_option('backwpup_jobs');
     $jobid=$_GET['jobid'];
     try {
-      $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
+      $dropbox = new backwpup_Dropbox('dropbox');
       $dropbox->setOAuthTokens($jobs[$jobid]['dropetoken'],$jobs[$jobid]['dropesecret']);
       $filemeta=$dropbox->metadata($_GET['file'],false,1);
       header("Pragma: public");
@@ -227,7 +227,7 @@ if (!empty($doaction)) {
     $jobs=get_option('backwpup_jobs');
     $jobid=$_GET['jobid'];
     try {
-      $sugarsync = new SugarSync($jobs[$jobid]['sugaruser'],backwpup_base64($jobs[$jobid]['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+      $sugarsync = new SugarSync($jobs[$jobid]['sugarrefreshtoken']);
       $response=$sugarsync->get(urldecode($_GET['file']));
       header("Pragma: public");
       header("Expires: 0");

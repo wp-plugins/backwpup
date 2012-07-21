@@ -167,7 +167,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
             $jobdest[]=$jobid.','.$dest;
           if ($dest=='MSAZURE' and !empty($jobvalue['msazureHost']) and !empty($jobvalue['msazureAccName']) and !empty($jobvalue['msazureKey']) and !empty($jobvalue['msazureContainer']))
             $jobdest[]=$jobid.','.$dest;
-          if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarpass']) and !empty($jobvalue['sugarpass']))
+          if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarrefreshtoken']))
             $jobdest[]=$jobid.','.$dest;          
         }
 
@@ -290,7 +290,7 @@ function backwpup_get_backup_files($jobid,$dest) {
   if ($dest=='DROPBOX' and !empty($jobvalue['dropetoken']) and !empty($jobvalue['dropesecret'])) {
     require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
     try {
-      $dropbox = new backwpup_Dropbox(BACKWPUP_DROPBOX_APP_KEY, BACKWPUP_DROPBOX_APP_SECRET,'dropbox');
+      $dropbox = new backwpup_Dropbox('dropbox');
       $dropbox->setOAuthTokens($jobvalue['dropetoken'],$jobvalue['dropesecret']);
       $contents = $dropbox->metadata($jobvalue['dropedir']);
       if (is_array($contents)) {
@@ -313,12 +313,12 @@ function backwpup_get_backup_files($jobid,$dest) {
     }
   }
   //Get files/filinfo from Sugarsync
-  if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarpass']) and !empty($jobvalue['sugarpass'])) {
+  if ($dest=='SUGARSYNC' and !empty($jobvalue['sugarrefreshtoken'])) {
     if (!class_exists('SugarSync'))
       require_once (dirname(__FILE__).'/../libs/sugarsync.php');
     if (class_exists('SugarSync')) {
       try {
-        $sugarsync = new SugarSync($jobvalue['sugaruser'],backwpup_base64($jobvalue['sugarpass']),BACKWPUP_SUGARSYNC_ACCESSKEY, BACKWPUP_SUGARSYNC_PRIVATEACCESSKEY);
+        $sugarsync = new SugarSync($jobvalue['sugarrefreshtoken']);
         $dirid=$sugarsync->chdir($jobvalue['sugardir'],$jobvalue['sugarroot']);
         $user=$sugarsync->user();
         $dir=$sugarsync->showdir($dirid);
