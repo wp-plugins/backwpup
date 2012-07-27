@@ -189,7 +189,7 @@ class backwpup_Dropbox {
 		$ch = curl_init();
 		if ($method == 'POST') {
 			curl_setopt($ch, CURLOPT_POST, true);
-			$args = (is_array($args)) ? http_build_query($args) : $args;
+			$args = (is_array($args)) ? http_build_query($args, '', '&') : $args;
 			curl_setopt($ch, CURLOPT_POSTFIELDS, $args);
 			$headers[]='Content-Length: '.strlen($args);
 			curl_setopt($ch, CURLOPT_URL, $url);
@@ -198,10 +198,10 @@ class backwpup_Dropbox {
 			curl_setopt($ch,CURLOPT_PUT,true);
 			curl_setopt($ch,CURLOPT_INFILE,$datafilefd);
 			curl_setopt($ch,CURLOPT_INFILESIZE,filesize($file));
-			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
+			$args = (is_array($args)) ? '?'.http_build_query($args, '', '&') : $args;
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		} else {
-			$args = (is_array($args)) ? '?'.http_build_query($args) : $args;
+			$args = (is_array($args)) ? '?'.http_build_query($args, '', '&') : $args;
 			curl_setopt($ch, CURLOPT_URL, $url.$args);
 		}
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
