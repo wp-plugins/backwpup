@@ -117,7 +117,8 @@ class backwpup_Dropbox {
 
 	public function oAuthAuthorize($callback_url) {
         $headers[] = 'Authorization: OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="'.$this->oauth_app_key.'", oauth_signature="'.$this->oauth_app_secret.'&"';
-		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, self::API_URL . self::API_VERSION_URL . 'oauth/request_token' );
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
@@ -144,12 +145,13 @@ class backwpup_Dropbox {
 		curl_close($ch);
 		return array( 'authurl'		   => self::API_WWW_URL . self::API_VERSION_URL . 'oauth/authorize?oauth_token='.$oauth_token['oauth_token'].'&oauth_callback='.urlencode($callback_url),
 					  'oauth_token'	   => $oauth_token['oauth_token'],
-					  'oauth_token_secret'=> $oauth_token['oauth_token_secret'] );	}
+					  'oauth_token_secret'=> $oauth_token['oauth_token_secret'] );	
+	}
 	
 	public function oAuthAccessToken($oauth_token, $oauth_token_secret) {
 		$headers[] = 'Authorization: OAuth oauth_version="1.0", oauth_signature_method="PLAINTEXT", oauth_consumer_key="'.$this->oauth_app_key.'", oauth_token="'.$oauth_token.'", oauth_signature="'.$this->oauth_app_secret.'&'.$oauth_token_secret.'"';
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $OAuthSign['signed_url']);
+		curl_setopt($ch, CURLOPT_URL, self::API_URL . self::API_VERSION_URL . 'oauth/access_token' );
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 		curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 		curl_setopt($ch, CURLOPT_SSLVERSION,3);
@@ -165,7 +167,7 @@ class backwpup_Dropbox {
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 		if ($status>=200 and $status<300  and 0==curl_errno($ch)) {
 			parse_str($content, $oauth_token);
-			$this->setOAuthTokens($oauth_token['oauth_token'],$oauth_token['oauth_token_secret']);
+			$this->setOAuthTokens($oauth_token['oauth_token'], $oauth_token['oauth_token_secret']);
 			return $oauth_token;
 		} else {
 			$output = json_decode($content, true);
