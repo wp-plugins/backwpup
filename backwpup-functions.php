@@ -508,7 +508,7 @@ function backwpup_add_adminbar() {
 	if (!$cfg['showadminbar'] || !current_user_can(BACKWPUP_USER_CAPABILITY) || !is_super_admin() || !is_admin_bar_showing())
 		return;
     /* Add the main siteadmin menu item */
-    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'textdomain' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
+    $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'backwpup' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	if (backwpup_get_working_file()) 
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working','parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs', 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));

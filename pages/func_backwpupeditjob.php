@@ -373,7 +373,7 @@ function backwpup_jobedit_metabox_destsugarsync( $jobvalue ) {
 	?>
 	<div class="dests">
 		<?php if ( ! $jobvalue['sugarrefreshtoken'] ) { ?>
-			<b><?php _e( 'E-mail address:', 'backwpu' ); ?></b><br />
+			<b><?php _e( 'E-mail address:', 'backwpup' ); ?></b><br />
 			<input id="sugaremail" name="sugaremail" type="text" value="<?php if (isset($_POST['sugaremail'])) echo $_POST['sugaremail'];?>" class="large-text" /><br />
 			<b><?php _e( 'Password:', 'backwpup' ); ?></b><br />
 			<input id="sugarpass" name="sugarpass" type="password" value="<?php if (isset($_POST['sugarpass'])) echo $_POST['sugarpass'];?>" class="large-text" /><br />

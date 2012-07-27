@@ -43,8 +43,8 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 
 	function get_bulk_actions() {
 		$actions = array();
-		$actions['export'] = __( 'Export' );
-		$actions['delete'] = __( 'Delete' );
+		$actions['export'] = __( 'Export','backwpup' );
+		$actions['delete'] = __( 'Delete','backwpup' );
 
 		return $actions;
 	}

@@ -70,7 +70,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 	
 	function get_bulk_actions() {
 		$actions = array();
-		$actions['delete'] = __( 'Delete' );
+		$actions['delete'] = __( 'Delete','backwpup' );
 		return $actions;
 	}
 	
@@ -124,7 +124,7 @@ class BackWPup_Logs_Table extends WP_List_Table {
 					$r .= "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$logfile, 'view-log_'.basename($logfile))."\" title=\"".__('View log','backwpup')."\">".backwpup_date_i18n(get_option('date_format')." @ ".get_option('time_format'),$logdata['logtime']).": <i>".$logdata['name']."</i></a></strong>";
 					$actions = array();
 					$actions['view'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&logfile='.$logfile, 'view-log_'.basename($logfile)) . "\">" . __('View','backwpup') . "</a>";
-					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpuplogs&action=delete&paged='.$this->get_pagenum().'&logfiles[]='.basename($logfile), 'bulk-logs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
+					$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpuplogs&action=delete&paged='.$this->get_pagenum().'&logfiles[]='.basename($logfile), 'bulk-logs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete','backwpup') . "</a>";
 					$actions['download'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpuplogs&action=download&file='.$logfile, 'download-backup_'.basename($logfile)) . "\">" . __('Download','backwpup') . "</a>";
 					$r .= $this->row_actions($actions);
 					$r .= "</td>";
