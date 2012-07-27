@@ -97,10 +97,10 @@ class BackWPup_Jobs_Table extends WP_List_Table {
 					$r .=  "<td $attributes><strong><a href=\"".wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job')."\" title=\"".__('Edit:','backwpup').esc_html($jobvalue['name'])."\">".esc_html($jobvalue['name'])."</a></strong>";
 					$actions = array();
 					if ($runningfile==false) {
-						$actions['edit'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit') . "</a>";
+						$actions['edit'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupeditjob&jobid='.$jobvalue["jobid"], 'edit-job') . "\">" . __('Edit','backwpup') . "</a>";
 						$actions['copy'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=copy&jobid='.$jobvalue["jobid"], 'copy-job_'.$jobvalue["jobid"]) . "\">" . __('Copy','backwpup') . "</a>";
 						$actions['export'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=export&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\">" . __('Export','backwpup') . "</a>";
-						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete') . "</a>";
+						$actions['delete'] = "<a class=\"submitdelete\" href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpup&action=delete&jobs[]='.$jobvalue["jobid"], 'bulk-jobs') . "\" onclick=\"return showNotice.warn();\">" . __('Delete','backwpup') . "</a>";
 						$actions['runnow'] = "<a href=\"" . wp_nonce_url(backwpup_admin_url('admin.php').'?page=backwpupworking&action=runnow&jobid='.$jobvalue["jobid"], 'runnow-job_'.$jobvalue["jobid"]) . "\">" . __('Run Now','backwpup') . "</a>";
 					} else {
 						if ($runningfile['JOBID']==$jobvalue["jobid"]) {

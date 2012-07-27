@@ -373,20 +373,20 @@ function backwpup_jobedit_metabox_destsugarsync( $jobvalue ) {
 	?>
 	<div class="dests">
 		<?php if ( ! $jobvalue['sugarrefreshtoken'] ) { ?>
-			<b><?php _e( 'E-mail address:', 'backwpuppro' ); ?></b><br />
+			<b><?php _e( 'E-mail address:', 'backwpu' ); ?></b><br />
 			<input id="sugaremail" name="sugaremail" type="text" value="<?php if (isset($_POST['sugaremail'])) echo $_POST['sugaremail'];?>" class="large-text" /><br />
-			<b><?php _e( 'Password:', 'backwpuppro' ); ?></b><br />
+			<b><?php _e( 'Password:', 'backwpup' ); ?></b><br />
 			<input id="sugarpass" name="sugarpass" type="password" value="<?php if (isset($_POST['sugarpass'])) echo $_POST['sugarpass'];?>" class="large-text" /><br />
 			<br />
-			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Sugarsync authenticate!', 'backwpuppro' ); ?>" />
-			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="authbutton" class="button" value="<?php _e( 'Create Sugarsync Account', 'backwpuppro' ); ?>" />
+			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Sugarsync authenticate!', 'backwpup' ); ?>" />
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="authbutton" class="button" value="<?php _e( 'Create Sugarsync Account', 'backwpup' ); ?>" />
 			<br />
 		<?php } else { ?>
-			<b><?php _e( 'Login:', 'backwpuppro' ); ?></b>&nbsp;
-			<span style="color:green;"><?php _e( 'Authenticated!', 'backwpuppro' ); ?></span>
-			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Delete Sugarsync authentication!', 'backwpuppro' ); ?>" />
+			<b><?php _e( 'Login:', 'backwpup' ); ?></b>&nbsp;
+			<span style="color:green;"><?php _e( 'Authenticated!', 'backwpup' ); ?></span>
+			<input type="submit" name="authbutton" class="button-primary" accesskey="d" value="<?php _e( 'Delete Sugarsync authentication!', 'backwpup' ); ?>" />
 			<br />
-			<b><?php _e( 'Root:', 'backwpuppro' ); ?></b>
+			<b><?php _e( 'Root:', 'backwpup' ); ?></b>
 			<?php
 			if (!class_exists('SugarSync'))
 				include_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
@@ -395,7 +395,7 @@ function backwpup_jobedit_metabox_destsugarsync( $jobvalue ) {
 				$user        = $sugarsync->user();
 				$syncfolders = $sugarsync->get( $user->syncfolders );
 				if ( ! is_object( $syncfolders ) )
-					echo '<span style="color:red;">'.__( 'No Syncfolders found!', 'backwpuppro' ).'</span>';
+					echo '<span style="color:red;">'.__( 'No Syncfolders found!', 'backwpup' ).'</span>';
 			} catch ( Exception $e ) {
 				echo '<span style="color:red;">'.$e->getMessage().'</span>';
 			}
@@ -410,15 +410,15 @@ function backwpup_jobedit_metabox_destsugarsync( $jobvalue ) {
 		<?php } ?>
 		
 		<br />
-		<b><?php _e( 'Folder:', 'backwpuppro' ); ?></b><br />
+		<b><?php _e( 'Folder:', 'backwpup' ); ?></b><br />
 		<input name="sugardir" type="text" value="<?php echo $jobvalue['sugardir'];?>" class="large-text" /><br />
-		<span class="nosync"><?php _e( 'Max. backup files in folder:', 'backwpuppro' ); ?>
-			<input name="sugarmaxbackups" type="text" size="3" value="<?php echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?php _e( '(Oldest files will be deleted first.)', 'backwpuppro' );?></span><br /></span>
+		<span class="nosync"><?php _e( 'Max. backup files in folder:', 'backwpup' ); ?>
+			<input name="sugarmaxbackups" type="text" size="3" value="<?php echo $jobvalue['sugarmaxbackups'];?>" class="small-text" /><span class="description"><?php _e( '(Oldest files will be deleted first.)', 'backwpup' );?></span><br /></span>
 			<br /></span>
 	</div>
 	<div class="destlinks">
-		<a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?php _e( 'Create Account', 'backwpuppro' ); ?></a><br />
-		<a href="https://sugarsync.com" target="_blank"><?php _e( 'Webinterface', 'backwpuppro' ); ?></a><br />
+		<a href="http://www.anrdoezrs.net/click-5425765-10671858" target="_blank"><?php _e( 'Create Account', 'backwpup' ); ?></a><br />
+		<a href="https://sugarsync.com" target="_blank"><?php _e( 'Webinterface', 'backwpup' ); ?></a><br />
 	</div>
 	<br class="clear" />
 	<?php

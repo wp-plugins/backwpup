@@ -68,9 +68,9 @@ class backwpup_Dropbox {
 	public function upload($file, $path = '',$overwrite=true){
 		$file = str_replace("\\", "/",$file);
 		if (!is_readable($file) or !is_file($file))
-			throw new DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
+			throw new backwpup_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
 		if (filesize($file)>157286400)
-			throw new DropboxException("Error: File \"$file\" is too big max. 150 MB.");
+			throw new backwpup_DropboxException("Error: File \"$file\" is too big max. 150 MB.");
 		$url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
 		return $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $file);
 	}
@@ -90,7 +90,7 @@ class backwpup_Dropbox {
 	
 	public function search($path = '', $query , $fileLimit = 1000){
 		if (strlen($query)>=3)
-			throw new DropboxException("Error: Query \"$query\" must three characters long.");
+			throw new backwpup_DropboxException("Error: Query \"$query\" must three characters long.");
 		$url = self::API_URL.self::API_VERSION_URL.'search/'.$this->root.'/'.trim($path,'/');
 		return $this->request($url, array('query' => $query, 'file_limit' => $fileLimit));
 	}
@@ -139,7 +139,7 @@ class backwpup_Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);		
+			throw new backwpup_DropboxException($message);		
 		}
 		curl_close($ch);
 		return array( 'authurl'		   => self::API_WWW_URL . self::API_VERSION_URL . 'oauth/authorize?oauth_token='.$oauth_token['oauth_token'].'&oauth_callback='.urlencode($callback_url),
@@ -173,7 +173,7 @@ class backwpup_Dropbox {
 			elseif(isset($output['error']['hash']) && $output['error']['hash'] != '') $message = (string) $output['error']['hash'];
 			elseif (0!=curl_errno($ch)) $message = '('.curl_errno($ch).') '.curl_error($ch);
 			else $message = '('.$status.') Invalid response.';
-			throw new DropboxException($message);		
+			throw new backwpup_DropboxException($message);		
 		}
 	}	
 	
@@ -247,7 +247,7 @@ class backwpup_Dropbox {
 			elseif ($status['http_code']==503) $message = '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis.';
 			elseif ($status['http_code']==507) $message = '(507) User is over Dropbox storage quota.';
 			else $message = '('.$status['http_code'].') Invalid response.';
-			throw new DropboxException($message);
+			throw new backwpup_DropboxException($message);
 		} else {
 			curl_close($ch);
 			if (!is_array($output))
