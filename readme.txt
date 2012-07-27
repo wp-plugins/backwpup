@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.4
-Stable tag: 2.1.12
+Stable tag: 2.1.13
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -62,8 +62,8 @@ Do backups and more for your WordPress Blog.
 == Changelog ==
 = 2.1.13 =
 * tweaked Gstorage upload thx Kevin
-* fixed bug in xml generation
-* changed base64 function to prevent false positive massages of scanners
+* fixed bug in xml file generation
+* changed base64 function to prevent false positive massages from scanners
 * removed executeable files from MS Azure SDK
 * changed Dropbox oAuth see https://www.dropbox.com/developers/blog/20
 * removed BackWPup Cron service
