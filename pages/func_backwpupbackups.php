@@ -127,7 +127,7 @@ class BackWPup_Backups_Table extends WP_List_Table {
   
   function get_bulk_actions() {
     $actions = array();
-    $actions['delete'] = __( 'Delete' );
+    $actions['delete'] = __( 'Delete','backwpup' );
     return $actions;
   }
 
