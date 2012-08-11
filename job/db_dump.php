@@ -4,7 +4,7 @@ function db_dump() {
 	trigger_error(sprintf(__('%d. try for database dump...','backwpup'),$WORKING['DB_DUMP']['STEP_TRY']),E_USER_NOTICE);
 	if (!isset($WORKING['DB_DUMP']['DONETABLE']) or !is_array($WORKING['DB_DUMP']['DONETABLE']))
 		$WORKING['DB_DUMP']['DONETABLE']=array();
-	
+
 	mysql_update();
 	//to backup
 	$tabelstobackup=array();
@@ -14,7 +14,7 @@ function db_dump() {
 	while ($data = mysql_fetch_row($result)) {
 		if (!in_array($data[0],$STATIC['JOB']['dbexclude']))
 			$tabelstobackup[]=$data[0];
-	}	
+	}
 	$WORKING['STEPTODO']=count($tabelstobackup);
 	//Set maintenance
 	maintenance_mode(true);
@@ -31,7 +31,7 @@ function db_dump() {
 			fwrite($file, "-- ---------------------------------------------------------\n");
 			fwrite($file, "-- Dump with BackWPup ver.: ".$STATIC['BACKWPUP']['VERSION']."\n");
 			fwrite($file, "-- Plugin for WordPress ".$STATIC['WP']['VERSION']." by Daniel Huesken\n");
-			fwrite($file, "-- http://danielhuesken.de/portfolio/backwpup/\n");
+			fwrite($file, "-- http://backwpup.com/\n");
 			fwrite($file, "-- Blog Name: ".$STATIC['WP']['BLOGNAME']."\n");
 			fwrite($file, "-- Blog URL: ".$STATIC['WP']['SITEURL']."\n");
 			fwrite($file, "-- Blog ABSPATH: ".$STATIC['WP']['ABSPATH']."\n");
@@ -54,8 +54,6 @@ function db_dump() {
 			foreach($tabelstobackup as $table) {
 				if (in_array($table, $WORKING['DB_DUMP']['DONETABLE']))
 					continue;
-				trigger_error(sprintf(__('Dump database table "%s"','backwpup'),$table),E_USER_NOTICE);
-				need_free_memory(($status[$table]['Data_length']+$status[$table]['Index_length'])*4); //get more memory if needed
 				_db_dump_table($table,$status[$table],$file);
 				$WORKING['DB_DUMP']['DONETABLE'][]=$table;
 				$WORKING['STEPDONE']=count($WORKING['DB_DUMP']['DONETABLE']);
@@ -94,8 +92,10 @@ function db_dump() {
 
 function _db_dump_table($table,$status,$file) {
 	global $WORKING,$STATIC;
+    need_free_memory(($status['Data_length']+$status['Index_length'])*4); //get more memory if needed
 	// create dump
-	fwrite($file, "\n");
+    trigger_error( sprintf( __( 'Dump database table "%s"', 'backwpup' ), $table ), E_USER_NOTICE );
+    fwrite($file, "\n");
 	fwrite($file, "--\n");
 	fwrite($file, "-- Table structure for table $table\n");
 	fwrite($file, "--\n\n");
@@ -118,6 +118,14 @@ function _db_dump_table($table,$status,$file) {
 		trigger_error(sprintf(__('Database error %1$s for query %2$s','backwpup'), mysql_error(), "SELECT * FROM `".$table."`"),E_USER_ERROR);
 		return false;
 	}
+    //get field information
+    $fieldsarray = array();
+    $fieldinfo   = array();
+    $fields      = mysql_num_fields( $result );
+    for ( $i = 0; $i < $fields; $i ++ ) {
+        $fieldsarray[$i]             = mysql_field_name( $result, $i );
+        $fieldinfo[$fieldsarray[$i]] = mysql_fetch_field( $result, $i );
+    }
 
 	fwrite($file, "--\n");
 	fwrite($file, "-- Dumping data for table $table\n");
@@ -128,17 +136,17 @@ function _db_dump_table($table,$status,$file) {
 	while ($data = mysql_fetch_assoc($result)) {
 		$keys = array();
 		$values = array();
-		foreach($data as $key => $value) {
-			if (!$STATIC['JOB']['dbshortinsert'])
-				$keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
-			if($value === NULL) // Make Value NULL to string NULL
-				$value = "NULL";
-			elseif($value === "" or $value === false) // if empty or false Value make  "" as Value
-				$value = "''";
-			elseif(!is_numeric($value)) //is value not numeric esc
-				$value = "'".mysql_real_escape_string($value)."'";
-			$values[] = $value;
-		}
+        foreach ( $data as $key => $value ) {
+            if (!$STATIC['JOB']['dbshortinsert'])
+                $keys[] = "`".str_replace("´", "´´", $key)."`"; // Add key to key list
+            if ( is_null( $value ) || ! isset($value) ) // Make Value NULL to string NULL
+                $value = "NULL";
+            elseif ( $fieldinfo[$key]->numeric == 1 && $fieldinfo[$key]->type != 'timestamp' && $fieldinfo[$key]->blob != 1 ) //is value numeric no esc
+                $value = empty($value) ? 0 : $value;
+            else
+                $value = "'" . mysql_real_escape_string( $value ) . "'";
+            $values[] = $value;
+        }
 		// make data dump
 		if ($STATIC['JOB']['dbshortinsert'])
 			fwrite($file, "INSERT INTO `".$table."` VALUES ( ".implode(", ",$values)." );\n");

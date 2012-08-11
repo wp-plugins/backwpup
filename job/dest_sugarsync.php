@@ -6,7 +6,7 @@ function dest_sugarsync() {
 	trigger_error(sprintf(__('%d. try sending backup to SugarSync...','backwpup'),$WORKING['DEST_SUGARSYNC']['STEP_TRY']),E_USER_NOTICE);
 
 	require_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
-	
+
 	try {
 		$sugarsync = new SugarSync($STATIC['JOB']['sugarrefreshtoken']);
 		//Check Quota
@@ -38,9 +38,9 @@ function dest_sugarsync() {
 		} else {
 			trigger_error(__('Can not transfer backup to SugarSync!','backwpup'),E_USER_ERROR);
 			return;
-		}	
+		}
 		$sugarsync->setProgressFunction('');
-		
+
 		if ($STATIC['JOB']['sugarmaxbackups']>0) { //Delete old backups
 			$backupfilelist=array();
 			$getfiles=$sugarsync->getcontents('file');
@@ -61,10 +61,10 @@ function dest_sugarsync() {
 				if ($numdeltefiles>0)
 					trigger_error(sprintf(_n('One file deleted on SugarSync folder','%d files deleted on SugarSync folder',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
 			}
-		}	
+		}
 	} catch (Exception $e) {
 		trigger_error(sprintf(__('SugarSync API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
-	} 
+	}
 
 	$WORKING['STEPDONE']++;
 }

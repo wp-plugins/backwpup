@@ -6,7 +6,7 @@ function dest_gstorage() {
   $WORKING['STEPDONE']=0;
 
   require_once(dirname(__FILE__).'/../libs/aws/sdk.class.php');
-  need_free_memory(26214400*1.1); 
+  need_free_memory(26214400*1.1);
   try {
     $gstorage = new AmazonS3(array('key'=>$STATIC['JOB']['GStorageAccessKey'],'secret'=>$STATIC['JOB']['GStorageSecret'],'certificate_authority'=>true));
     //set up s3 for google
@@ -14,12 +14,12 @@ function dest_gstorage() {
     $gstorage->allow_hostname_override(false);
     if ($gstorage->if_bucket_exists($STATIC['JOB']['GStorageBucket'])) {
       trigger_error(sprintf(__('Connected to GStorage Bucket: %s','backwpup'),$STATIC['JOB']['GStorageBucket']),E_USER_NOTICE);
-      //set surl Prozess bar
+      //set curl Prozess bar
       $curlops=array();
       if (defined('CURLOPT_PROGRESSFUNCTION'))
-        $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>256);
-      trigger_error(__('Upload to GStorage now started... ','backwpup'),E_USER_NOTICE);  
-      //transfere file to GStorage
+        $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>512);
+      trigger_error(__('Upload to GStorage now started... ','backwpup'),E_USER_NOTICE);
+      //transferee file to GStorage
       $result=$gstorage->create_object($STATIC['JOB']['GStorageBucket'], $STATIC['JOB']['GStoragedir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => 'private','curlopts'=>$curlops));
       $result=(array)$result;
       if ($result["status"]>=200 and $result["status"]<300)  {
@@ -37,7 +37,7 @@ function dest_gstorage() {
     trigger_error(sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
     return;
   }
-  try {  
+  try {
     if ($gstorage->if_bucket_exists($STATIC['JOB']['GStorageBucket'])) {
       if ($STATIC['JOB']['GStoragemaxbackups']>0) { //Delete old backups
         $backupfilelist=array();
@@ -60,12 +60,12 @@ function dest_gstorage() {
           if ($numdeltefiles>0)
             trigger_error(sprintf(_n('One file deleted on GStorage Bucket','%d files deleted on GStorage Bucket',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
         }
-      }          
+      }
     }
   } catch (Exception $e) {
     trigger_error(sprintf(__('GStorage API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
     return;
   }
-  
+
   $WORKING['STEPDONE']++;
 }

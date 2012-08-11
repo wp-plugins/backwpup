@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.4
-Stable tag: 2.1.13
+Stable tag: 2.1.14
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,14 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.14 =
+* removed calling home function
+* fixed missing ' in mysql dump
+* now lager than 150MB uploads to Dropbox with there Beta API
+* fixed bug in progress updates
+* fixed problem with ftp dir can not empty
+* Updated AWS lib to 1.5.11
+
 = 2.1.13 =
 * tweaked Gstorage upload thx Kevin
 * fixed bug in xml file generation
@@ -341,7 +349,7 @@ Do backups and more for your WordPress Blog.
 * added php version to log header
 * added mysql version to log header
 
-= 1.2.0 = 
+= 1.2.0 =
 * Backup file size now in log file
 * Paged Logs Table
 * added Backup Archives Page

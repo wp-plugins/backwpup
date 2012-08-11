@@ -2,7 +2,7 @@
 function dest_ftp() {
 	global $WORKING,$STATIC;
 	if (empty($STATIC['JOB']['ftphost']) or empty($STATIC['JOB']['ftpuser']) or empty($STATIC['JOB']['ftppass'])) {
-		$WORKING['STEPSDONE'][]='DEST_FTP'; //set done	
+		$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
 		return;
 	}
 	$WORKING['STEPTODO']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
@@ -11,7 +11,7 @@ function dest_ftp() {
 	if ($STATIC['JOB']['ftpssl']) { //make SSL FTP connection
 		if (function_exists('ftp_ssl_connect')) {
 			$ftp_conn_id = ftp_ssl_connect($STATIC['JOB']['ftphost'],$STATIC['JOB']['ftphostport'],10);
-			if ($ftp_conn_id) 
+			if ($ftp_conn_id)
 				trigger_error(sprintf(__('Connected by SSL-FTP to Server: %s','backwpup'),$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport']),E_USER_NOTICE);
 			else {
 				trigger_error(sprintf(__('Can not connect by SSL-FTP to Server: %s','backwpup'),$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport']),E_USER_ERROR);
@@ -19,11 +19,11 @@ function dest_ftp() {
 			}
 		} else {
 			trigger_error(__('PHP function to connect with SSL-FTP to server not exists!','backwpup'),E_USER_ERROR);
-			return false;			
+			return false;
 		}
-	} else { //make normal FTP conection if SSL not work
+	} else { //make normal FTP connection if SSL not work
 		$ftp_conn_id = ftp_connect($STATIC['JOB']['ftphost'],$STATIC['JOB']['ftphostport'],10);
-		if ($ftp_conn_id) 
+		if ($ftp_conn_id)
 			trigger_error(sprintf(__('Connected to FTP server: %s','backwpup'),$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport']),E_USER_NOTICE);
 		else {
 			trigger_error(sprintf(__('Can not connect to FTP server: %s','backwpup'),$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport']),E_USER_ERROR);
@@ -37,13 +37,13 @@ function dest_ftp() {
 	if ($loginok=ftp_login($ftp_conn_id, $STATIC['JOB']['ftpuser'], backwpup_base64($STATIC['JOB']['ftppass']))) {
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),' User '.$STATIC['JOB']['ftpuser'].' logged in.'),E_USER_NOTICE);
 	} else { //if PHP ftp login don't work use raw login
-		$return=ftp_raw($ftp_conn_id,'USER '.$STATIC['JOB']['ftpuser']); 
+		$return=ftp_raw($ftp_conn_id,'USER '.$STATIC['JOB']['ftpuser']);
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$return[0]),E_USER_NOTICE);
 		if (substr(trim($return[0]),0,3)<=400) {
 			trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' PASS *******'),E_USER_NOTICE);
 			$return=ftp_raw($ftp_conn_id,'PASS '.backwpup_base64($STATIC['JOB']['ftppass']));
 			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$return[0]),E_USER_NOTICE);
-			if (substr(trim($return[0]),0,3)<=400) 
+			if (substr(trim($return[0]),0,3)<=400)
 				$loginok=true;
 		}
 	}
@@ -54,31 +54,32 @@ function dest_ftp() {
 	//SYSTYPE
 	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' SYST'),E_USER_NOTICE);
 	$systype=ftp_systype($ftp_conn_id);
-	if ($systype) 
+	if ($systype)
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$systype),E_USER_NOTICE);
 	else
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
 
 	//test ftp dir and create it f not exists
-	$ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
-	foreach ($ftpdirs as $ftpdir) {
-		if (empty($ftpdir))
-			continue;
-		if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
-			if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
-				trigger_error(sprintf(__('FTP Folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
-				ftp_chdir($ftp_conn_id, $ftpdir);
-			} else {
-				trigger_error(sprintf(__('FTP Folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
-				return false;
-			}
-		}
-	}
-	
+    if ($STATIC['JOB']['ftpdir']!='/' && $STATIC['JOB']['ftpdir']='') {
+        $ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
+        foreach ($ftpdirs as $ftpdir) {
+            if (empty($ftpdir))
+                continue;
+            if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
+                if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
+                    trigger_error(sprintf(__('FTP Folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
+                    ftp_chdir($ftp_conn_id, $ftpdir);
+                } else {
+                    trigger_error(sprintf(__('FTP Folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
+                    return false;
+                }
+            }
+        }
+    }
 	//delete file on ftp if new try
 	if ($WORKING['STEPDONE']==0)
 		@ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile']);
-	
+
 	//PASV
 	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' PASV'),E_USER_NOTICE);
 	if ($STATIC['JOB']['ftppasv']) {
@@ -90,9 +91,9 @@ function dest_ftp() {
 		if (ftp_pasv($ftp_conn_id, false))
 			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Entering Normal Mode','backwpup')),E_USER_NOTICE);
 		else
-			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Can not Entering Normal Mode','backwpup')),E_USER_WARNING);		
+			trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Can not Entering Normal Mode','backwpup')),E_USER_WARNING);
 	}
-	
+
 	if ($WORKING['STEPDONE']<$WORKING['STEPTODO']) {
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 		$fp = fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'], 'r');
@@ -104,16 +105,16 @@ function dest_ftp() {
 		}
 		if ($ret != FTP_FINISHED) {
 		    trigger_error(__('Can not transfer backup to FTP server!','backwpup'),E_USER_ERROR);
-			return false;		   
+			return false;
 		} else {
 		    $WORKING['STEPDONE']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
 			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);
 			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".backwpup_base64($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
 			$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
 		}
-		fclose($fp);		
+		fclose($fp);
 	}
-	
+
 	if ($STATIC['JOB']['ftpmaxbackups']>0) { //Delete old backups
 		$backupfilelist=array();
 		if ($filelist=ftp_nlist($ftp_conn_id, $STATIC['JOB']['ftpdir'])) {

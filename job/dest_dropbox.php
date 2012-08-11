@@ -4,13 +4,14 @@ function dest_dropbox() {
   $WORKING['STEPTODO']=2+filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
   $WORKING['STEPDONE']=0;
   trigger_error(sprintf(__('%d. Try to sending backup file to DropBox...','backwpup'),$WORKING['DEST_DROPBOX']['STEP_TRY']),E_USER_NOTICE);
-  
+
   require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
   try {
-    //set boxtype and authkeys
+    need_free_memory(5000000);
+    //set boxtype
     $dropbox = new backwpup_Dropbox('dropbox');
-    
-    // set the tokens 
+
+    // set the tokens
     $dropbox->setOAuthTokens($STATIC['JOB']['dropetoken'],$STATIC['JOB']['dropesecret']);
     $info=$dropbox->accountInfo();
     if (!empty($info['uid'])) {
@@ -25,9 +26,9 @@ function dest_dropbox() {
     } else {
       trigger_error(sprintf(__('%s free on DropBox','backwpup'),formatBytes($dropboxfreespase)),E_USER_NOTICE);
     }
-    //set calback function
-    $dropbox->setProgressFunction='curl_progresscallback';
-    // put the file 
+    //set callback function
+    $dropbox->setProgressFunction('curl_progresscallback');
+    // put the file
     trigger_error(__('Upload to DropBox now started... ','backwpup'),E_USER_NOTICE);
     $response = $dropbox->upload($STATIC['JOB']['backupdir'].$STATIC['backupfile'],$STATIC['JOB']['dropedir'].$STATIC['backupfile']);
     if ($response['bytes']==filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile'])) {
@@ -37,11 +38,11 @@ function dest_dropbox() {
       trigger_error(sprintf(__('Backup transferred to %s','backwpup'),'https://api-content.dropbox.com/1/files/'.$STATIC['JOB']['droperoot'].'/'.$STATIC['JOB']['dropedir'].$STATIC['backupfile']),E_USER_NOTICE);
     }
     //unset calback function
-    $dropbox->setProgressFunction='';
+    $dropbox->setProgressFunction();
   } catch (Exception $e) {
     trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
   }
-  try {  
+  try {
     if ($STATIC['JOB']['dropemaxbackups']>0 and is_object($dropbox)) { //Delete old backups
       $backupfilelist=array();
       $metadata = $dropbox->metadata($STATIC['JOB']['dropedir']);
@@ -62,10 +63,10 @@ function dest_dropbox() {
         if ($numdeltefiles>0)
           trigger_error(sprintf(_n('One file deleted on DropBox','%d files deleted on DropBox',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);
       }
-    }  
+    }
   } catch (Exception $e) {
     trigger_error(sprintf(__('DropBox API: %s','backwpup'),$e->getMessage()),E_USER_ERROR);
-  } 
+  }
 
   $WORKING['STEPDONE']++;
 }

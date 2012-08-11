@@ -15,7 +15,7 @@ function backwpup_admin_menu() {
 	$hook = add_submenu_page( 'backwpup', __('Tools','backwpup'), __('Tools','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpuptools', 'backwpup_menu_page' );
 	add_action('load-'.$hook, 'backwpup_menu_page_header');
 	$hook = add_submenu_page( 'backwpup', __('Settings','backwpup'), __('Settings','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpupsettings', 'backwpup_menu_page' );
-	add_action('load-'.$hook, 'backwpup_menu_page_header');	
+	add_action('load-'.$hook, 'backwpup_menu_page_header');
 }
 
 function backwpup_menu_page() {
@@ -26,7 +26,7 @@ function backwpup_menu_page() {
 	//Set pages that exists
 	$menupages=array('backwpup','backwpupeditjob','backwpupworking','backwpuplogs','backwpupbackups','backwpuptools','backwpupsettings');
 	//check called page exists
-	if (!empty($_REQUEST['page']) and in_array($_REQUEST['page'],$menupages)) 
+	if (!empty($_REQUEST['page']) and in_array($_REQUEST['page'],$menupages))
 		require_once(dirname(__FILE__).'/pages/page_'.$_REQUEST['page'].'.php');
 }
 
@@ -39,7 +39,7 @@ function backwpup_menu_page_header() {
 	$menupages=array('backwpup','backwpupeditjob','backwpupworking','backwpuplogs','backwpupbackups','backwpuptools','backwpupsettings');
 	//check called page exists
 	$page=$_REQUEST['page'];
-	if (!empty($page) and in_array($page,$menupages)) {		
+	if (!empty($page) and in_array($page,$menupages)) {
 		//Css for Admin Section
 		if (is_file(dirname(__FILE__).'/css/'.$page.'.css')) {
 			if (defined('SCRIPT_DEBUG') && SCRIPT_DEBUG)
@@ -60,11 +60,11 @@ function backwpup_menu_page_header() {
 				wp_enqueue_script($page,BACKWPUP_PLUGIN_BASEURL.'/js/'.$page.'.js','',BACKWPUP_VERSION,true);
 		}
 		//incude functions
-		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php')) 
+		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php'))
 			require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
 		//include code
-		if (is_file(dirname(__FILE__).'/pages/header_'.$page.'.php')) 
-			require_once(dirname(__FILE__).'/pages/header_'.$page.'.php');		
+		if (is_file(dirname(__FILE__).'/pages/header_'.$page.'.php'))
+			require_once(dirname(__FILE__).'/pages/header_'.$page.'.php');
 	}
 }
 
@@ -74,15 +74,15 @@ function backwpup_load_ajax() {
 	if (!empty($_POST['backwpupajaxpage']) and in_array($_POST['backwpupajaxpage'],$menupages)) {
 		$page=$_POST['backwpupajaxpage'];
 		//incude functions
-		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php')) 
-			require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');	
+		if (is_file(dirname(__FILE__).'/pages/func_'.$page.'.php'))
+			require_once(dirname(__FILE__).'/pages/func_'.$page.'.php');
 	}
 }
 
 function backwpup_contextual_help($help='') {
 	global $current_screen;
 	$help='<p>'.$help.'</p>';
-			
+
 	if ( method_exists( $current_screen, 'add_help_tab' ) ) {
 		if ( 'http://backwpup.de'==__('http://backwpup.com','backwpup')) {
 			$current_screen->add_help_tab( array(
@@ -103,7 +103,7 @@ function backwpup_contextual_help($help='') {
 			'id'			=> 'overview',
 			'title'		 => __( 'Overview', 'backwpup' ),
 			'content'	   => $help
-		) );	
+		) );
 		if ( 'http://backwpup.de'==__('http://backwpup.com','backwpup')) {
 			$current_screen->set_help_sidebar(
 				'<p><strong>' . __( 'For more information:', 'backwpup' ) . '</strong></p>' .
@@ -151,17 +151,17 @@ function backwpup_contextual_help($help='') {
 							'</p>'
 			);
 		}
-	}		
+	}
 }
 
 //On activate function
 function backwpup_plugin_activate() {
 	//Load Settings
-	$cfg=get_option('backwpup'); 
+	$cfg=get_option('backwpup');
 	//Check only run once on update
-	if ($cfg['last_activate']==BACKWPUP_VERSION or !is_main_site()) 
+	if ($cfg['last_activate']==BACKWPUP_VERSION or !is_main_site())
 		return;
-	else 
+	else
 		$cfg['last_activate']=BACKWPUP_VERSION;
 	//check jobs
 	$jobs=get_option('backwpup_jobs');
@@ -183,7 +183,7 @@ function backwpup_plugin_activate() {
 	if (empty($cfg['mailsndname'])) $cfg['mailsndname']='BackWPup '.get_bloginfo( 'name' );
 	if (empty($cfg['mailmethod'])) $cfg['mailmethod']='mail';
 	if (empty($cfg['mailsendmail'])) $cfg['mailsendmail']=substr(ini_get('sendmail_path'),0,strpos(ini_get('sendmail_path'),' -'));
-	if (isset($cfg['mailhost']) && false !== strpos($cfg['mailhost'],':')) 
+	if (isset($cfg['mailhost']) && false !== strpos($cfg['mailhost'],':'))
 		list($cfg['mailhost'],$cfg['mailhostport'])=explode(':',$cfg['mailhost'],2);
 	if (!isset($cfg['mailhost'])) $cfg['mailhost']='';
 	if (!isset($cfg['mailhostport'])) $cfg['mailhostport']=25;
@@ -213,17 +213,14 @@ function backwpup_plugin_activate() {
 	//delete not longer used options
 	delete_option('backwpup_backups_chache');
 	delete_option('backwpup_last_activate');
-	delete_site_transient('backwpup_api_update');
-	backwpup_api(true);
 }
 
 //on Plugin deaktivate
 function backwpup_plugin_deactivate() {
 	wp_clear_scheduled_hook('backwpup_cron'); //delete cron
-	$cfg=get_option('backwpup'); 
+	$cfg=get_option('backwpup');
 	$cfg['last_activate']=''; //set to not activated
 	update_option('backwpup',$cfg);
-	backwpup_api(false);
 }
 
 //get temp dir
@@ -242,22 +239,8 @@ function backwpup_check_open_basedir($dir) {
 			if (stripos($dir,rtrim(str_replace('\\','/',$basedir),'/').'/')==0)
 				return true;
 		}
-	} 
-	return false;
-}
-
-//Backwpup API
-function backwpup_api($active=true) {
-	include(ABSPATH . WPINC . '/version.php'); // include an unmodified $wp_version
-	if ($active) {
-		if (!get_site_transient( 'backwpup_api_update' )) {
-			set_site_transient('backwpup_api_update',true,3600*24*14); //only all 14 Days
-			wp_remote_post( BACKWPUP_API_URL, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'body'=>array('URL'=>home_url(),'WP_VER'=>$wp_version,'BACKWPUP_VER'=>BACKWPUP_VERSION), 'user-agent'=>'BackWPup/'.BACKWPUP_VERSION.'; WordPress/'.$wp_version.'; ' . home_url()) );
-		}
-	} elseif (!$active) {
-		delete_site_transient('backwpup_api_update');
-		wp_remote_post( BACKWPUP_API_URL, array('timeout' => 5, 'blocking' => false, 'sslverify' => false, 'body'=>array('URL'=>home_url(),'ACTION'=>'delete'), 'user-agent'=>'BackWPup/0.0.0; WordPress/'.$wp_version.'; ' . home_url()) );
 	}
+	return false;
 }
 
 //add edit setting to plugins page
@@ -290,7 +273,7 @@ function backwpup_intervals($schedules) {
 
 //
 function backwpup_date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
-	if ($unixtimestamp) 
+	if ($unixtimestamp)
 		$unixtimestamp=$unixtimestamp+get_option('gmt_offset')*3600;
 	return date_i18n( $dateformatstring, $unixtimestamp, $gmt);
 }
@@ -315,7 +298,7 @@ function backwpup_cron() {
 					continue;
 				if ($jobvalue['cronnextrun']<=current_time('timestamp')) {
 					require_once(dirname(__FILE__).'/job/job_start.php');
-					backwpup_jobstart($jobid,true);	
+					backwpup_jobstart($jobid,true);
 				}
 			}
 		}
@@ -422,8 +405,8 @@ function backwpup_dashboard_logs() {
 				printf(' <span style="color:red;font-weight:bold;">'._n("%d ERROR", "%d ERRORS", $logdata['errors'],'backwpup').'</span>', $logdata['errors']);
 			if ($logdata['warnings']>0)
 				printf(' <span style="color:#e66f00;font-weight:bold;">'._n("%d WARNING", "%d WARNINGS", $logdata['warnings'],'backwpup').'</span>', $logdata['warnings']);
-			if($logdata['errors']==0 and $logdata['warnings']==0) 
-				echo ' <span style="color:green;font-weight:bold;">'.__('O.K.','backwpup').'</span>';			
+			if($logdata['errors']==0 and $logdata['warnings']==0)
+				echo ' <span style="color:green;font-weight:bold;">'.__('O.K.','backwpup').'</span>';
 			echo '</li>';
 			$count++;
 			if ($count>=$widgets['backwpup_dashboard_logs'])
@@ -441,7 +424,7 @@ function backwpup_dashboard_logs_config() {
 		$widget_options = array();
 
 	if ( !isset($widget_options['backwpup_dashboard_logs']) )
-		$widget_options['backwpup_dashboard_logs'] = 5;		
+		$widget_options['backwpup_dashboard_logs'] = 5;
 
 	if ( 'POST' == $_SERVER['REQUEST_METHOD'] && isset($_POST['backwpup_dashboard_logs']) ) {
 		$number = absint( $_POST['backwpup_dashboard_logs'] );
@@ -487,8 +470,8 @@ function backwpup_dashboard_activejobs() {
 			$count++;
 		}
 	}
-	
-	if ($count==0) 
+
+	if ($count==0)
 		echo '<li><i>'.__('none','backwpup').'</i></li>';
 	echo '</ul>';
 }
@@ -498,7 +481,7 @@ function backwpup_add_dashboard() {
 	if (!current_user_can(BACKWPUP_USER_CAPABILITY))
 		return;
 	wp_add_dashboard_widget( 'backwpup_dashboard_widget_logs', __('BackWPup Logs','backwpup'), 'backwpup_dashboard_logs' , 'backwpup_dashboard_logs_config');
-	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Aktive Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
+	wp_add_dashboard_widget( 'backwpup_dashboard_widget_activejobs', __('BackWPup Active Jobs','backwpup'), 'backwpup_dashboard_activejobs' );
 }
 
 //add admin bar menu
@@ -509,7 +492,7 @@ function backwpup_add_adminbar() {
 		return;
     /* Add the main siteadmin menu item */
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup', 'title' => __( 'BackWPup', 'backwpup' ), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
-	if (backwpup_get_working_file()) 
+	if (backwpup_get_working_file())
 		$wp_admin_bar->add_menu(array( 'id' => 'backwpup_working','parent' => 'backwpup', 'title' => __('See Working!','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpupworking'));
     $wp_admin_bar->add_menu(array( 'id' => 'backwpup_jobs', 'parent' => 'backwpup', 'title' => __('Jobs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpup'));
 	$wp_admin_bar->add_menu(array( 'id' => 'backwpup_logs', 'parent' => 'backwpup', 'title' => __('Logs','backwpup'), 'href' => backwpup_admin_url('admin.php').'?page=backwpuplogs'));
@@ -676,7 +659,7 @@ function backwpup_cron_next($cronstring) {
 	//generate next 10 years
 	for ($i=date('Y');$i<2038;$i++)
 		$cron['year'][]=$i;
-	
+
 	//calc next timestamp
 	$currenttime=current_time('timestamp');
 	foreach ($cron['year'] as $year) {
@@ -732,7 +715,7 @@ function backwpup_env_checks() {
 		$message.=str_replace('%d',BACKWPUP_MIN_WORDPRESS_VERSION,__('- WordPress %d or higher is needed!','backwpup')) . '<br />';
 		$checks=false;
 	}
-	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version 
+	if (version_compare(phpversion(), '5.2.4', '<')) { // check PHP Version
 		$message.=__('- PHP 5.2.4 or higher is needed!','backwpup') . '<br />';
 		$checks=false;
 	}
@@ -767,7 +750,7 @@ function backwpup_env_checks() {
 		if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
 			$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
 		}
-	} 
+	}
 	//put massage if one
 	if (!empty($message))
 		$backwpup_admin_message = '<div id="message" class="error fade"><strong>BackWPup:</strong><br />'.$message.'</div>';
@@ -795,7 +778,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 			$heighestid=0;
 			if (is_array($jobs)) {
 				foreach ($jobs as $jobkey => $jobvalue) {
-					if ($jobkey>$heighestid) 
+					if ($jobkey>$heighestid)
 						$heighestid=$jobkey;
 				}
 			}
@@ -807,7 +790,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!empty($jobnewsettings) && is_array($jobnewsettings)) { //overwrite with new settings
 		$jobsettings=array_merge($jobsettings,$jobnewsettings);
 	}
-	
+
 	//check job type
 	if (!isset($jobsettings['type']) or !is_string($jobsettings['type']))
 		$jobsettings['type']='DB+FILE';
@@ -830,23 +813,23 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 		$jobsettings['cronselect']='basic';
 	elseif (!isset($jobsettings['cronselect']) and isset($jobsettings['cron']))
 		$jobsettings['cronselect']='advanced';
-		
+
 	if ($jobsettings['cronselect']!='advanced' and $jobsettings['cronselect']!='basic')
 		$jobsettings['cronselect']='advanced';
-	
+
 	if (!isset($jobsettings['cron']) or !is_string($jobsettings['cron']))
 		$jobsettings['cron']='0 3 * * *';
-		
+
 	if (!isset($jobsettings['cronnextrun']) or !is_numeric($jobsettings['cronnextrun']))
 		$jobsettings['cronnextrun']=backwpup_cron_next($jobsettings['cron']);
-		
+
 	if (!isset($jobsettings['mailaddresslog']) or !is_string($jobsettings['mailaddresslog']))
 		$jobsettings['mailaddresslog']=get_option('admin_email');
 
 	if (!isset($jobsettings['mailerroronly']) or !is_bool($jobsettings['mailerroronly']))
 		$jobsettings['mailerroronly']=true;
 
-		
+
 	//Tables to backup (old)
 	if (isset($jobsettings['dbtables']) and is_array($jobsettings['dbtables'])) {
 		$tables=$wpdb->get_col('SHOW TABLES FROM `'.DB_NAME.'`');
@@ -855,7 +838,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 				$jobsettings['dbexclude'][]=$table;
 		}
 	}
-	
+
 	//don not backup tables
 	if (!isset($jobsettings['dbexclude']) or !is_array($jobsettings['dbexclude'])) {
 		$jobsettings['dbexclude']=array();
@@ -864,8 +847,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 			if (substr($table,0,strlen($wpdb->prefix))!=$wpdb->prefix)
 				$jobsettings['dbexclude'][]=$table;
 		}
-	}	
-	
+	}
+
 	if (!isset($jobsettings['dbshortinsert']) or !is_bool($jobsettings['dbshortinsert']))
 		$jobsettings['dbshortinsert']=false;
 
@@ -957,10 +940,10 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	$fileformarts=array('.zip','.tar.gz','.tar.bz2','.tar');
 	if (!isset($jobsettings['fileformart']) or !in_array($jobsettings['fileformart'],$fileformarts))
 		$jobsettings['fileformart']='.zip';
-	
+
 	if (!isset($jobsettings['fileprefix']) or !is_string($jobsettings['fileprefix']))
 		$jobsettings['fileprefix']='backwpup_'.$jobsettings['jobid'].'_';
-	
+
 	if (!isset($jobsettings['mailefilesize']) or !is_float($jobsettings['mailefilesize']))
 		$jobsettings['mailefilesize']=0;
 
@@ -975,14 +958,14 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['maxbackups']) or !is_int($jobsettings['maxbackups']))
 		$jobsettings['maxbackups']=0;
 
-	if (!empty($jobsettings['ftphost']) and false !== strpos($jobsettings['ftphost'],':')) 
+	if (!empty($jobsettings['ftphost']) and false !== strpos($jobsettings['ftphost'],':'))
 		list($jobsettings['ftphost'],$jobsettings['ftphostport'])=explode(':',$jobsettings['ftphost'],2);
-	
+
 	if (!isset($jobsettings['ftphost']) or !is_string($jobsettings['ftphost']))
 		$jobsettings['ftphost']='';
-	
+
 	$jobsettings['ftphost']=str_replace(array('http://','ftp://'),'',$jobsettings['ftphost']);
-	
+
 	if (!isset($jobsettings['ftphostport']) or !is_int($jobsettings['ftphostport']))
 		$jobsettings['ftphostport']=21;
 
@@ -992,18 +975,17 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['ftppass']) or !is_string($jobsettings['ftppass']))
 		$jobsettings['ftppass']='';
 
-	if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']) or $jobsettings['ftpdir']=='/')
+	if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']))
 		$jobsettings['ftpdir']='';
-	$jobsettings['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir']))));
-	if (substr($jobsettings['ftpdir'],0,1)!='/')
-		$jobsettings['ftpdir']='/'.$jobsettings['ftpdir'];
+    if (!empty($jobsettings['ftpdir']))
+	    $jobsettings['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir']))));
 
 	if (!isset($jobsettings['ftpmaxbackups']) or !is_int($jobsettings['ftpmaxbackups']))
 		$jobsettings['ftpmaxbackups']=0;
-	
+
 	if (!isset($jobsettings['ftppasv']) or !is_bool($jobsettings['ftppasv']))
 		$jobsettings['ftppasv']=true;
-	
+
 	if (!isset($jobsettings['ftpssl']) or !is_bool($jobsettings['ftpssl']))
 		$jobsettings['ftpssl']=false;
 
@@ -1027,7 +1009,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['awsmaxbackups']) or !is_int($jobsettings['awsmaxbackups']))
 		$jobsettings['awsmaxbackups']=0;
-		
+
 	if (!isset($jobsettings['GStorageAccessKey']) or !is_string($jobsettings['GStorageAccessKey']))
 		$jobsettings['GStorageAccessKey']='';
 
@@ -1065,8 +1047,8 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 		$jobsettings['msazuredir']=substr($jobsettings['msazuredir'],1);
 
 	if (!isset($jobsettings['msazuremaxbackups']) or !is_int($jobsettings['msazuremaxbackups']))
-		$jobsettings['msazuremaxbackups']=0;	
-		
+		$jobsettings['msazuremaxbackups']=0;
+
 	if (!isset($jobsettings['rscUsername']) or !is_string($jobsettings['rscUsername']))
 		$jobsettings['rscUsername']='';
 
@@ -1084,10 +1066,10 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 
 	if (!isset($jobsettings['rscmaxbackups']) or !is_int($jobsettings['rscmaxbackups']))
 		$jobsettings['rscmaxbackups']=0;
-		
+
 	if (!isset($jobsettings['dropetoken']) or !is_string($jobsettings['dropetoken']))
 		$jobsettings['dropetoken']='';
-	
+
 	if (!isset($jobsettings['dropesecret']) or !is_string($jobsettings['dropesecret']))
 		$jobsettings['dropesecret']='';
 
@@ -1096,28 +1078,28 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	$jobsettings['dropedir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['dropedir']))));
 	if (substr($jobsettings['dropedir'],0,1)=='/')
 		$jobsettings['dropedir']=substr($jobsettings['dropedir'],1);
-	
+
 	if (!isset($jobsettings['droperoot']) or ($jobsettings['droperoot']!='dropbox' and $jobsettings['droperoot']!='sandbox'))
-		$jobsettings['droperoot']='dropbox';	
-		
+		$jobsettings['droperoot']='dropbox';
+
 	if (!isset($jobsettings['dropemaxbackups']) or !is_int($jobsettings['dropemaxbackups']))
-		$jobsettings['dropemaxbackups']=0;	
-		
+		$jobsettings['dropemaxbackups']=0;
+
 	if (!isset($jobsettings['sugarrefreshtoken']) or !is_string($jobsettings['sugarrefreshtoken']))
-		$jobsettings['sugarrefreshtoken']='';		
+		$jobsettings['sugarrefreshtoken']='';
 
 	if (!isset($jobsettings['sugarroot']) or !is_string($jobsettings['sugarroot']))
 		$jobsettings['sugarroot']='';
-		
+
 	if (!isset($jobsettings['sugardir']) or !is_string($jobsettings['sugardir']) or $jobsettings['sugardir']=='/')
 		$jobsettings['sugardir']='';
 	$jobsettings['sugardir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['sugardir']))));
 	if (substr($jobsettings['sugardir'],0,1)=='/')
 		$jobsettings['sugardir']=substr($jobsettings['sugardir'],1);
-	
+
 	if (!isset($jobsettings['sugarmaxbackups']) or !is_int($jobsettings['sugarmaxbackups']))
-		$jobsettings['sugarmaxbackups']=0;			
-			
+		$jobsettings['sugarmaxbackups']=0;
+
 	if (!isset($jobsettings['mailaddress']) or !is_string($jobsettings['mailaddress']))
 		$jobsettings['mailaddress']='';
 
@@ -1127,11 +1109,11 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	unset($jobsettings['scheduleintervalteimes']);
 	unset($jobsettings['scheduleinterval']);
 	unset($jobsettings['dropemail']);
-	unset($jobsettings['dropepass']);	
+	unset($jobsettings['dropepass']);
 	unset($jobsettings['dbtables']);
 	unset($jobsettings['dropesignmethod']);
 	unset($jobsettings['sugarpass']);
 	unset($jobsettings['sugaruser']);
-		
+
 	return $jobsettings;
 }
