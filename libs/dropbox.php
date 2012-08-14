@@ -70,7 +70,7 @@ class backwpup_Dropbox {
 		if (!is_readable($file) or !is_file($file))
 			throw new backwpup_DropboxException("Error: File \"$file\" is not readable or doesn't exist.");
         $filesize=filesize($file);
-        if ($filesize<50000000) {  //chunk transfer on bigger uploads
+        if ($filesize<41943040) {  //chunk transfer on bigger uploads <40MB
             $filehandel = fopen($file,'r');
             $url = self::API_CONTENT_URL.self::API_VERSION_URL.'files_put/'.$this->root.'/'.trim($path, '/');
             $output = $this->request($url, array('overwrite' => ($overwrite)? 'true' : 'false'), 'PUT', $filehandel, $filesize);
@@ -90,9 +90,9 @@ class backwpup_Dropbox {
         $offset=0;
         $ProgressFunction=null;
         while ($data=fread($file_handel,4194304)) {  //4194304 = 4MB
-            $chunkHandle = fopen('php://temp', 'rw');
+            $chunkHandle = fopen('php://memory', 'rw');
             fwrite($chunkHandle,$data);
-            fseek($chunkHandle,0);
+            rewind($chunkHandle);
             //overwrite progress function
             if (!empty($this->ProgressFunction) and function_exists($this->ProgressFunction)) {
                 $ProgressFunction=$this->ProgressFunction;
@@ -106,7 +106,7 @@ class backwpup_Dropbox {
                 $this->ProgressFunction=$ProgressFunction;
             }
             //args for next chunk
-            $offset= $output['offset'];
+            $offset=$output['offset'];
             $uploadid=$output['upload_id'];
             fseek($file_handel,$offset);
         }

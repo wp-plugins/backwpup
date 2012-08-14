@@ -470,8 +470,10 @@ function backwpup_get_backup_files($jobid,$dest) {
       }
     }
     if ($loginok) {
+	  ftp_chdir($ftp_conn_id, $jobvalue['ftpdir']);
+	  $currentftpdir = rtrim(ftp_pwd($ftp_conn_id),'/').'/';
       ftp_pasv($ftp_conn_id, $jobvalue['ftppasv']);
-      if ($ftpfilelist=ftp_nlist($ftp_conn_id, $jobvalue['ftpdir'])) {
+      if ($ftpfilelist=ftp_nlist($ftp_conn_id, $currentftpdir)) {
         foreach($ftpfilelist as $ftpfiles) {
           if (substr(basename($ftpfiles),0,1)=='.')
             continue;

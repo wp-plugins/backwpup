@@ -188,21 +188,23 @@ function update_working_file($mustwrite=false) {
 		job_end();
 		return false;
 	}
-	if ($mustwrite or empty($runmicrotime) or $savedmicrotime<microtime()) { //only update all 1 sec.
-		if ($WORKING['STEPTODO']>0 and $WORKING['STEPDONE']>0)
-			$steppersent=round($WORKING['STEPDONE']/$WORKING['STEPTODO']*100);
-		else
-			$steppersent=1;
-		if (count($WORKING['STEPSDONE'])>0)
-			$stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
-		else
-			$stepspersent=1;
-		@set_time_limit(0);
-		if (is_writable($STATIC['TEMPDIR'].'.running')) {
-			file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
-			$savedmicrotime=microtime()+1000;
-		}
-	}
+    //only update all 1 sec.
+    $timetoupdate = microtime( true ) - $savedmicrotime;
+    if ( ! $mustwrite && $timetoupdate < 1 )
+        return true;
+    if ($WORKING['STEPTODO']>0 and $WORKING['STEPDONE']>0)
+        $steppersent=round($WORKING['STEPDONE']/$WORKING['STEPTODO']*100);
+    else
+        $steppersent=1;
+    if (count($WORKING['STEPSDONE'])>0)
+        $stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
+    else
+        $stepspersent=1;
+    @set_time_limit(0);
+    if (is_writable($STATIC['TEMPDIR'].'.running')) {
+        file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
+        $savedmicrotime = microtime( true );
+    }
 	return true;
 }
 

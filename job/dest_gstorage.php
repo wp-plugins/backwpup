@@ -17,7 +17,7 @@ function dest_gstorage() {
       //set curl Prozess bar
       $curlops=array();
       if (defined('CURLOPT_PROGRESSFUNCTION'))
-        $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>512);
+        $curlops=array(CURLOPT_NOPROGRESS=>false,CURLOPT_PROGRESSFUNCTION=>'curl_progresscallback',CURLOPT_BUFFERSIZE=>1048576);
       trigger_error(__('Upload to GStorage now started... ','backwpup'),E_USER_NOTICE);
       //transferee file to GStorage
       $result=$gstorage->create_object($STATIC['JOB']['GStorageBucket'], $STATIC['JOB']['GStoragedir'].$STATIC['backupfile'], array('fileUpload' => $STATIC['JOB']['backupdir'].$STATIC['backupfile'],'acl' => 'private','curlopts'=>$curlops));

@@ -58,27 +58,33 @@ function dest_ftp() {
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),$systype),E_USER_NOTICE);
 	else
 		trigger_error(sprintf(__('FTP Server reply: %s','backwpup'),__('Error getting SYSTYPE','backwpup')),E_USER_ERROR);
-
+	
+	
 	//test ftp dir and create it f not exists
-    if ($STATIC['JOB']['ftpdir']!='/' && $STATIC['JOB']['ftpdir']='') {
-        $ftpdirs=explode("/", rtrim($STATIC['JOB']['ftpdir'],'/'));
+    if ($STATIC['JOB']['ftpdir']!='/' && $STATIC['JOB']['ftpdir']!='') {
+        $ftpdirs=explode("/", trim($STATIC['JOB']['ftpdir'],'/'));
         foreach ($ftpdirs as $ftpdir) {
             if (empty($ftpdir))
                 continue;
             if (!@ftp_chdir($ftp_conn_id, $ftpdir)) {
                 if (@ftp_mkdir($ftp_conn_id, $ftpdir)) {
-                    trigger_error(sprintf(__('FTP Folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
+                    trigger_error(sprintf(__('FTP folder "%s" created!','backwpup'),$ftpdir),E_USER_NOTICE);
                     ftp_chdir($ftp_conn_id, $ftpdir);
                 } else {
-                    trigger_error(sprintf(__('FTP Folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
+                    trigger_error(sprintf(__('FTP folder "%s" can not created!','backwpup'),$ftpdir),E_USER_ERROR);
                     return false;
                 }
             }
         }
     }
+	
+	// Get the current working directory 
+    $currentftpdir = rtrim(ftp_pwd($ftp_conn_id),'/').'/';
+	trigger_error(sprintf(__('FTP current folder is: %s','backwpup'),$currentftpdir),E_USER_NOTICE);
+
 	//delete file on ftp if new try
 	if ($WORKING['STEPDONE']==0)
-		@ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile']);
+		@ftp_delete($ftp_conn_id, $currentftpdir.$STATIC['backupfile']);
 
 	//PASV
 	trigger_error(sprintf(__('FTP Client command: %s','backwpup'),' PASV'),E_USER_NOTICE);
@@ -97,7 +103,7 @@ function dest_ftp() {
 	if ($WORKING['STEPDONE']<$WORKING['STEPTODO']) {
 		trigger_error(__('Upload to FTP now started ... ','backwpup'),E_USER_NOTICE);
 		$fp = fopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'], 'r');
-		$ret = ftp_nb_fput($ftp_conn_id, $STATIC['JOB']['ftpdir'].$STATIC['backupfile'], $fp, FTP_BINARY,$WORKING['STEPDONE']);
+		$ret = ftp_nb_fput($ftp_conn_id, $currentftpdir.$STATIC['backupfile'], $fp, FTP_BINARY,$WORKING['STEPDONE']);
 		while ($ret == FTP_MOREDATA) {
 		   $WORKING['STEPDONE']=ftell($fp);
 		   update_working_file();
@@ -108,8 +114,8 @@ function dest_ftp() {
 			return false;
 		} else {
 		    $WORKING['STEPDONE']=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']);
-			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$STATIC['JOB']['ftpdir'].$STATIC['backupfile']),E_USER_NOTICE);
-			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".backwpup_base64($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$STATIC['JOB']['ftpdir'].$STATIC['backupfile'];
+			trigger_error(sprintf(__('Backup transferred to FTP server: %s','backwpup'),$currentftpdir.$STATIC['backupfile']),E_USER_NOTICE);
+			$STATIC['JOB']['lastbackupdownloadurl']="ftp://".$STATIC['JOB']['ftpuser'].":".backwpup_base64($STATIC['JOB']['ftppass'])."@".$STATIC['JOB']['ftphost'].':'.$STATIC['JOB']['ftphostport'].$currentftpdir.$STATIC['backupfile'];
 			$WORKING['STEPSDONE'][]='DEST_FTP'; //set done
 		}
 		fclose($fp);
@@ -117,7 +123,7 @@ function dest_ftp() {
 
 	if ($STATIC['JOB']['ftpmaxbackups']>0) { //Delete old backups
 		$backupfilelist=array();
-		if ($filelist=ftp_nlist($ftp_conn_id, $STATIC['JOB']['ftpdir'])) {
+		if ($filelist=ftp_nlist($ftp_conn_id, $currentftpdir)) {
 			foreach($filelist as $files) {
 				if ($STATIC['JOB']['fileprefix'] == substr(basename($files),0,strlen($STATIC['JOB']['fileprefix'])) and $STATIC['JOB']['fileformart'] == substr(basename($files),-strlen($STATIC['JOB']['fileformart'])))
 					$backupfilelist[]=basename($files);
@@ -126,10 +132,10 @@ function dest_ftp() {
 				rsort($backupfilelist);
 				$numdeltefiles=0;
 				for ($i=$STATIC['JOB']['ftpmaxbackups'];$i<sizeof($backupfilelist);$i++) {
-					if (ftp_delete($ftp_conn_id, $STATIC['JOB']['ftpdir'].$backupfilelist[$i])) //delte files on ftp
+					if (ftp_delete($ftp_conn_id, $currentftpdir.$backupfilelist[$i])) //delte files on ftp
 					$numdeltefiles++;
 					else
-						trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),$STATIC['JOB']['ftpdir'].$backupfilelist[$i]),E_USER_ERROR);
+						trigger_error(sprintf(__('Can not delete "%s" on FTP server!','backwpup'),$currentftpdir.$backupfilelist[$i]),E_USER_ERROR);
 				}
 				if ($numdeltefiles>0)
 					trigger_error(sprintf(_n('One file deleted on FTP Server','%d files deleted on FTP Server',$numdeltefiles,'backwpup'),$numdeltefiles),E_USER_NOTICE);

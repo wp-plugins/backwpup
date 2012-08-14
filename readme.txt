@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.4
-Stable tag: 2.1.14
+Stable tag: 2.1.15
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,6 +60,10 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.15 =
+* Fixed FTP folder bug
+* Dropbox chunking will done in memory not in temp
+
 = 2.1.14 =
 * removed calling home function
 * fixed missing ' in mysql dump

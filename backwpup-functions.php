@@ -978,7 +978,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (!isset($jobsettings['ftpdir']) or !is_string($jobsettings['ftpdir']))
 		$jobsettings['ftpdir']='';
     if (!empty($jobsettings['ftpdir']))
-	    $jobsettings['ftpdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir']))));
+	    $jobsettings['ftpdir']=trailingslashit(ltrim(str_replace('//','/',str_replace('\\','/',trim($jobsettings['ftpdir'])))),'/');
 
 	if (!isset($jobsettings['ftpmaxbackups']) or !is_int($jobsettings['ftpmaxbackups']))
 		$jobsettings['ftpmaxbackups']=0;

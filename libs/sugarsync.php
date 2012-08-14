@@ -121,7 +121,7 @@ class SugarSync {
 				if (function_exists($this->ProgressFunction) and defined('CURLOPT_PROGRESSFUNCTION')) {
 					curl_setopt($curl, CURLOPT_NOPROGRESS, false);
 					curl_setopt($curl, CURLOPT_PROGRESSFUNCTION, $this->ProgressFunction);
-					curl_setopt($curl, CURLOPT_BUFFERSIZE, 512);
+					curl_setopt($curl, CURLOPT_BUFFERSIZE, 1048576);
 				}
 			} else {
 				throw new SugarSyncException('Is not a readable file:' . $data);

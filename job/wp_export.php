@@ -24,7 +24,7 @@ function wp_export() {
 		if (defined('CURLOPT_PROGRESSFUNCTION')) {
 			curl_setopt($ch, CURLOPT_NOPROGRESS, false);
 			curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, 'curl_progresscallback');
-			curl_setopt($ch, CURLOPT_BUFFERSIZE, 512);
+			curl_setopt($ch, CURLOPT_BUFFERSIZE, 1048576);
 		} 
 		if (!empty($STATIC['CFG']['httpauthuser']) and !empty($STATIC['CFG']['httpauthpassword'])) {
 			curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);

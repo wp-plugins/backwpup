@@ -7,7 +7,7 @@ function dest_dropbox() {
 
   require_once(realpath(dirname(__FILE__).'/../libs/dropbox.php'));
   try {
-    need_free_memory(5000000);
+    need_free_memory(10000000);
     //set boxtype
     $dropbox = new backwpup_Dropbox('dropbox');
 

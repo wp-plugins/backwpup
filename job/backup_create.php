@@ -7,14 +7,14 @@ function backup_create() {
 	$WORKING['STEPTODO']=count($filelist);
 	if (empty($WORKING['STEPDONE']))
 		$WORKING['STEPDONE']=0;
-	
+
 	if (strtolower($STATIC['JOB']['fileformart'])==".zip") { //Zip files
 		if ($STATIC['CFG']['phpzip']) {  //use php zip lib
 			trigger_error(sprintf(__('%d. try to create backup zip archive...','backwpup'),$WORKING['BACKUP_CREATE']['STEP_TRY']),E_USER_NOTICE);
 			$zip = new ZipArchive();
 			if ($res=$zip->open($STATIC['JOB']['backupdir'].$STATIC['backupfile'],ZIPARCHIVE::CREATE) === TRUE) {
 				for ($i=$WORKING['STEPDONE'];$i<$WORKING['STEPTODO'];$i++) {
-					if (!$zip->addFile($filelist[$i]['FILE'], $filelist[$i]['OUTFILE'])) 
+					if (!$zip->addFile($filelist[$i]['FILE'], $filelist[$i]['OUTFILE']))
 						trigger_error(sprintf(__('Can not add "%s" to zip archive!','backwpup'),$filelist[$i]['OUTFILE']),E_USER_ERROR);
 					$WORKING['STEPDONE']++;
 					update_working_file();
@@ -49,7 +49,7 @@ function backup_create() {
 			}
 		} else { //use PclZip
 			define('PCLZIP_TEMPORARY_DIR', $STATIC['TEMPDIR']);
-			require_once($STATIC['WP']['ABSPATH'].'wp-admin/includes/class-pclzip.php');		
+			require_once($STATIC['WP']['ABSPATH'].'wp-admin/includes/class-pclzip.php');
 			if ( ini_get( 'mbstring.func_overload' ) && function_exists( 'mb_internal_encoding' ) ) {
 				$previous_encoding = mb_internal_encoding();
 				mb_internal_encoding( 'ISO-8859-1' );
@@ -76,7 +76,7 @@ function backup_create() {
 				mb_internal_encoding( $previous_encoding );
 		}
 	} elseif (strtolower($STATIC['JOB']['fileformart'])==".tar.gz" or strtolower($STATIC['JOB']['fileformart'])==".tar.bz2" or strtolower($STATIC['JOB']['fileformart'])==".tar") { //tar files
-		
+
 		if (strtolower($STATIC['JOB']['fileformart'])=='.tar.gz') {
 			$tarbackup=gzopen($STATIC['JOB']['backupdir'].$STATIC['backupfile'],'w9');
 		} elseif (strtolower($STATIC['JOB']['fileformart'])=='.tar.bz2') {
@@ -125,7 +125,7 @@ function backup_create() {
 				$info=posix_getgrgid($files['GID']);
 				$filegroup=$info['name'];
 			}
-			
+
 			// Generate the TAR header for this file
 			$header = pack("a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
 					  $filename,  									//name of file  100
@@ -196,13 +196,13 @@ function backup_create() {
 	}
 	$WORKING['STEPSDONE'][]='BACKUP_CREATE'; //set done
 	if ($filesize=filesize($STATIC['JOB']['backupdir'].$STATIC['backupfile']))
-		trigger_error(sprintf(__('Archive size is %s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);	
+		trigger_error(sprintf(__('Archive size is %s','backwpup'),formatBytes($filesize)),E_USER_NOTICE);
 }
 
 
 function _pclzipPostAddCallBack($p_event, &$p_header) {
 	global $WORKING,$STATIC;
-	if ($p_header['status'] != 'ok') 
+	if ($p_header['status'] != 'ok')
 		trigger_error(sprintf(__('PCL ZIP Error "%1$s" on file %2$s!','backwpup'),$p_header['status'],$p_header['filename']),E_USER_ERROR);
 	$WORKING['STEPDONE']++;
 	update_working_file();
