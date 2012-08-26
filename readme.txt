@@ -60,6 +60,11 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.16 =
+* Dropbox chunking will done in temp again.
+* uses stream for compression
+* Metaboxes can't disabled by the screen options
+
 = 2.1.15 =
 * Fixed FTP folder bug
 * Dropbox chunking will done in memory not in temp

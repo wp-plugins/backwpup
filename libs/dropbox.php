@@ -90,7 +90,7 @@ class backwpup_Dropbox {
         $offset=0;
         $ProgressFunction=null;
         while ($data=fread($file_handel,4194304)) {  //4194304 = 4MB
-            $chunkHandle = fopen('php://memory', 'rw');
+            $chunkHandle = fopen('php://temp/maxmemory:4194304', 'w+');
             fwrite($chunkHandle,$data);
             rewind($chunkHandle);
             //overwrite progress function
