@@ -295,4 +295,4 @@ wp_enqueue_script('postbox');
 add_screen_option('layout_columns', array('max' => 2, 'default' => 2));
 
 //add Help
-backwpup_contextual_help(__('','backwpup'));
+backwpup_contextual_help();

@@ -7,7 +7,7 @@ $STATIC['TEMPDIR']=realpath($STATIC['TEMPDIR']).'/';
 //check temp dir
 if (empty($STATIC['TEMPDIR']) || !is_dir($STATIC['TEMPDIR']) || !is_writable($STATIC['TEMPDIR']))
 	die($STATIC['TEMPDIR'].'Temp dir not writable!!! Job aborted!');
-//write PHP log	
+//write PHP log
 @ini_set( 'error_log', $STATIC['TEMPDIR'].'php_error.log' );
 @ini_set( 'display_errors', 'Off' );
 @ini_set( 'log_errors', 'On' );
@@ -74,9 +74,9 @@ if ($WORKING['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_POS
 } elseif($_POST['type']=='restarttime') {
 	trigger_error(__('Job restarted, bcause inactivity!','backwpup'),E_USER_ERROR);
 } elseif ($WORKING['PID']!=getmypid() and $WORKING['PID']!=0 and $runningfile['timestamp']>$revtime) {
-	trigger_error(sprintf(__('Second Prozess is running, bcause old job runs! Start type is %s','backwpup'),$_POST['type']),E_USER_ERROR);
+	trigger_error(sprintf(__('Second Process is running, because old job runs! Start type is %s','backwpup'),$_POST['type']),E_USER_ERROR);
 	die();
-} 
+}
 unset($runningfile);
 //set Pid
 $WORKING['PID']=getmypid();
@@ -103,7 +103,7 @@ foreach($WORKING['STEPS'] as $step) {
 			require_once(BACKWPUP_JOBRUN_FOLDER.$stepfile);
 		} else {
 			trigger_error(sprintf(__('Can not find job step file: %s','backwpup'),$stepfile),E_USER_ERROR);
-		} 
+		}
 	}
 }
 // Working step by step
@@ -167,7 +167,7 @@ foreach($WORKING['STEPS'] as $step) {
 			trigger_error(sprintf(__('Can not find job step function %s!','backwpup'),strtolower($step)),E_USER_ERROR);
 			$WORKING['STEPSDONE'][]=$step;
 		}
-	} 
+	}
 }
 //close mysql
 mysql_close($mysqlconlink);
