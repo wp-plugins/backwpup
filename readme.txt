@@ -1,6 +1,5 @@
 === BackWPup ===
 Contributors: danielhuesken, inpsyde, Bueltge, nullbyte
-Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.4
@@ -66,6 +65,8 @@ Do backups and more for your WordPress Blog.
 * Metaboxes can't disabled by the screen options
 * Set mail charset
 * Handling for Dropbox 503 errors
+* removed oauth bypass Google Analytics by Yoast
+* bug fixes
 
 = 2.1.15 =
 * Fixed FTP folder bug

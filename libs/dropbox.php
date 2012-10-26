@@ -90,7 +90,7 @@ class backwpup_Dropbox {
         $offset=0;
         $ProgressFunction=null;
         while ($data=fread($file_handel,4194304)) {  //4194304 = 4MB
-            $chunkHandle = fopen('php://temp/maxmemory:4194304', 'w+');
+            $chunkHandle = fopen('php://temp', 'w+');
             fwrite($chunkHandle,$data);
             rewind($chunkHandle);
             //overwrite progress function
@@ -266,8 +266,10 @@ class backwpup_Dropbox {
 		$status = curl_getinfo($ch);
 
         if ( $status['http_code'] == 503 )  {
-            if ( preg_match( '/Retry-After:(.*?)\r/i', $header, $matches ) )
+            $wait=1;
+			if ( preg_match( '/Retry-After:(.*?)\r/i', $header, $matches ) )
                 $wait = trim($matches[1]);
+			trigger_error($header,E_WARNING);
             trigger_error(sprintf('(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis. Wait for %d seconds.',$wait),E_USER_WARNING);
             sleep($wait);
             return $this->request( $url, $args, $method, $filehandel, $filesize, $echo );

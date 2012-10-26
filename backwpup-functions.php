@@ -1,5 +1,5 @@
 <?PHP
-//Thems Option menu entry
+//Option menu entry
 function backwpup_admin_menu() {
 	add_menu_page( __('BackWPup','backwpup'), __('BackWPup','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page', BACKWPUP_PLUGIN_BASEURL.'/css/BackWPup16.png');
 	$hook = add_submenu_page( 'backwpup', __('Jobs','backwpup'), __('Jobs','backwpup'), BACKWPUP_USER_CAPABILITY, 'backwpup', 'backwpup_menu_page' );
@@ -111,7 +111,6 @@ function backwpup_contextual_help($help='') {
 						'<p><a href="http://backwpup.de/handbuch/" target="_blank">'.__('Documentation','backwpup').'</a></p>' .
 						'<p><a href="http://backwpup.de/faq/" target="_blank">'.__('FAQ','backwpup').'</a></p>' .
 						'<p><a href="http://backwpup.de/forums/" target="_blank"'.__('Support Forums','backwpup').'</a></p>' .
-						'<p><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Y6UHQE4NKFFKY" target="_blank">'.__('Donate','backwpup').'</a></p>' .
 						'<p><a href="https://plus.google.com/112659782148359984250/" target="_blank">'.__('Google+','backwpup').'</a></p>'
 			);
 		} else {
@@ -121,7 +120,6 @@ function backwpup_contextual_help($help='') {
 						'<p><a href="http://backwpup.com/manual/" target="_blank">'.__('Documentation','backwpup').'</a></p>' .
 						'<p><a href="http://backwpup.com/faq/" target="_blank">'.__('FAQ','backwpup').'</a></p>' .
 						'<p><a href="http://backwpup.com/forums/" target="_blank"'.__('Support Forums','backwpup').'</a></p>' .
-						'<p><a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">'.__('Donate','backwpup').'</a></p>' .
 						'<p><a href="https://plus.google.com/112659782148359984250/" target="_blank">'.__('Google+','backwpup').'</a></p>'
 			);
 		}
@@ -134,7 +132,6 @@ function backwpup_contextual_help($help='') {
 							' <a href="http://backwpup.de/handbuch/" target="_blank">'.__('Documentation', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.de/faq/" target="_blank">'.__('FAQ', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.de/forums/" target="_blank">'.__('Support Forums', 'backwpup').'</a> |' .
-							' <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Y6UHQE4NKFFKY" target="_blank">'.__('Donate', 'backwpup').'</a> |' .
 							' <a href="https://plus.google.com/112659782148359984250/" target="_blank">'.__('Google+', 'backwpup').'</a> ' .
 							'</p>'
 			);
@@ -146,7 +143,6 @@ function backwpup_contextual_help($help='') {
 							' <a href="http://backwpup.com/manual/" target="_blank">'.__('Documentation', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.com/faq/" target="_blank">'.__('FAQ', 'backwpup').'</a> |' .
 							' <a href="http://backwpup.com/forums/" target="_blank">'.__('Support Forums', 'backwpup').'</a> |' .
-							' <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">'.__('Donate', 'backwpup').'</a> |' .
 							' <a href="https://plus.google.com/112659782148359984250/" target="_blank">'.__('Google+', 'backwpup').'</a> ' .
 							'</p>'
 			);
@@ -259,7 +255,6 @@ function backwpup_plugin_links($links, $file) {
 	if ($file == BACKWPUP_PLUGIN_BASEDIR.'/backwpup.php') {
 		$links[] = '<a href="http://backwpup.com/faq/" target="_blank">' . __('FAQ','backwpup') . '</a>';
 		$links[] = '<a href="http://backwpup.com/forums/" target="_blank">' . __('Support','backwpup') . '</a>';
-		$links[] = '<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Q3QSVRSFXBLSE" target="_blank">' . __('Donate','backwpup') . '</a>';
 	}
 	return $links;
 }

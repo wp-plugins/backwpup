@@ -69,10 +69,10 @@ set_error_handler('joberrorhandler',E_ALL | E_STRICT);
 $runningfile=get_working_file();
 $revtime=time()-$STATIC['CFG']['jobscriptruntimelong']-10;
 if ($WORKING['PID']!=getmypid() and $runningfile['timestamp']>$revtime and $_POST['type']=='restarttime') {
-	trigger_error(__('Job restart terminated, bcause old job runs again!','backwpup'),E_USER_ERROR);
+	trigger_error(__('Job restart terminated, because old job runs again!','backwpup'),E_USER_ERROR);
 	die();
 } elseif($_POST['type']=='restarttime') {
-	trigger_error(__('Job restarted, bcause inactivity!','backwpup'),E_USER_ERROR);
+	trigger_error(__('Job restarted, because inactivity!','backwpup'),E_USER_ERROR);
 } elseif ($WORKING['PID']!=getmypid() and $WORKING['PID']!=0 and $runningfile['timestamp']>$revtime) {
 	trigger_error(sprintf(__('Second Process is running, because old job runs! Start type is %s','backwpup'),$_POST['type']),E_USER_ERROR);
 	die();

@@ -7,9 +7,9 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
   $jobid = (int) $_GET['jobid'];
   check_admin_referer('edit-job');
   $backwpup_message='';
-  if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token_backwpup'])) {
+  if ((int)$_GET['uid']>0 and !empty($_GET['oauth_token'])) {
     $reqtoken=get_transient('backwpup_dropboxrequest');
-    if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token_backwpup']) {
+    if ($reqtoken['oAuthRequestToken']==$_GET['oauth_token']) {
       //Get Access Tokens
       require_once (dirname(__FILE__).'/../libs/dropbox.php');
       $jobs=get_option('backwpup_jobs');
@@ -236,11 +236,11 @@ if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['drop
 			$backwpup_message.= 'SUGARSYNC: ' . $e->getMessage() . '<br />';
 		}
 	}
-	if ($_POST['authbutton']==__( 'Delete Sugarsync authentication!', 'backwpup' )) {
+	if (isset($_POST['authbutton']) && $_POST['authbutton']==__( 'Delete Sugarsync authentication!', 'backwpup' )) {
 		$jobvalues['sugarrefreshtoken']='';
 		$backwpup_message.=__('SugarSync authentication deleted!','backwpup').'<br />';
 	}
-	if ($_POST['authbutton']==__( 'Create Sugarsync Account', 'backwpup' )) {
+	if (isset($_POST['authbutton']) && $_POST['authbutton']==__( 'Create Sugarsync Account', 'backwpup' )) {
 		if (!class_exists('SugarSync'))
 			include_once(realpath(dirname(__FILE__).'/../libs/sugarsync.php'));
 		try {
