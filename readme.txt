@@ -66,6 +66,7 @@ Do backups and more for your WordPress Blog.
 * Set mail charset
 * Handling for Dropbox 503 errors
 * removed oauth bypass Google Analytics by Yoast
+* updatet AWS lib to 1.5.15
 * bug fixes
 
 = 2.1.15 =
