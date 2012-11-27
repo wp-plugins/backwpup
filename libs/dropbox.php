@@ -269,7 +269,7 @@ class backwpup_Dropbox {
             $wait=1;
 			if ( preg_match( '/Retry-After:(.*?)\r/i', $header, $matches ) )
                 $wait = trim($matches[1]);
-			trigger_error($header,E_WARNING);
+			//trigger_error($header,E_WARNING);
             trigger_error(sprintf('(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis. Wait for %d seconds.',$wait),E_USER_WARNING);
             sleep($wait);
             return $this->request( $url, $args, $method, $filehandel, $filesize, $echo );

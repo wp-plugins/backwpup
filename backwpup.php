@@ -11,7 +11,7 @@ Domain Path: /lang/
 */
 
 /*
-	Copyright (C) 2012  Daniel Hüsken  (email: mail@backwpup.com)
+	Copyright (C) 2012 Inpsyde GmbH  (email: info@inpsyde.com)
 
 	This program is free software; you can redistribute it and/or
 	modify it under the terms of the GNU General Public License

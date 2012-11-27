@@ -2,10 +2,10 @@
 Contributors: danielhuesken, inpsyde, Bueltge, nullbyte
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
-Tested up to: 3.4
-Stable tag: 2.1.15
-License: GPLv2
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tested up to: 3.4.2
+Stable tag: 2.1.16
+License: GPLv3
+License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
 WordPress Backup and more...
 
@@ -42,15 +42,7 @@ Do backups and more for your WordPress Blog.
 3. Activate the Plugin through the 'Plugins' menu in WordPress
 
 == Frequently Asked Questions ==
-= EN =
-* FAQ: http://backwpup.com/faq
-* Manual:  http://backwpup.com/manual
-* Support: http://backwpup.com/forums
 
-= DE =
-* FAQ: http://backwpup.de/faq
-* Manual:  http://backwpup.de/manual
-* Support: http://backwpup.de/forums
 
 == Screenshots ==
 1. Job Page
