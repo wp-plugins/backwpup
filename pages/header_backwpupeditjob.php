@@ -31,7 +31,7 @@ if (isset($_GET['dropboxauth']) and $_GET['dropboxauth']=='AccessToken')  {
 }
 
 //Save Job settings
-if ((isset($_POST['save']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
+if ((isset($_POST['savebackwpup']) or isset($_POST['dropboxauth']) or isset($_POST['dropboxauthdel']) or isset($_POST['authbutton'])) and !empty($_POST['jobid'])) {
   check_admin_referer('edit-job');
   $jobvalues['jobid']=(int) $_POST['jobid'];
   $jobvalues['type']= implode('+',(array)$_POST['type']);

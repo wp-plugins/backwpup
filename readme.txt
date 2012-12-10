@@ -61,6 +61,9 @@ Do backups and more for your WordPress Blog.
 * updatet AWS lib to 1.5.15
 * bug fixes
 
+= 2.1.17 =
+* Changed name of sav button to prevent false css.
+
 = 2.1.15 =
 * Fixed FTP folder bug
 * Dropbox chunking will done in memory not in temp
