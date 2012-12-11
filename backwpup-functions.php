@@ -916,7 +916,7 @@ function backwpup_get_job_vars($jobid='',$jobnewsettings='') {
 	if (substr($jobsettings['backupdir'],0,1)!='/' and substr($jobsettings['backupdir'],1,1)!=':' and !empty($jobsettings['backupdir'])) //add abspath if not absolute
 		$jobsettings['backupdir']=rtrim(str_replace('\\','/',ABSPATH),'/').'/'.$jobsettings['backupdir'];
 	$jobsettings['backupdir']=trailingslashit(str_replace('//','/',str_replace('\\','/',trim($jobsettings['backupdir']))));
-	if ($jobsettings['backupdir']=='/')
+	if ( $jobsettings[ 'backupdir' ] == '/' || $jobsettings[ 'backupdir' ] == trailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ) || $jobsettings[ 'backupdir' ] == trailingslashit( str_replace( '\\', '/', ABSPATH ) ) )
 		$jobsettings['backupdir']='';
 
 	if (!isset($jobsettings['maxbackups']) or !is_int($jobsettings['maxbackups']))

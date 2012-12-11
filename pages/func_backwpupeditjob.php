@@ -232,9 +232,9 @@ function backwpup_jobedit_metabox_destftp($jobvalue) {
   <b><?PHP _e('Port:','backwpup'); ?></b><br />
   <input name="ftphostport" type="text" value="<?PHP echo $jobvalue['ftphostport'];?>" class="small-text" /><br />
   <b><?PHP _e('Username:','backwpup'); ?></b><br />
-  <input name="ftpuser" type="text" value="<?PHP echo $jobvalue['ftpuser'];?>" class="user large-text" /><br />
+  <input name="ftpuser" type="text" value="<?PHP echo $jobvalue['ftpuser'];?>" class="user large-text" autocomplete="off" /><br />
   <b><?PHP _e('Password:','backwpup'); ?></b><br />
-  <input name="ftppass" type="password" value="<?PHP echo backwpup_base64($jobvalue['ftppass']);?>" class="password large-text" /><br />
+  <input name="ftppass" type="password" value="<?PHP echo backwpup_base64($jobvalue['ftppass']);?>" class="password large-text" autocomplete="off" /><br />
   <b><?PHP _e('Folder on Server:','backwpup'); ?></b><br />
   <input name="ftpdir" type="text" value="<?PHP echo $jobvalue['ftpdir'];?>" class="large-text" /><br />
   <?PHP if (!is_numeric($jobvalue['ftpmaxbackups'])) $jobvalue['ftpmaxbackups']=0; ?>
@@ -323,9 +323,9 @@ function backwpup_jobedit_metabox_destrsc($jobvalue) {
   ?>
   <div class="dests">
     <b><?PHP _e('Username:','backwpup'); ?></b><br />
-    <input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" /><br />
+    <input id="rscUsername" name="rscUsername" type="text" value="<?PHP echo $jobvalue['rscUsername'];?>" class="large-text" autocomplete="off"/><br />
     <b><?PHP _e('API Key:','backwpup'); ?></b><br />
-    <input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" /><br />
+    <input id="rscAPIKey" name="rscAPIKey" type="text" value="<?PHP echo $jobvalue['rscAPIKey'];?>" class="large-text" autocomplete="off" /><br />
     <b><?PHP _e('Container:','backwpup'); ?></b><br />
     <input id="rscContainerselected" name="rscContainerselected" type="hidden" value="<?PHP echo $jobvalue['rscContainer'];?>" />
     <?PHP if (!empty($jobvalue['rscUsername']) and !empty($jobvalue['rscAPIKey'])) backwpup_get_rsc_container(array('rscUsername'=>$jobvalue['rscUsername'],'rscAPIKey'=>$jobvalue['rscAPIKey'],'rscselected'=>$jobvalue['rscContainer'])); ?>
