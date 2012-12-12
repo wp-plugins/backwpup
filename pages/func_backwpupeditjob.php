@@ -611,7 +611,7 @@ function backwpup_get_gstorage_buckets($args='') {
   }
   try {
     $gstorage = new AmazonS3(array('key'=>$GStorageAccessKey,'secret'=>$GStorageSecret,'certificate_authority'=>true));
-    $gstorage->set_hostname('commondatastorage.googleapis.com');
+    $gstorage->set_hostname('storage.googleapis.com');
     $gstorage->allow_hostname_override(false);
     $buckets=$gstorage->list_buckets();
   } catch (Exception $e) {

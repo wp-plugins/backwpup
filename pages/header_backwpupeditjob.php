@@ -177,7 +177,7 @@ if ((isset($_POST['savebackwpup']) or isset($_POST['dropboxauth']) or isset($_PO
     try {
 	  CFCredentials::set(array('backwpup' => array('key'=>$_POST['GStorageAccessKey'],'secret'=>$_POST['GStorageSecret'],'default_cache_config'=>'','certificate_authority'=>true),'@default' => 'backwpup'));
       $gstorage = new AmazonS3();
-      $gstorage->set_hostname('commondatastorage.googleapis.com');
+      $gstorage->set_hostname('storage.googleapis.com');
       $gstorage->allow_hostname_override(false);
       $gstorage->create_bucket($_POST['newGStorageBucket'],'');
       $jobvalues['GStorageBucket']=$_POST['newGStorageBucket'];
