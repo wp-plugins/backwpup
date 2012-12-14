@@ -161,7 +161,7 @@ foreach($WORKING['STEPS'] as $step) {
 				update_working_file(true);
 				call_user_func(strtolower($step));
 			}
-			if ($WORKING[$step]['STEP_TRY']>=$STATIC['CFG']['jobstepretry'])
+			if ($WORKING[$step]['STEP_TRY']>$STATIC['CFG']['jobstepretry'])
 				trigger_error(__('Step arborted has too many trys!','backwpup'),E_USER_ERROR);
 		} else {
 			trigger_error(sprintf(__('Can not find job step function %s!','backwpup'),strtolower($step)),E_USER_ERROR);
