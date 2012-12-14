@@ -710,11 +710,11 @@ function backwpup_env_checks() {
 	if (strtolower(substr(WP_PLUGIN_URL,0,7))!='http://' and strtolower(substr(WP_PLUGIN_URL,0,8))!='https://') { // check logs folder
 		$message.=sprintf(__("- WP_PLUGIN_URL '%s' must set as a full URL!",'backwpup'),WP_PLUGIN_URL).'<br />';
 	}
-	if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
-		if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
-			$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
-		}
-	}
+	//if (false !== $nextrun=wp_next_scheduled('backwpup_cron')) {
+	//	if (empty($nextrun) or $nextrun<(time()-(3600*24))) {  //check cron jobs work
+	//		$message.=__("- WP-Cron isn't working, please check it!","backwpup") .'<br />';
+	//	}
+	//}
 	//put massage if one
 	if (!empty($message))
 		$backwpup_admin_message = '<div id="message" class="error fade"><strong>BackWPup:</strong><br />'.$message.'</div>';
