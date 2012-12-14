@@ -220,7 +220,7 @@ function backwpup_jobedit_metabox_destfolder($jobvalue) {
   ?>
   <b><?PHP _e('Full Path to folder for Backup Files:','backwpup'); ?></b><br />
   <input name="backupdir" id="backupdir" type="text" value="<?PHP echo $jobvalue['backupdir'];?>" class="large-text" /><br />
-  <span class="description"><?PHP _e('Your WordPress dir is:','backwpup'); echo ' '.trailingslashit(str_replace('\\','/',ABSPATH));?></span><br />&nbsp;<br />
+  <span class="description"><?PHP _e('A sampel Folder is:','backwpup'); echo ' '.trailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ) . trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) );?></span><br />&nbsp;<br />
   <?PHP _e('Max. backup files in folder:','backwpup'); ?> <input name="maxbackups" id="maxbackups" type="text" size="3" value="<?PHP echo $jobvalue['maxbackups'];?>" class="small-text" /><span class="description"><?PHP _e('(Oldest files will deleted first.)','backwpup');?></span>
   <?PHP
 }

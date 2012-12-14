@@ -200,11 +200,6 @@ function update_working_file($mustwrite=false) {
         $stepspersent=round(count($WORKING['STEPSDONE'])/count($WORKING['STEPS'])*100);
     else
         $stepspersent=1;
-	//PHP_SAPI for fcgi requires a data flush of at least 256 bytes every 40 seconds or else it forces a script hault
-	if ( stristr( PHP_SAPI , 'fcgi') ) {
-		echo str_repeat(' ', 13 );
-		@flush();
-	}
     @set_time_limit(0);
     if (is_writable($STATIC['TEMPDIR'].'.running')) {
         file_put_contents($STATIC['TEMPDIR'].'.running',serialize(array('timestamp'=>time(),'JOBID'=>$STATIC['JOB']['jobid'],'LOGFILE'=>$STATIC['LOGFILE'],'STEPSPERSENT'=>$stepspersent,'STEPPERSENT'=>$steppersent,'ABSPATH'=>$STATIC['WP']['ABSPATH'],'WORKING'=>$WORKING)));
