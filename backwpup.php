@@ -4,7 +4,7 @@ Plugin Name: BackWPup
 Plugin URI: http://backwpup.com
 Description: WordPress Backup and more...
 Author: Daniel H&uuml;sken
-Version: 2.1.16
+Version: 2.1.17
 Author URI: http://danielhuesken.de
 Text Domain: backwpup
 Domain Path: /lang/
@@ -34,7 +34,7 @@ if (!defined('ABSPATH'))
 define('BACKWPUP_PLUGIN_BASEDIR', dirname(plugin_basename(__FILE__)));
 define('BACKWPUP_PLUGIN_BASEURL', plugins_url(BACKWPUP_PLUGIN_BASEDIR));
 //Set Plugin Version
-define('BACKWPUP_VERSION', '2.1.16');
+define('BACKWPUP_VERSION', '2.1.17');
 //Set Min Wordpress Version
 define('BACKWPUP_MIN_WORDPRESS_VERSION', '3.1');
 //Set User Capability
