@@ -3,7 +3,7 @@ Contributors: danielhuesken, inpsyde, Bueltge, nullbyte
 Tags: backup, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, amazon
 Requires at least: 3.1
 Tested up to: 3.5
-Stable tag: 2.1.16
+Stable tag: 2.1.17
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -51,6 +51,12 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.17 =
+* Changed name of sav button to prevent false css.
+* added autocomplte off to some input fields.
+* cheange api domain for google storage
+* Updated AWS lib to 1.5.17.1
+
 = 2.1.16 =
 * Dropbox chunking will done in temp again.
 * uses stream for compression
@@ -60,9 +66,6 @@ Do backups and more for your WordPress Blog.
 * removed oauth bypass Google Analytics by Yoast
 * updatet AWS lib to 1.5.15
 * bug fixes
-
-= 2.1.17 =
-* Changed name of sav button to prevent false css.
 
 = 2.1.15 =
 * Fixed FTP folder bug
