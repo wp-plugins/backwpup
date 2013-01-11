@@ -51,6 +51,10 @@ Do backups and more for your WordPress Blog.
 4. Backups Manage Page
 
 == Changelog ==
+= 2.1.18 =
+* Amazon S3 Bucket region fix (thx canarduck)
+* Dropbox chunks Upload in memory no temp usage.
+
 = 2.1.17 =
 * Changed name of sav button to prevent false css.
 * added autocomplte off to some input fields.
@@ -174,7 +178,7 @@ Do backups and more for your WordPress Blog.
 * Respect open_basdir for temp folder
 * Dropbox changes, better uploads, but needs many memory
 * Added Multiseite support (only for Network Admin)
-* Uses now ‘WP_TEMP_DIR’ for getting temp folder
+* Uses now ï¿½WP_TEMP_DIRï¿½ for getting temp folder
 * Updated AWS lib to 1.3.6
 * Job runs now in UTC time. Time outputs will convert.
 * Many languge strings changed for better translation

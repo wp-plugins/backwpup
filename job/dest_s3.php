@@ -12,6 +12,19 @@ function dest_s3() {
     $s3 = new AmazonS3(array('key'=>$STATIC['JOB']['awsAccessKey'],'secret'=>$STATIC['JOB']['awsSecretKey'],'certificate_authority'=>true));
     if ($s3->if_bucket_exists($STATIC['JOB']['awsBucket'])) {
       trigger_error(sprintf(__('Connected to S3 Bucket: %s','backwpup'),$STATIC['JOB']['awsBucket']),E_USER_NOTICE);
+
+		// determine bucket region
+		$response = $s3->get_bucket_region($STATIC['JOB']['awsBucket']);
+		if($response->isOK())
+		{
+			if($response->body == 'EU') {
+				trigger_error(__('Bucket region is set to EU... ','backwpup'),E_USER_NOTICE);
+				$s3->set_region(AmazonS3::REGION_EU_W1);
+			}
+		} else {
+			trigger_error(__('Unable to determine S3 bucket region !','backwpup'),E_USER_ERROR);
+		}
+
       //Transfer Backup to S3
       if ($STATIC['JOB']['awsrrs']) //set reduced redundancy or not
         $storage=AmazonS3::STORAGE_REDUCED;

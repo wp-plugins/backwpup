@@ -90,8 +90,8 @@ class backwpup_Dropbox {
         $offset=0;
         $ProgressFunction=null;
         while ($data=fread($file_handel,4194304)) {  //4194304 = 4MB
-            $chunkHandle = fopen('php://temp', 'w+');
-            fwrite($chunkHandle,$data);
+            $chunkHandle = fopen('php://memory', 'w+');
+			fputs($chunkHandle, $data);
             rewind($chunkHandle);
             //overwrite progress function
             if (!empty($this->ProgressFunction) and function_exists($this->ProgressFunction)) {
@@ -99,7 +99,7 @@ class backwpup_Dropbox {
                 $this->ProgressFunction=false;
             }
             $url = self::API_CONTENT_URL.self::API_VERSION_URL.'chunked_upload';
-            $output = $this->request($url, array('upload_id' => $uploadid,'offset'=>$offset), 'PUT', $chunkHandle, strlen($data));
+            $output = $this->request($url, array('upload_id' => $uploadid,'offset'=>$offset), 'PUT', $chunkHandle, mb_strlen($data, '8bit'));
             fclose($chunkHandle);
             if ($ProgressFunction) {
                 call_user_func($ProgressFunction,0,0,0,$offset);
