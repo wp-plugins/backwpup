@@ -54,6 +54,7 @@ Do backups and more for your WordPress Blog.
 = 2.1.18 =
 * Amazon S3 Bucket region fix (thx canarduck)
 * Dropbox chunks Upload in memory no temp usage.
+* Updated AWS lib to 1.6.0
 
 = 2.1.17 =
 * Changed name of sav button to prevent false css.
