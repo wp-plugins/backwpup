@@ -11,41 +11,41 @@ Flexible, scheduled WordPress backups to any location
 
 == Description ==
 
-The backup files can be used to save your whole installation including `/wp-content/`   
-and push them to an external Backup Service, if you don’t want to save the backups on  
-the same server. With the single backup .zip file you are able to restore an installation.  
-  
-* Database Backup  
-* WordPress XML Export  
-* Generate a file with installed plugins  
-* Optimize Database  
-* Check and repair Database  
-* File backup  
-* Security scan  
-* Backups in zip, tar, tar.gz, tar.bz2 format  
-* Store backup to directory  
-* Store backup to FTP server  
-* Store backup to S3 services  
-* Store backup to Microsoft Azure (Blob)  
-* Store backup to RackSpaceCloud  
-* Store backup to Dropbox  
-* Store backup to SugarSync  
-* Send logs and backups by email  
-* Multi-site support only as network admin  
-  
-Get the Pro Version: http://marketpress.com/product/backwpup-pro/  
-  
-** WordPress 3.2 and PHP 5.2.6 required! **  
-  
-** Test your Backups! **  
+The backup files can be used to save your whole installation including `/wp-content/`
+and push them to an external Backup Service, if you don’t want to save the backups on
+the same server. With the single backup .zip file you are able to restore an installation.
+
+* Database Backup
+* WordPress XML Export
+* Generate a file with installed plugins
+* Optimize Database
+* Check and repair Database
+* File backup
+* Security scan
+* Backups in zip, tar, tar.gz, tar.bz2 format
+* Store backup to directory
+* Store backup to FTP server
+* Store backup to S3 services
+* Store backup to Microsoft Azure (Blob)
+* Store backup to RackSpaceCloud
+* Store backup to Dropbox
+* Store backup to SugarSync
+* Send logs and backups by email
+* Multi-site support only as network admin
+
+Get the Pro Version: http://marketpress.com/product/backwpup-pro/
+
+** WordPress 3.2 and PHP 5.2.6 required! **
+
+** Test your Backups! **
 
 == Frequently Asked Questions ==
 
-= EN =  
-* Manual: http://marketpress.com/documentation/backwpup-pro/  
-  
-= DE =  
-* Dokumentation: http://marketpress.de/dokumentation/backwpup-pro/  
+= EN =
+* Manual: http://marketpress.com/documentation/backwpup-pro/
+
+= DE =
+* Dokumentation: http://marketpress.de/dokumentation/backwpup-pro/
 
 == Screenshots ==
 
@@ -58,19 +58,19 @@ Get the Pro Version: http://marketpress.com/product/backwpup-pro/
 == Upgrade Notice ==
 = After an upgrade from version 2 =
 
-Please check all settings after the update:  
-  
-* Dropbox authentication must be done again  
-* SugarSync authentication must be done again  
-* S3 Settings  
-* Google Storage is now in S3  
-* Check all your passwords  
+Please check all settings after the update:
+
+* Dropbox authentication must be done again
+* SugarSync authentication must be done again
+* S3 Settings
+* Google Storage is now in S3
+* Check all your passwords
 
 == Installation ==
 
-1. Download the BackWPup plugin.  
-2. Decompress the ZIP file and upload the contents of the archive into `/wp-content/plugins/`.  
-3. Activate the plugin through the 'Plugins' menu in WordPress  
+1. Download the BackWPup plugin.
+2. Decompress the ZIP file and upload the contents of the archive into `/wp-content/plugins/`.
+3. Activate the plugin through the 'Plugins' menu in WordPress
 
 
 == Changelog ==
@@ -90,43 +90,43 @@ Please check all settings after the update:
 * Updated: OpenCloud API to Version 1.4.1
 
 = Version 3.0 =
-* Added: Jobs can now be started with an external link or per command line  
-* Added: Backups can now be compressed with gz or bzip2  
-* Added: All file names can now be adjusted  
-* Added: MySQL dump supports now views  
-* Added: Settings for access control per capability and role  
-* Added: Save a list of installed Plugins  
-* Added: Support for WP-CLI  
-* Improved: Job edit page with tabs  
-* Improved: Settings page with tabs  
-* Improved: Database dump now uses mysqli PHP extension for better performance   
-* Improved: ZIP archives are now created with PHP Zip if available  
-* Improved: All passwords are now stored encrypted in database  
-* Improved: wp-cron job start mechanism  
-* Improved: Job start mechanism not longer uses URL in plugin directory  
-* Improved: Use `temp` directory in uploads or set it with `WP_TEMP_DIR`  
-* Changed: Mailing backup archives now with SwiftMailer  
-* Changed: Job process now back in the WordPress environment  
-* Changed: License changed to GPLv3  
-* Changed: Rewrote almost the complete code base to use classes with auto-loading  
-* Changed: Logs are now displayed with fancybox  
-* Updated: AWS SDK v2.1.2 (PHP 5.3.3)  
-* Updated: OpenCloud SDK to v1.3 (PHP 5.3)  
-* Updated: Windows Azure SDK v0.3.1_2011-08 (PHP 5.3.2)  
-* Removed: serialized job export  
-* Removed: tools section - not needed anymore  
-* Removed: Dashboard widgets are now on the BackWPup plugin dashboard  
-* Fixed: many, many minor bugs  
+* Added: Jobs can now be started with an external link or per command line
+* Added: Backups can now be compressed with gz or bzip2
+* Added: All file names can now be adjusted
+* Added: MySQL dump supports now views
+* Added: Settings for access control per capability and role
+* Added: Save a list of installed Plugins
+* Added: Support for WP-CLI
+* Improved: Job edit page with tabs
+* Improved: Settings page with tabs
+* Improved: Database dump now uses mysqli PHP extension for better performance
+* Improved: ZIP archives are now created with PHP Zip if available
+* Improved: All passwords are now stored encrypted in database
+* Improved: wp-cron job start mechanism
+* Improved: Job start mechanism not longer uses URL in plugin directory
+* Improved: Use `temp` directory in uploads or set it with `WP_TEMP_DIR`
+* Changed: Mailing backup archives now with SwiftMailer
+* Changed: Job process now back in the WordPress environment
+* Changed: License changed to GPLv3
+* Changed: Rewrote almost the complete code base to use classes with auto-loading
+* Changed: Logs are now displayed with fancybox
+* Updated: AWS SDK v2.1.2 (PHP 5.3.3)
+* Updated: OpenCloud SDK to v1.3 (PHP 5.3)
+* Updated: Windows Azure SDK v0.3.1_2011-08 (PHP 5.3.2)
+* Removed: serialized job export
+* Removed: tools section - not needed anymore
+* Removed: Dashboard widgets are now on the BackWPup plugin dashboard
+* Fixed: many, many minor bugs
 
 = Version 3.0 Pro =
 
-* Wizards  
-* Export jobs and settings as XML  
-* Synchronization of files to backup with destination (filename and size checked)  
-* Wizard to import jobs and settings from XML  
-* Database dump can backup other MySQL databases  
-* Database dump can use `mysqldump` command on commend line  
-* Database dump can create XML files (phpMyAdmin schema)  
-* Use your own API keys for Dropbox and SugarSync  
-* Premium Support  
-* Automatic updates  
+* Wizards
+* Export jobs and settings as XML
+* Synchronization of files to backup with destination (filename and size checked)
+* Wizard to import jobs and settings from XML
+* Database dump can backup other MySQL databases
+* Database dump can use `mysqldump` command on commend line
+* Database dump can create XML files (phpMyAdmin schema)
+* Use your own API keys for Dropbox and SugarSync
+* Premium Support
+* Automatic updates
