@@ -39,6 +39,10 @@ Get the Pro Version: http://marketpress.com/product/backwpup-pro/
   
 ** Test your Backups! **  
 
+**Made by [Inpsyde](http://inpsyde.com) &middot; We love WordPress**  
+
+Have a look at the premium plugins in our [market](http://marketpress.com).  
+
 == Frequently Asked Questions ==
 
 = EN =  
