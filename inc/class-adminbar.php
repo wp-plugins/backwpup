@@ -11,7 +11,7 @@ class BackWPup_Adminbar {
 	 */
 	private function __construct() {
 
-		if ( defined( 'DOING_CRON' )  || ! current_user_can( 'backwpup' ) || ! is_admin_bar_showing() || ! get_site_option( 'backwpup_cfg_showadminbar', TRUE ) )
+		if ( defined( 'DOING_CRON' )  || ! current_user_can( 'backwpup' ) || ! is_admin_bar_showing() || ! BackWPup_Option::get( 'cfg', 'showadminbar' ) )
 			return;
 
 		//load text domain
@@ -49,7 +49,7 @@ class BackWPup_Adminbar {
 		$menu_title = '<span class="ab-icon"></span><span class="ab-label">' . BackWPup::get_plugin_data( 'name' ) . '</span>';
 		$menu_herf  = network_admin_url( 'admin.php' ) . '?page=backwpup';
 		if ( $job_object && current_user_can( 'backwpup_jobs_start' ) ) {
-			$menu_title = '<span class="ab-icon blink"></span><span class="ab-label">' . BackWPup::get_plugin_data( 'name' )  . ' <span id="backwpup-adminbar-running">' .__( 'running', 'backwpupadminbar') . '</span></span>';
+			$menu_title = '<span class="ab-icon"></span><span class="ab-label">' . BackWPup::get_plugin_data( 'name' )  . ' <span id="backwpup-adminbar-running">' .__( 'running', 'backwpupadminbar') . '</span></span>';
 			$menu_herf  = network_admin_url( 'admin.php' ) . '?page=backwpupjobs';
 		}
 

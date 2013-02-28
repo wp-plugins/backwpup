@@ -623,7 +623,7 @@ final class BackWPup_Job {
 		@ini_set( 'log_errors', 'On' );
 		//set temp folder
 		$this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] = getenv( 'TMPDIR' );
-		putenv( 'TMPDIR='.BackWPup::get_plugin_data( 'TEMP') );
+		@putenv( 'TMPDIR='.BackWPup::get_plugin_data( 'TEMP') );
 		//increase MySQL timeout
 		@ini_set( 'mysql.connect_timeout', '60' );
 		$wpdb->query( "SET session wait_timeout = 60" );
@@ -646,7 +646,7 @@ final class BackWPup_Job {
 			$GLOBALS[ 'l10n' ] = array();
 		}
 		//clear caches then the backups smaller and lesser problems
-		if ( has_action('cachify_flush_cache') ) { //clear APC
+		if ( function_exists( 'apc_clear_cache' ) ) { //clear APC
 			apc_clear_cache();
 		}
 		if ( function_exists('w3tc_objectcache_flush') ) { //W3TC
@@ -1062,8 +1062,14 @@ final class BackWPup_Job {
 		@set_time_limit( 0 );
 
 		//check MySQL connection to WordPress Database and reconnect if needed
-		if ( ! mysql_ping( $wpdb->dbh ) )
-			$wpdb->db_connect();
+		if ( is_resource( $wpdb->dbh ) ) {
+			if ( ! mysql_ping( $wpdb->dbh ) )
+				$wpdb->db_connect();
+		} else {
+			$res = $wpdb->query( 'SELECT 1' );
+			if ( $res === FALSE )
+				$wpdb->db_connect();
+		}
 
 		//check if job already aborted
 		if ( ! self::get_working_data( FALSE ) && $this->step_working != 'END') {
@@ -1176,7 +1182,7 @@ final class BackWPup_Job {
 		@ini_set( 'error_log', $this->temp[ 'PHP' ][ 'INI' ][ 'ERROR_LOG' ] );
 		@ini_set( 'display_errors', $this->temp[ 'PHP' ][ 'INI' ][ 'DISPLAY_ERRORS' ] );
 		if ( $this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] )
-			putenv('TMPDIR=' . $this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] );
+			@putenv('TMPDIR=' . $this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] );
 		//logfile end
 		file_put_contents( $this->logfile, "</body>" . PHP_EOL . "</html>", FILE_APPEND );
 
@@ -1203,7 +1209,8 @@ final class BackWPup_Job {
 			$headers = array();
 			$headers[] = 'Content-Type: text/html; charset='. get_bloginfo( 'charset' );
 			$headers[] = 'X-Priority: '.$priority;
-			$headers[] = 'From: BackWPup <' . sanitize_email( get_bloginfo( 'admin_email' ) ).'>';
+			if ( ! empty( $this->job[ 'mailaddresssenderlog' ] ) )
+				$headers[] = 'From: ' . $this->job[ 'mailaddresssenderlog' ];
 
 			wp_mail( $this->job[ 'mailaddresslog' ], $subject, file_get_contents( $this->logfile ), $headers );
 		}
@@ -1553,6 +1560,9 @@ final class BackWPup_Job {
 	 */
 	public function get_files_in_folder( $folder ) {
 
+		//clear cache of files in php
+		clearstatcache();
+		
 		$files = array();
 
 		if ( ! is_dir( $folder ) ) {

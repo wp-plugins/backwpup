@@ -59,8 +59,6 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 				return 'https://s3-ap-southeast-2.amazonaws.com';
 			case 'sa-east-1':
 				return 'https://s3-sa-east-1.amazonaws.com';
-			case 'us-gov-west-1':
-				return 'https://s3-us-gov-west-1.amazonaws.com';
 			case 'google-storage':
 				return 'https://storage.googleapis.com';
 			case 'hosteurope':
@@ -78,7 +76,7 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 0, 's3syncnodelete' => TRUE );
+		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 0, 's3syncnodelete' => TRUE, 's3multipart' => TRUE );
 	}
 
 
@@ -103,7 +101,6 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 						<option value="ap-southeast-1" <?php selected( 'ap-southeast-1', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Amazon S3: Asia Pacific (Singapore)', 'backwpup' ); ?></option>
 						<option value="ap-southeast-2" <?php selected( 'ap-southeast-2', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Amazon S3: Asia Pacific (Sydney)', 'backwpup' ); ?></option>
 						<option value="sa-east-1" <?php selected( 'sa-east-1', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Amazon S3: South America (Sao Paulo)', 'backwpup' ); ?></option>
-						<option value="us-gov-west-1" <?php selected( 'us-gov-west-1', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Amazon S3: GovCloud (US)', 'backwpup' ); ?></option>
 						<option value="google-storage" <?php selected( 'google-storage', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Google Storage (Interoperable Access)', 'backwpup' ); ?></option>
 						<option value="hosteurope" <?php selected( 'hosteurope', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Hosteurope Cloud Storage', 'backwpup' ); ?></option>
                         <option value="dreamhost" <?php selected( 'dreamhost', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Dream Host Cloud Storage', 'backwpup' ); ?></option>
@@ -185,6 +182,17 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 						<?php } ?>
 				</td>
 			</tr>
+			<?php if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) { ?>
+			<tr valign="top">		
+				<th scope="row"><?php _e( 'Multipart Upload', 'backwpup' ); ?></th>
+				<td>
+				   <label for="ids3multipart"><input class="checkbox" value="1"
+						type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 's3multipart' ), TRUE ); ?>
+						name="s3multipart" id="ids3multipart" /> <?php _e( 'Use multipart upload for uploading a file', 'backwpup' ); ?></label>
+					<?php BackWPup_Help::tip( __( 'Mutipart split the file into peaces of chucks while uploading. It is needed for displaying upload process and can transfer bigger files. Im moment there are problems on Google storage with this option', 'backwpup') ); ?>
+				</td>
+			</tr>
+			<?php }  ?>
 		</table>
 
 		<h3 class="title"><?php _e( 'Amazon specific settings', 'backwpup' ); ?></h3>
@@ -236,6 +244,7 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 
 		BackWPup_Option::update( $jobid, 's3maxbackups', isset( $_POST[ 's3maxbackups' ] ) ? (int)$_POST[ 's3maxbackups' ] : 0 );
 		BackWPup_Option::update( $jobid, 's3syncnodelete', ( isset( $_POST[ 's3syncnodelete' ] ) && $_POST[ 's3syncnodelete' ] == 1 ) ? TRUE : FALSE );
+		BackWPup_Option::update( $jobid, 's3multipart', ( isset( $_POST[ 's3multipart' ] ) && $_POST[ 's3multipart' ] == 1 ) ? TRUE : FALSE );
 
 		//create new bucket
 		if ( !empty( $_POST[ 's3newbucket' ] ) ) {
@@ -381,8 +390,7 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 
 			if ( $s3->doesBucketExist( $job_object->job[ 's3bucket' ] ) ) {
 				$bucketregion = $s3->getBucketLocation( array( 'Bucket' => $job_object->job[ 's3bucket' ] ) )->toArray();
-				$bucketacl = $s3->getBucketAcl( array( 'Bucket' => $job_object->job[ 's3bucket' ] ) )->toArray();
-				$job_object->log( sprintf( __( 'Connected to S3 Bucket "%1$s" from "%3$s" in %2$s', 'backwpup' ), $job_object->job[ 's3bucket' ], $bucketregion[ 'Location' ], $bucketacl[ 'Owner' ][ 'DisplayName' ] ), E_USER_NOTICE );
+				$job_object->log( sprintf( __( 'Connected to S3 Bucket "%1$s" in %2$s', 'backwpup' ), $job_object->job[ 's3bucket' ], $bucketregion[ 'Location' ] ), E_USER_NOTICE );
 			}
 			else {
 				$job_object->log( sprintf( __( 'S3 Bucket "%s" does not exist!', 'backwpup' ), $job_object->job[ 's3bucket' ] ), E_USER_ERROR );
@@ -395,36 +403,61 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 
 			//check memory
 			$job_object->need_free_memory( '6M' );
-			//Prepare Upload
-			$multipart_transfer = Aws\S3\Model\MultipartUpload\UploadBuilder::newInstance()
-				->setClient( $s3 )
-				->setSource( $job_object->backup_folder . $job_object->backup_file )
-				->setBucket( $job_object->job[ 's3bucket' ] )
-				->setOption('ContentType', $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file ) )
-				->setOption('ACL', 'private' )
-				->setKey( $job_object->job[ 's3dir' ] . $job_object->backup_file );
+			
+			if ( ! $job_object->job[ 's3multipart' ] ) {
+				//Prepare Upload
+				$create_args                 	= array();
+				$create_args[ 'Bucket' ] 	 	= $job_object->job[ 's3bucket' ];
+				$create_args[ 'ACL' ]        	= 'private';
 				if ( ! empty( $job_object->job[ 's3ssencrypt' ] ) )
-					$multipart_transfer = $multipart_transfer->setOption('ServerSideEncryption', $job_object->job[ 's3ssencrypt' ] );
-				if ( ! empty( $job_object->job[ 's3storageclass' ] ) )
-					$multipart_transfer = $multipart_transfer->setOption('StorageClass', $job_object->job[ 's3storageclass' ] );
-				$multipart_transfer = $multipart_transfer->build();
-
-			// Attach event listeners to the transfer object for upload progress
-			$dispatcher = $multipart_transfer->getEventDispatcher();
-			$dispatcher->addListener($multipart_transfer::AFTER_PART_UPLOAD, function ($event) {
-				$size = $event['command']->get('Body')->getContentLength();
-				$job_object = BackWPup_Job::get_working_data();
-				$job_object->substeps_done = $job_object->substeps_done + $size;
-				$job_object->update_working_data();
-			});
-
-			try {
-				$multipart_transfer->upload();
-			} catch ( Aws\Common\Exception\MultipartUploadException $e ) {
-				$job_object->log( E_USER_ERROR, sprintf( __( 'S3 Service API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
-				$multipart_transfer->abort();
-
-				return FALSE;
+					$create_args[ 'ServerSideEncryption' ] = $job_object->job[ 's3ssencrypt' ]; //AES256
+				if ( ! empty( $job_object->job[ 's3storageclass' ] ) ) //REDUCED_REDUNDANCY
+					$create_args[ 'StorageClass' ] = $job_object->job[ 's3storageclass' ];
+				$create_args[ 'Metadata' ]   	= array( 'BackupTime' => date_i18n( 'Y-m-d H:i:s', $job_object->start_time ) );
+				
+				$create_args[ 'Body' ] 	  		= fopen( $job_object->backup_folder . $job_object->backup_file, 'r'  );
+				$create_args[ 'Key' ] 		 	= $job_object->job[ 's3dir' ] . $job_object->backup_file;
+				$create_args[ 'ContentType' ]	= $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file );
+				
+				try {
+					$s3->putObject( $create_args );
+				} catch ( Aws\Common\Exception\MultipartUploadException $e ) {
+					$job_object->log( E_USER_ERROR, sprintf( __( 'S3 Service API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
+	
+					return FALSE;
+				}		
+			} else {
+				//Prepare Upload
+				$multipart_transfer = Aws\S3\Model\MultipartUpload\UploadBuilder::newInstance()
+					->setClient( $s3 )
+					->setSource( $job_object->backup_folder . $job_object->backup_file )
+					->setBucket( $job_object->job[ 's3bucket' ] )
+					->setOption('ContentType', $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file ) )
+					->setOption('ACL', 'private' )
+					->setKey( $job_object->job[ 's3dir' ] . $job_object->backup_file );
+					if ( ! empty( $job_object->job[ 's3ssencrypt' ] ) )
+						$multipart_transfer = $multipart_transfer->setOption('ServerSideEncryption', $job_object->job[ 's3ssencrypt' ] );
+					if ( ! empty( $job_object->job[ 's3storageclass' ] ) )
+						$multipart_transfer = $multipart_transfer->setOption('StorageClass', $job_object->job[ 's3storageclass' ] );
+					$multipart_transfer = $multipart_transfer->build();
+	
+				// Attach event listeners to the transfer object for upload progress
+				$dispatcher = $multipart_transfer->getEventDispatcher();
+				$dispatcher->addListener($multipart_transfer::AFTER_PART_UPLOAD, function ($event) {
+					$size = $event['command']->get('Body')->getContentLength();
+					$job_object = BackWPup_Job::get_working_data();
+					$job_object->substeps_done = $job_object->substeps_done + $size;
+					$job_object->update_working_data();
+				});
+	
+				try {
+					$multipart_transfer->upload();
+				} catch ( Aws\Common\Exception\MultipartUploadException $e ) {
+					$job_object->log( E_USER_ERROR, sprintf( __( 'S3 Service API: %s', 'backwpup' ), htmlentities( $e->getMessage() ) ), $e->getFile(), $e->getLine() );
+					$multipart_transfer->abort();
+	
+					return FALSE;
+				}
 			}
 
 			$result = $s3->headObject( array( 	'Bucket' => $job_object->job[ 's3bucket' ],

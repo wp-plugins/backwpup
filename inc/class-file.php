@@ -61,7 +61,10 @@ class BackWPup_File {
 	public static function get_folder_size( $folder, $deep = TRUE ) {
 
 		$files_size = 0;
-
+		
+		if ( ! is_readable( $folder ) )
+			return $files_size; 
+		
 		$folder_content = scandir( $folder );
 		foreach( $folder_content as $file ) {
 			if ( in_array( $file, array( '.', '..' ) ) )

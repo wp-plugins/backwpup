@@ -155,6 +155,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 	 * @return bool
 	 */
 	public function job_run( $job_object ) {
+		global $wpdb;
 
 		$job_object->substeps_done = 0;
 		$job_object->substeps_todo = 1;
@@ -175,7 +176,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			$sql_dump = new BackWPup_MySQLDump( array( 'dumpfile' => BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'dbdumpfile' ] ) );
 
 			if ( is_object( $sql_dump ) )
-				$job_object->log( sprintf( __( 'Connected to database %1$s on %2$s', 'backwpup' ), $job_object->job[ 'dbdumpdbname' ], $job_object->job[ 'dbdumpdbhost' ] ) );
+				$job_object->log( sprintf( __( 'Connected to database %1$s on %2$s', 'backwpup' ), $wpdb->dbname, $wpdb->dbhost ) );
 
 			//Exclude Tables
 			foreach ( $sql_dump->tables_to_dump as $key => $table ) {

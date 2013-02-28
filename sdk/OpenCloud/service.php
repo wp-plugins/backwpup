@@ -25,6 +25,10 @@ require_once(__DIR__.'/base.php');
  * @author Glen Campbell <glen.campbell@rackspace.com>
  */
 abstract class Service extends Base {
+
+	protected
+		$_namespaces=array();
+
 	private
 		$conn,
 		$service_type,
@@ -54,7 +58,6 @@ abstract class Service extends Base {
 		$this->service_type = $type;
 		$this->service_name = $name;
 		$this->service_region = $region;
-		$catalog = $conn->serviceCatalog();
 		$this->service_url = $this->get_endpoint(
 		        $type, $name, $region, $urltype);
 	} // public function __construct()
@@ -142,7 +145,7 @@ abstract class Service extends Base {
 		// determine the URL
 		if (!$url)
 		    $url = $parent->Url($class::ResourceName());
-		
+
 		// add query string parameters
 		if (count($parm))
 			$url .= '?' . $this->MakeQueryString($parm);
@@ -174,7 +177,7 @@ abstract class Service extends Base {
 		$obj = json_decode($response->HttpBody());
 		if ($this->CheckJsonError())
 			return FALSE;
-			
+
 		// see if there is a "next" link
 		if (isset($obj->links)) {
 			if (is_array($obj->links)) {
@@ -205,18 +208,18 @@ abstract class Service extends Base {
 		}
 		else
 			$coll_obj = new Collection($parent, $class, array());
-		
+
 		// if there's a $next_page_url, then we need to establish a
 		// callback method
 		if (isset($next_page_url)) {
 			$coll_obj->SetNextPageCallback(
-				array($this, 'Collection'), 
+				array($this, 'Collection'),
 				$next_page_url);
 		}
-		
+
 		return $coll_obj;
 	}
-	
+
 	/**
 	 * returns the Region associated with the service
 	 *
@@ -225,6 +228,31 @@ abstract class Service extends Base {
 	 */
 	public function Region() {
 		return $this->service_region;
+	}
+
+	/**
+	 * returns the serviceName associated with the service
+	 *
+	 * This is used by DNS for PTR record lookups
+	 *
+	 * @api
+	 * @return string
+	 */
+	public function Name() {
+		return $this->service_name;
+	}
+
+	/**
+	 * Returns a list of supported namespaces
+	 *
+	 * @return array
+	 */
+	public function namespaces() {
+		if (!isset($this->_namespaces))
+			return array();
+		if (is_array($this->_namespaces))
+		    return $this->_namespaces;
+		return array();
 	}
 
 	/********** PRIVATE METHODS **********/
@@ -256,8 +284,14 @@ abstract class Service extends Base {
                  (!strcasecmp($service->name, $name))) {
                 // found the service, now we need to find the region
                 foreach($service->endpoints as $endpoint) {
+					// regionless service
+                    if (!isset($endpoint->region) &&
+                    	 isset($endpoint->$urltype)) {
+                    	++$found;
+                    	return $endpoint->$urltype;
+                    }
                     // compare the regions
-                    if ((!strcasecmp($endpoint->region, $region)) &&
+                    elseif ((!strcasecmp($endpoint->region, $region)) &&
                          isset($endpoint->$urltype)) {
                         // now we have a match! Yay!
                         ++$found;

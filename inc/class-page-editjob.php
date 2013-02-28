@@ -90,6 +90,13 @@ class BackWPup_Page_Editjob {
 
 				BackWPup_Option::update( $jobid, 'name', esc_html( $_POST[ 'name' ] ) );
 				BackWPup_Option::update( $jobid, 'mailaddresslog', sanitize_email( $_POST[ 'mailaddresslog' ] ) );
+				
+				$_POST[ 'mailaddresssenderlog' ] = trim( $_POST[ 'mailaddresssenderlog' ] );
+				if ( empty($_POST[ 'mailaddresssenderlog' ] ) )
+					BackWPup_Option::delete( $jobid, 'mailaddresssenderlog');
+				else
+					BackWPup_Option::update( $jobid, 'mailaddresssenderlog', $_POST[ 'mailaddresssenderlog' ] );
+				
 				BackWPup_Option::update( $jobid, 'mailerroronly', ( isset( $_POST[ 'mailerroronly' ] ) && $_POST[ 'mailerroronly' ] == 1 ) ? TRUE : FALSE );
 				if ( class_exists( 'BackWPup_Features', FALSE ) )
 					BackWPup_Option::update( $jobid, 'backuptype', $_POST[ 'backuptype' ] );
@@ -305,13 +312,13 @@ class BackWPup_Page_Editjob {
 		}
 
 		list( $cronstr[ 'minutes' ], $cronstr[ 'hours' ], $cronstr[ 'mday' ], $cronstr[ 'mon' ], $cronstr[ 'wday' ] ) = explode( ' ', $cronstamp, 5 );
-		if ( FALSE !== strpos( $cronstr[ 'minutes' ], '*/' ) || ( $cronstr[ 'minutes' ] == '*' ) ) {
+		if ( FALSE !== strpos( $cronstr[ 'minutes' ], '*/' ) || $cronstr[ 'minutes' ] == '*' ) {
 			$repeatmins = str_replace( '*/', '', $cronstr[ 'minutes' ] );
 			if ( $repeatmins == '*' || empty( $repeatmins ) )
-				$repeatmins = 10;
+				$repeatmins = 5;
 			echo '<span style="color:red;">' . sprintf( __( 'ATTENTION: Job runs every %d minutes!', 'backwpup' ), $repeatmins ) . '</span><br />';
 		}
-		if ( FALSE !== strpos( $cronstr[ 'hours' ], '*/' ) || ( $cronstr[ 'hours' ] == '*' ) ) {
+		if ( FALSE !== strpos( $cronstr[ 'hours' ], '*/' ) || $cronstr[ 'hours' ] == '*' ) {
 			$repeathouer = str_replace( '*/', '', $cronstr[ 'hours' ] );
 			if ( $repeathouer == '*' || empty( $repeathouer ) )
 				$repeathouer = 1;
@@ -556,11 +563,19 @@ class BackWPup_Page_Editjob {
 				<p></p>
 				<table class="form-table">
 					<tr valign="top">
-						<th scope="row"><label for="mailaddresslog"><?php _e( 'Email address', 'backwpup' ) ?></label></th>
+						<th scope="row"><label for="mailaddresslog"><?php _e( 'Send to email address', 'backwpup' ) ?></label></th>
 						<td>
 							<input name="mailaddresslog" type="text" id="mailaddresslog"
 								   value="<?php echo BackWPup_Option::get( $jobid, 'mailaddresslog' );?>"
 								   class="regular-text" /><?php BackWPup_Help::tip( __( 'Leave empty and don\'t get a log sent.', 'backwpup' ) ); ?>
+						</td>
+					</tr>
+					<tr valign="top">
+						<th scope="row"><label for="mailaddresssenderlog"><?php _e( 'Email sender name', 'backwpup' ) ?></label></th>
+						<td>
+							<input name="mailaddresssenderlog" type="text" id="mailaddresssenderlog"
+								   value="<?php echo BackWPup_Option::get( $jobid, 'mailaddresssenderlog' );?>"
+								   class="regular-text" /><?php BackWPup_Help::tip( __( 'Name and email of email sender in the mail formant. Name &lt;emailadress&gt;', 'backwpup' ) ); ?>
 						</td>
 					</tr>
 					<tr valign="top">
@@ -689,7 +704,7 @@ class BackWPup_Page_Editjob {
                                     <td><select name="moncronhours"><?php for ( $i = 0; $i < 24; $i ++ ) {
 										echo '<option ' . selected( in_array( "$i", $hours, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
-                                    <td><select name="moncronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 10 ) {
+                                    <td><select name="moncronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 5 ) {
 										echo '<option ' . selected( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
                                 </tr>
@@ -707,7 +722,7 @@ class BackWPup_Page_Editjob {
                                     <td><select name="weekcronhours"><?php for ( $i = 0; $i < 24; $i ++ ) {
 										echo '<option ' . selected( in_array( "$i", $hours, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
-                                    <td><select name="weekcronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 10 ) {
+                                    <td><select name="weekcronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 5 ) {
 										echo '<option ' . selected( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
                                 </tr>
@@ -717,7 +732,7 @@ class BackWPup_Page_Editjob {
                                     <td><select name="daycronhours"><?php for ( $i = 0; $i < 24; $i ++ ) {
 										echo '<option ' . selected( in_array( "$i", $hours, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
-                                    <td><select name="daycronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 10 ) {
+                                    <td><select name="daycronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 5 ) {
 										echo '<option ' . selected( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
                                 </tr>
@@ -725,7 +740,7 @@ class BackWPup_Page_Editjob {
                                     <td><label for="idcronbtype-hour"><?php echo '<input class="radio" type="radio"' . checked( "*", $hours[ 0 ], FALSE, FALSE ) . ' name="cronbtype" id="idcronbtype-hour" value="hour" /> ' . __( 'hourly', 'backwpup' ); ?></label></td>
                                     <td></td>
                                     <td></td>
-                                    <td><select name="hourcronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 10 ) {
+                                    <td><select name="hourcronminutes"><?php for ( $i = 0; $i < 60; $i = $i + 5 ) {
 										echo '<option ' . selected( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . '  value="' . $i . '" />' . $i . '</option>';
 									} ?></select></td>
                                 </tr>
@@ -741,8 +756,8 @@ class BackWPup_Page_Editjob {
 								echo '<label for="idcronminutes"><input class="checkbox" type="checkbox"' . checked( in_array( "*", $minutes, TRUE ), TRUE, FALSE ) . ' name="cronminutes[]" id="idcronminutes" value="*" /> ' . __( 'Any (*)', 'backwpup' ) . '</label><br />';
 								?>
                                 <div id="cron-min"><?php
-									for ( $i = 0; $i < 60; $i = $i + 10 ) {
-										echo '<label for="idcronminutes-' . $i . '"><input class="checkbox" type="checkbox"' . checked( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . ' name="idcronminutes[]" id="idcronminutes-' . $i . '" value="' . $i . '" /> ' . $i . '</label><br />';
+									for ( $i = 0; $i < 60; $i = $i + 5 ) {
+										echo '<label for="idcronminutes-' . $i . '"><input class="checkbox" type="checkbox"' . checked( in_array( "$i", $minutes, TRUE ), TRUE, FALSE ) . ' name="cronminutes[]" id="idcronminutes-' . $i . '" value="' . $i . '" /> ' . $i . '</label><br />';
 									}
 									?>
                                 </div>

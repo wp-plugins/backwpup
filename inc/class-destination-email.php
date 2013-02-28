@@ -34,6 +34,7 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 		$default[ 'emailaddress' ]       = sanitize_email( get_bloginfo( 'admin_email' ) );
 		$default[ 'emailefilesize' ]     = 20;
 		$default[ 'emailsndemail' ]      = sanitize_email( get_bloginfo( 'admin_email' ) );
+		$default[ 'emailsndemailname' ]  = 'BackWPup ' . get_bloginfo( 'name' );
 		$default[ 'emailmethod' ]        = '';
 		$default[ 'emailsendmail' ]      = ini_get( 'sendmail_path' );
 		$default[ 'emailhost' ]          = isset($_SERVER[ 'SERVER_NAME' ]) ? $_SERVER[ 'SERVER_NAME' ] : '';
@@ -82,7 +83,15 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 				<td><input name="emailsndemail" type="text" id="emailsndemail"
 						   value="<?PHP echo esc_attr( BackWPup_Option::get( $jobid, 'emailsndemail' ) );?>"
 						   class="regular-text" />
-					<?php BackWPup_Help::tip( __('Sender email address','backwpup') ); ?>
+					<?php BackWPup_Help::tip( __( 'Sender email address', 'backwpup' ) ); ?>
+				</td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><label for="emailsndemailname"><?PHP _e( 'Sender name', 'backwpup' ); ?></label></th>
+				<td><input name="emailsndemailname" type="text" id="emailsndemailname"
+						   value="<?PHP echo esc_attr( BackWPup_Option::get( $jobid, 'emailsndemailname' ) );?>"
+						   class="regular-text" />
+					<?php BackWPup_Help::tip( __( 'Name of email sender', 'backwpup' ) ); ?>
 				</td>
 			</tr>
 			<tr valign="top">
@@ -177,6 +186,7 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
                 emailsndemail: $('input[name="emailsndemail"]').val(),
                 emailmethod: $('#emailmethod').val(),
                 emailsendmail: $('input[name="emailsendmail"]').val(),
+				emailsndemailname: $('input[name="emailsndemailname"]').val(),
                 emailhost: $('input[name="emailhost"]').val(),
                 emailhostport: $('input[name="emailhostport"]').val(),
                 emailsecure: $('#emailsecure').val(),
@@ -202,6 +212,7 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 		BackWPup_Option::update( $jobid, 'emailsndemail', sanitize_email( $_POST[ 'emailsndemail' ] ) );
 		BackWPup_Option::update( $jobid, 'emailmethod', ( $_POST[ 'emailmethod' ] == '' || $_POST[ 'emailmethod' ] == 'mail' || $_POST[ 'emailmethod' ] == 'sendmail' || $_POST[ 'emailmethod' ] == 'smtp' ) ? $_POST[ 'emailmethod' ] : '' );
 		BackWPup_Option::update( $jobid, 'emailsendmail', $_POST[ 'emailsendmail' ] );
+		BackWPup_Option::update( $jobid, 'emailsndemailname', $_POST[ 'emailsndemailname' ] );
 		BackWPup_Option::update( $jobid, 'emailhost', $_POST[ 'emailhost' ] );
 		BackWPup_Option::update( $jobid, 'emailhostport', (int)$_POST[ 'emailhostport' ] );
 		BackWPup_Option::update( $jobid, 'emailsecure', ( $_POST[ 'emailsecure' ] == 'ssl' || $_POST[ 'emailsecure' ] == 'tls' ) ? $_POST[ 'emailsecure' ] : '' );
@@ -303,7 +314,7 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 
 			// Create a message
 			$message = Swift_Message::newInstance( sprintf( __( 'BackWPup archive from %1$s: %2$s', 'backwpup' ), date_i18n( 'd-M-Y H:i', $job_object->start_time, TRUE ), esc_attr($job_object->job[ 'name' ] ) ) );
-			$message->setFrom( array( $job_object->job[ 'emailsndemail' ] ) );
+			$message->setFrom( array( $job_object->job[ 'emailsndemail' ] => $job_object->job[ 'emailsndemailname' ] ) );
 			$message->setTo( array( $job_object->job[ 'emailaddress' ] ) );
 			$message->setBody( sprintf( __( 'Backup archive: %s', 'backwpup' ), $job_object->backup_file ), 'text/plain', strtolower( get_bloginfo( 'charset' ) ) );
 			$message->attach( Swift_Attachment::fromPath( $job_object->backup_folder . $job_object->backup_file, $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file ) ) );
@@ -425,7 +436,7 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 
 			// Create a message
 			$message = Swift_Message::newInstance( __( 'BackWPup archive sending TEST Message', 'backwpup' ) );
-			$message->setFrom( array( $_POST[ 'emailsndemail' ] ) );
+			$message->setFrom( array( $_POST[ 'emailsndemail' ] => $_POST[ 'emailsndemailname' ] ) );
 			$message->setTo( array( $_POST[ 'emailaddress' ] ) );
 			$message->setBody( __( 'If this message reaches you sending of backup archives per email should work.', 'backwpup' ) );
 			// Send the message

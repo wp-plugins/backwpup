@@ -334,7 +334,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		if ( ! empty( $job_object->job[ 'backupcontent'] ) && $job_object->substeps_done == 1 ) {
 			$excludes = $this->get_exclude_dirs( WP_CONTENT_DIR );
 			foreach( $job_object->job[ 'backupcontentexcludedirs' ] as $folder ) {
-				$excludes[] = trailingslashit( str_replace( '\\', '/', ABSPATH ) ) . $folder . '/';
+				$excludes[] = trailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ) . $folder . '/';
 			}
 			$this->get_folder_list( $job_object, trailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ), $excludes );
 		}
@@ -457,7 +457,6 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		if ( $dir = scandir( $folder ) ) {
 			//add folder to folder list
 			$job_object->add_folder_to_backup( $folder );
-			$job_object->temp[ 'folders_to_backup' ][] = $folder;
 			//scan folder
 			foreach ( $dir as $file ) {
 				if ( in_array( $file, array( '.', '..' ) ) )
@@ -474,7 +473,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						trigger_error( sprintf( __( 'Folder "%s" is not readable!', 'backwpup' ), $folder . $file ), E_USER_WARNING );
 						continue;
 					}
-					if ( in_array( trailingslashit( $folder . $file ), $excludedirs ) || in_array( trailingslashit( $folder . $file ), $job_object->temp[ 'folders_to_backup' ] ) )
+					if ( in_array( trailingslashit( $folder . $file ), $excludedirs ) )
 						continue;
 					$this->get_folder_list( $job_object, trailingslashit( $folder . $file ), $excludedirs );
 				}

@@ -502,7 +502,6 @@ class BackWPup_Page_Jobs extends WP_List_Table {
                             }
                             if ( rundata.jobdone == 1 ) {
                                 $("#abortbutton").remove();
-                                $("#wp-admin-bar-backwpup .blink").removeClass('blink');
                                 $("#backwpup-adminbar-running").remove();
 								$(".job-run").hide();
                                 $("#message").hide();

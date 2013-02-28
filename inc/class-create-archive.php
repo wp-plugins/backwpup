@@ -348,7 +348,7 @@ class BackWPup_Create_Archive {
 				$zip_error = __( '(ER_REMOVE) Can\'t remove file', 'backwpup' );
 			if ( $this->ziparchive->status == 23 )
 				$zip_error = __( '(ER_DELETED) Entry has been deleted', 'backwpup' );
-			trigger_error( sprintf( _x( 'ZipArchive returns status: %s','Text of ZipArchive status Massage', 'backwpup' ), $zip_error ), E_USER_ERROR );
+			trigger_error( sprintf( _x( 'ZipArchive returns status: %s','Text of ZipArchive status Massage', 'backwpup' ), $zip_error ), E_USER_WARNING );
 		}
 	}
 

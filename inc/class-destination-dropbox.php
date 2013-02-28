@@ -498,7 +498,7 @@ final class BackWPup_Destination_Dropbox_API {
 		$job_object 	  = BackWPup_Job::getInstance();
 
 		while ( $data = fread( $file_handel, 4194304 ) ) { //4194304 = 4MB
-			$chunkHandle = fopen( 'php://memory', 'w+' );
+			$chunkHandle = fopen( 'php://temp', 'rw' );
 			fwrite( $chunkHandle, $data );
 			rewind( $chunkHandle );
 			$url    = self::API_CONTENT_URL . self::API_VERSION_URL . 'chunked_upload';

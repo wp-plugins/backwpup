@@ -116,6 +116,7 @@ final class BackWPup_Option {
 		$default[ 'cronselect' ]     = 'basic';
 		$default[ 'cron' ]           = '0 3 * * *';
 		$default[ 'mailaddresslog' ] = sanitize_email( get_bloginfo( 'admin_email' ) );
+		$default[ 'mailaddresssenderlog' ] = 'BackWPup ' . get_bloginfo( 'name' ) . ' <' . sanitize_email( get_bloginfo( 'admin_email' ) ).'>';
 		$default[ 'mailerroronly' ]  = TRUE;
 		$default[ 'backuptype' ]     = 'archive';
 		$default[ 'archiveformat' ] = '.tar.gz';

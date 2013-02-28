@@ -69,7 +69,7 @@ class BackWPup_MySQLDump {
 		//check if port or socket in hostname and set port and socket
 		$args[ 'dbport' ]   = NULL;
 		$args[ 'dbsocket' ] = NULL;
-		if ( strstr( ':', $args[ 'dbhost' ] ) ) {
+		if ( strstr( $args[ 'dbhost' ], ':' ) ) {
 			$hostparts = explode( ':', $args[ 'dbhost' ] );
 			$args[ 'dbhost' ] = $hostparts[ 0 ];
 			if ( is_numeric( $hostparts[ 1 ] ) )
@@ -86,9 +86,11 @@ class BackWPup_MySQLDump {
 			throw new BackWPup_MySQLDump_Exception( sprintf( __( 'Can not connect to MySQL Database %1$d: %2$s', 'backwpup' ), $this->mysqli->connect_errno, $this->mysqli->connect_error ) );
 
 		//set charset
-		$res = $this->mysqli->set_charset( $args[ 'dbcharset' ] );
-		if ( ! $res )
-			throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Can not set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );
+		if ( ! empty( $args[ 'dbcharset' ] ) ) {
+			$res = $this->mysqli->set_charset( $args[ 'dbcharset' ] );
+			if ( ! $res )
+				throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Can not set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );
+		}
 
 		//set db name
 		$this->dbname = $args[ 'dbname' ];

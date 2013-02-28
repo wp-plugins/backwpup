@@ -37,7 +37,15 @@ class DataObject extends ObjStoreBase {
     private
         $data,				// the actual data
         $etag,              // the ETag
-        $container;         // the container used by this object
+        $container,         // the container used by this object
+        /**
+         * this array translates header values (returned by requests) into
+         * properties
+         */
+        $header_translate = array(
+        	'Etag' => 'hash',
+        	'Last-Modified' => 'last_modified'
+        );
 
 	/**
 	 * A DataObject is related to a container and has a name
@@ -125,9 +133,10 @@ class DataObject extends ObjStoreBase {
 			*/
 			$this->debug('Uploading %u bytes from %s', $filesize, $filename);
 		}
-		else
+		else {
 			// compute the length
 			$this->content_length = strlen($this->data);
+		}
 
 		// flag missing Content-Type
 		if (!$this->content_type)
@@ -160,8 +169,17 @@ class DataObject extends ObjStoreBase {
 			return FALSE;
 		}
 
+		// set values from response
+		foreach($response->Headers() as $key => $value) {
+			if (isset($this->header_translate[$key])) {
+				$this->{$this->header_translate[$key]} = $value;
+			}
+		}
+
+		// close the file handle
 		if ($fp)
 			fclose($fp);
+
 		return $response;
 	} // create()
 
@@ -248,6 +266,53 @@ class DataObject extends ObjStoreBase {
 	 */
 	public function Container() {
 	    return $this->container;
+	}
+
+	/**
+	 * returns the TEMP_URL for the object
+	 *
+	 * Some notes:
+	 * * The `$secret` value is arbitrary; it must match the value set for
+	 *   the `X-Account-Meta-Temp-URL-Key` on the account level. This can be
+	 *   set by calling `$service->SetTempUrlSecret($secret)`.
+	 * * The `$expires` value is the number of seconds you want the temporary
+	 *   URL to be valid for. For example, use `60` to make it valid for a
+	 *   minute
+	 * * The `$method` must be either GET or PUT. No other methods are
+	 *   supported.
+	 *
+	 * @param string $secret the shared secret
+	 * @param integer $expires the expiration time (in seconds)
+	 * @param string $method either GET or PUT
+	 * @return string the temporary URL
+	 */
+	public function TempUrl($secret, $expires, $method) {
+		$method = strtoupper($method);
+		$expiry_time = time() + $expires;
+
+		// check for proper method
+		switch($method) {
+		case 'GET':
+		case 'PUT':
+			break;
+		default:
+			throw new TempUrlMethodError(sprintf(
+				_('Bad method [%s] for TempUrl; only GET or PUT supported'),
+				$method));
+		}
+
+		// construct the URL
+		$url = $this->Url();
+		$path = parse_url($url, PHP_URL_PATH);
+		$temp_url = sprintf('%s?temp_url_sig=%s&temp_url_expires=%d',
+			$url,
+			hash_hmac('sha1', "$method\n$expires\n$path", $secret),
+			$expiry_time);
+
+		// debug that stuff
+		$this->debug('TempUrl generated [%s]', $temp_url);
+
+		return $temp_url;
 	}
 
 	/**

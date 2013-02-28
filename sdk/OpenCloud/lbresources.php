@@ -87,7 +87,7 @@ abstract class SubResource extends \OpenCloud\PersistentObject {
 		}
     	return $obj;
 	}
-	
+
 	/**
 	 * returns the JSON for the update (same as create)
 	 *
@@ -97,7 +97,7 @@ abstract class SubResource extends \OpenCloud\PersistentObject {
 	protected function UpdateJson($params = array()) {
 		return $this->CreateJson();
 	}
-	
+
 	/**
 	 * returns the Parent object (usually a LoadBalancer, but sometimes another
 	 * SubResource)
@@ -107,7 +107,7 @@ abstract class SubResource extends \OpenCloud\PersistentObject {
 	public function Parent() {
 		return $this->parent;
 	}
-	
+
 	/**
 	 * returns a (default) name of the object
 	 *
@@ -282,7 +282,7 @@ class Node extends \OpenCloud\PersistentObject {
 /**
  * a single node event, usually called as part of a Collection
  *
- * This is a read-only subresource. 
+ * This is a read-only subresource.
  */
 class NodeEvent extends ReadonlySubResource {
 	public
@@ -348,17 +348,6 @@ class VirtualIp extends SubResource {
 		$_create_keys = array('type', 'ipVersion');
 	public function Update($params=array()) { $this->NoUpdate(); }
 }
-
-/**
- * used to get a list of billable load balancers for a specific date range
- */
-class BillableLoadBalancer extends LoadBalancer {
-	protected static
-		$url_resource = 'loadbalancers/billable';
-	public function Create($params=array()) { $this->NoCreate(); }
-	public function Update($params=array()) { $this->NoUpdate(); }
-	public function Delete() { $this->NoDelete(); }
-} // end BillableLoadBalancer
 
 /**
  * used to get usage data for a load balancer

@@ -5,7 +5,7 @@
  * Description: WordPress Backup and more...
  * Author: Inpsyde GmbH
  * Author URI: http://inpsyde.com
- * Version: 3.0.1
+ * Version: 3.0.2
  * Text Domain: backwpup
  * Domain Path: /languages/
  * Network: true
@@ -231,7 +231,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		public function plugin_init() {
 
 			//Add Admin Bar
-			if ( ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && current_user_can( 'backwpup' ) && is_admin_bar_showing() && get_site_option( 'backwpup_cfg_showadminbar', TRUE ) && class_exists( 'BackWPup_Adminbar', TRUE ) )
+			if ( ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && current_user_can( 'backwpup' ) && is_admin_bar_showing() && BackWPup_Option::get( 'cfg', 'showadminbar' ) )
 				BackWPup_Adminbar::getInstance();
 		}
 

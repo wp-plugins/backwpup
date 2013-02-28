@@ -1,5 +1,5 @@
 <?php
-// Rackspace OpenCloud SDK v1.3
+// Rackspace OpenCloud SDK v1.4.1
 // http://www.rackspace.com/cloud/files/
 // https://github.com/rackspace/php-opencloud
 if ( ! defined( 'RAXSDK_CACERTPEM' ) )

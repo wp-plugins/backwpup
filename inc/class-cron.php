@@ -85,7 +85,8 @@ class BackWPup_Cron {
 					$headers = array();
 					$headers[] = 'Content-Type: text/html; charset='. get_bloginfo( 'charset' );
 					$headers[] = 'X-Priority: 1';
-					$headers[] = 'From: BackWPup <' . sanitize_email( get_bloginfo( 'admin_email' ) ).'>';
+					if ( ! empty( $job_object->job[ 'mailaddresssenderlog' ] ) )
+						$headers[] = 'From: ' . $job_object->job[ 'mailaddresssenderlog' ];
 					wp_mail( $job_object->job[ 'mailaddresslog' ], $subject, file_get_contents( $job_object->logfile ), $headers );
 				}
 			}
@@ -137,11 +138,11 @@ class BackWPup_Cron {
 				}
 			}
 			//temp cleanup
-			$temp_fodler = scandir( BackWPup::get_plugin_data( 'TEMP' ) );
-			foreach ( $temp_fodler as $temp_file ) {
+			$temp_folder = scandir( BackWPup::get_plugin_data( 'TEMP' ) );
+			foreach ( $temp_folder as $temp_file ) {
 				if ( is_file( BackWPup::get_plugin_data( 'TEMP' ) . $temp_file ) ) {
 					if ( '.gz' == substr( $temp_file, -3 ) || '.sql' == substr( $temp_file, -4 ) || '.bz2' == substr( $temp_file, -4 ) || '.zip' == substr( $temp_file, -4 ) || '.txt' == substr( $temp_file, -4 ) || '.xml' == substr( $temp_file, -4 ) )
-						unlink( BackWPup_Option::get( 'cfg', 'logfolder' ) . $temp_file );
+						unlink( BackWPup::get_plugin_data( 'TEMP' ) . $temp_file );
 				}
 			}
 		}

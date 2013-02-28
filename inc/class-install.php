@@ -232,7 +232,7 @@ class BackWPup_Install {
 			$jobvalue[ 's3bucket' ] = $jobvalue[ 'GStorageBucket' ];
 			$jobvalue[ 's3region' ] = 'google-storage';
 			$jobvalue[ 's3base_url' ] = '';
-			$jobvalue[ 's3ssencrypt' ] = $jobvalue[ 'dropetoken' ];
+			$jobvalue[ 's3ssencrypt' ] = '';
 			$jobvalue[ 's3dir' ] = $jobvalue[ 'GStoragedir' ];
 			$jobvalue[ 's3maxbackups' ] = $jobvalue[ 'GStoragemaxbackups' ];
 			unset( $jobvalue[ 'GStorageAccessKey' ], $jobvalue[ 'GStorageSecret' ], $jobvalue[ 'GStorageBucket' ], $jobvalue[ 'GStoragedir' ], $jobvalue[ 'GStoragemaxbackups' ] );
