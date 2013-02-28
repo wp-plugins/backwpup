@@ -52,6 +52,9 @@ class BackWPup_MySQLDump {
 	 */
 	public function __construct( $args = array() ) {
 		global $wpdb;
+		
+		if ( ! class_exists( 'mysqli' ) )
+			throw new BackWPup_MySQLDump_Exception( __( 'No MySQLi extension found. Please install it.', 'backwpup' ) );
 
 		$default_args = array(
 			'dbhost' 	  => $wpdb->dbhost,

@@ -1673,8 +1673,8 @@ final class BackWPup_Job {
 		if ( ! empty( $suffix ) && substr( $suffix, 0, 1 ) != '.' )
 			$suffix = '.' . $suffix;
 
-		$name = str_replace( $datevars, $datevalues, $name ) . $suffix;
-		$name = sanitize_file_name( $name );
+		$name = str_replace( $datevars, $datevalues, $name );
+		$name = sanitize_file_name( $name ) . $suffix; //prevent _ in extension name that sanitize_file_name add.
 		if ( $delete_temp_file && is_file( BackWPup::get_plugin_data( 'TEMP' ) . $name ) )
 			unlink( BackWPup::get_plugin_data( 'TEMP' ) . $name );
 

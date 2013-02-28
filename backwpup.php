@@ -284,8 +284,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			if ( !empty( self::$job_types ) )
 				return self::$job_types;
 
-			if ( class_exists( 'mysqli' ) )
-				self::$job_types[ 'DBDUMP' ]= new BackWPup_JobType_DBDump;
+			self::$job_types[ 'DBDUMP' ]= new BackWPup_JobType_DBDump;
 			self::$job_types[ 'FILE' ] 		= new BackWPup_JobType_File;
 			self::$job_types[ 'WPEXP' ] 	= new BackWPup_JobType_WPEXP;
 			self::$job_types[ 'WPPLUGIN' ]  = new BackWPup_JobType_WPPlugin;
