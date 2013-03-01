@@ -452,6 +452,11 @@ final class BackWPup_Job {
 			trigger_error( __( 'Temp folder does not exist or is not writable for BackWPup', 'backwpup' ), E_USER_ERROR );
 			wp_die( __( 'Temp folder does not exist or is not writable for BackWPup', 'backwpup' ), __( 'Temp folder does not exist or is not writable for BackWPup', 'backwpup' ), array( 'response' => 500 ) );
 		}
+		$backups_folder = BackWPup_Option::get( $jobid, 'backupdir' );
+		if ( ! empty( $backups_folder ) && ! self::check_folder( $backups_folder ) ) {
+			trigger_error( __( 'Backups folder does not exist or is not writable for BackWPup', 'backwpup' ), E_USER_ERROR );
+			wp_die( __( 'Backups folder does not exist or is not writable for BackWPup', 'backwpup' ), __( 'Backups folder does not exist or is not writable for BackWPup', 'backwpup' ), array( 'response' => 500 ) );
+		}
 		//check running job
 		$backwpup_job_object = self::get_working_data();
 		if ( $starttype == 'restart' && ! $backwpup_job_object ) {
@@ -622,8 +627,16 @@ final class BackWPup_Job {
 		@ini_set( 'display_errors', 'Off' );
 		@ini_set( 'log_errors', 'On' );
 		//set temp folder
-		$this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] = getenv( 'TMPDIR' );
-		@putenv( 'TMPDIR='.BackWPup::get_plugin_data( 'TEMP') );
+		$can_set_temp_env = TRUE;
+		$protected_env_vars = explode( ',', ini_get( 'safe_mode_protected_env_vars') );
+		foreach( $protected_env_vars as $protected_env ) {
+			if ( strtoupper( trim( $protected_env ) ) == 'TMPDIR' )
+				$can_set_temp_env = FALSE;
+		}
+		if ( $can_set_temp_env ) {
+			$this->temp[ 'PHP' ][ 'ENV' ][ 'TEMPDIR' ] = getenv( 'TMPDIR' );
+			@putenv( 'TMPDIR='.BackWPup::get_plugin_data( 'TEMP') );
+		}		
 		//increase MySQL timeout
 		@ini_set( 'mysql.connect_timeout', '60' );
 		$wpdb->query( "SET session wait_timeout = 60" );
@@ -1559,9 +1572,6 @@ final class BackWPup_Job {
 	 * @return array files to backup
 	 */
 	public function get_files_in_folder( $folder ) {
-
-		//clear cache of files in php
-		clearstatcache();
 		
 		$files = array();
 
@@ -1585,7 +1595,7 @@ final class BackWPup_Job {
 				}
 				if ( $this->job[ 'backupexcludethumbs' ] && strpos( $folder, BackWPup_File::get_upload_dir() ) !== FALSE && preg_match( "/\-[0-9]{2,4}x[0-9]{2,4}\.(jpg|png|gif)$/i", $file ) )
 					continue;
-				if ( ! is_readable( $folder . $file ) )
+				if ( ! is_dir( $folder . $file ) && ! is_readable( $folder . $file ) )
 					$this->log( sprintf( __( 'File "%s" is not readable!', 'backwpup' ), $folder . $file ), E_USER_WARNING );
 				elseif ( is_link( $folder . $file ) )
 					$this->log( sprintf( __( 'Link "%s" not followed.', 'backwpup' ), $folder . $file ), E_USER_WARNING );
@@ -1615,9 +1625,8 @@ final class BackWPup_Job {
 		try {
 			$backup_archive = new BackWPup_Create_Archive( $this->backup_folder . $this->backup_file );
 
-			//schow method for creation
-			if( defined( 'WP_DEBUG' ) && WP_DEBUG )
-				$this->log( sprintf( _x( 'Compression method is %s', 'Archive compression method', 'backwpup'), $backup_archive->get_method() ) );
+			//show method for creation
+			$this->log( sprintf( _x( 'Compression method is %s', 'Archive compression method', 'backwpup'), $backup_archive->get_method() ) );
 
 			//add extra files
 			if ( $this->substeps_done == 0 ) {
@@ -1634,6 +1643,7 @@ final class BackWPup_Job {
 			//add normal files
 			for ( $i = $this->substeps_done - 1; $i < $this->substeps_todo - 1; $i ++ ) {
 				$files = $this->get_files_in_folder( $folders_to_backup[ $i ] );
+				$backup_archive->add_empty_folder( $folders_to_backup[ $i ], ltrim( str_replace( $this->remove_path, '', $folders_to_backup[ $i ] ), '/' ) );
 				if ( count( $files ) > 0 ) {
 					foreach ( $files as $file ) {
 						$in_archive_filename = ltrim( str_replace( $this->remove_path, '', $file ), '/' );

@@ -214,8 +214,6 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 			$ostore = $conn->ObjectStore( 'cloudFiles' , BackWPup_Option::get( $jobid, 'rscregion' ), 'publicURL');
 			$container = $ostore->Container( BackWPup_Option::get( $jobid, 'rsccontainer' ) );
 			$backupfile = $container->DataObject( $get_file );
-			@apache_setenv( 'no-gzip', 1 );
-			@ini_set( 'zlib.output_compression', 0 );
 			header( "Pragma: public" );
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );

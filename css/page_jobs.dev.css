@@ -7,21 +7,17 @@
     width: 15%;
 }
 
-#showworking {
-    margin-top: 10px;
+#TB_ajaxContent {
     background-color: black;
     color: white;
+}
+#showworking {
     font-family: Fixedsys, Courier, monospace;
     line-height: 15px;
     font-size: 12px;
-    border-color: #CEE1EF;
-    border-style: solid;
-    border-width: 5px;
-    height: 95%;
-    padding: 2px;
-    overflow: auto;
     white-space: pre;
     display: block;
+    width: 100%;
 }
 #runningjob {
 	padding:10px;

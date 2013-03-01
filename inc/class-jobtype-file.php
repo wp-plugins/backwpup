@@ -398,11 +398,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 				$job_object->count_filesize = $job_object->count_filesize + @filesize( ABSPATH . 'wp-config.php' );
 				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'wp-config.php' ), E_USER_NOTICE );
 			}
-			elseif ( is_file( dirname( ABSPATH ) . '/wp-config.php' ) && ! is_file( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
-				$job_object->additional_files_to_backup[ ] = str_replace( '\\', '/', dirname( ABSPATH ) . '/wp-config.php' );
-				$job_object->count_files ++;
-				$job_object->count_filesize = $job_object->count_filesize + @filesize( dirname( ABSPATH ) . '/wp-config.php' );
-				trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'wp-config.php' ), E_USER_NOTICE );
+			elseif ( BackWPup_File::is_in_open_basedir( dirname( ABSPATH ) . '/wp-config.php' ) ) {
+				if ( is_file( dirname( ABSPATH ) . '/wp-config.php' ) && ! is_file( dirname( ABSPATH ) . '/wp-settings.php' ) ) {
+					$job_object->additional_files_to_backup[ ] = str_replace( '\\', '/', dirname( ABSPATH ) . '/wp-config.php' );
+					$job_object->count_files ++;
+					$job_object->count_filesize = $job_object->count_filesize + @filesize( dirname( ABSPATH ) . '/wp-config.php' );
+					trigger_error( sprintf( __( 'Added "%s" to backup file list', 'backwpup' ), 'wp-config.php' ), E_USER_NOTICE );
+				}
 			}
 			if ( is_file( ABSPATH . '.htaccess' ) && empty( $job_object->job[ 'backuproot' ] ) ) {
 				$job_object->additional_files_to_backup[ ] = str_replace( '\\', '/', ABSPATH . '.htaccess' );
@@ -431,7 +433,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		}
 
 		if ( empty( $job_object->count_folder ) )
-			trigger_error( __( 'No folder to back up.', 'backwpup' ), E_USER_ERROR );
+			trigger_error( __( 'No folder to back up.', 'backwpup' ), E_USER_WARNING );
 		else
 			trigger_error( sprintf( __( '%1$d folders to back up.', 'backwpup' ), $job_object->count_folder ), E_USER_NOTICE );
 
@@ -469,12 +471,12 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						continue 2;
 				}
 				if ( is_dir( $folder . $file ) ) {
+					if ( in_array( trailingslashit( $folder . $file ), $excludedirs ) )
+						continue;
 					if ( ! is_readable( $folder . $file ) ) {
 						trigger_error( sprintf( __( 'Folder "%s" is not readable!', 'backwpup' ), $folder . $file ), E_USER_WARNING );
 						continue;
 					}
-					if ( in_array( trailingslashit( $folder . $file ), $excludedirs ) )
-						continue;
 					$this->get_folder_list( $job_object, trailingslashit( $folder . $file ), $excludedirs );
 				}
 			}

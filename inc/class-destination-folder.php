@@ -110,8 +110,6 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
 	public function file_download( $jobid, $get_file ) {
 
 		if ( is_file( $get_file ) ) {
-			@apache_setenv( 'no-gzip', 1 );
-			@ini_set( 'zlib.output_compression', 0 );
 			header( "Pragma: public" );
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );

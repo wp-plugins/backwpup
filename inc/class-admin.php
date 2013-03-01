@@ -248,21 +248,19 @@ final class BackWPup_Admin {
 
 		//start using sessions
 		session_start();
+		
+		add_thickbox();
 
 		//register js from tipTip
 		wp_register_script( 'tiptip', BackWPup::get_plugin_data( 'URL' ) . '/js/jquery.tipTip.minified.js', array( 'jquery' ), '1.3', TRUE );
 
-		//register fancybox
-		wp_register_style( 'fancybox2', BackWPup::get_plugin_data( 'URL' ) . '/js/fancybox/jquery.fancybox.css', '', '2.1.4', 'screen' );
-		wp_register_script( 'fancybox2', BackWPup::get_plugin_data( 'URL' ) . '/js/fancybox/jquery.fancybox.pack.js', array( 'jquery' ), '2.1.4', TRUE );
-
 		//register js and css for BackWPup
 		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
-			wp_register_script( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/js/general.dev.js', array( 'jquery', 'tiptip', 'fancybox2' ), time(), TRUE );
-			wp_register_style( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/css/general.dev.css', array( 'fancybox2' ), time(), 'screen' );
+			wp_register_script( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/js/general.dev.js', array( 'jquery', 'tiptip' ), time(), TRUE );
+			wp_register_style( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/css/general.dev.css', array( ), time(), 'screen' );
 		} else {
-			wp_register_script( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/js/general.js', array( 'jquery', 'tiptip', 'fancybox2' ), BackWPup::get_plugin_data( 'Version' ), TRUE );
-			wp_register_style( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/css/general.css', array( 'fancybox2' ), BackWPup::get_plugin_data( 'Version' ), 'screen' );
+			wp_register_script( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/js/general.js', array( 'jquery', 'tiptip' ), BackWPup::get_plugin_data( 'Version' ), TRUE );
+			wp_register_style( 'backwpupgeneral', BackWPup::get_plugin_data( 'URL' ) . '/css/general.css', array( ), BackWPup::get_plugin_data( 'Version' ), 'screen' );
 		}
 
 		//add Help
@@ -337,12 +335,11 @@ final class BackWPup_Admin {
 	 */
 	public static function message( $message ) {
 
-
-		if( ! isset( $_SESSION[ 'backwpup_messages' ] ) )
+		if( empty( $_SESSION[ 'backwpup_messages' ] ) )
 			$_SESSION[ 'backwpup_messages' ] = array();
 
 		if ( is_array( $message ) )
-			$_SESSION[ 'backwpup_messages' ] = array_merge( $_SESSION[ 'backwpup_messages' ], $message);
+			$_SESSION[ 'backwpup_messages' ] = array_merge( $_SESSION[ 'backwpup_messages' ], $message );
 		else
 			$_SESSION[ 'backwpup_messages' ][] = $message;
 

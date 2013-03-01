@@ -344,8 +344,6 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 		}
 
 		if ( $s3file[ 'ContentLength' ] > 0 && ! empty( $s3file[ 'ContentType' ] ) ) {
-			@apache_setenv( 'no-gzip', 1 );
-			@ini_set( 'zlib.output_compression', 0 );
 			header( "Pragma: public" );
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );;
@@ -379,7 +377,7 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 
 		$job_object->substeps_todo = 2 + $job_object->backup_filesize;
 		$job_object->log( sprintf( __( '%d. Trying to send backup file to S3 Service &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
-
+		
 		try {
 			$s3 = Aws\S3\S3Client::factory( array( 	'key'		=> $job_object->job[ 's3accesskey' ],
 												  	'secret'	=> BackWPup_Encryption::decrypt( $job_object->job[ 's3secretkey' ] ),
@@ -482,11 +480,11 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 		try {
 			$backupfilelist = array();
 			$filecounter    = 0;
-			$files          = array();
+			$files          = array();		
 			$args			= array(
 				'Bucket' => $job_object->job[ 's3bucket' ],
-				'Prefix' =>  $job_object->job[ 's3dir' ]
-			);
+				'Prefix' => (string) $job_object->job[ 's3dir' ]
+			);			
 			$objects = $s3->getIterator('ListObjects',  $args );
 			if ( is_object( $objects ) ) {
 				foreach ( $objects as $object ) {

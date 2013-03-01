@@ -208,8 +208,6 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 		try {
 			$sugarsync = new BackWPup_Destination_SugarSync_API( BackWPup_Option::get( $jobid, 'sugarrefreshtoken' ) );
 			$response  = $sugarsync->get( urldecode( $get_file ) );
-			@apache_setenv( 'no-gzip', 1 );
-			@ini_set( 'zlib.output_compression', 0 );
 			header( "Pragma: public" );
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );

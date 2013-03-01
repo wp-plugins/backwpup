@@ -186,8 +186,6 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 		try {
 			$blobRestProxy = WindowsAzure\Common\ServicesBuilder::getInstance()->createBlobService( 'DefaultEndpointsProtocol=https;AccountName=' . BackWPup_Option::get( $jobid, 'msazureaccname' ) . ';AccountKey=' . BackWPup_Encryption::decrypt( BackWPup_Option::get( $jobid, 'msazurekey' ) ) );
 			$blob = $blobRestProxy->getBlob( BackWPup_Option::get( $jobid, 'msazurecontainer' ), $get_file );
-			@apache_setenv( 'no-gzip', 1 );
-			@ini_set( 'zlib.output_compression', 0 );
 			header( "Pragma: public" );
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );

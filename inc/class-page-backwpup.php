@@ -199,7 +199,7 @@ class BackWPup_Page_BackWPup {
 						$alternate = FALSE;
 					}
 					echo '<td>' . date_i18n( get_option( 'date_format' ) , $logdata[ 'logtime' ] ). '<br />' . date_i18n( get_option( 'time_format' ), $logdata[ 'logtime' ] ) . '</td>';
-					echo '<td><a class="backwpup-fancybox" data-fancybox-type="iframe" href="' . admin_url( 'admin-ajax.php' ) . '?&action=backwpup_view_log&logfile=' . basename( $logfile ) .'&_ajax_nonce=' . wp_create_nonce( 'view-logs' ) . '" title="' . esc_attr( basename( $logfile ) ) . '">' . $logdata[ 'name' ] . '</i></a></td>';
+					echo '<td><a class="thickbox" href="' . admin_url( 'admin-ajax.php' ) . '?&action=backwpup_view_log&logfile=' . basename( $logfile ) .'&_ajax_nonce=' . wp_create_nonce( 'view-logs' ) . '&height=440&width=630&TB_iframe=true" title="' . esc_attr( basename( $logfile ) ) . '">' . $logdata[ 'name' ] . '</i></a></td>';
 					echo '<td>';
 					if ( $logdata[ 'errors' ] > 0 )
 						printf( '<span style="color:red;font-weight:bold;">' . _n( "%d ERROR", "%d ERRORS", $logdata[ 'errors' ], 'backwpup' ) . '</span><br />', $logdata[ 'errors' ] );

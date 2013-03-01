@@ -3,7 +3,7 @@ Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.0.2
+Stable tag: 3.0.3
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -81,6 +81,14 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.3 =
+* Improved: Archive creation performance
+* Fixed: Problem with S3 Prefix
+* Fixed: warnings on excluded folders
+* Fixed: message from putenv
+* Fixed: not working downloads
+* Changed: removed fancybox and uses thickbox because plugin compatibility
+* Added: folder checking on run now
 
 = Version 3.0.2 =
 * Fixed: Warnings on job edit tab files

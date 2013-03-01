@@ -89,7 +89,7 @@ class BackWPup_MySQLDump {
 			throw new BackWPup_MySQLDump_Exception( sprintf( __( 'Can not connect to MySQL Database %1$d: %2$s', 'backwpup' ), $this->mysqli->connect_errno, $this->mysqli->connect_error ) );
 
 		//set charset
-		if ( ! empty( $args[ 'dbcharset' ] ) ) {
+		if ( ! empty( $args[ 'dbcharset' ] ) && method_exists($this->mysqli, 'set_charset' ) ) {
 			$res = $this->mysqli->set_charset( $args[ 'dbcharset' ] );
 			if ( ! $res )
 				throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Can not set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );

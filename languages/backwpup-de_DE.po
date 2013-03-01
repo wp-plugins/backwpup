@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: BackWPup Pro v3.0.1\n"
+"Project-Id-Version: BackWPup Pro v3.0.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-06 17:42+0100\n"
-"PO-Revision-Date: 2013-02-28 11:30:16-0600\n"
+"PO-Revision-Date: 2013-03-01 13:51:45-0600\n"
 "Last-Translator: Frank Bueltge <frank@bueltge.de>\n"
 "Language-Team: INPSYDE <info@inpsyde.com>\n"
 "MIME-Version: 1.0\n"
@@ -72,24 +72,24 @@ msgstr "Datensicherungen"
 msgid "Settings"
 msgstr "Einstellungen"
 
-#: inc/class-admin.php:283
-#: inc/class-admin.php:289
+#: inc/class-admin.php:281
+#: inc/class-admin.php:287
 #@ backwpup
 msgid "Cheating Huh?"
 msgstr "Schummeln, was?"
 
-#: inc/class-admin.php:323
+#: inc/class-admin.php:321
 #@ backwpup
 msgid "Jobs overview"
 msgstr "Auftragsübersicht"
 
-#: inc/class-admin.php:323
+#: inc/class-admin.php:321
 #: inc/class-page-jobs.php:134
 #@ backwpup
 msgid "Run now"
 msgstr "Jetzt starten"
 
-#: inc/class-admin.php:414
+#: inc/class-admin.php:411
 #, php-format
 #@ backwpup
 msgid "version %s"
@@ -111,7 +111,7 @@ msgid "Abort!"
 msgstr "Abbrechen!"
 
 #: inc/class-adminbar.php:91
-#: inc/class-page-jobs.php:414
+#: inc/class-page-jobs.php:450
 #@ backwpupadminbar
 #@ backwpup
 msgid "Add New"
@@ -130,8 +130,8 @@ msgid "Run Now"
 msgstr "Jetzt starten"
 
 #: inc/class-cron.php:53
-#: inc/class-job.php:981
-#: inc/class-page-jobs.php:345
+#: inc/class-job.php:994
+#: inc/class-page-jobs.php:381
 #: inc/class-wp-cli.php:47
 #@ backwpup
 msgid "ERROR:"
@@ -143,14 +143,14 @@ msgid "Aborted, because 2 hours no progress!"
 msgstr "Abgebrochen, da seit 2 Stunden kein Fortschritt!"
 
 #: inc/class-cron.php:84
-#: inc/class-job.php:1208
+#: inc/class-job.php:1221
 #, php-format
 #@ backwpup
 msgid "[%3$s] BackWPup log %1$s: %2$s"
 msgstr "[%3$s] BackWPup Log %1$s: %2$s"
 
 #: inc/class-cron.php:84
-#: inc/class-job.php:1204
+#: inc/class-job.php:1217
 #@ backwpup
 msgid "ERROR"
 msgstr "FEHLER"
@@ -337,8 +337,8 @@ msgid "Upload to Dropbox now started &hellip;"
 msgstr "Hochladen zur Dropbox hat begonnen &hellip;"
 
 #: inc/class-destination-dropbox.php:265
-#: inc/class-destination-msazure.php:251
-#: inc/class-destination-sugarsync.php:274
+#: inc/class-destination-msazure.php:249
+#: inc/class-destination-sugarsync.php:272
 #, php-format
 #@ backwpup
 msgid "Backup transferred to %s"
@@ -385,7 +385,7 @@ msgstr "Datensicherung in Ordner"
 msgid "Folder to store the backups in"
 msgstr "Ordner für Backups"
 
-#: inc/class-destination-folder.php:207
+#: inc/class-destination-folder.php:205
 #, php-format
 #@ backwpup
 msgid "One backup file deleted"
@@ -819,32 +819,32 @@ msgstr "MS Azure Container \"%s\" erstellt."
 msgid "MS Azure container create: %s"
 msgstr "MS Azure Container erstellen: %s"
 
-#: inc/class-destination-msazure.php:223
+#: inc/class-destination-msazure.php:221
 #, php-format
 #@ backwpup
 msgid "%d. Try sending backup to a Microsoft Azure (Blob) &hellip;"
 msgstr "%d. Versuche, das Backup zu Microsoft Azure (Blob) zu senden &hellip;"
 
-#: inc/class-destination-msazure.php:240
+#: inc/class-destination-msazure.php:238
 #: inc/features/class-destination-msazure-pro.php:108
 #, php-format
 #@ backwpup
 msgid "MS Azure container \"%s\" does not exist!"
 msgstr "MS Azure Container  \"%s\" existiert nicht!"
 
-#: inc/class-destination-msazure.php:244
+#: inc/class-destination-msazure.php:242
 #: inc/features/class-destination-msazure-pro.php:112
 #, php-format
 #@ backwpup
 msgid "Connected to MS Azure container \"%s\"."
 msgstr "Verbunden mit MS Azure container \"%s\""
 
-#: inc/class-destination-msazure.php:248
+#: inc/class-destination-msazure.php:246
 #@ backwpup
 msgid "Upload to MS Azure now started &hellip;"
 msgstr "Hochladen zu MS Azure hat begonnen &hellip;"
 
-#: inc/class-destination-msazure.php:293
+#: inc/class-destination-msazure.php:291
 #, php-format
 #@ backwpup
 msgid "One file deleted on Microsoft Azure container."
@@ -852,24 +852,24 @@ msgid_plural "%d files deleted on Microsoft Azure container."
 msgstr[0] "Eine Datei im Microsoft-Azure-Container gelöscht"
 msgstr[1] "%d Dateien im Microsoft-Azure-Container gelöscht"
 
-#: inc/class-destination-msazure.php:299
+#: inc/class-destination-msazure.php:297
 #: inc/features/class-destination-msazure-pro.php:172
 #, php-format
 #@ backwpup
 msgid "Microsoft Azure API: %s"
 msgstr "Microsoft Azure API: %s"
 
-#: inc/class-destination-msazure.php:381
+#: inc/class-destination-msazure.php:379
 #@ backwpup
 msgid "Missing Account Name!"
 msgstr "Kontoname (Benutzername) nicht angegeben!"
 
-#: inc/class-destination-msazure.php:383
+#: inc/class-destination-msazure.php:381
 #@ backwpup
 msgid "Missing Access Key!"
 msgstr "Zugangsschlüssel (Access Key) nicht angegeben!"
 
-#: inc/class-destination-msazure.php:387
+#: inc/class-destination-msazure.php:385
 #@ backwpup
 msgid "No Container found!"
 msgstr "Kein Container gefunden!"
@@ -939,9 +939,9 @@ msgid "Rackspace Cloud container \"%s\" created."
 msgstr "Rackspace Cloud Container  \"%s\" erstellt."
 
 #: inc/class-destination-rsc.php:160
-#: inc/class-destination-rsc.php:271
-#: inc/class-destination-rsc.php:299
-#: inc/class-destination-rsc.php:347
+#: inc/class-destination-rsc.php:269
+#: inc/class-destination-rsc.php:297
+#: inc/class-destination-rsc.php:345
 #: inc/features/class-destination-rsc-pro.php:104
 #: inc/features/class-destination-rsc-pro.php:147
 #: inc/features/class-destination-rsc-pro.php:220
@@ -950,34 +950,34 @@ msgstr "Rackspace Cloud Container  \"%s\" erstellt."
 msgid "Rackspace Cloud API: %s"
 msgstr "Rackspace Cloud API: %s"
 
-#: inc/class-destination-rsc.php:252
+#: inc/class-destination-rsc.php:250
 #, php-format
 #@ backwpup
 msgid "%d. Trying to send backup file to Rackspace cloud &hellip;"
 msgstr "%d. Versuche, ein Backup zur Rackspace Cloud zu senden &hellip;"
 
-#: inc/class-destination-rsc.php:268
+#: inc/class-destination-rsc.php:266
 #, php-format
 #@ backwpup
 msgid "Connected to Rackspace cloud files container %s"
 msgstr "Verbunden mit Rackspace Cloud Container %s"
 
-#: inc/class-destination-rsc.php:280
+#: inc/class-destination-rsc.php:278
 #@ backwpup
 msgid "Upload to Rackspace cloud started &hellip;"
 msgstr "Upload zur Rackspace Cloud nun gestartet &hellip;"
 
-#: inc/class-destination-rsc.php:289
+#: inc/class-destination-rsc.php:287
 #@ backwpup
 msgid "Backup File transferred to RSC://"
 msgstr "Datensicherungsdatei übertragen zu RSC://"
 
-#: inc/class-destination-rsc.php:293
+#: inc/class-destination-rsc.php:291
 #@ backwpup
 msgid "Can not transfer backup to Rackspace cloud."
 msgstr "Kann das Backup nicht zur Rackspace Cloud transferieren"
 
-#: inc/class-destination-rsc.php:341
+#: inc/class-destination-rsc.php:339
 #, php-format
 #@ backwpup
 msgid "One file deleted on Rackspace cloud container."
@@ -985,17 +985,17 @@ msgid_plural "%d files deleted on Rackspace cloud container."
 msgstr[0] "Eine Datei im Rackspace-Container gelöscht"
 msgstr[1] "%d Dateien im Rackspace-Container gelöscht"
 
-#: inc/class-destination-rsc.php:451
+#: inc/class-destination-rsc.php:449
 #@ backwpup
 msgid "Missing Username!"
 msgstr "Falscher Benutzername!"
 
-#: inc/class-destination-rsc.php:453
+#: inc/class-destination-rsc.php:451
 #@ backwpup
 msgid "Missing API Key!"
 msgstr "API-Schlüssel wird fehlt!"
 
-#: inc/class-destination-rsc.php:457
+#: inc/class-destination-rsc.php:455
 #@ backwpup
 msgid "No Container's found!"
 msgstr "Keine Container gefunden!"
@@ -1170,53 +1170,53 @@ msgid " %s is not a valid bucket name."
 msgstr "%s ist kein gültiger Bucket Name"
 
 #: inc/class-destination-s3.php:317
-#: inc/class-destination-s3.php:425
-#: inc/class-destination-s3.php:456
-#: inc/class-destination-s3.php:477
-#: inc/class-destination-s3.php:536
+#: inc/class-destination-s3.php:423
+#: inc/class-destination-s3.php:454
+#: inc/class-destination-s3.php:475
+#: inc/class-destination-s3.php:534
 #: inc/features/class-destination-s3-pro.php:280
 #, php-format
 #@ backwpup
 msgid "S3 Service API: %s"
 msgstr "S3 Service API: %s"
 
-#: inc/class-destination-s3.php:381
+#: inc/class-destination-s3.php:379
 #, php-format
 #@ backwpup
 msgid "%d. Trying to send backup file to S3 Service &hellip;"
 msgstr "%d. Versuche, ein Backup zum S3-Service zu senden &hellip;"
 
-#: inc/class-destination-s3.php:396
+#: inc/class-destination-s3.php:394
 #: inc/features/class-destination-s3-pro.php:168
 #, php-format
 #@ backwpup
 msgid "S3 Bucket \"%s\" does not exist!"
 msgstr "Amazon S3 Bucket \"%s\" existiert nicht!"
 
-#: inc/class-destination-s3.php:402
+#: inc/class-destination-s3.php:400
 #@ backwpup
 msgid "Upload to S3 Service started &hellip;"
 msgstr "Upload zum S3 Service jetzt gestartet &hellip;"
 
-#: inc/class-destination-s3.php:468
+#: inc/class-destination-s3.php:466
 #, php-format
 #@ backwpup
 msgid "Backup transferred to %s."
 msgstr "Datensicherung übertragen zu %s"
 
-#: inc/class-destination-s3.php:473
+#: inc/class-destination-s3.php:471
 #, php-format
 #@ backwpup
 msgid "Can not transfer backup to S3! (%1$d) %2$s"
 msgstr "Datensicherung kann nicht zu Amazon S3 übertragen werden! (%1$d) %2$s"
 
-#: inc/class-destination-s3.php:526
+#: inc/class-destination-s3.php:524
 #, php-format
 #@ backwpup
 msgid "Can not delete backup on %s."
 msgstr "Kann das Backup auf %s nicht löschen"
 
-#: inc/class-destination-s3.php:530
+#: inc/class-destination-s3.php:528
 #, php-format
 #@ backwpup
 msgid "One file deleted on S3 Bucket."
@@ -1224,17 +1224,17 @@ msgid_plural "%d files deleted on S3 Bucket"
 msgstr[0] "Eine Datei im S3-Bucket gelöscht"
 msgstr[1] "%d Dateien im S3-Bucket gelöscht"
 
-#: inc/class-destination-s3.php:633
+#: inc/class-destination-s3.php:631
 #@ backwpup
 msgid "Missing access key!"
 msgstr "Der Zugangsschlüssel (Access Key) fehlt!"
 
-#: inc/class-destination-s3.php:635
+#: inc/class-destination-s3.php:633
 #@ backwpup
 msgid "Missing secret access key!"
 msgstr "Der geheime Zugangsschlüssel (Secret Access Key) fehlt!"
 
-#: inc/class-destination-s3.php:639
+#: inc/class-destination-s3.php:637
 #@ backwpup
 msgid "No bucket found!"
 msgstr "Kein Bucket gefunden!"
@@ -1322,24 +1322,24 @@ msgstr "Keine Sync-Ordner gefunden!"
 msgid "Folder in root"
 msgstr "Ordner im Wurzelverzeichnis"
 
-#: inc/class-destination-sugarsync.php:252
+#: inc/class-destination-sugarsync.php:250
 #, php-format
 #@ backwpup
 msgid "Authed to SugarSync with Nick %s"
 msgstr "Authentifiziert mit SugarSync, mit dem Namen %s"
 
-#: inc/class-destination-sugarsync.php:261
+#: inc/class-destination-sugarsync.php:259
 #, php-format
 #@ backwpup
 msgid "%s free on SugarSync"
 msgstr "%s frei bei SugarSync"
 
-#: inc/class-destination-sugarsync.php:277
+#: inc/class-destination-sugarsync.php:275
 #@ backwpup
 msgid "Can not transfer backup to SugarSync!"
 msgstr "Datensicherung kann nicht zu SugarSync übertragen werden!"
 
-#: inc/class-destination-sugarsync.php:316
+#: inc/class-destination-sugarsync.php:314
 #, php-format
 #@ backwpup
 msgid "One file deleted on SugarSync folder"
@@ -1347,7 +1347,7 @@ msgid_plural "%d files deleted on SugarSync folder"
 msgstr[0] "Eine Datei im SugarSync-Ordner gelöscht"
 msgstr[1] "%d Dateien im SugarSync-Ordner gelöscht"
 
-#: inc/class-destination-sugarsync.php:322
+#: inc/class-destination-sugarsync.php:320
 #, php-format
 #@ backwpup
 msgid "SugarSync API: %s"
@@ -1488,115 +1488,115 @@ msgstr "[INFO] Backup Datei ist: %s"
 
 #: inc/class-job.php:443
 #: inc/class-job.php:444
-#: inc/class-job.php:513
-#: inc/class-job.php:514
-#: inc/class-job.php:562
+#: inc/class-job.php:518
+#: inc/class-job.php:519
+#: inc/class-job.php:567
 #@ backwpup
 msgid "Wrong BackWPup JobID"
 msgstr "Falsche BackWPup JobID"
 
 #: inc/class-job.php:448
 #: inc/class-job.php:449
-#: inc/class-job.php:519
-#: inc/class-job.php:568
+#: inc/class-job.php:524
+#: inc/class-job.php:573
 #@ backwpup
 msgid "Log folder does not exist or is not writable for BackWPup"
 msgstr "Log-Ordner existiert nicht oder ist nicht beschreibbar für BackWPup"
 
 #: inc/class-job.php:452
 #: inc/class-job.php:453
-#: inc/class-job.php:523
-#: inc/class-job.php:573
+#: inc/class-job.php:528
+#: inc/class-job.php:578
 #@ backwpup
 msgid "Temp folder does not exist or is not writable for BackWPup"
 msgstr "Temp Ordner existiert nicht oder ist nicht beschreibbar für BackWPup!"
 
-#: inc/class-job.php:458
-#: inc/class-job.php:459
+#: inc/class-job.php:463
+#: inc/class-job.php:464
 #@ backwpup
 msgid "No BackWPup job running"
 msgstr "Kein aktiver BackWPup-Auftrag"
 
-#: inc/class-job.php:462
-#: inc/class-job.php:463
-#: inc/class-job.php:527
-#: inc/class-job.php:528
-#: inc/class-job.php:580
+#: inc/class-job.php:467
+#: inc/class-job.php:468
+#: inc/class-job.php:532
+#: inc/class-job.php:533
+#: inc/class-job.php:585
 #@ backwpup
 msgid "A BackWPup job is already running"
 msgstr "Es läuft bereits ein BackWPup-Auftrag"
 
-#: inc/class-job.php:518
+#: inc/class-job.php:523
 #@ backwpup
 msgid "Log folder does not exist or is not writable"
 msgstr "Log-Ordner existiert nicht oder ist nicht beschreibbar"
 
-#: inc/class-job.php:522
+#: inc/class-job.php:527
 #@ backwpup
 msgid "Temp folder does not exist or is not writable"
 msgstr "Temp Ordner existiert nicht oder ist nicht beschreibbar"
 
-#: inc/class-job.php:608
+#: inc/class-job.php:613
 #@ backwpup
 msgid "Job restart due to inactivity for more than 5 minutes."
 msgstr "Auftrag durch Inaktivität von mehr als 5 Minuten neu gestartet"
 
-#: inc/class-job.php:720
+#: inc/class-job.php:733
 #@ backwpup
 msgid "Step aborted: too many attempts!"
 msgstr "Schritt abgebrochen durch zu viele Versuche!"
 
-#: inc/class-job.php:845
+#: inc/class-job.php:858
 #, php-format
 #@ backwpup
 msgid "%d. Script stopped! Will start again."
 msgstr "%d. Script stoppt! Wird neu gestartet"
 
-#: inc/class-job.php:874
+#: inc/class-job.php:887
 #, php-format
 #@ backwpup
 msgid "Please use another folder: %1$s"
 msgstr "Bitte einen anderen Ordner auswählen: %1$s"
 
-#: inc/class-job.php:881
+#: inc/class-job.php:894
 #, php-format
 #@ backwpup
 msgid "Can not create folder: %1$s"
 msgstr "Kann keinen Ordner erstellen: %1$s"
 
-#: inc/class-job.php:889
+#: inc/class-job.php:902
 #, php-format
 #@ backwpup
 msgid "Folder \"%1$s\" is not writable"
 msgstr "Ordner \"%1$s\" ist nicht beschreibbar"
 
-#: inc/class-job.php:914
+#: inc/class-job.php:927
 #, php-format
 #@ backwpup
 msgid "Exception caught in %1$s: %2$s"
 msgstr "Ausnahme eingefangen in %1$s: %2$s"
 
-#: inc/class-job.php:972
+#: inc/class-job.php:985
 #@ backwpup
 msgid "WARNING:"
 msgstr "WARNUNG:"
 
-#: inc/class-job.php:985
+#: inc/class-job.php:998
 #@ backwpup
 msgid "DEPRECATED:"
 msgstr "ABGELEHNT:"
 
-#: inc/class-job.php:988
+#: inc/class-job.php:1001
 #@ backwpup
 msgid "STRICT NOTICE:"
 msgstr "EXAKTE NOTIZ:"
 
-#: inc/class-job.php:991
+#: inc/class-job.php:1004
 #@ backwpup
 msgid "RECOVERABLE ERROR:"
 msgstr "WIEDERHERSTELLUNGS FEHLER:"
 
-#: inc/class-job.php:1127
+#: inc/class-job.php:1140
 #, php-format
 #@ backwpup
 msgid "One old log deleted"
@@ -1604,209 +1604,212 @@ msgid_plural "%d old logs deleted"
 msgstr[0] "Eine alte Log-Datei gelöscht"
 msgstr[1] "%d alte Log-Dateien gelöscht"
 
-#: inc/class-job.php:1132
-#: inc/class-page-jobs.php:566
+#: inc/class-job.php:1145
+#: inc/class-page-jobs.php:603
 #, php-format
 #@ backwpup
 msgid "Job done in %s seconds."
 msgstr "Auftrag erledigt in %s Sekunden."
 
-#: inc/class-job.php:1197
+#: inc/class-job.php:1210
 #@ backwpup
 msgid "SUCCESSFUL"
 msgstr "ERFOLGREICH"
 
-#: inc/class-job.php:1200
+#: inc/class-job.php:1213
 #@ backwpup
 msgid "WARNING"
 msgstr "WARNUNG"
 
-#: inc/class-job.php:1243
+#: inc/class-job.php:1256
 #@ backwpup
 msgid "Set blog into maintenance mode"
 msgstr "Webseite / Blog in den Wartungsmodus versetzen"
 
-#: inc/class-job.php:1256
+#: inc/class-job.php:1269
 #@ backwpup
 msgid "Cannot set blog into maintenance mode! .maintenance is not writable!"
 msgstr "Die Webseite kann nicht in den Wartungsmodus gesetzt werden! Das Root-Verzeichnis ist nicht beschreibbar!"
 
-#: inc/class-job.php:1261
+#: inc/class-job.php:1274
 #@ backwpup
 msgid "Set blog to normal mode"
 msgstr "Setze Webseite / Blog zurück in den Normalmodus"
 
-#: inc/class-job.php:1291
+#: inc/class-job.php:1304
 #, php-format
 #@ backwpup
 msgid "Memory increased from %1$s to %2$s"
 msgstr "Speicher(limit) erhöht von %1$s auf %2$s"
 
-#: inc/class-job.php:1293
+#: inc/class-job.php:1306
 #, php-format
 #@ backwpup
 msgid "Can not increase memory limit. The current value is %1$s"
 msgstr "Das PHP-Speicherlimit kann nicht erhöht werden, es beträgt derzeit %1$s "
 
-#: inc/class-job.php:1589
+#: inc/class-job.php:1599
 #, php-format
 #@ backwpup
 msgid "File \"%s\" is not readable!"
 msgstr "Datei \"%s\" ist nicht lesbar!"
 
-#: inc/class-job.php:1591
+#: inc/class-job.php:1601
 #, php-format
 #@ backwpup
 msgid "Link \"%s\" not followed."
 msgstr "Link \"%s\" wird nicht gefolgt"
 
-#: inc/class-create-archive.php:276
+#: inc/class-create-archive.php:294
+#: inc/class-create-archive.php:353
 #, php-format
 #@ backwpup
 msgid "Can not add \"%s\" to zip archive!"
 msgstr "\"%s\" kann dem ZIP-Archiv nicht hinzugefügt werden!"
 
-#: inc/class-create-archive.php:306
+#: inc/class-create-archive.php:377
 #@ backwpup
 msgid "(ER_MULTIDISK) Multi-disk zip archives not supported"
 msgstr "(ER_MULTIDISK) Multi-Disk .zip Archive werden nicht unterstützt"
 
-#: inc/class-create-archive.php:308
+#: inc/class-create-archive.php:378
 #@ backwpup
 msgid "(ER_RENAME) Renaming temporary file failed"
 msgstr "(ER_RENAME) Umbenennen der temporärern Dateien gescheitert."
 
-#: inc/class-create-archive.php:310
+#: inc/class-create-archive.php:379
 #@ backwpup
 msgid "(ER_CLOSE) Closing zip archive failed"
 msgstr "(ER_CLOSE)  Schließen der .zip Archive gescheitert"
 
-#: inc/class-create-archive.php:312
+#: inc/class-create-archive.php:380
 #@ backwpup
 msgid "(ER_SEEK) Seek error"
 msgstr "(ER_SEEK) Such-Fehler"
 
-#: inc/class-create-archive.php:314
+#: inc/class-create-archive.php:381
 #@ backwpup
 msgid "(ER_READ) Read error"
 msgstr "(ER_READ) Lese-Fehler"
 
-#: inc/class-create-archive.php:316
+#: inc/class-create-archive.php:382
 #@ backwpup
 msgid "(ER_WRITE) Write error"
 msgstr "(ER_WRITE) Schreib-Fehler"
 
-#: inc/class-create-archive.php:318
+#: inc/class-create-archive.php:383
 #@ backwpup
 msgid "(ER_CRC) CRC error"
 msgstr "(ER_CRC) CRC Fehler"
 
-#: inc/class-create-archive.php:320
+#: inc/class-create-archive.php:384
 #@ backwpup
 msgid "(ER_ZIPCLOSED) Containing zip archive was closed"
 msgstr "(ER_ZIPCLOSED) beinhaltetendes .zip Archiv war geschlossen"
 
-#: inc/class-create-archive.php:322
+#: inc/class-create-archive.php:385
 #@ backwpup
 msgid "(ER_NOENT) No such file"
 msgstr "(ER_NOENT) keine passende Datei"
 
-#: inc/class-create-archive.php:324
+#: inc/class-create-archive.php:386
 #@ backwpup
 msgid "(ER_EXISTS) File already exists"
 msgstr "(ER_EXISTS) Datei exisitiert bereits"
 
-#: inc/class-create-archive.php:326
+#: inc/class-create-archive.php:387
 #@ backwpup
 msgid "(ER_OPEN) Can't open file"
 msgstr "(ER_OPEN) Kann die Datei nicht öffnen"
 
-#: inc/class-create-archive.php:328
+#: inc/class-create-archive.php:388
 #@ backwpup
 msgid "(ER_TMPOPEN) Failure to create temporary file"
 msgstr "(ER_TMPOPEN) Erstellen einer temporären Datei fehlgeschlagen"
 
-#: inc/class-create-archive.php:330
+#: inc/class-create-archive.php:389
 #@ backwpup
 msgid "(ER_ZLIB) Zlib error"
 msgstr "(ER_ZLIB) Zlib Fehler"
 
-#: inc/class-create-archive.php:332
+#: inc/class-create-archive.php:390
 #@ backwpup
 msgid "(ER_MEMORY) Malloc failure"
 msgstr "(ER_MEMORY) Malloc Fehler"
 
-#: inc/class-create-archive.php:334
+#: inc/class-create-archive.php:391
 #@ backwpup
 msgid "(ER_CHANGED) Entry has been changed"
 msgstr "(ER_CHANGED) Eintrag wurde geändert"
 
-#: inc/class-create-archive.php:336
+#: inc/class-create-archive.php:392
 #@ backwpup
 msgid "(ER_COMPNOTSUPP) Compression method not supported"
 msgstr "(ER_COMPNOTSUPP) Kompressionsmethode nicht unterstützt"
 
-#: inc/class-create-archive.php:338
+#: inc/class-create-archive.php:393
 #@ backwpup
 msgid "(ER_EOF) Premature EOF"
 msgstr "(ER_EOF) verfrühtes EOF"
 
-#: inc/class-create-archive.php:340
+#: inc/class-create-archive.php:394
 #@ backwpup
 msgid "(ER_INVAL) Invalid argument"
 msgstr "(ER_INVAL) ungültiges Argument"
 
-#: inc/class-create-archive.php:342
+#: inc/class-create-archive.php:395
 #@ backwpup
 msgid "(ER_NOZIP) Not a zip archive"
 msgstr "(ER_NOZIP) kein .zip Archiv"
 
-#: inc/class-create-archive.php:344
+#: inc/class-create-archive.php:396
 #@ backwpup
 msgid "(ER_INTERNAL) Internal error"
 msgstr "(ER_INTERNAL) Interner Fehler"
 
-#: inc/class-create-archive.php:346
+#: inc/class-create-archive.php:397
 #@ backwpup
 msgid "(ER_INCONS) Zip archive inconsistent"
 msgstr "(ER_INCONS) .zip Archiv inkonsistent"
 
-#: inc/class-create-archive.php:348
+#: inc/class-create-archive.php:398
 #@ backwpup
 msgid "(ER_REMOVE) Can't remove file"
 msgstr "(ER_REMOVE) Datei kann nicht entfernt werden"
 
-#: inc/class-create-archive.php:350
+#: inc/class-create-archive.php:399
 #@ backwpup
 msgid "(ER_DELETED) Entry has been deleted"
 msgstr "(ER_DELETED) Eintrag wurde gelöscht"
 
-#: inc/class-job.php:1656
+#: inc/class-job.php:1666
 #, php-format
 #@ backwpup
 msgid "Archive size is %s."
 msgstr "Archivgröße ist %s"
 
-#: inc/class-job.php:1657
+#: inc/class-job.php:1667
 #, php-format
 #@ backwpup
 msgid "%1$d Files with %2$s in Archive."
 msgstr "%1$d Dateien mit %2$s in Archiven."
 
-#: inc/class-create-archive.php:371
+#: inc/class-create-archive.php:426
 #, php-format
 #@ backwpup
 msgid "File name \"%1$s\" too long to be saved correctly in %2$s archive!"
 msgstr "Dateiname \"%1$s\" ist zu lang, um korrekt im %2$s Archiv zu speichern."
 
-#: inc/class-create-archive.php:373
+#: inc/class-create-archive.php:428
 #, php-format
 #@ backwpup
 msgid "File path \"%1$s\" too long to be saved correctly in %2$s archive!"
 msgstr "Dateipfad \"%1$s\" ist zu lang, um korrekt in %2$s Archiv zu speichern"
 
-#: inc/class-create-archive.php:383
-#: inc/class-create-archive.php:384
+#: inc/class-create-archive.php:438
+#: inc/class-create-archive.php:439
+#: inc/class-create-archive.php:514
+#: inc/class-create-archive.php:515
 #@ backwpup
 msgid "Unknown"
 msgstr "Unbekannt"
@@ -1979,7 +1982,7 @@ msgstr "GZip"
 msgid "BZip2"
 msgstr "BZip2"
 
-#: inc/class-mysqldump.php:86
+#: inc/class-mysqldump.php:89
 #: inc/features/class-jobtype-dbdump-pro.php:700
 #, php-format
 #@ backwpup
@@ -1994,15 +1997,15 @@ msgstr "Kann keine Verbindung zur Datenbank %1$d herstellen: %2$s"
 msgid "Connected to database %1$s on %2$s"
 msgstr "Mit Datenbank %1$s auf %2$s verbunden"
 
-#: inc/class-mysqldump.php:127
-#: inc/class-mysqldump.php:137
-#: inc/class-mysqldump.php:214
-#: inc/class-mysqldump.php:225
-#: inc/class-mysqldump.php:237
-#: inc/class-mysqldump.php:248
-#: inc/class-mysqldump.php:286
-#: inc/class-mysqldump.php:307
-#: inc/class-mysqldump.php:321
+#: inc/class-mysqldump.php:130
+#: inc/class-mysqldump.php:140
+#: inc/class-mysqldump.php:217
+#: inc/class-mysqldump.php:228
+#: inc/class-mysqldump.php:240
+#: inc/class-mysqldump.php:251
+#: inc/class-mysqldump.php:289
+#: inc/class-mysqldump.php:310
+#: inc/class-mysqldump.php:324
 #: inc/features/class-jobtype-dbdump-pro.php:713
 #: inc/features/class-jobtype-dbdump-pro.php:727
 #: inc/features/class-jobtype-dbdump-pro.php:776
@@ -2168,28 +2171,28 @@ msgid "%d. Trying to make a list of folders to back up &hellip;"
 msgstr "%d. Versuche, eine Liste der Ordner für das Backup zu erstellen …"
 
 #: inc/class-jobtype-file.php:399
-#: inc/class-jobtype-file.php:405
-#: inc/class-jobtype-file.php:411
-#: inc/class-jobtype-file.php:417
-#: inc/class-jobtype-file.php:423
-#: inc/class-jobtype-file.php:429
+#: inc/class-jobtype-file.php:406
+#: inc/class-jobtype-file.php:413
+#: inc/class-jobtype-file.php:419
+#: inc/class-jobtype-file.php:425
+#: inc/class-jobtype-file.php:431
 #, php-format
 #@ backwpup
 msgid "Added \"%s\" to backup file list"
 msgstr "\"%s\" zur Backup Datei-Liste hinzugefügt."
 
-#: inc/class-jobtype-file.php:434
+#: inc/class-jobtype-file.php:436
 #@ backwpup
 msgid "No folder to back up."
 msgstr "Keine Ordner zum Sichern"
 
-#: inc/class-jobtype-file.php:436
+#: inc/class-jobtype-file.php:438
 #, php-format
 #@ backwpup
 msgid "%1$d folders to back up."
 msgstr "%1$d Ordner zu sichern"
 
-#: inc/class-jobtype-file.php:473
+#: inc/class-jobtype-file.php:477
 #, php-format
 #@ backwpup
 msgid "Folder \"%s\" is not readable!"
@@ -2412,7 +2415,7 @@ msgid "working since %d seconds"
 msgstr "in Arbeit seit %d Sek."
 
 #: inc/class-page-backwpup.php:262
-#: inc/class-page-jobs.php:436
+#: inc/class-page-jobs.php:472
 #@ backwpup
 msgid "Abort"
 msgstr "Abbrechen"
@@ -2971,62 +2974,62 @@ msgstr "Protokoll"
 msgid "Copy of"
 msgstr "Kopie von"
 
-#: inc/class-page-jobs.php:319
+#: inc/class-page-jobs.php:353
 #, php-format
 #@ backwpup
 msgid "Job \"%s\" started."
 msgstr "Auftrag  \"%s\" wurde gestartet."
 
-#: inc/class-page-jobs.php:345
+#: inc/class-page-jobs.php:381
 #: inc/class-wp-cli.php:47
 #@ backwpup
 msgid "Aborted by user!"
 msgstr "Abgebrochen vom Benutzer!"
 
-#: inc/class-page-jobs.php:374
+#: inc/class-page-jobs.php:410
 #: inc/class-wp-cli.php:77
 #@ backwpup
 msgid "Job will be terminated."
 msgstr "Auftrag wird beendet."
 
-#: inc/class-page-jobs.php:414
+#: inc/class-page-jobs.php:450
 #, php-format
 #@ backwpup
 msgid "%s Jobs"
 msgstr "%s Aufträge"
 
-#: inc/class-page-jobs.php:432
+#: inc/class-page-jobs.php:468
 #, php-format
 #@ backwpup
 msgid "Job currently working: %s"
 msgstr "Aktueller Auftrag wird bearbeitet: %s"
 
-#: inc/class-page-jobs.php:433
+#: inc/class-page-jobs.php:469
 #@ backwpup
 msgid "Warnings:"
 msgstr "Warnungen:"
 
-#: inc/class-page-jobs.php:434
+#: inc/class-page-jobs.php:470
 #@ backwpup
 msgid "Errors:"
 msgstr "Fehler:"
 
-#: inc/class-page-jobs.php:435
+#: inc/class-page-jobs.php:471
 #@ backwpup
 msgid "Display working log"
 msgstr "Zeige Auftragslog"
 
-#: inc/class-page-jobs.php:437
+#: inc/class-page-jobs.php:473
 #@ backwpup
 msgid "Close working screen"
 msgstr "Arbeitsfläche schließen"
 
-#: inc/class-page-jobs.php:437
+#: inc/class-page-jobs.php:473
 #@ backwpup
 msgid "close"
 msgstr "schließen"
 
-#: inc/class-page-jobs.php:565
+#: inc/class-page-jobs.php:602
 #@ backwpup
 msgid "Job end"
 msgstr "Auftragsende"
@@ -4404,7 +4407,7 @@ msgstr "Inpsyde GmbH"
 msgid "http://inpsyde.com"
 msgstr "http://inpsyde.com"
 
-#: inc/class-admin.php:430
+#: inc/class-admin.php:427
 #, php-format
 #@ backwpup
 msgid "You have activatetd or updated BackWPup please check <a href=\"%s\">here</a>."
@@ -4415,7 +4418,7 @@ msgstr "Du hast BackWPup aktiviert oder aktualisiert. Bitte siehe <a href=\"%s\"
 msgid "running"
 msgstr "läuft"
 
-#: inc/class-destination-sugarsync.php:268
+#: inc/class-destination-sugarsync.php:266
 #@ backwpup
 msgid "Upload to SugarSync now started &hellip;"
 msgstr "Der Upload zu SugarSync wird jetzt gestartet &hellip;"
@@ -4430,7 +4433,7 @@ msgstr "Auftragsstart"
 msgid "No destination correctly defined for backup! Please correct job settings."
 msgstr "Es wurde kein korrektes Backupziel definiert! Bitte überprüfe die Auftragseinstellungen."
 
-#: inc/class-job.php:1252
+#: inc/class-job.php:1265
 #@ backwpup
 msgid "WordPress Maintenance mode not activated on Manual run. Because it disappears displaying of working progress."
 msgstr "Der WordPress-Wartungsmodus wurde nicht aktiviert, da der Auftrag manuell gestartet wurde. Dies würde die Fortschrittsanzeige behindern."
@@ -4678,12 +4681,12 @@ msgstr "[INFO] Maximale Script ausführungszeit ist %1$d Sekunden"
 msgid "Runtime: %d seconds"
 msgstr "Ausführungszeit: %d Sekunden"
 
-#: inc/class-job.php:611
+#: inc/class-job.php:616
 #@ backwpup
 msgid "Second process start terminated, because a other job is already running!"
 msgstr "Ein zweiter Prozess start wurde abgebrochen, weil der alte Auftrag noch läuft!"
 
-#: inc/class-job.php:829
+#: inc/class-job.php:842
 #, php-format
 #@ backwpup
 msgid "Signal %d is sent to script!"
@@ -4718,7 +4721,7 @@ msgstr "Handbuch"
 msgid "[INFO] BackWPup job started form commandline interface"
 msgstr "[INFO] BackWPup-Auftrag per Kommandozeile gestartet"
 
-#: inc/class-job.php:531
+#: inc/class-job.php:536
 #@ default
 msgid "Job Started"
 msgstr ""
@@ -4887,12 +4890,14 @@ msgstr "Bitte deaktiviere den veralteten <a href=\"%s\">PHP-safe-mode</a>."
 msgid "We recommend to install the PHP FTP extension to use the FTP backup destination."
 msgstr "Wir empfehlen, die PHP-Erweiterung FTP zu installieren, um das Speicherziel FTP zu verwenden."
 
+#: inc/class-page-jobs.php:325
 #: inc/features/class-wizard-systemtest.php:153
 #, php-format
 #@ backwpup
 msgid "Temp folder %s does not exist and cannot be created. Please create it and set proper write permissions."
 msgstr "Das temporäre Verzeichnis %s existiert nicht, und es kann auch nicht erstellt werden. Bitte erstellen Sie es, und setzen Sie die passenden Schreibrechte."
 
+#: inc/class-page-jobs.php:334
 #: inc/features/class-wizard-systemtest.php:164
 #, php-format
 #@ backwpup
@@ -4960,13 +4965,13 @@ msgstr "FTP-Einstellungen"
 msgid "%d. Try to send backup file to a FTP Server &hellip;"
 msgstr "%d. Versuche, Backup zum FTP-Server zu schicken …"
 
-#: inc/class-destination-sugarsync.php:245
+#: inc/class-destination-sugarsync.php:243
 #, php-format
 #@ backwpup
 msgid "%d. Try to send backup to SugarSync &hellip;"
 msgstr "%d. Versuche, Backup an SugarSync zu schicken …"
 
-#: inc/class-destination-sugarsync.php:255
+#: inc/class-destination-sugarsync.php:253
 #@ backwpup
 msgid "No free space left on SugarSync!"
 msgstr "Kein Platz mehr frei bei SugarSync!"
@@ -5116,14 +5121,14 @@ msgstr "Bei Schritt: %s"
 msgid "Last message: %s"
 msgstr "Letzte Nachricht: %s"
 
-#: inc/class-admin.php:396
+#: inc/class-admin.php:393
 #, php-format
 #@ backwpup
 msgctxt "link to Inpsyde.com, link text: Inpsyde GmbH"
 msgid "A project of %s"
 msgstr "Ein Projekt der %s"
 
-#: inc/class-admin.php:397
+#: inc/class-admin.php:394
 #, php-format
 #@ backwpup
 msgctxt "developer name, link text: Daniel Hüsken"
@@ -5414,70 +5419,70 @@ msgid "BackWPup requires PHP version 5.2.6 or greater and WordPress 3.2 or great
 msgstr "BackWPup Braucht PHP in der Version 5.2.6 oder höher und WordPress in der Version 3.2 oder höher."
 
 #: inc/class-create-archive.php:78
-#: inc/class-create-archive.php:128
-#: inc/class-create-archive.php:141
-#: inc/class-mysqldump.php:106
+#: inc/class-create-archive.php:138
+#: inc/class-create-archive.php:151
+#: inc/class-mysqldump.php:109
 #@ backwpup
 msgid "Functions for gz compression not available"
 msgstr "Die Funktionen für die Gzip-Kompression sind nicht verfügbar."
 
-#: inc/class-create-archive.php:93
-#: inc/class-create-archive.php:147
-#: inc/class-mysqldump.php:110
+#: inc/class-create-archive.php:97
+#: inc/class-create-archive.php:157
+#: inc/class-mysqldump.php:113
 #@ backwpup
 msgid "Functions for bz2 compression not available"
 msgstr "Die Funktionen für die Bz2-Kompression sind nicht verfügbar."
 
-#: inc/class-create-archive.php:157
+#: inc/class-create-archive.php:167
 #@ backwpup
 msgid "Can not open archive file"
 msgstr "Kann Archivdatei nicht öffnen"
 
-#: inc/class-create-archive.php:240
 #: inc/class-create-archive.php:254
-#: inc/class-create-archive.php:379
+#: inc/class-create-archive.php:268
+#: inc/class-create-archive.php:434
 #, php-format
 #@ backwpup
 msgid "Can not open source file %s to archive"
 msgstr "Konnte Quelle %s zum Archivieren nicht öffnen"
 
-#: inc/class-create-archive.php:286
+#: inc/class-create-archive.php:304
 #, php-format
 #@ backwpup
 msgid "PclZip archive add error: %s"
 msgstr "Fehler beim Hinzufügen zum PclZip-Archive: %s"
 
-#: inc/class-create-archive.php:351
+#: inc/class-create-archive.php:406
 #, php-format
 #@ backwpup
 msgctxt "Text of ZipArchive status Massage"
 msgid "ZipArchive returns status: %s"
 msgstr "Das Zip-Archive liefert den Status: %s"
 
-#: inc/class-job.php:1613
+#: inc/class-job.php:1623
 #, php-format
 #@ backwpup
 msgid "%d. Trying to create backup archive &hellip;"
 msgstr "%d. Versuche, Backup zu erstellen …"
 
-#: inc/class-job.php:1620
+#: inc/class-job.php:1629
 #, php-format
 #@ backwpup
 msgctxt "Archive compression method"
 msgid "Compression method is %s"
 msgstr "Komprimierungsmethode ist %s"
 
-#: inc/class-job.php:1647
+#: inc/class-job.php:1657
 #@ backwpup
 msgid "Backup archive created."
 msgstr "Backup wurde erstellt."
 
-#: inc/class-mysqldump.php:122
+#: inc/class-mysqldump.php:125
 #@ backwpup
 msgid "Can not open dump file"
 msgstr "Konnte Backup nicht öffnen"
 
-#: inc/class-mysqldump.php:383
+#: inc/class-mysqldump.php:386
 #@ backwpup
 msgid "Error on writing to file!"
 msgstr "Fehler beim Schreiben!"
@@ -5530,32 +5535,34 @@ msgctxt "%s = Folder name"
 msgid "Folder %s for the archive not found"
 msgstr "Verzeichnis %s für das Archiv nicht gefunden"
 
-#: inc/class-create-archive.php:125
+#: inc/class-create-archive.php:134
 #, php-format
 #@ backwpup
 msgctxt "ZipArchive open() result"
 msgid "Can not create zip archive: %d"
 msgstr "Konte ZIP-Datei %s nicht erstellen"
 
-#: inc/class-create-archive.php:152
+#: inc/class-create-archive.php:162
 #, php-format
 #@ backwpup
 msgctxt "%s = file name"
 msgid "Method to archive file %s not detected"
 msgstr "Methode zum Archivieren der Datei %s nicht gefunden"
 
-#: inc/class-create-archive.php:222
+#: inc/class-create-archive.php:236
 #@ backwpup
 msgid "File name cannot be empty"
 msgstr "Der Dateiname kann nicht leer sein."
 
-#: inc/class-create-archive.php:235
 #: inc/class-create-archive.php:249
+#: inc/class-create-archive.php:263
+#: inc/class-create-archive.php:338
+#: inc/class-create-archive.php:342
 #@ backwpup
 msgid "This archive method can only add one file"
 msgstr "Diese Archive-Methode kann nur eine einziges Datei sichern."
 
-#: inc/class-mysqldump.php:92
+#: inc/class-mysqldump.php:95
 #, php-format
 #@ backwpup
 msgctxt "Database Charset"
@@ -5585,7 +5592,7 @@ msgctxt "%s = Remote Code"
 msgid "Could not connect to remote host, code %d. Please try again later."
 msgstr "Konnte nicht zum Remote-Host verbinden, code: %s. Bitte versuchen Sie es später."
 
-#: inc/class-create-archive.php:225
+#: inc/class-create-archive.php:239
 #, php-format
 #@ backwpup
 msgctxt "File path to add to archive"
@@ -5652,26 +5659,28 @@ msgstr "%1$s Version %2$s. Ein Projekt der <a href=\"http://inpsyde.com\">Inpsyd
 msgid "Plugin on wordpress.org"
 msgstr "Plugin auf wordpress.org"
 
-#: inc/class-job.php:1569
+#: inc/class-job.php:1579
 #, php-format
 #@ backwpup
 msgctxt "Folder name"
 msgid "Folder %s not exists"
 msgstr "Verzeichnis %s existiert nicht"
 
-#: inc/class-job.php:1573
+#: inc/class-job.php:1583
 #, php-format
 #@ backwpup
 msgctxt "Folder name"
 msgid "Folder %s not readable"
 msgstr "Verzeichnis %s ist nicht lesbar"
 
+#: inc/class-page-jobs.php:322
 #: inc/features/class-wizard-systemtest.php:148
 #, php-format
 #@ backwpup
 msgid "Temp folder %s not read or writable. Please set proper write permissions."
 msgstr "Das Temporäre Verzeichnis %s ist nicht lesbar oder schreibbar. Bitte setze Schreibberechtigung."
 
+#: inc/class-page-jobs.php:331
 #: inc/features/class-wizard-systemtest.php:160
 #, php-format
 #@ backwpup
@@ -5853,12 +5862,6 @@ msgstr "http://marketpress.de/product/backwpup-pro/"
 msgid "GET PRO"
 msgstr "GET PRO"
 
-#. translators: plugin header field 'Version'
-#: backwpup.php:0
-#@ backwpup
-msgid "3.0.1"
-msgstr ""
-
 #: inc/class-destination-s3.php:187
 #@ backwpup
 msgid "Multipart Upload"
@@ -5874,7 +5877,7 @@ msgstr "Benutze Multipart Upload zu hochladen der Datei"
 msgid "Mutipart split the file into peaces of chucks while uploading. It is needed for displaying upload process and can transfer bigger files. Im moment there are problems on Google storage with this option"
 msgstr "Multipart splittet den Upload in mehrere teile auf. Das wird benötigt um die Fortschrittsanzeige zu machen und um groß Dateien hochzuladen. Im moment gibt es mit dieser Option Probleme bei Google Storage"
 
-#: inc/class-destination-s3.php:393
+#: inc/class-destination-s3.php:391
 #, php-format
 #@ backwpup
 msgid "Connected to S3 Bucket \"%1$s\" in %2$s"
@@ -5904,4 +5907,62 @@ msgstr "E-Mail Absender Name"
 #@ backwpup
 msgid "Name and email of email sender in the mail formant. Name &lt;emailadress&gt;"
 msgstr "Name des E-Mail Senders im E-MAil formart. <code>Name &lt;E-Mail-Adresse&gt;</code>"
+
+#. translators: plugin header field 'Version'
+#: backwpup.php:0
+#@ backwpup
+msgid "3.0.2"
+msgstr ""
+
+#: inc/class-create-archive.php:326
+#@ backwpup
+msgid "Folder name cannot be empty"
+msgstr "Der Verzeichnis Name darf nicht leer sein"
+
+#: inc/class-create-archive.php:329
+#, php-format
+#@ backwpup
+msgctxt "Folder path to add to archive"
+msgid "Folder %s does not exist or is not readable"
+msgstr "Verzeichnis %s existiert nicht oder ist nicht lesbar"
+
+#: inc/class-create-archive.php:507
+#, php-format
+#@ backwpup
+msgid "Folder name \"%1$s\" too long to be saved correctly in %2$s archive!"
+msgstr "Verzeichnis Name \"%1$s\" ist zu lang um ihn koreckt zu speichern im %2$s Archiv"
+
+#: inc/class-create-archive.php:509
+#, php-format
+#@ backwpup
+msgid "Folder path \"%1$s\" too long to be saved correctly in %2$s archive!"
+msgstr "Verzeichnis Pfad \"%1$s\" ist zu lang um ihn koreckt zu speichern im %2$s Archiv"
+
+#: inc/class-job.php:457
+#: inc/class-job.php:458
+#@ backwpup
+msgid "Backups folder does not exist or is not writable for BackWPup"
+msgstr "Backups Verzeichnis existiert nicht oder ist nicht beschreibbar von BackWPup"
+
+#: inc/class-mysqldump.php:57
+#@ backwpup
+msgid "No MySQLi extension found. Please install it."
+msgstr "Keine MySQLi Erweiterung gefunden. Bitte installieren Sie diese"
+
+#: inc/class-page-jobs.php:342
+#, php-format
+#@ backwpup
+msgid "Backups folder %s is not read or writable. Please set proper write permissions."
+msgstr "Backups Verzeichnis nicht lesbar oder nicht beschreibbar. Bitte die richtigen Berechtigungen setzen."
+
+#: inc/class-page-jobs.php:345
+#, php-format
+#@ backwpup
+msgid "Backups folder %s does not exist and cannot be created. Please create it and set proper write permissions."
+msgstr "Backups Verzeichnis %s existiert nicht und kann nicht angelegt werden. Bitte überprüfen Sie die Berechtigungen."
+
+#: inc/class-page-jobs.php:471
+#@ backwpup
+msgid "Working job log"
+msgstr "Auftrags lLog"
 

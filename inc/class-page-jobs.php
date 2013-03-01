@@ -224,7 +224,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 						$logfile = basename( BackWPup_Option::get( $jobid, 'logfile' ) );
 						if ( is_object( $job_object ) && $job_object->job[ 'jobid'] == $jobid )
 							$logfile = basename( $job_object->logfile );
-						$r .= '<a class="backwpup-fancybox" data-fancybox-type="iframe" href="' . admin_url( 'admin-ajax.php' ) . '?&action=backwpup_view_log&logfile=' . $logfile .'&_ajax_nonce=' . wp_create_nonce( 'view-logs' ) . '" title="' . esc_attr( $logfile ) . '">' . __( 'Log', 'backwpup' ) . '</a>';
+						$r .= '<a class="thickbox" href="' . admin_url( 'admin-ajax.php' ) . '?&action=backwpup_view_log&logfile=' . $logfile .'&_ajax_nonce=' . wp_create_nonce( 'view-logs' ) . '&height=440&width=630&TB_iframe=true" title="' . esc_attr( $logfile ) . '">' . __( 'Log', 'backwpup' ) . '</a>';
 
 					}
 					$r .= "</td>";
@@ -314,20 +314,56 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					if ( ! current_user_can( 'backwpup_jobs_start' ) )
 						wp_die( __( 'Not allowed!', 'backwpup') );
 					check_admin_referer( 'backwup_job_run-runnowlink' );
-					$last_log = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
-					BackWPup_Job::get_jobrun_url( 'runnow', $_GET[ 'jobid' ] );
-					BackWPup_Admin::message( sprintf( __( 'Job "%s" started.', 'backwpup' ), esc_attr( BackWPup_Option::get( $_GET[ 'jobid' ], 'name' ) ) ) );
-					//sleep as long as jon not started
-					$i=0;
-					while ( $last_log == BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE ) ) {
-						usleep( 250000 ); //wait a half second for net try
-						clearstatcache();
-						//wait maximal 5 sec.
-						if ( $i >= 20 )
-							break;
-						$i++;
+					
+					//check temp folder
+					BackWPup_Job::check_folder( BackWPup::get_plugin_data( 'TEMP' ) );
+					if ( is_dir( BackWPup::get_plugin_data( 'TEMP' ) ) ) {
+						if ( ! is_writable( BackWPup::get_plugin_data( 'TEMP' ) ) || ! is_readable( BackWPup::get_plugin_data( 'TEMP' ) ) ) {
+							BackWPup_Admin::message( sprintf( __( 'Temp folder %s not read or writable. Please set proper write permissions.','backwpup' ), BackWPup::get_plugin_data( 'TEMP' ) ) );
+						}
+					} else {
+						BackWPup_Admin::message( sprintf( __( 'Temp folder %s does not exist and cannot be created. Please create it and set proper write permissions.','backwpup' ), BackWPup::get_plugin_data( 'TEMP' ) ) );
 					}
-					self::$logfile = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
+					//check log folder
+					BackWPup_Job::check_folder( BackWPup_Option::get( 'cfg', 'logfolder' ) );
+					if ( is_dir( BackWPup_Option::get( 'cfg', 'logfolder' ) ) ) {
+						if ( ! is_writable( BackWPup_Option::get( 'cfg', 'logfolder' ) )  || ! is_readable( BackWPup_Option::get( 'cfg', 'logfolder' ) )  ) {
+							BackWPup_Admin::message( sprintf( __( 'Logs folder %s is not read or writable. Please set proper write permissions.','backwpup' ), BackWPup_Option::get( 'cfg', 'logfolder' ) ) );
+						}
+					} else {
+						BackWPup_Admin::message( sprintf( __( 'Logs folder %s does not exist and cannot be created. Please create it and set proper write permissions.','backwpup' ), BackWPup_Option::get( 'cfg', 'logfolder' ) ) );
+					}
+					//check backups folder
+					$backups_folder = BackWPup_Option::get( $_GET[ 'jobid' ], 'backupdir' );
+					if ( ! empty( $backups_folder ) ) {
+						BackWPup_Job::check_folder( $backups_folder );
+						if ( is_dir( $backups_folder ) ) {
+							if ( ! is_writable( $backups_folder )  || ! is_readable( $backups_folder )  ) {
+								BackWPup_Admin::message( sprintf( __( 'Backups folder %s is not read or writable. Please set proper write permissions.','backwpup' ), $backups_folder ) );
+							}
+						} else {
+							BackWPup_Admin::message( sprintf( __( 'Backups folder %s does not exist and cannot be created. Please create it and set proper write permissions.','backwpup' ), $backups_folder ) );
+						}
+					}
+
+					//only start job if massages empty
+					$log_messages = BackWPup_Admin::get_message();					
+					if ( empty ( $log_messages ) )  {
+						$last_log = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
+						BackWPup_Admin::message( sprintf( __( 'Job "%s" started.', 'backwpup' ), esc_attr( BackWPup_Option::get( $_GET[ 'jobid' ], 'name' ) ) ) );
+						BackWPup_Job::get_jobrun_url( 'runnow', $_GET[ 'jobid' ] );					
+						//sleep as long as jon not started
+						$i=0;
+						while ( $last_log == BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE ) ) {
+							usleep( 250000 ); //wait a half second for net try
+							clearstatcache();
+							//wait maximal 5 sec.
+							if ( $i >= 20 )
+								break;
+							$i++;
+						}
+						self::$logfile = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
+					}
 				}
 				break;
 			case 'abort': //Abort Job
@@ -432,7 +468,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					echo '<h2 id="runningtitle">' . sprintf( __('Job currently working: %s','backwpup'), $job_object->job[ 'name' ] ) . '</h2>';
 					echo '<span id="warningsid">' . __( 'Warnings:', 'backwpup' ) . ' <span id="warnings">' . $job_object->warnings . '</span></span>';
 					echo '<span id="errorid">' . __( 'Errors:', 'backwpup' ) . ' <span id="errors">' . $job_object->errors . '</span></span>';
-					echo '<div class="infobuttons"><a href="#showworking" id="showworkingbutton" class="backwpup-fancybox">' . __( 'Display working log', 'backwpup' ) . '</a>';
+					echo '<div class="infobuttons"><a href="#TB_inline?height=440&width=630&inlineId=tb-showworking" id="showworkingbutton" class="thickbox" title="' . __( 'Working job log', 'backwpup') . '">' . __( 'Display working log', 'backwpup' ) . '</a>';
 					echo '<a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupjobs&action=abort', 'abort-job' ) . '" id="abortbutton" class="backwpup-fancybox">' . __( 'Abort', 'backwpup' ) . '</a>';
 					echo '<a href="#" id="showworkingclose" title="' . __( 'Close working screen', 'backwpup') .'" style="display:none" >' . __( 'close', 'backwpup' ) . '</a></div>';
 				echo '</div>';
@@ -442,9 +478,9 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				echo '<div id="onstep"><samp>' . $job_object->steps_data[ $job_object->step_working ][ 'NAME' ] . '</samp></div>';
 				echo '<div class="progressbar"><div id="progresssteps" style="width:' . $job_object->substep_percent . '%;">' . $job_object->substep_percent . '%</div></div>';
 				echo '<div id="lastmsg">' . $job_object->lastmsg . '</div>';
-				echo '<div id="showworking" style="display:none;">';
+				echo '<div id="tb-showworking" style="display:none;"><div id="showworking">';	
 				echo  substr( $logfiledata, $startpos, $length );
-				echo '</div>';
+				echo '</div></div>';
 			echo '</div>';
 		}
 		//display jos Table
@@ -475,7 +511,8 @@ class BackWPup_Page_Jobs extends WP_List_Table {
                         success:function (rundata) {
                             $('#logpos').val(rundata.logpos);
                             if ('' != rundata.logtext) {
-                                $('#showworking').append(rundata.logtext).scrollTop(rundata.logpos * 14);
+                                $('#showworking').append(rundata.logtext);
+								$('#TB_ajaxContent').scrollTop(rundata.logpos * 15);
                             }
                             if (0 < rundata.errors) {
                                 $('#errors').replaceWith('<span id="errors">' + rundata.errors + '</span>');

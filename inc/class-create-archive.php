@@ -77,31 +77,39 @@ class BackWPup_Create_Archive {
 			if ( ! function_exists( 'gzencode' ) )
 				throw new BackWPup_Create_Archive_Exception( __( 'Functions for gz compression not available', 'backwpup' ) );
 			$this->method = 'TarGz';
-			$this->filehandel = fopen( $this->file, 'c+b');
-			$eof_compressed = gzencode( pack( "a1024", "" ) );
-			//remove tar end of file
-			if ( filesize( $this->file ) > strlen( $eof_compressed ) ) {
-				fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
-				$last_blocs = fread( $this->filehandel, strlen( $eof_compressed ) );
-				//overwrite tar end of file
-				if ( $last_blocs == $eof_compressed )
+			if ( is_file( $this->file ) ) {
+				$this->filehandel = fopen( $this->file, 'c+b');
+				$eof_compressed = gzencode( pack( "a1024", "" ) );
+				//remove tar end of file
+				if ( filesize( $this->file ) > strlen( $eof_compressed ) ) {
 					fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
+					$last_blocs = fread( $this->filehandel, strlen( $eof_compressed ) );
+					//overwrite tar end of file
+					if ( $last_blocs == $eof_compressed )
+						fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
+				}
+				fclose( $this->filehandel );
 			}
+			$this->filehandel = fopen( 'compress.zlib://'. $this->file, 'wb');
 		}
 		elseif ( strtolower( substr( $this->file, -8 ) ) == '.tar.bz2' ) {
 			if ( ! function_exists( 'bzcompress' ) )
 				throw new BackWPup_Create_Archive_Exception( __( 'Functions for bz2 compression not available', 'backwpup' ) );
 			$this->method = 'TarBz2';
-			$this->filehandel = fopen( $this->file, 'c+b');
-			$eof_compressed = bzcompress( pack( "a1024", "" ) );
-			//remove tar end of file
-			if ( filesize( $this->file ) > strlen( $eof_compressed ) ) {
-				fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
-				$last_blocs = fread( $this->filehandel, strlen( $eof_compressed ) );
-				//overwrite tar end of file
-				if ( $last_blocs == $eof_compressed )
+			if ( is_file( $this->file ) ) {
+				$this->filehandel = fopen( $this->file, 'c+b');
+				$eof_compressed = bzcompress( pack( "a1024", "" ) );
+				//remove tar end of file
+				if ( filesize( $this->file ) > strlen( $eof_compressed ) ) {
 					fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
+					$last_blocs = fread( $this->filehandel, strlen( $eof_compressed ) );
+					//overwrite tar end of file
+					if ( $last_blocs == $eof_compressed )
+						fseek( $this->filehandel, - strlen( $eof_compressed ), SEEK_END );
+				}
+				fclose( $this->filehandel );
 			}
+			$this->filehandel = fopen( 'compress.bzip2://'. $this->file, 'wb');
 		}
 		elseif ( strtolower( substr( $this->file, -4 ) ) == '.tar' ) {
 			$this->method = 'Tar';
@@ -120,9 +128,11 @@ class BackWPup_Create_Archive {
 			if ( class_exists( 'ZipArchive' ) ) {
 				$this->method = 'ZipArchive';
 				$this->ziparchive = new ZipArchive();
-				$res = $this->ziparchive->open( $this->file, ZipArchive::CREATE );
-				if ( $res !== TRUE )
-					throw new BackWPup_Create_Archive_Exception( sprintf( _x( 'Can not create zip archive: %d','ZipArchive open() result', 'backwpup' ), $res ) );
+				$ziparchive_open = $this->ziparchive->open( $this->file, ZipArchive::CREATE );
+				if ( $ziparchive_open !== TRUE ) {
+					$this->ziparchive_status( $ziparchive_open );
+					throw new BackWPup_Create_Archive_Exception( sprintf( _x( 'Can not create zip archive: %d','ZipArchive open() result', 'backwpup' ), $ziparchive_open ) );
+				}			
 			}
 			if ( $this->get_method() == 'PclZip' && ! function_exists( 'gzencode' ) )
 				throw new BackWPup_Create_Archive_Exception( __( 'Functions for gz compression not available', 'backwpup' ) );
@@ -173,9 +183,13 @@ class BackWPup_Create_Archive {
 			fwrite( $this->filehandel, pack( "a1024", "" ) );
 		}
 		elseif ( $this->get_method() == 'TarGz' ) {
+			fclose( $this->filehandel );
+			$this->filehandel = fopen( $this->file, 'a');
 			fwrite( $this->filehandel, gzencode( pack( "a1024", "" ) ) );
 		}
 		elseif ( $this->get_method() == 'TarBz2' ) {
+			fclose( $this->filehandel );
+			$this->filehandel = fopen( $this->file, 'a');
 			fwrite( $this->filehandel, bzcompress( pack( "a1024", "" ) ) );
 		}
 
@@ -186,7 +200,7 @@ class BackWPup_Create_Archive {
 
 		//close PclZip Class
 		if ( is_object( $this->ziparchive ) ) {
-			$this->ziparchive_status();
+			$this->ziparchive_status( $this->ziparchive->status );
 			$this->ziparchive->close();
 			unset( $this->ziparchive );
 		}
@@ -223,7 +237,7 @@ class BackWPup_Create_Archive {
 
 		if ( ! is_file( $file_name ) || ! is_readable( $file_name ) ) {
 			trigger_error( sprintf( _x( 'File %s does not exist or is not readable', 'File path to add to archive', 'backwpup' ), $file_name ), E_USER_WARNING );
-			return false;
+			return FALSE;
 		}
 
 		if ( empty( $name_in_archive ) )
@@ -233,12 +247,12 @@ class BackWPup_Create_Archive {
 			case 'gz':
 				if ( $this->file_count > 0 ) {
 					trigger_error( __( 'This archive method can only add one file', 'backwpup' ), E_USER_WARNING );
-					return false;
+					return FALSE;
 				}
 				//add file to archive
 				if ( ! ( $fd = fopen( $file_name, 'rb' ) ) ) {
 					trigger_error( sprintf( __( 'Can not open source file %s to archive', 'backwpup' ), $file_name ), E_USER_WARNING );
-					return false;
+					return FALSE;
 				}
 				while ( ! feof( $fd ) )
 					fwrite( $this->filehandel, fread( $fd, 8192 ) );
@@ -247,12 +261,12 @@ class BackWPup_Create_Archive {
 			case 'bz':
 				if ( $this->file_count > 0 ) {
 					trigger_error( __( 'This archive method can only add one file', 'backwpup' ), E_USER_WARNING );
-					return false;
+					return FALSE;
 				}
 				//add file to archive
 				if ( ! ( $fd = fopen( $file_name, 'rb' ) ) ) {
 					trigger_error( sprintf( __( 'Can not open source file %s to archive', 'backwpup' ), $file_name ), E_USER_WARNING );
-					return false;
+					return FALSE;
 				}
 				while ( ! feof( $fd ) )
 					fwrite( $this->filehandel, bzcompress( fread( $fd, 8192 ) ) );
@@ -266,15 +280,19 @@ class BackWPup_Create_Archive {
 				break;
 			case 'ZipArchive':
 				//close and reopen, all added files are open on fs
-				if ( $this->file_count >= 10 ) { //35 works with PHP 5.2.4 on win
-					$this->ziparchive_status();
+				if ( $this->file_count >= 30 ) { //35 works with PHP 5.2.4 on win
+					$this->ziparchive_status( $this->ziparchive->status );
 					$this->ziparchive->close();
-					$this->ziparchive->open( $this->file, ZipArchive::CREATE );
+					$ziparchive_open = $this->ziparchive->open( $this->file, ZipArchive::CREATE );
+					if ( $ziparchive_open !== TRUE ) {
+						$this->ziparchive_status( $ziparchive_open );
+						return FALSE;
+					}
 					$this->file_count = 0;
 				}
 				if ( ! $this->ziparchive->addFile( $file_name, $name_in_archive ) ) {
 					trigger_error( sprintf( __( 'Can not add "%s" to zip archive!', 'backwpup' ), $name_in_archive ), E_USER_ERROR );
-					return false;
+					return FALSE;
 				}
 				break;
 			case 'PclZip':
@@ -284,7 +302,7 @@ class BackWPup_Create_Archive {
 														) ) )
 								) {
 						trigger_error( sprintf( __( 'PclZip archive add error: %s', 'backwpup' ), $this->pclzip->errorInfo( TRUE ) ), E_USER_ERROR );
-						return false;
+						return FALSE;
 					}
 				break;
 		}
@@ -294,62 +312,99 @@ class BackWPup_Create_Archive {
 		return TRUE;
 	}
 
+	/**
+	 * Add a empty Folder to archive
+	 *
+	 * @param $folder_name string Name of folder to add to archive
+	 * @throws BackWPup_Create_Archive_Exception
+	 * @return bool
+	 */
+	public function add_empty_folder( $folder_name, $name_in_archive = '' ) {
+		
+		//check param
+		if ( empty( $folder_name ) )
+			throw new BackWPup_Create_Archive_Exception(  __( 'Folder name cannot be empty', 'backwpup' ) );
+
+		if ( ! is_dir( $folder_name ) || ! is_readable( $folder_name ) ) {
+			trigger_error( sprintf( _x( 'Folder %s does not exist or is not readable', 'Folder path to add to archive', 'backwpup' ), $folder_name ), E_USER_WARNING );
+			return FALSE;
+		}
+
+		if ( empty( $name_in_archive ) )
+			return FALSE;
+
+		switch ( $this->get_method() ) {
+			case 'gz':
+				trigger_error( __( 'This archive method can only add one file', 'backwpup' ), E_USER_WARNING );
+				return FALSE;
+				break;
+			case 'bz':
+				trigger_error( __( 'This archive method can only add one file', 'backwpup' ), E_USER_WARNING );
+				return FALSE;
+				break;
+			case 'Tar':
+			case 'TarGz':
+			case 'TarBz2':
+				if ( ! $this->tar_empty_folder( $folder_name, $name_in_archive ) );
+					return FALSE;
+				break;
+			case 'ZipArchive':
+				if ( ! $this->ziparchive->addEmptyDir( $name_in_archive ) ) {
+					trigger_error( sprintf( __( 'Can not add "%s" to zip archive!', 'backwpup' ), $name_in_archive ), E_USER_ERROR );
+					return FALSE;
+				}
+				break;
+			case 'PclZip':
+				return TRUE;
+				break;
+		}
+		
+		return TRUE;
+	}
 
 	/**
 	 * Output status of ZipArchive
+	 *
+	 * @param $code int ZipArchive Error code
+	 * @return bool
 	 */
-	private function ziparchive_status() {
+	private function ziparchive_status( $code ) {
 
-		if ( $this->ziparchive->status > 0 ) {
-			$zip_error = $this->ziparchive->status;
-			if ( $this->ziparchive->status == 1 )
-				$zip_error = __( '(ER_MULTIDISK) Multi-disk zip archives not supported', 'backwpup' );
-			if ( $this->ziparchive->status == 2 )
-				$zip_error = __( '(ER_RENAME) Renaming temporary file failed', 'backwpup' );
-			if ( $this->ziparchive->status == 3 )
-				$zip_error = __( '(ER_CLOSE) Closing zip archive failed', 'backwpup' );
-			if ( $this->ziparchive->status == 4 )
-				$zip_error = __( '(ER_SEEK) Seek error', 'backwpup' );
-			if ( $this->ziparchive->status == 5 )
-				$zip_error = __( '(ER_READ) Read error', 'backwpup' );
-			if ( $this->ziparchive->status == 6 )
-				$zip_error = __( '(ER_WRITE) Write error', 'backwpup' );
-			if ( $this->ziparchive->status == 7 )
-				$zip_error = __( '(ER_CRC) CRC error', 'backwpup' );
-			if ( $this->ziparchive->status == 8 )
-				$zip_error = __( '(ER_ZIPCLOSED) Containing zip archive was closed', 'backwpup' );
-			if ( $this->ziparchive->status == 9 )
-				$zip_error = __( '(ER_NOENT) No such file', 'backwpup' );
-			if ( $this->ziparchive->status == 10 )
-				$zip_error = __( '(ER_EXISTS) File already exists', 'backwpup' );
-			if ( $this->ziparchive->status == 11 )
-				$zip_error = __( '(ER_OPEN) Can\'t open file', 'backwpup' );
-			if ( $this->ziparchive->status == 12 )
-				$zip_error = __( '(ER_TMPOPEN) Failure to create temporary file', 'backwpup' );
-			if ( $this->ziparchive->status == 13 )
-				$zip_error = __( '(ER_ZLIB) Zlib error', 'backwpup' );
-			if ( $this->ziparchive->status == 14 )
-				$zip_error = __( '(ER_MEMORY) Malloc failure', 'backwpup' );
-			if ( $this->ziparchive->status == 15 )
-				$zip_error = __( '(ER_CHANGED) Entry has been changed', 'backwpup' );
-			if ( $this->ziparchive->status == 16 )
-				$zip_error = __( '(ER_COMPNOTSUPP) Compression method not supported', 'backwpup' );
-			if ( $this->ziparchive->status == 17 )
-				$zip_error = __( '(ER_EOF) Premature EOF', 'backwpup' );
-			if ( $this->ziparchive->status == 18 )
-				$zip_error = __( '(ER_INVAL) Invalid argument', 'backwpup' );
-			if ( $this->ziparchive->status == 19 )
-				$zip_error = __( '(ER_NOZIP) Not a zip archive', 'backwpup' );
-			if ( $this->ziparchive->status == 20 )
-				$zip_error = __( '(ER_INTERNAL) Internal error', 'backwpup' );
-			if ( $this->ziparchive->status == 21 )
-				$zip_error = __( '(ER_INCONS) Zip archive inconsistent', 'backwpup' );
-			if ( $this->ziparchive->status == 22 )
-				$zip_error = __( '(ER_REMOVE) Can\'t remove file', 'backwpup' );
-			if ( $this->ziparchive->status == 23 )
-				$zip_error = __( '(ER_DELETED) Entry has been deleted', 'backwpup' );
-			trigger_error( sprintf( _x( 'ZipArchive returns status: %s','Text of ZipArchive status Massage', 'backwpup' ), $zip_error ), E_USER_WARNING );
-		}
+		if ( $code == 0 )
+			return TRUE;
+		
+		//define error messages
+		$zip_errors[ ZipArchive::ER_MULTIDISK ] =  __( '(ER_MULTIDISK) Multi-disk zip archives not supported', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_RENAME ] =  __( '(ER_RENAME) Renaming temporary file failed', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_CLOSE ] =  __( '(ER_CLOSE) Closing zip archive failed', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_SEEK ] =  __( '(ER_SEEK) Seek error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_READ ] = __( '(ER_READ) Read error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_WRITE ] = __( '(ER_WRITE) Write error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_CRC ] = __( '(ER_CRC) CRC error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_ZIPCLOSED ] = __( '(ER_ZIPCLOSED) Containing zip archive was closed', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_NOENT ] = __( '(ER_NOENT) No such file', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_EXISTS ] = __( '(ER_EXISTS) File already exists', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_OPEN ] = __( '(ER_OPEN) Can\'t open file', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_TMPOPEN ] = __( '(ER_TMPOPEN) Failure to create temporary file', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_ZLIB ] = __( '(ER_ZLIB) Zlib error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_MEMORY ] = __( '(ER_MEMORY) Malloc failure', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_MULTIDISK ] = __( '(ER_CHANGED) Entry has been changed', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_CHANGED ] = __( '(ER_COMPNOTSUPP) Compression method not supported', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_EOF ] = __( '(ER_EOF) Premature EOF', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_INVAL ] = __( '(ER_INVAL) Invalid argument', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_NOZIP ] = __( '(ER_NOZIP) Not a zip archive', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_INTERNAL ] = __( '(ER_INTERNAL) Internal error', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_INCONS ] = __( '(ER_INCONS) Zip archive inconsistent', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_REMOVE ] = __( '(ER_REMOVE) Can\'t remove file', 'backwpup' );
+		$zip_errors[ ZipArchive::ER_DELETED ] = __( '(ER_DELETED) Entry has been deleted', 'backwpup' );
+		
+		//ste error massage
+		$zip_error = $code;
+		if ( isset( $zip_errors[ $zip_error ] ) )
+			$zip_error = $zip_errors[ $zip_error ];
+
+		trigger_error( sprintf( _x( 'ZipArchive returns status: %s','Text of ZipArchive status Massage', 'backwpup' ), $zip_error ), E_USER_ERROR );
+		return FALSE;
 	}
 
 	/**
@@ -416,26 +471,83 @@ class BackWPup_Create_Archive {
 		$checksum = pack( "a8", sprintf( "%07o", $checksum ) );
 		$header   = substr_replace( $header, $checksum, 148, 8 );
 		//write header
-		if ( $this->get_method() == 'TarBz2' )
-			fwrite( $this->filehandel, bzcompress( $header ) );
-		elseif( $this->get_method() == 'TarGz' )
-			fwrite( $this->filehandel, gzencode( $header ) );
-		else
-			fwrite( $this->filehandel, $header );
+		fwrite( $this->filehandel, $header );
 
 		// read/write files in 512K Blocks
 		while ( ! feof( $fd ) ) {
 			$file_data = fread( $fd, 512 );
 			if ( strlen( $file_data ) > 0 ) {
-				if ( $this->get_method() == 'TarBz2' )
-					fwrite( $this->filehandel, bzcompress( pack( "a512", $file_data ) ) );
-				elseif( $this->get_method() == 'TarGz' )
-					fwrite( $this->filehandel, gzencode( pack( "a512", $file_data ) ) );
-				else
-					fwrite( $this->filehandel, pack( "a512", $file_data ) );
+				fwrite( $this->filehandel, pack( "a512", $file_data ) );
 			}
 		}
 		fclose( $fd );
+
+		return TRUE;
+	}
+	
+	
+	/**
+	 * Tar a empty Folder to archive
+	 */
+	private function tar_empty_folder( $folder_name, $name_in_archive ) {
+		
+		$name_in_archive = trailingslashit( $name_in_archive );
+		
+		//split filename larger than 100 chars
+		if ( strlen( $name_in_archive ) <= 100 ) {
+			$tar_filename        = $name_in_archive;
+			$tar_filename_prefix = "";
+		}
+		else {
+			$filename_offset = strlen( $name_in_archive ) - 100;
+			$split_pos       = strpos( $name_in_archive, '/', $filename_offset );
+			$tar_filename        = substr( $name_in_archive, $split_pos + 1 );
+			$tar_filename_prefix = substr( $name_in_archive, 0, $split_pos );
+			if ( strlen( $tar_filename ) > 100 )
+				trigger_error( sprintf( __( 'Folder name "%1$s" too long to be saved correctly in %2$s archive!', 'backwpup' ), $name_in_archive, $this->get_method() ), E_USER_WARNING );
+			if ( strlen( $tar_filename_prefix ) > 155 )
+				trigger_error( sprintf( __( 'Folder path "%1$s" too long to be saved correctly in %2$s archive!', 'backwpup' ), $name_in_archive, $this->get_method() ), E_USER_WARNING );
+		}
+		//get file stat
+		$file_stat = @stat( $folder_name );
+		//Set file user/group name if linux
+		$fileowner = __( "Unknown", "backwpup" );
+		$filegroup = __( "Unknown", "backwpup" );
+		if ( function_exists( 'posix_getpwuid' ) ) {
+			$info      = posix_getpwuid( $file_stat[ 'uid' ] );
+			$fileowner = $info[ 'name' ];
+			$info      = posix_getgrgid( $file_stat[ 'gid' ] );
+			$filegroup = $info[ 'name' ];
+		}
+		// Generate the TAR header for this file
+		$header = pack( "a100a8a8a8a12a12a8a1a100a6a2a32a32a8a8a155a12",
+			$tar_filename, //name of file  100
+			sprintf( "%07o", $file_stat[ 'mode' ] ), //file mode  8
+			sprintf( "%07o", $file_stat[ 'uid' ] ), //owner user ID  8
+			sprintf( "%07o", $file_stat[ 'gid' ] ), //owner group ID  8
+			sprintf( "%011o", 0 ), //length of file in bytes  12
+			sprintf( "%011o", $file_stat[ 'mtime' ] ), //modify time of file  12
+			"        ", //checksum for header  8
+			5, //type of file  0 or null = File, 5=Dir
+			"", //name of linked file  100
+			"ustar", //USTAR indicator  6
+			"00", //USTAR version  2
+			$fileowner, //owner user name 32
+			$filegroup, //owner group name 32
+			"", //device major number 8
+			"", //device minor number 8
+			$tar_filename_prefix, //prefix for file name 155
+			"" ); //fill block 12
+
+		// Computes the unsigned Checksum of a file's header
+		$checksum = 0;
+		for ( $i = 0; $i < 512; $i ++ )
+			$checksum += ord( substr( $header, $i, 1 ) );
+
+		$checksum = pack( "a8", sprintf( "%07o", $checksum ) );
+		$header   = substr_replace( $header, $checksum, 148, 8 );
+		//write header
+		fwrite( $this->filehandel, $header );
 
 		return TRUE;
 	}
