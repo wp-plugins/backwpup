@@ -1,4 +1,4 @@
-=== BackWPup ===
+﻿=== BackWPup ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
