@@ -24,9 +24,9 @@ the same server. With the single backup .zip file you are able to restore an ins
 * Backups in zip, tar, tar.gz, tar.bz2 format *(needs gz, bz2, ZipArchive)*
 * Store backup to directory
 * Store backup to FTP server *(needs ftp)*
-* Store backup to S3 services *(needs 5.3.3, curl)*
-* Store backup to Microsoft Azure (Blob) *(needs 5.3.2, curl)*
-* Store backup to RackSpaceCloud *(needs 5.3.2, curl)*
+* Store backup to S3 services *(needs PHP 5.3.3, curl)*
+* Store backup to Microsoft Azure (Blob) *(needs PHP 5.3.2, curl)*
+* Store backup to RackSpaceCloud *(needs PHP 5.3.2, curl)*
 * Store backup to Dropbox *(needs curl)*
 * Store backup to SugarSync *(needs curl)*
 * Send logs and backups by email
@@ -35,8 +35,10 @@ the same server. With the single backup .zip file you are able to restore an ins
 Get the Pro Version: http://marketpress.com/product/backwpup-pro/
 
 **WordPress 3.2 and PHP 5.2.6 required!**
-**To use the Plugin with full functionality PHP 5.3.3 with mysqli, FTP,gz, bz2,  ZipArchive and curl is needed**
-**Plugin functions that don't work will be not displayed**
+
+**To use the Plugin with full functionality PHP 5.3.3 with mysqli, FTP,gz, bz2,  ZipArchive and curl is needed.**
+
+**Plugin functions that don't work will be not displayed.**
 
 **Test your Backups!**
 
