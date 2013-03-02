@@ -145,3 +145,4 @@ Please check all settings after the update:
 * Use your own API keys for Dropbox and SugarSync
 * Premium Support
 * Automatic updates
+ 
