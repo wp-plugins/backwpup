@@ -60,7 +60,7 @@ class BackWPup_Page_About {
                                 <ul><li><?php _e('Dropbox authentication must be done again','backwpup'); ?></li>
 								<li><?php _e('SugarSync authentication must be done again','backwpup'); ?></li>
                                 <li><?php _e('S3 Settings','backwpup'); ?></li>
-                                <li><?php _e('Google Storage is now in S3','backwpup'); ?></li>
+                                <li><?php _e('Google Storage is now in S3 service settings','backwpup'); ?></li>
                                 <li><?php _e('All your passwords','backwpup'); ?></li>
                                 </ul>
                              </div>
@@ -87,12 +87,12 @@ _e( 'The backup files can be used to save your whole installation including <cod
                         </div>
                     </div>
                     <?php } ?>
-					<?php 
+					<?php
             		if ( class_exists( 'marketpress_autoupdate' ) && class_exists( 'BackWPup_Features' ) ) :
 						$autoupdate = $autoupdate = marketpress_autoupdate::get_instance( BackWPup::get_plugin_data( 'Slug' ) , BackWPup::get_plugin_data( 'MainFile' ) );
-						if ( $autoupdate->license_check() == 'false' ) : 
+						if ( $autoupdate->license_check() == 'false' ) :
 							$plugins = get_plugins();
-							$localplugin = FALSE; 
+							$localplugin = FALSE;
 							foreach ( $plugins as $plugin ) {
 								if ( BackWPup::get_plugin_data( 'Name' ) == $plugin[ 'Name' ] )
 									$localplugin = TRUE;

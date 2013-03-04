@@ -92,7 +92,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 
 		//to check
 		$tables = array();
-		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . $wpdb->dbname . '`', ARRAY_N );
+		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $restables as $table ) {
 			if ( ! empty( $job_object->job[ 'dbcheckwponly' ] ) ) {
 				$tables[ ]                 = $table[ 0 ];
@@ -107,7 +107,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 		$job_object->substeps_todo = sizeof( $tables );
 
 		//Get table status
-		$resstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . $wpdb->dbname . "`", ARRAY_A );
+		$resstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`", ARRAY_A );
 		foreach ( $resstatus as $tablestatus ) {
 			$status[ $tablestatus[ 'Name' ] ] = $tablestatus;
 		}

@@ -345,6 +345,19 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 							BackWPup_Admin::message( sprintf( __( 'Backups folder %s does not exist and cannot be created. Please create it and set proper write permissions.','backwpup' ), $backups_folder ) );
 						}
 					}
+					//check sever callback
+					$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), home_url( '/' ) ), array(
+																																																						   'blocking'   => TRUE,
+																																																						   'sslverify'  => apply_filters( 'https_local_ssl_verify', TRUE ),
+																																																						   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
+																																																						   'user-agent' => 'BackWPup/' . BackWPup::get_plugin_data( 'Version' ) ) );
+					$test_result = '';
+					if ( is_wp_error( $raw_response ) )
+						$test_result .= sprintf( __( 'The HTTP response test get a error "%s"','backwpup' ), $raw_response->get_error_message() );
+					if ( 200 != wp_remote_retrieve_response_code( $raw_response ) )
+						$test_result .= sprintf( __( 'The HTTP response test get a false http status (%s)','backwpup' ), wp_remote_retrieve_response_code( $raw_response ) );	
+					if ( ! empty( $test_result ) )
+						BackWPup_Admin::message( $test_result );
 
 					//only start job if massages empty
 					$log_messages = BackWPup_Admin::get_message();					

@@ -47,7 +47,7 @@ class BackWPup_Page_Settings {
 		if ( isset( $_POST[ 'default_settings' ] ) && $_POST[ 'default_settings' ] ) {
 			$default_cfg = BackWPup_Option::defaults( 'cfg', null );
 			foreach( $default_cfg as $optionkey => $option ) {
-				if ( $option == FALSE && isset( $_POST[ $optionkey ] ) )
+				if ( $option == FALSE )
 					unset( $_POST[ $optionkey ] );
 				else
 					$_POST[ $optionkey ] = $option;
@@ -56,6 +56,7 @@ class BackWPup_Page_Settings {
 		}
 
 		BackWPup_Option::update( 'cfg', 'showadminbar', isset( $_POST[ 'showadminbar' ] ) ? TRUE : FALSE );
+		BackWPup_Option::update( 'cfg', 'showfoldersize', isset( $_POST[ 'showfoldersize' ] ) ? TRUE : FALSE );
 		BackWPup_Option::update( 'cfg', 'jobsteprestart', isset( $_POST[ 'jobsteprestart' ] ) ? TRUE : FALSE );
 		if ( 100 > $_POST[ 'jobstepretry' ] && 0 < $_POST[ 'jobstepretry' ] )
 			$_POST[ 'jobstepretry' ] = (int)$_POST[ 'jobstepretry' ];
@@ -114,7 +115,7 @@ class BackWPup_Page_Settings {
 
 		<div class="table ui-tabs-hide" id="backwpup-tab-general">
 
-			<h3 class="title"><?php _e( 'Admin bar', 'backwpup' ); ?></h3>
+			<h3 class="title"><?php _e( 'Display Settings', 'backwpup' ); ?></h3>
             <p><?php _e( 'Do you want to see BackWPup in the WordPress admin bar?', 'backwpup' ); ?></p>
             <table class="form-table">
                 <tr valign="top">
@@ -127,6 +128,19 @@ class BackWPup_Page_Settings {
                                 <input name="showadminbar" type="checkbox" id="showadminbar"
                                        value="1" <?php checked( BackWPup_Option::get( 'cfg', 'showadminbar' ), TRUE ); ?> />
 								<?php _e( 'Show BackWPup links in admin bar.', 'backwpup' ); ?></label>
+                        </fieldset>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row"><?php _e( 'Folder sizes', 'backwpup' ); ?></th>
+                    <td>
+                        <fieldset>
+                            <legend class="screen-reader-text"><span><?php _e( 'Folder sizes', 'backwpup' ); ?></span>
+                            </legend>
+                            <label for="showfoldersize">
+                                <input name="showfoldersize" type="checkbox" id="showfoldersize"
+                                       value="1" <?php checked( BackWPup_Option::get( 'cfg', 'showfoldersize' ), TRUE ); ?> />
+								<?php _e( 'Display folder sizes on files tab if job edited', 'backwpup' ); ?></label>
                         </fieldset>
                     </td>
                 </tr>
@@ -306,7 +320,7 @@ class BackWPup_Page_Settings {
 				echo '<tr title=""><td>' . __( 'BackWPup version', 'backwpup' ) . '</td><td>' . BackWPup::get_plugin_data( 'Version' ) . ' <a href="' . translate( BackWPup::get_plugin_data( 'pluginuri' ), 'backwpup' ) . '">' . __( 'Get pro.', 'backwpup' ) . '</a></td></tr>';
 			else
 				echo '<tr title=""><td>' . __( 'BackWPup Pro version', 'backwpup' ) . '</td><td>' . BackWPup::get_plugin_data( 'Version' ) . '</td></tr>';
-			echo '<tr title="&gt;=5.3.3"><td>' . __( 'PHP version', 'backwpup' ) . '</td><td>' . phpversion() . '</td></tr>';
+			echo '<tr title="&gt;=5.3.3"><td>' . __( 'PHP version', 'backwpup' ) . '</td><td>' . PHP_VERSION . '</td></tr>';
 			echo '<tr title="&gt;=5.0.7"><td>' . __( 'MySQL version', 'backwpup' ) . '</td><td>' . $wpdb->get_var( "SELECT VERSION() AS version" ) . '</td></tr>';
 			if ( function_exists( 'curl_version' ) ) {
 				$curlversion = curl_version();
@@ -381,7 +395,7 @@ class BackWPup_Page_Settings {
 			echo '<tr title=""><td>' . __( 'Blog Timezone', 'backwpup' ) . '</td><td>' . get_option( 'timezone_string' ) . '</td></tr>';
 			echo '<tr title=""><td>' . __( 'Blog Time offset', 'backwpup' ) . '</td><td>' . sprintf( __( '%s hours', 'backwpup' ), get_option( 'gmt_offset' ) ) . '</td></tr>';
 			echo '<tr title="WPLANG"><td>' . __( 'Blog language', 'backwpup' ) . '</td><td>' . get_bloginfo( 'language' ) . '</td></tr>';
-			echo '<tr title="utf8"><td>' . __( 'MySQL Client encoding', 'backwpup' ) . '</td><td>' . $wpdb->charset . '</td></tr>';
+			echo '<tr title="utf8"><td>' . __( 'MySQL Client encoding', 'backwpup' ) . '</td><td>' . DB_CHARSET . '</td></tr>';
 			echo '<tr title="URF-8"><td>' . __( 'Blog charset', 'backwpup' ) . '</td><td>' . get_bloginfo( 'charset' ) . '</td></tr>';
 			echo '<tr title="&gt;=128M"><td>' . __( 'PHP Memory limit', 'backwpup' ) . '</td><td>' . ini_get( 'memory_limit' ) . '</td></tr>';
 			echo '<tr title="WP_MEMORY_LIMIT"><td>' . __( 'WP memory limit', 'backwpup' ) . '</td><td>' . WP_MEMORY_LIMIT . '</td></tr>';

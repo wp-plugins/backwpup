@@ -282,7 +282,7 @@ final class BackWPup_Job {
 			$info .= __( '[INFO] BackWPup job started from external url', 'backwpup' ) . PHP_EOL;
 		elseif ( $this->jobstarttype == 'runcli' )
 			$info .= __( '[INFO] BackWPup job started form commandline interface', 'backwpup' ) . PHP_EOL;
-		$info .= __( '[INFO] PHP ver.:', 'backwpup' ) . ' ' . phpversion() . '; ' . PHP_SAPI . '; ' . PHP_OS . PHP_EOL;
+		$info .= __( '[INFO] PHP ver.:', 'backwpup' ) . ' ' . PHP_VERSION . '; ' . PHP_SAPI . '; ' . PHP_OS . PHP_EOL;
 		$info .= sprintf( __( '[INFO] Maximum script execution time is %1$d seconds', 'backwpup' ), ini_get( 'max_execution_time' ) ) . PHP_EOL;
 		$info .= sprintf( __( '[INFO] MySQL ver.: %s', 'backwpup' ), $wpdb->get_var( "SELECT VERSION() AS version" ) ) . PHP_EOL;
 		if ( function_exists( 'curl_init' ) ) {
@@ -610,7 +610,7 @@ final class BackWPup_Job {
 			return;
 		$last_update = microtime( TRUE ) - $job_object->timestamp_last_update;
 		if ( $job_object->pid != 0 && $last_update > 300) {
-			$this->log( __( 'Job restart due to inactivity for more than 5 minutes.', 'backwpup' ), E_USER_NOTICE );
+			$this->log( __( 'Job restart due to inactivity for more than 5 minutes.', 'backwpup' ), E_USER_WARNING );
 		}
 		elseif ( $this->pid != 0 && $job_object->pid != self::get_pid() ) {
 			$this->log( __( 'Second process start terminated, because a other job is already running!', 'backwpup' ), E_USER_WARNING );
@@ -1341,11 +1341,14 @@ final class BackWPup_Job {
 	public function curl_read_callback( $curl_handle, $file_handle, $read_count ) {
 
 		$data = NULL;
-		if ( ! empty( $file_handle ) )
+		if ( ! empty( $file_handle ) && is_numeric( $read_count ) )
 			$data = fread( $file_handle, $read_count );
-
-		if ( $this->substeps_todo > 10 && $this->job[ 'backuptype' ] != 'sync' )
-			$this->substeps_done = $this->substeps_done + $read_count ;
+		
+		if (  $this->job[ 'backuptype' ] == 'sync'  )
+			return $data;
+		
+		$length = ( is_numeric( $read_count ) ) ? $read_count : strlen( $read_count );
+		$this->substeps_done = $this->substeps_done + $length;				
 		$this->update_working_data();
 
 		return $data;
@@ -1698,6 +1701,10 @@ final class BackWPup_Job {
 	public function is_backup_archive( $filename ) {
 
 		$filename  = basename( $filename );
+		
+		if ( ! substr( $filename, -3 ) == '.gz' ||  ! substr( $filename, -4 ) == '.bz2' ||  ! substr( $filename, -4 ) == '.tar' ||  ! substr( $filename, -4 ) == '.zip' )
+			return FALSE;
+		
 		$datevars  = array( '%d', '%j', '%m', '%n', '%Y', '%y', '%a', '%A', '%B', '%g', '%G', '%h', '%H', '%i', '%s', '%u', '%U' );
 		$dateregex = array( '(0[1-9]|[12][0-9]|3[01])', '([1-9]|[12][0-9]|3[01])', '(0[1-9]|1[0-2])', '([1-9]|1[0-2])', '((19|20|21)[0-9]{2})', '([0-9]{2})', '(am|pm)', '(AM|PM)', '([0-9]{3})', '([1-9]|1[0-2])', '([1-9]|1[0-9]|2[0-4])', '(0[1-9]|1[0-2])', '(0[1-9]|1[0-9]|2[0-4])', '(0[1-9]|[1-5][0-9])', '(0[1-9]|[1-5][0-9])', '\d', '\d' );
 

@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: BackWPup Pro v3.0.2\n"
+"Project-Id-Version: BackWPup Pro v3.0.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-02-06 17:42+0100\n"
-"PO-Revision-Date: 2013-03-01 13:51:45-0600\n"
+"PO-Revision-Date: 2013-03-02 07:56:08-0600\n"
 "Last-Translator: Frank Bueltge <frank@bueltge.de>\n"
 "Language-Team: INPSYDE <info@inpsyde.com>\n"
 "MIME-Version: 1.0\n"
@@ -5036,17 +5036,12 @@ msgstr "Sie müssen die MySQLi-Erweiterung und MySQL-Server in der Version 5.0.7
 #: inc/class-page-about.php:60
 #@ backwpup
 msgid "Dropbox authentication must be done again"
-msgstr "Die Drohbox-Authentifizierung muss wiederholt werden."
+msgstr "Die Dropbox-Authentifizierung muss wiederholt werden."
 
 #: inc/class-page-about.php:62
 #@ backwpup
 msgid "S3 Settings"
 msgstr "S3-Einstellungen"
-
-#: inc/class-page-about.php:63
-#@ backwpup
-msgid "Google Storage is now in S3"
-msgstr "Google Storage ist jetzt in S3"
 
 #: inc/class-page-about.php:64
 #@ backwpup
@@ -5523,11 +5518,6 @@ msgstr "CLI-Exec-Ergebnis: %s"
 msgid "You must have PHP version 5.2.6 or higher to use this plugin. You are using version %s now."
 msgstr "Sie brauchen PHP in der Version 5.2.6 oder höher, um das Plugin zu benutzen. Momentan haben Sie Version %s."
 
-#: inc/class-create-archive.php:65
-#@ backwpup
-msgid "The file name of an archive cannot be empty "
-msgstr "Der Dateiname eines Archivs kann nicht leer sein."
-
 #: inc/class-create-archive.php:72
 #, php-format
 #@ backwpup
@@ -5908,12 +5898,6 @@ msgstr "E-Mail Absender Name"
 msgid "Name and email of email sender in the mail formant. Name &lt;emailadress&gt;"
 msgstr "Name des E-Mail Senders im E-MAil formart. <code>Name &lt;E-Mail-Adresse&gt;</code>"
 
-#. translators: plugin header field 'Version'
-#: backwpup.php:0
-#@ backwpup
-msgid "3.0.2"
-msgstr ""
-
 #: inc/class-create-archive.php:326
 #@ backwpup
 msgid "Folder name cannot be empty"
@@ -5965,4 +5949,20 @@ msgstr "Backups Verzeichnis %s existiert nicht und kann nicht angelegt werden. B
 #@ backwpup
 msgid "Working job log"
 msgstr "Auftrags lLog"
+
+#. translators: plugin header field 'Version'
+#: backwpup.php:0
+#@ backwpup
+msgid "3.0.3"
+msgstr "3.0.3"
+
+#: inc/class-page-about.php:63
+#@ backwpup
+msgid "Google Storage is now in S3 service settings"
+msgstr "Google Storage befindet sich jetzt in der Auswahl der S3-Einstellungen"
+
+#: inc/class-create-archive.php:65
+#@ backwpup
+msgid "The file name of an archive cannot be empty."
+msgstr "Der Dateiname eines Archivs kann nicht leer sein."
 

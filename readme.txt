@@ -1,9 +1,9 @@
-﻿=== BackWPup ===
+=== BackWPup ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.0.3
+Stable tag: 3.0.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -24,7 +24,7 @@ the same server. With the single backup .zip file you are able to restore an ins
 * Backups in zip, tar, tar.gz, tar.bz2 format *(needs gz, bz2, ZipArchive)*
 * Store backup to directory
 * Store backup to FTP server *(needs ftp)*
-* Store backup to S3 services *(needs PHP 5.3.3, curl)*
+* Store backup to S3 services *(needs curl)*
 * Store backup to Microsoft Azure (Blob) *(needs PHP 5.3.2, curl)*
 * Store backup to RackSpaceCloud *(needs PHP 5.3.2, curl)*
 * Store backup to Dropbox *(needs curl)*
@@ -81,6 +81,16 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.4 =
+* Changed: default settings for 'Restart on every main step' and 'Reduce server load' to disabled
+* Fixed: Settings not correctly set to default
+* Fixed: mysqli::get_charset() undefined method
+* Fixed: Settings not saved correctly
+* Fixed: Abort on MySQL Functions Backup
+* Improved: MySQLi connection
+* Added: Server connection test on run now.
+* Added: S3 AWS SDK 1.6.0 for PHP lower than 5.3.3
+
 = Version 3.0.3 =
 * Improved: Archive creation performance
 * Fixed: Problem with S3 Prefix
@@ -145,4 +155,3 @@ Please check all settings after the update:
 * Use your own API keys for Dropbox and SugarSync
 * Premium Support
 * Automatic updates
- 

@@ -5,7 +5,7 @@
  * Description: WordPress Backup and more...
  * Author: Inpsyde GmbH
  * Author URI: http://inpsyde.com
- * Version: 3.0.3
+ * Version: 3.0.4
  * Text Domain: backwpup
  * Domain Path: /languages/
  * Network: true
@@ -35,7 +35,7 @@
 if ( ! class_exists( 'BackWPup' ) ) {
 
 	// Don't activate on anything less than PHP 5.2.4 or WordPress 3.1
-	if ( version_compare( phpversion(), '5.2.6', '<' ) || version_compare( get_bloginfo( 'version' ), '3.2', '<' ) ) {
+	if ( version_compare( PHP_VERSION, '5.2.6', '<' ) || version_compare( get_bloginfo( 'version' ), '3.2', '<' ) ) {
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
 		deactivate_plugins( basename( __FILE__ ) );
 		if ( isset( $_GET['action'] ) && ( $_GET['action'] == 'activate' || $_GET['action'] == 'error_scrape' ) )
@@ -87,7 +87,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			if ( is_file( dirname( __FILE__ ) . '/inc/features/class-features.php' ) )
 				require dirname( __FILE__ ) . '/inc/features/class-features.php';
 			//only in backend
-			if ( is_admin() && current_user_can( 'backwpup' ) && class_exists( 'BackWPup_Admin' ) )
+			if ( is_admin() && ( current_user_can( 'backwpup' ) || $GLOBALS[ 'pagenow' ] == 'plugins.php' ) && class_exists( 'BackWPup_Admin' ) )
 				BackWPup_Admin::getInstance();
 			//work with wp-cli
 			if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -192,12 +192,13 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		 */
 		private function autoloader_fallback() {
 
-			//add class files that should excluded that ar classes that extra loaded with require or needs spl_autoload_register to work
+			//add class files that should excluded that are classes that extra loaded with require or needs spl_autoload_register to work
 			$loaded_class_files = array( 'class-auto-update.php', 'class-documentation.php', 'class-features.php',
 										 'class-destination-msazure.php', 'class-destination-msazure-pro.php',
 										 'class-destination-email.php', 'class-destination-email-pro.php',
 										 'class-destination-rsc.php', 'class-destination-rsc-pro.php',
 										 'class-destination-s3.php', 'class-destination-s3-pro.php',
+										 'class-destination-s3-v1.php', 'class-destination-s3-v1-pro.php',
 										 'class-destinations.php', 'class-jobtypes.php', 'class-wizards.php',
 										 'class-wp-cli.php' );
 
@@ -231,7 +232,7 @@ if ( ! class_exists( 'BackWPup' ) ) {
 		public function plugin_init() {
 
 			//Add Admin Bar
-			if ( ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && current_user_can( 'backwpup' ) && is_admin_bar_showing() && BackWPup_Option::get( 'cfg', 'showadminbar' ) )
+			if ( ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && current_user_can( 'backwpup' ) && is_admin_bar_showing() && get_site_option( 'backwpup_cfg_showadminbar', FALSE ) )
 				BackWPup_Adminbar::getInstance();
 		}
 
@@ -253,11 +254,13 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				self::$destinations[ 'FTP' ] 		= new BackWPup_Destination_Ftp;
 			if ( function_exists( 'curl_exec' ) )
 				self::$destinations[ 'DROPBOX' ] 	= new BackWPup_Destination_Dropbox;
-			if (  function_exists( 'curl_exec' ) && version_compare( '5.3.3', PHP_VERSION, '<=' ) && class_exists( 'BackWPup_Destination_S3' ) )
+			if (  function_exists( 'curl_exec' ) && version_compare( PHP_VERSION, '5.3.3', '>=' ) && class_exists( 'BackWPup_Destination_S3' ) )
 				self::$destinations[ 'S3' ] 		= new BackWPup_Destination_S3;
-			if ( version_compare( '5.3.2', PHP_VERSION, '<=' ) && class_exists( 'BackWPup_Destination_MSAzure' )  )
+			elseif (  function_exists( 'curl_exec' ) && class_exists( 'BackWPup_Destination_S3_V1' ) )
+				self::$destinations[ 'S3' ] 		= new BackWPup_Destination_S3_V1;
+			if ( version_compare( PHP_VERSION, '5.3.2', '>=' ) && class_exists( 'BackWPup_Destination_MSAzure' )  )
 				self::$destinations[ 'MSAZURE' ] 	= new BackWPup_Destination_MSAzure;
-			if ( function_exists( 'curl_exec' ) && version_compare( '5.3.0', PHP_VERSION, '<=' ) && class_exists( 'BackWPup_Destination_RSC' ) )
+			if ( function_exists( 'curl_exec' ) && version_compare( PHP_VERSION, '5.3.0', '>=' ) && class_exists( 'BackWPup_Destination_RSC' ) )
 				self::$destinations[ 'RSC' ] 		= new BackWPup_Destination_RSC;
 			if ( function_exists( 'curl_exec' ) )
 				self::$destinations[ 'SUGARSYNC' ]	= new BackWPup_Destination_SugarSync;

@@ -67,7 +67,7 @@ class BackWPup_Encryption {
 			return $result;
 		}
 
-		if ( strpos( $string, '$BackWPup$RIJNDAEL$' ) !== FALSE ) {
+		if ( function_exists( 'mcrypt_encrypt' ) && strpos( $string, '$BackWPup$RIJNDAEL$' ) !== FALSE) {
 			$string = str_replace( '$BackWPup$RIJNDAEL$', '', $string );
 
 			return rtrim( mcrypt_decrypt( MCRYPT_RIJNDAEL_256, md5( $key ), base64_decode( $string ), MCRYPT_MODE_CBC, md5( md5( $key ) ) ), "\0" );

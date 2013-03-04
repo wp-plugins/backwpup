@@ -28,7 +28,7 @@ class BackWPup_Page_BackWPup {
 			header( "Expires: 0" );
 			header( "Cache-Control: must-revalidate, post-check=0, pre-check=0" );
 			header( "Content-Type: application/octet-stream; charset=". get_bloginfo( 'charset' ) );
-			header( "Content-Disposition: attachment; filename=" . $wpdb->dbname . ".sql.gz;" );
+			header( "Content-Disposition: attachment; filename=" . DB_NAME . ".sql.gz;" );
 			try {
 				$sql_dump = new BackWPup_MySQLDump( array( 'compression'=> 'gz' ) );
 				foreach ( $sql_dump->tables_to_dump as $key => $table ) {

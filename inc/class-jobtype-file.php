@@ -63,10 +63,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 			<tr valign="top">
 				<th scope="row"><label for="idbackuproot"><?php _e( 'Backup root folder', 'backwpup' ); ?></label></th>
 				<td>
-					<?php $folder = untrailingslashit( str_replace( '\\', '/', ABSPATH ) ); ?>
+					<?php 
+					$folder = untrailingslashit( str_replace( '\\', '/', ABSPATH ) ); 
+					$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ) . ')' : '';
+					?>
 					<input class="checkbox"
 						   type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backuproot' ), TRUE, TRUE );?>
-						   name="backuproot" id="idbackuproot" value="1" /> <code><?php echo $folder; ?></code> (<?php echo size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ); ?>)
+						   name="backuproot" id="idbackuproot" value="1" /> <code><?php echo $folder; ?></code><?php echo $folder_size; ?>
 
 					<fieldset id="backuprootexcludedirs" style="padding-left:15px; margin:2px;">
                         <legend><?php  _e( 'Exclude:', 'backwpup' ); ?></legend>
@@ -74,10 +77,9 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class='';
-									if ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') )
-										$class="tempfolder";
-									echo '<nobr class="' . $class . '"><label for="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuprootexcludedirs' ) ), TRUE, FALSE ) . ' name="backuprootexcludedirs[]" id="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')</label><br /></nobr>';
+									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
+									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
+									echo '<nobr class="' . $class . '"><label for="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuprootexcludedirs' ) ), TRUE, FALSE ) . ' name="backuprootexcludedirs[]" id="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -89,10 +91,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
             <tr valign="top">
                 <th scope="row"><label for="idbackupcontent"><?php _e( 'Backup content folder', 'backwpup' ); ?></label></th>
                 <td>
-					<?php $folder = untrailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ); ?>
+					<?php 
+					$folder = untrailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) ); 
+					$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ) . ')' : '';
+					?>
                     <input class="checkbox"
                            type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupcontent' ), TRUE, TRUE );?>
-                           name="backupcontent" id="idbackupcontent" value="1" /> <code><?php echo $folder; ?></code> (<?php echo size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ); ?>)
+                           name="backupcontent" id="idbackupcontent" value="1" /> <code><?php echo $folder; ?></code><?php echo $folder_size; ?>
 
                     <fieldset id="backupcontentexcludedirs" style="padding-left:15px; margin:2px;">
                         <legend><?php  _e( 'Exclude:', 'backwpup' ); ?></legend>
@@ -100,10 +105,9 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class='';
-									if ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') )
-										$class="tempfolder";
-									echo '<nobr class="' . $class . '"><label for="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupcontentexcludedirs' ) ), TRUE, FALSE ) . ' name="backupcontentexcludedirs[]" id="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')</label><br /></nobr>';
+									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
+									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
+									echo '<nobr class="' . $class . '"><label for="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupcontentexcludedirs' ) ), TRUE, FALSE ) . ' name="backupcontentexcludedirs[]" id="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -115,10 +119,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
             <tr valign="top">
                 <th scope="row"><label for="idbackupplugins"><?php _e( 'Backup plugins', 'backwpup' ); ?></label></th>
                 <td>
-					<?php $folder = untrailingslashit( str_replace( '\\', '/', WP_PLUGIN_DIR ) ); ?>
+					<?php 
+					$folder = untrailingslashit( str_replace( '\\', '/', WP_PLUGIN_DIR ) ); 
+					$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ) . ')' : '';
+					?>
                     <input class="checkbox"
                            type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupplugins' ), TRUE, TRUE );?>
-                           name="backupplugins" id="idbackupplugins" value="1" /> <code><?php echo $folder; ?></code> (<?php echo size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ); ?>)
+                           name="backupplugins" id="idbackupplugins" value="1" /> <code><?php echo $folder; ?></code><?php echo $folder_size; ?>
 
                     <fieldset id="backuppluginsexcludedirs" style="padding-left:15px; margin:2px;">
 						<legend><?php  _e( 'Exclude:', 'backwpup' ); ?></legend>
@@ -126,10 +133,9 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class='';
-									if ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') )
-										$class="tempfolder";
-									echo '<nobr class="' . $class . '"><label for="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuppluginsexcludedirs' ) ), TRUE, FALSE ) . ' name="backuppluginsexcludedirs[]" id="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')</label><br /></nobr>';
+									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
+									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
+									echo '<nobr class="' . $class . '"><label for="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuppluginsexcludedirs' ) ), TRUE, FALSE ) . ' name="backuppluginsexcludedirs[]" id="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -141,10 +147,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
             <tr valign="top">
                 <th scope="row"><label for="idbackupthemes"><?php _e( 'Backup themes', 'backwpup' ); ?></label></th>
                 <td>
-					<?php $folder = untrailingslashit( str_replace( '\\', '/', trailingslashit( get_theme_root() ) ) ); ?>
+					<?php 
+					$folder = untrailingslashit( str_replace( '\\', '/', trailingslashit( get_theme_root() ) ) );
+					$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ) . ')' : '';
+					?>
                     <input class="checkbox"
                            type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupthemes' ), TRUE, TRUE );?>
-                           name="backupthemes" id="idbackupthemes" value="1" /> <code><?php echo $folder; ?></code> (<?php echo size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ); ?>)
+                           name="backupthemes" id="idbackupthemes" value="1" /> <code><?php echo $folder; ?></code><?php echo $folder_size; ?>
 
                     <fieldset id="backupthemesexcludedirs" style="padding-left:15px; margin:2px;">
                         <legend><?php  _e( 'Exclude:', 'backwpup' ); ?></legend>
@@ -152,10 +161,9 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class='';
-									if ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') )
-										$class="tempfolder";
-									echo '<nobr class="' . $class . '"><label for="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupthemesexcludedirs' ) ), TRUE, FALSE ) . ' name="backupthemesexcludedirs[]" id="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')</label><br /></nobr>';
+									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
+									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
+									echo '<nobr class="' . $class . '"><label for="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupthemesexcludedirs' ) ), TRUE, FALSE ) . ' name="backupthemesexcludedirs[]" id="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -167,10 +175,13 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
             <tr valign="top">
                 <th scope="row"><label for="idbackupuploads"><?php _e( 'Backup uploads folder', 'backwpup' ); ?></label></th>
                 <td>
-					<?php $folder = untrailingslashit( BackWPup_File::get_upload_dir() ); ?>
+					<?php 
+					$folder = untrailingslashit( BackWPup_File::get_upload_dir() );
+					$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ) . ')' : '';
+					?>
                     <input class="checkbox"
                            type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupuploads' ), TRUE, TRUE );?>
-                           name="backupuploads" id="idbackupuploads" value="1" /> <code><?php echo $folder; ?></code> (<?php echo size_format( BackWPup_File::get_folder_size( $folder, FALSE ), 2 ); ?>)
+                           name="backupuploads" id="idbackupuploads" value="1" /> <code><?php echo $folder; ?></code><?php echo $folder_size; ?>
 
                     <fieldset id="backupuploadsexcludedirs" style="padding-left:15px; margin:2px;">
                         <legend><?php  _e( 'Exclude:', 'backwpup' ); ?></legend>
@@ -178,10 +189,9 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class='';
-									if ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') )
-										$class="tempfolder";
-									echo '<nobr class="' . $class . '"><label for="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupuploadsexcludedirs' ) ), TRUE, FALSE ) . ' name="backupuploadsexcludedirs[]" id="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')</label><br /></nobr>';
+									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
+									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
+									echo '<nobr class="' . $class . '"><label for="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupuploadsexcludedirs' ) ), TRUE, FALSE ) . ' name="backupuploadsexcludedirs[]" id="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );

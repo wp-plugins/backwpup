@@ -60,13 +60,14 @@ final class BackWPup_Option {
 		if ( $group == 'cfg' ) { //for settings
 			//generel
 			$default[ 'cfg' ][ 'showadminbar' ]      = TRUE;
+			$default[ 'cfg' ][ 'showfoldersize' ]    = FALSE;
 			$default[ 'cfg' ][ 'protectfolders' ]    = TRUE;
 			//job
 			$default[ 'cfg' ][ 'jobstepretry' ]      = 3;
-			$default[ 'cfg' ][ 'jobsteprestart' ]    = TRUE;
+			$default[ 'cfg' ][ 'jobsteprestart' ]    = FALSE;
 			$default[ 'cfg' ][ 'jobrunauthkey' ]     = substr( md5( md5( SECURE_AUTH_KEY ) ), 11, 8 );
 			$default[ 'cfg' ][ 'jobnotranslate' ] 	 = FALSE;
-			$default[ 'cfg' ][ 'jobwaittimems' ] 	 = 10000;
+			$default[ 'cfg' ][ 'jobwaittimems' ] 	 = 0;
 			//Logs
 			$default[ 'cfg' ][ 'maxlogs' ]           = 50;
 			$default[ 'cfg' ][ 'gzlogs' ]            = FALSE;

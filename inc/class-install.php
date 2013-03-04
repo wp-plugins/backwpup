@@ -84,8 +84,22 @@ class BackWPup_Install {
 																		 'backwpup_settings' => FALSE,
 																	) );
 
+		//add cfg options to database prevent false false if option not exists
+		$cfg_options = BackWPup_Option::defaults( 'cfg', NULL );
+		foreach ( $cfg_options as $cfg => $option ) {
+			//options to exclude
+			if ( in_array( $cfg, array( 'dropboxappkey', 'dropboxappsecret', 'dropboxsandboxappkey', 'dropboxsandboxappsecret', 'sugarsynckey', 'sugarsyncsecret', 'sugarsyncappid' ) ) ) 
+				continue;
+			//detect if option already exists
+			$test_option_exists = get_site_option( 'backwpup_cfg_' . $cfg, 'TEST12345TEST' );
+			//add option if not exists
+			if ( $test_option_exists == 'TEST12345TEST') 
+				add_site_option( 'backwpup_cfg_' . $cfg, $option );
+		}
+		
 		//update version
 		update_site_option( 'backwpup_version', BackWPup::get_plugin_data( 'Version' ) );
+				
 		//show trailing page again
 		update_site_option( 'backwpup_about_page', FALSE );
 	}
@@ -120,13 +134,6 @@ class BackWPup_Install {
 		$role->remove_cap( 'backwpup_logs' );
 		$role->remove_cap( 'backwpup_logs_delete' );
 		$role->remove_cap( 'backwpup_settings' );
-		//delete temp folder
-		$temp_flies = scandir( BackWPup::get_plugin_data( 'TEMP') );
-		foreach ( $temp_flies as $temp_flie ) {
-			if ( is_file( BackWPup::get_plugin_data( 'TEMP') . $temp_flie )  )
-				unlink( BackWPup::get_plugin_data( 'TEMP') . $temp_flie );
-		}
-		rmdir( BackWPup::get_plugin_data( 'TEMP') );
 		//to reschedule on activation and so on
 		update_site_option( 'backwpup_version', BackWPup::get_plugin_data( 'version' ) .'-inactive' );
 	}

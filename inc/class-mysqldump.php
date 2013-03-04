@@ -51,36 +51,37 @@ class BackWPup_MySQLDump {
 	 * @global $wpdb wpdb
 	 */
 	public function __construct( $args = array() ) {
-		global $wpdb;
 		
 		if ( ! class_exists( 'mysqli' ) )
 			throw new BackWPup_MySQLDump_Exception( __( 'No MySQLi extension found. Please install it.', 'backwpup' ) );
 
 		$default_args = array(
-			'dbhost' 	  => $wpdb->dbhost,
-			'dbname' 	  => $wpdb->dbname,
-			'dbuser' 	  => $wpdb->dbuser,
-			'dbpassword'  => $wpdb->dbpassword,
-			'dbcharset'   => $wpdb->charset,
+			'dbhost' 	  => DB_HOST,
+			'dbname' 	  => DB_NAME,
+			'dbuser' 	  => DB_USER,
+			'dbpassword'  => DB_PASSWORD,
+			'dbcharset'   => DB_CHARSET,
 			'dumpfilehandle' => fopen( 'php://output', 'wb' ),
 			'dumpfile' 	  => NULL,
 			'compression' => ''
 		);
 
 		$args = wp_parse_args( $args , $default_args );
+		
+		//set empty host to localhost
+		if ( empty( $args[ 'dbhost' ] ) )
+			$args[ 'dbhost' ] = 'localhost';
 
 		//check if port or socket in hostname and set port and socket
 		$args[ 'dbport' ]   = NULL;
 		$args[ 'dbsocket' ] = NULL;
 		if ( strstr( $args[ 'dbhost' ], ':' ) ) {
-			$hostparts = explode( ':', $args[ 'dbhost' ] );
+			$hostparts = explode( ':', $args[ 'dbhost' ], 2 );
 			$args[ 'dbhost' ] = $hostparts[ 0 ];
 			if ( is_numeric( $hostparts[ 1 ] ) )
-				$args[ 'dbport' ] = (string) $hostparts[ 1];
+				$args[ 'dbport' ] = (int) $hostparts[ 1 ];
 			else
 				$args[ 'dbsocket' ] = $hostparts[ 1 ] ;
-			if ( isset( $hostparts[ 2 ] ) )
-				$args[ 'dbsocket' ] = $hostparts[ 2 ];
 		}
 
 		//connect to Database
@@ -89,7 +90,7 @@ class BackWPup_MySQLDump {
 			throw new BackWPup_MySQLDump_Exception( sprintf( __( 'Can not connect to MySQL Database %1$d: %2$s', 'backwpup' ), $this->mysqli->connect_errno, $this->mysqli->connect_error ) );
 
 		//set charset
-		if ( ! empty( $args[ 'dbcharset' ] ) && method_exists($this->mysqli, 'set_charset' ) ) {
+		if ( ! empty( $args[ 'dbcharset' ] ) && method_exists( $this->mysqli, 'set_charset' ) ) {
 			$res = $this->mysqli->set_charset( $args[ 'dbcharset' ] );
 			if ( ! $res )
 				throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Can not set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );
@@ -193,7 +194,7 @@ class BackWPup_MySQLDump {
 		$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;\n";
 		$dbdumpheader .= "/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;\n";
 		$dbdumpheader .= "/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;\n";
-		$dbdumpheader .= "/*!40101 SET NAMES " . $this->mysqli->get_charset()->charset . " */;\n";
+		$dbdumpheader .= "/*!40101 SET NAMES " . $this->mysqli->character_set_name() . " */;\n";
 		$dbdumpheader .= "/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;\n";
 		$dbdumpheader .= "/*!40103 SET TIME_ZONE='" . $mysqltimezone . "' */;\n";
 		$dbdumpheader .= "/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;\n";
@@ -213,49 +214,53 @@ class BackWPup_MySQLDump {
 
 		//dump Functions
 		$res = $this->mysqli->query( "SHOW FUNCTION STATUS" );
-		if ( $this->mysqli->error )
+		if ( $this->mysqli->error ) {
 			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW FUNCTION STATUS" ), E_USER_WARNING );
-		while ( $function_status = $res->fetch_assoc() ) {
-			if ( $this->dbname != $function_status[ 'Db' ] )
-				continue;
-			$create = "\n--\n-- Function structure for " . $function_status[ 'Name' ] . "\n--\n\n";
-			$create .= "DROP FUNCTION IF EXISTS `" . $function_status[ 'Name' ] . "`;\n";
-			$create .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-			$create .= "/*!40101 SET character_set_client = '" . $this->mysqli->get_charset()->charset . "' */;\n";
-			//Dump the view structure
-			$res2 = $this->mysqli->query( "SHOW CREATE FUNCTION `" .  $function_status[ 'Db' ] . "`.`" . $function_status[ 'Name' ] . "`" );
-			if ( $this->mysqli->error )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW CREATE FUNCTION `" .  $function_status[ 'Db' ] . "`.`" . $function_status[ 'Name' ] . "`" ), E_USER_WARNING );
-			$create_function = $res2->fetch_assoc();
-			$res2->close();
-			$create .= $create_function[ 'Create Function' ] . ";\n";
-			$create .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
-			$this->write( $create );
+		} else {
+			while ( $function_status = $res->fetch_assoc() ) {
+				if ( $this->dbname != $function_status[ 'Db' ] )
+					continue;
+				$create = "\n--\n-- Function structure for " . $function_status[ 'Name' ] . "\n--\n\n";
+				$create .= "DROP FUNCTION IF EXISTS `" . $function_status[ 'Name' ] . "`;\n";
+				$create .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+				$create .= "/*!40101 SET character_set_client = '" . $this->mysqli->character_set_name() . "' */;\n";
+				//Dump the view structure
+				$res2 = $this->mysqli->query( "SHOW CREATE FUNCTION `" .  $function_status[ 'Db' ] . "`.`" . $function_status[ 'Name' ] . "`" );
+				if ( $this->mysqli->error )
+					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW CREATE FUNCTION `" .  $function_status[ 'Db' ] . "`.`" . $function_status[ 'Name' ] . "`" ), E_USER_WARNING );
+				$create_function = $res2->fetch_assoc();
+				$res2->close();
+				$create .= $create_function[ 'Create Function' ] . ";\n";
+				$create .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
+				$this->write( $create );
+			}
+			$res->close();
 		}
-		$res->close();
 
 		//dump Procedures
 		$res = $this->mysqli->query( "SHOW PROCEDURE STATUS" );
-		if ( $this->mysqli->error )
+		if ( $this->mysqli->error ) {
 			trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW PROCEDURE STATUS" ), E_USER_WARNING );
-		while ( $procedure_status = $res->fetch_assoc() ) {
-			if ( $this->dbname != $procedure_status[ 'Db' ] )
-				continue;
-			$create = "\n--\n-- Procedure structure for " . $procedure_status[ 'Name' ] . "\n--\n\n";
-			$create .= "DROP PROCEDURE IF EXISTS `" . $procedure_status[ 'Name' ] . "`;\n";
-			$create .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-			$create .= "/*!40101 SET character_set_client = '" . $this->mysqli->get_charset()->charset . "' */;\n";
-			//Dump the view structure
-			$res2 = $this->mysqli->query( "SHOW CREATE PROCEDURE `" . $procedure_status[ 'Db' ] . "`.`" . $procedure_status[ 'Name' ] . "`" );
-			if ( $this->mysqli->error )
-				trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW CREATE PROCEDURE `" . $procedure_status[ 'Db' ] . "`.`" . $procedure_status[ 'Name' ] . "`" ), E_USER_WARNING );
-			$create_procedure = $res2->fetch_assoc();
-			$res2->close();
-			$create .= $create_procedure[ 'Create Procedure' ] . ";\n";
-			$create .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
-			$this->write( $create );
+		} else {
+			while ( $procedure_status = $res->fetch_assoc() ) {
+				if ( $this->dbname != $procedure_status[ 'Db' ] )
+					continue;
+				$create = "\n--\n-- Procedure structure for " . $procedure_status[ 'Name' ] . "\n--\n\n";
+				$create .= "DROP PROCEDURE IF EXISTS `" . $procedure_status[ 'Name' ] . "`;\n";
+				$create .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
+				$create .= "/*!40101 SET character_set_client = '" . $this->mysqli->character_set_name() . "' */;\n";
+				//Dump the view structure
+				$res2 = $this->mysqli->query( "SHOW CREATE PROCEDURE `" . $procedure_status[ 'Db' ] . "`.`" . $procedure_status[ 'Name' ] . "`" );
+				if ( $this->mysqli->error )
+					trigger_error( sprintf( __( 'Database error %1$s for query %2$s', 'backwpup' ), $this->mysqli->error, "SHOW CREATE PROCEDURE `" . $procedure_status[ 'Db' ] . "`.`" . $procedure_status[ 'Name' ] . "`" ), E_USER_WARNING );
+				$create_procedure = $res2->fetch_assoc();
+				$res2->close();
+				$create .= $create_procedure[ 'Create Procedure' ] . ";\n";
+				$create .= "/*!40101 SET character_set_client = @saved_cs_client */;\n";
+				$this->write( $create );
+			}
+			$res->close();
 		}
-		$res->close();
 
 		//for better import with mysql client
 		$dbdumpfooter  = "\n/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;\n";
@@ -282,7 +287,7 @@ class BackWPup_MySQLDump {
 				$tablecreate = "\n--\n-- View structure for `" . $table . "`\n--\n\n";
 				$tablecreate .= "DROP VIEW IF EXISTS `" . $table . "`;\n";
 				$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-				$tablecreate .= "/*!40101 SET character_set_client = '" . $this->mysqli->get_charset()->charset . "' */;\n";
+				$tablecreate .= "/*!40101 SET character_set_client = '" . $this->mysqli->character_set_name() . "' */;\n";
 				//Dump the view structure
 				$res = $this->mysqli->query( "SHOW CREATE VIEW `" . $table . "`" );
 				if ( $this->mysqli->error )
@@ -303,7 +308,7 @@ class BackWPup_MySQLDump {
 			$tablecreate = "\n--\n-- Table structure for `" . $table . "`\n--\n\n";
 			$tablecreate .= "DROP TABLE IF EXISTS `" . $table . "`;\n";
 			$tablecreate .= "/*!40101 SET @saved_cs_client     = @@character_set_client */;\n";
-			$tablecreate .= "/*!40101 SET character_set_client = '" . $this->mysqli->get_charset()->charset . "' */;\n";
+			$tablecreate .= "/*!40101 SET character_set_client = '" . $this->mysqli->character_set_name() . "' */;\n";
 			//Dump the table structure
 			$res = $this->mysqli->query( "SHOW CREATE TABLE `" . $table . "`" );
 			if ( $this->mysqli->error )

@@ -5,7 +5,7 @@
 include BackWPup::get_plugin_data( 'PluginDir' ) . '/sdk/WindowsAzure/WindowsAzure.php';
 // Pear libs include
 // http://www.pear.com/
-set_include_path( get_include_path() . PATH_SEPARATOR . __DIR__ . '/sdk/PEAR/');
+set_include_path( get_include_path() . PATH_SEPARATOR . BackWPup::get_plugin_data( 'PluginDir' ) . '/sdk/PEAR/');
 
 /**
  * Documentation: http://www.windowsazure.com/en-us/develop/php/how-to-guides/blob-service/

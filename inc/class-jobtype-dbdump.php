@@ -35,11 +35,11 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		global $wpdb;
 
 		$defaults = array(
-			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_title_with_dashes( $wpdb->dbname ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => '',
+			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_title_with_dashes( DB_NAME ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => '',
 			'dbdumpmaintenance' => FALSE
 		);
 		//set only wordpress tables as default
-		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . $wpdb->dbname . '`', ARRAY_N );
+		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $dbtables as $dbtable) {
 			if ( ! strstr( $dbtable[ 0 ], $wpdb->prefix ) )
 				$defaults[ 'dbdumpexclude' ][] = $dbtable[ 0 ];
@@ -67,7 +67,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 					<input type="button" class="button-secondary" id="dbnone" value="<?php _e( 'none', 'backwpup' ); ?>">&nbsp;
                     <input type="button" class="button-secondary" id="dbwp" value="<?php echo $wpdb->prefix; ?>">
 					<?php
-					$tables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . $wpdb->dbname . '`', ARRAY_N );
+					$tables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 					$num_rows = count( $tables );
 					echo '<table id="dbtables"><tr><td valign="top">';
 					$next_row = round( $num_rows / 3, 0 );
@@ -141,7 +141,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			foreach ( $_POST[ 'tabledb' ] as $dbtable )
 				$checked_db_tables[ ] = rawurldecode( $dbtable );
 		}
-		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . $wpdb->dbname . '`', ARRAY_N );
+		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $dbtables as $dbtable ) {
 			if ( ! in_array( $dbtable[ 0 ], $checked_db_tables ) )
 				$dbdumpexclude[ ] = $dbtable[ 0 ];
@@ -176,7 +176,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			$sql_dump = new BackWPup_MySQLDump( array( 'dumpfile' => BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'dbdumpfile' ] ) );
 
 			if ( is_object( $sql_dump ) )
-				$job_object->log( sprintf( __( 'Connected to database %1$s on %2$s', 'backwpup' ), $wpdb->dbname, $wpdb->dbhost ) );
+				$job_object->log( sprintf( __( 'Connected to database %1$s on %2$s', 'backwpup' ), DB_NAME, DB_HOST ) );
 
 			//Exclude Tables
 			foreach ( $sql_dump->tables_to_dump as $key => $table ) {

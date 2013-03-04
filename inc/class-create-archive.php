@@ -62,7 +62,7 @@ class BackWPup_Create_Archive {
 
 		//check param
 		if ( empty( $file ) )
-			throw new BackWPup_Create_Archive_Exception(  __( 'The file name of an archive cannot be empty ', 'backwpup' ) );
+			throw new BackWPup_Create_Archive_Exception(  __( 'The file name of an archive cannot be empty.', 'backwpup' ) );
 
 		//set file
 		$this->file = trim( $file );
@@ -132,7 +132,7 @@ class BackWPup_Create_Archive {
 				if ( $ziparchive_open !== TRUE ) {
 					$this->ziparchive_status( $ziparchive_open );
 					throw new BackWPup_Create_Archive_Exception( sprintf( _x( 'Can not create zip archive: %d','ZipArchive open() result', 'backwpup' ), $ziparchive_open ) );
-				}			
+				}
 			}
 			if ( $this->get_method() == 'PclZip' && ! function_exists( 'gzencode' ) )
 				throw new BackWPup_Create_Archive_Exception( __( 'Functions for gz compression not available', 'backwpup' ) );
@@ -280,7 +280,7 @@ class BackWPup_Create_Archive {
 				break;
 			case 'ZipArchive':
 				//close and reopen, all added files are open on fs
-				if ( $this->file_count >= 30 ) { //35 works with PHP 5.2.4 on win
+				if ( $this->file_count >= 25 ) { //35 works with PHP 5.2.4 on win
 					$this->ziparchive_status( $this->ziparchive->status );
 					$this->ziparchive->close();
 					$ziparchive_open = $this->ziparchive->open( $this->file, ZipArchive::CREATE );
@@ -320,7 +320,7 @@ class BackWPup_Create_Archive {
 	 * @return bool
 	 */
 	public function add_empty_folder( $folder_name, $name_in_archive = '' ) {
-		
+
 		//check param
 		if ( empty( $folder_name ) )
 			throw new BackWPup_Create_Archive_Exception(  __( 'Folder name cannot be empty', 'backwpup' ) );
@@ -358,7 +358,7 @@ class BackWPup_Create_Archive {
 				return TRUE;
 				break;
 		}
-		
+
 		return TRUE;
 	}
 
@@ -372,7 +372,7 @@ class BackWPup_Create_Archive {
 
 		if ( $code == 0 )
 			return TRUE;
-		
+
 		//define error messages
 		$zip_errors[ ZipArchive::ER_MULTIDISK ] =  __( '(ER_MULTIDISK) Multi-disk zip archives not supported', 'backwpup' );
 		$zip_errors[ ZipArchive::ER_RENAME ] =  __( '(ER_RENAME) Renaming temporary file failed', 'backwpup' );
@@ -397,7 +397,7 @@ class BackWPup_Create_Archive {
 		$zip_errors[ ZipArchive::ER_INCONS ] = __( '(ER_INCONS) Zip archive inconsistent', 'backwpup' );
 		$zip_errors[ ZipArchive::ER_REMOVE ] = __( '(ER_REMOVE) Can\'t remove file', 'backwpup' );
 		$zip_errors[ ZipArchive::ER_DELETED ] = __( '(ER_DELETED) Entry has been deleted', 'backwpup' );
-		
+
 		//ste error massage
 		$zip_error = $code;
 		if ( isset( $zip_errors[ $zip_error ] ) )
@@ -484,15 +484,15 @@ class BackWPup_Create_Archive {
 
 		return TRUE;
 	}
-	
-	
+
+
 	/**
 	 * Tar a empty Folder to archive
 	 */
 	private function tar_empty_folder( $folder_name, $name_in_archive ) {
-		
+
 		$name_in_archive = trailingslashit( $name_in_archive );
-		
+
 		//split filename larger than 100 chars
 		if ( strlen( $name_in_archive ) <= 100 ) {
 			$tar_filename        = $name_in_archive;
