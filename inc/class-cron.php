@@ -50,7 +50,7 @@ class BackWPup_Cron {
 				unlink( BackWPup::get_plugin_data( 'running_file' ) );
 				//add log entry
 				$timestamp = "<span title=\"[Type: " . E_USER_ERROR . "|Line: " . __LINE__ . "|File: " . basename( __FILE__ ) . "|PID: " . $job_object->pid . "]\">[" . date_i18n( 'd-M-Y H:i:s' ) . "]</span> ";
-				file_put_contents( $job_object->logfile, $timestamp . "<span class=\"error\">" . __( 'ERROR:', 'backwpup' ) . " " . __( 'Aborted, because 2 hours no progress!', 'backwpup' ) . "</span><br />" . PHP_EOL, FILE_APPEND );
+				file_put_contents( $job_object->logfile, $timestamp . "<span class=\"error\">" . __( 'ERROR:', 'backwpup' ) . " " . __( 'Aborted, because no progress for 2 hours!', 'backwpup' ) . "</span><br />" . PHP_EOL, FILE_APPEND );
 				//write new log header
 				$job_object->errors ++;
 				$fd      = fopen( $job_object->logfile, 'r+' );
@@ -109,15 +109,17 @@ class BackWPup_Cron {
 
 			}
 			//Compress old not compressed logs
-			$log_folder = scandir( BackWPup_Option::get( 'cfg', 'logfolder' ) );
-			foreach ( $log_folder as $log_file ) {
-				if ( is_file( BackWPup_Option::get( 'cfg', 'logfolder' ) . $log_file ) && '.html' == substr( $log_file, -5 ) ) {
-					$compress = new BackWPup_Create_Archive(  BackWPup_Option::get( 'cfg', 'logfolder' ) . $log_file . '.gz' );
-					if ( $compress->add_file( BackWPup_Option::get( 'cfg', 'logfolder' ) . $log_file ) ) {
-						unlink( BackWPup_Option::get( 'cfg', 'logfolder' ) . $log_file );
+			if ( $dir = opendir( BackWPup_Option::get( 'cfg', 'logfolder' ) ) ) {
+				while ( FALSE !== ( $file = readdir( $dir ) ) ) {
+					if ( is_file( BackWPup_Option::get( 'cfg', 'logfolder' ) . $file ) && '.html' == substr( $file, -5 ) ) {
+						$compress = new BackWPup_Create_Archive(  BackWPup_Option::get( 'cfg', 'logfolder' ) . $file . '.gz' );
+						if ( $compress->add_file( BackWPup_Option::get( 'cfg', 'logfolder' ) . $file ) ) {
+							unlink( BackWPup_Option::get( 'cfg', 'logfolder' ) . $file );
+						}
+						unset( $compress );
 					}
-					unset( $compress );
 				}
+				closedir( $dir );
 			}
 		}
 
@@ -138,13 +140,15 @@ class BackWPup_Cron {
 				}
 			}
 			//temp cleanup
-			$temp_folder = scandir( BackWPup::get_plugin_data( 'TEMP' ) );
-			foreach ( $temp_folder as $temp_file ) {
-				if ( is_file( BackWPup::get_plugin_data( 'TEMP' ) . $temp_file ) ) {
-					if ( '.gz' == substr( $temp_file, -3 ) || '.sql' == substr( $temp_file, -4 ) || '.bz2' == substr( $temp_file, -4 ) || '.zip' == substr( $temp_file, -4 ) || '.txt' == substr( $temp_file, -4 ) || '.xml' == substr( $temp_file, -4 ) )
-						unlink( BackWPup::get_plugin_data( 'TEMP' ) . $temp_file );
+			if ( $dir = opendir( BackWPup::get_plugin_data( 'TEMP' ) ) ) {
+				while ( FALSE !== ( $file = readdir( $dir ) ) ) {
+					if ( is_file( BackWPup::get_plugin_data( 'TEMP' ) . $file ) ) {
+						if ( '.gz' == substr( $file, -3 ) || '.sql' == substr( $file, -4 ) || '.bz2' == substr( $file, -4 ) || '.zip' == substr( $file, -4 ) || '.txt' == substr( $file, -4 ) || '.xml' == substr( $file, -4 ) )
+							unlink( BackWPup::get_plugin_data( 'TEMP' ) . $file );
+					}
 				}
-			}
+				closedir( $dir );
+			}				
 		}
 	}
 
@@ -284,11 +288,13 @@ class BackWPup_Cron {
 		foreach ( $cron[ 'year' ] as $year ) {
 			foreach ( $cron[ 'mon' ] as $mon ) {
 				foreach ( $cron[ 'mday' ] as $mday ) {
-					foreach ( $cron[ 'hours' ] as $hours ) {
-						foreach ( $cron[ 'minutes' ] as $minutes ) {
-							$timestamp = gmmktime( $hours - get_option( 'gmt_offset' ), $minutes, 0, $mon, $mday, $year );
-							if ( $timestamp && in_array( gmdate( 'j', $timestamp ), $cron[ 'mday' ] ) && in_array( gmdate( 'w', $timestamp ), $cron[ 'wday' ] ) && $timestamp > $current_timestamp ) {
-								return $timestamp;
+					if ( checkdate( $mon, $mday, $year ) ) {
+						foreach ( $cron[ 'hours' ] as $hours ) {
+							foreach ( $cron[ 'minutes' ] as $minutes ) {
+								$timestamp = gmmktime( $hours , $minutes, 0, $mon, $mday, $year );
+								if ( $timestamp && in_array( gmdate( 'j', $timestamp ), $cron[ 'mday' ] ) && in_array( gmdate( 'w', $timestamp ), $cron[ 'wday' ] ) && $timestamp > $current_timestamp ) {
+									return $timestamp - ( get_option( 'gmt_offset' ) * 3600 );
+								}
 							}
 						}
 					}

@@ -312,7 +312,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 			case 'runnow':
 				if ( ! empty( $_GET[ 'jobid' ] ) ) {
 					if ( ! current_user_can( 'backwpup_jobs_start' ) )
-						wp_die( __( 'Not allowed!', 'backwpup') );
+						wp_die( __( 'Sorry, you don\'t have permissions to do that.', 'backwpup') );
 					check_admin_referer( 'backwup_job_run-runnowlink' );
 					
 					//check temp folder
@@ -359,7 +359,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					if ( ! empty( $test_result ) )
 						BackWPup_Admin::message( $test_result );
 
-					//only start job if massages empty
+					//only start job if messages empty
 					$log_messages = BackWPup_Admin::get_message();					
 					if ( empty ( $log_messages ) )  {
 						$last_log = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
@@ -478,7 +478,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				$length = strlen( $logfiledata ) - ( strlen( $logfiledata ) - $endpos ) - $startpos;
 
 				echo '<div id="runniginfos">';
-					echo '<h2 id="runningtitle">' . sprintf( __('Job currently working: %s','backwpup'), $job_object->job[ 'name' ] ) . '</h2>';
+					echo '<h2 id="runningtitle">' . sprintf( __('Job currently running: %s','backwpup'), $job_object->job[ 'name' ] ) . '</h2>';
 					echo '<span id="warningsid">' . __( 'Warnings:', 'backwpup' ) . ' <span id="warnings">' . $job_object->warnings . '</span></span>';
 					echo '<span id="errorid">' . __( 'Errors:', 'backwpup' ) . ' <span id="errors">' . $job_object->errors . '</span></span>';
 					echo '<div class="infobuttons"><a href="#TB_inline?height=440&width=630&inlineId=tb-showworking" id="showworkingbutton" class="thickbox" title="' . __( 'Working job log', 'backwpup') . '">' . __( 'Display working log', 'backwpup' ) . '</a>';
@@ -613,7 +613,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				$step_percent    = 100;
 				$substep_percent = 100;
 				$onstep			 = __( 'Job end' , 'backwpup' );
-				$lastmsg		 = '<samp>' . sprintf( __( 'Job done in %s seconds.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
+				$lastmsg		 = '<samp>' . sprintf( __( 'Job completed in %s seconds.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
 			}
 
 			if ( '.gz' == substr( $logfile, -3 ) )

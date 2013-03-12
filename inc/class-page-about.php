@@ -55,12 +55,12 @@ class BackWPup_Page_About {
                 	<div class="top">
 						<?php if ( get_site_transient( 'backwpup_upgrade_from_version_two') ) { ?>
                             <div id="update-notice" class="backwpup-welcome updated">
-                                <h3><?php _e( 'Attention! You have updated from version 2.x', 'backwpup' ); ?></h3>
-                                <p><?php echo sprintf( __( 'Please <a href="%s">check your settings</a> after the update from version 2.x:', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupjobs'); ?></a></p>
-                                <ul><li><?php _e('Dropbox authentication must be done again','backwpup'); ?></li>
-								<li><?php _e('SugarSync authentication must be done again','backwpup'); ?></li>
+                                <h3><?php _e( 'Heads up! You have updated from version 2.x', 'backwpup' ); ?></h3>
+                                <p><?php echo sprintf( __( 'Please <a href="%s">check your settings</a> after updating from version 2.x:', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupjobs'); ?></a></p>
+                                <ul><li><?php _e('Dropbox authentication must be re-entered','backwpup'); ?></li>
+								<li><?php _e('SugarSync authentication must be re-entered','backwpup'); ?></li>
                                 <li><?php _e('S3 Settings','backwpup'); ?></li>
-                                <li><?php _e('Google Storage is now in S3 service settings','backwpup'); ?></li>
+                                <li><?php _e('Google Storage is now a part of S3 service settings','backwpup'); ?></li>
                                 <li><?php _e('All your passwords','backwpup'); ?></li>
                                 </ul>
                              </div>
@@ -340,7 +340,7 @@ _e( 'The backup files can be used to save your whole installation including <cod
 				<?php endif; ?>
 
 				<?php if ( ! get_site_option( 'backwpup_about_page' ) ) { ?>
-                	<a href="<?php network_admin_url( 'admin.php' )?>?page=backwpup" class="button-primary-bwp"><?php _e( 'Now back up!', 'backwpup' ); ?></a>
+                	<a href="<?php network_admin_url( 'admin.php' )?>?page=backwpup" class="button-primary-bwp"><?php _e( 'Backup now!', 'backwpup' ); ?></a>
 				<?php
 					update_site_option( 'backwpup_about_page', TRUE );
 					} ?>

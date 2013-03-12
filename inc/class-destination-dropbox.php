@@ -24,7 +24,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 'dropboxtoken' => '', 'dropboxsecret' => '', 'dropboxroot' => 'sandbox', 'dropboxmaxbackups' => 0, 'dropboxsyncnodelete' => TRUE, 'dropboxdir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ) );
+		return array( 'dropboxtoken' => '', 'dropboxsecret' => '', 'dropboxroot' => 'sandbox', 'dropboxmaxbackups' => 15, 'dropboxsyncnodelete' => TRUE, 'dropboxdir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ) );
 	}
 
 
@@ -46,7 +46,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 					echo '<div id="message" class="updated">' .  __( 'Dropbox authentication complete!', 'backwpup' ) . '</div>';
 				}
 				catch ( Exception $e ) {
-					echo '<div  id=\"message\" class=\"updated\">' . sprintf( __( 'Dropbox API: %s', 'backwpup' ), $e->getMessage() ) . '</div>';
+					echo '<div  id="message" class="updated">' . sprintf( __( 'Dropbox API: %s', 'backwpup' ), $e->getMessage() ) . '</div>';
 				}
 			} elseif ( isset( $_SESSION[ 'backwpup_jobedit'][ 'dropboxdropbox_auth' ][ 'oAuthRequestToken' ] ) && $_SESSION[ 'backwpup_jobedit'][ 'dropboxdropbox_auth' ][ 'oAuthRequestToken' ] == $_GET[ 'oauth_token' ] ) {
 				//Get Access Tokens
@@ -57,14 +57,17 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 					echo '<input type="hidden" name="dropboxtoken" value="' . esc_attr( $oAuthStuff[ 'oauth_token' ] ) . '" />';
 					echo '<input type="hidden" name="dropboxsecret" value="' . esc_attr( BackWPup_Encryption::encrypt( $oAuthStuff[ 'oauth_token_secret' ] ) ) . '" />';
 					echo '<input type="hidden" name="dropboxroot" value="dropbox" />';
-					echo '<div class="notice">' .  __( 'Dropbox authentication complete!', 'backwpup' ) . '</div>';
+					echo '<div id="message" class="updated">' .  __( 'Dropbox authentication complete!', 'backwpup' ) . '</div>';
 				}
 				catch ( Exception $e ) {
-					echo '<div  id=\"message\" class=\"updated\">' . sprintf( __( 'Dropbox API: %s', 'backwpup' ), $e->getMessage() ) . '</div>';
+					echo '<div id="message" class="updated">' . sprintf( __( 'Dropbox API: %s', 'backwpup' ), $e->getMessage() ) . '</div>';
 				}
 			} else {
-				echo '<div  id=\"message\" class=\"updated\">' . __( 'Wrong Token for Dropbox authentication received!', 'backwpup' ) . '</div>';
+				echo '<div id="message" class="updated">' . __( 'Wrong token for Dropbox authentication!', 'backwpup' ) . '</div>';
 			}
+		}
+		if ( isset( $_GET[ 'not_approved' ] ) && $_GET[ 'not_approved' ] == 'true' ) {
+			echo '<div  id="message" class="updated">' . __( 'Dropbox authentication not approved!', 'backwpup' ) . '</div>';
 		}
 
 		//get auth url sandbox
@@ -132,11 +135,11 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 				if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) {
 					?>
                     <label for="iddropboxmaxbackups"><input id="iddropboxmaxbackups" name="dropboxmaxbackups" type="text" size="3" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'dropboxmaxbackups' ) );?>" class="small-text" />&nbsp;
-					<?php  _e( 'Number of files to hold in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
+					<?php  _e( 'Number of files to keep in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
 					<?php } else { ?>
                     <label for="iddropboxsyncnodelete" ><input class="checkbox" value="1"
                            type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dropboxsyncnodelete' ), TRUE ); ?>
-                           name="dropboxsyncnodelete" id="iddropboxsyncnodelete" /> <?php _e( 'Do not delete files on sync to destination!', 'backwpup' ); ?></label>
+                           name="dropboxsyncnodelete" id="iddropboxsyncnodelete" /> <?php _e( 'Do not delete files while syncing to destination!', 'backwpup' ); ?></label>
 					<?php } ?>
             </td>
         </tr>
@@ -197,7 +200,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 				BackWPup_Admin::message( 'DROPBOX: ' . $e->getMessage()  );
 			}
 		}
-		set_site_transient( 'backwpup_',strtolower( $jobdest ), $files, 60 * 60 * 24 * 7 );
+		set_site_transient( 'backwpup_' . strtolower( $jobdest ), $files, 60 * 60 * 24 * 7 );
 	}
 
 	/**
@@ -234,7 +237,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 	public function job_run_archive( $job_object ) {
 
 		$job_object->substeps_todo = 2 + $job_object->backup_filesize;
-		$job_object->log( sprintf( __( '%d. Try to send backup file to Dropbox &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Try to send backup file to Dropbox&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		try {
 			$dropbox = new BackWPup_Destination_Dropbox_API( $job_object->job[ 'dropboxroot' ] );
 			// set the tokens
@@ -242,21 +245,21 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 			//get account info
 			$info = $dropbox->accountInfo();
 			if ( ! empty( $info[ 'uid' ] ) ) {
-				$job_object->log( sprintf( __( 'Authenticated with Dropbox from %s', 'backwpup' ), $info[ 'display_name' ] . ' (' . $info[ 'email' ] . ')' ), E_USER_NOTICE );
+				$job_object->log( sprintf( __( 'Authenticated with Dropbox of user %s', 'backwpup' ), $info[ 'display_name' ] . ' (' . $info[ 'email' ] . ')' ), E_USER_NOTICE );
 			}
 			//Check Quota
 			$dropboxfreespase = $info[ 'quota_info' ][ 'quota' ] - $info[ 'quota_info' ][ 'shared' ] - $info[ 'quota_info' ][ 'normal' ];
 			if ( $job_object->backup_filesize > $dropboxfreespase ) {
-				$job_object->log( __( 'No free space left on Dropbox!', 'backwpup' ), E_USER_ERROR );
+				$job_object->log( __( 'Your Dropbox appears to be full.', 'backwpup' ), E_USER_ERROR );
 
 				return TRUE;
 			}
 			else {
-				$job_object->log( sprintf( __( '%s free on Dropbox', 'backwpup' ), size_format( $dropboxfreespase, 2 ) ), E_USER_NOTICE );
+				$job_object->log( sprintf( __( '%s available on your Dropbox', 'backwpup' ), size_format( $dropboxfreespase, 2 ) ), E_USER_NOTICE );
 			}
 			$job_object->substeps_done = 0;
 			// put the file
-			$job_object->log( __( 'Upload to Dropbox now started &hellip;', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Uploading to Dropbox&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
 			$response = $dropbox->upload( $job_object->backup_folder . $job_object->backup_file, $job_object->job[ 'dropboxdir' ] . $job_object->backup_file );
 			if ( $response[ 'bytes' ] == filesize( $job_object->backup_folder . $job_object->backup_file ) ) {
 				if ( ! empty( $job_object->job[ 'jobid' ] ) )
@@ -266,7 +269,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 			}
 			else {
 				if ( $response[ 'bytes' ] != filesize( $job_object->backup_folder . $job_object->backup_file ) )
-					$job_object->log( __( 'Uploaded file size and local file size not the same!', 'backwpup' ), E_USER_ERROR );
+					$job_object->log( __( 'Uploaded file size and local file size don\'t match.', 'backwpup' ), E_USER_ERROR );
 				else
 					$job_object->log( sprintf( __( 'Error on transfer backup to Dropbox: %s', 'backwpup' ), $response[ 'error' ] ), E_USER_ERROR );
 
@@ -315,10 +318,10 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
 							$numdeltefiles ++;
 						}
 						else
-							$job_object->log( sprintf( __( 'Error on delete file on Dropbox: %s', 'backwpup' ), $file ), E_USER_ERROR );
+							$job_object->log( sprintf( __( 'Error while deleting file from Dropbox: %s', 'backwpup' ), $file ), E_USER_ERROR );
 					}
 					if ( $numdeltefiles > 0 )
-						$job_object->log( sprintf( _n( 'One file deleted on Dropbox', '%d files deleted on Dropbox', $numdeltefiles, 'backwpup' ), $numdeltefiles ), E_USER_NOTICE );
+						$job_object->log( sprintf( _n( 'One file deleted from Dropbox', '%d files deleted on Dropbox', $numdeltefiles, 'backwpup' ), $numdeltefiles ), E_USER_NOTICE );
 				}
 			}
 			set_site_transient( 'backwpup_' . $job_object->job[ 'jobid' ] . '_dropbox', $files, 60 * 60 * 24 * 7 );
@@ -524,7 +527,7 @@ final class BackWPup_Destination_Dropbox_API {
 	 */
 	public function download( $path, $echo = FALSE ) {
 
-		$url = self::API_CONTENT_URL . self::API_VERSION_URL . 'files/' . $this->root . '/' . $this->encode_path( $path );
+		$url = self::API_CONTENT_URL . self::API_VERSION_URL . 'files/' . $this->root . '/' .  $path;
 		if ( ! $echo )
 			return $this->request( $url );
 		else
@@ -550,47 +553,6 @@ final class BackWPup_Destination_Dropbox_API {
 	}
 
 	/**
-	 * @param string $path
-	 * @param        $query
-	 * @param int    $fileLimit
-	 * @return array|mixed|string
-	 * @throws BackWPup_Destination_Dropbox_API_Exception
-	 */
-	public function search( $path = '', $query, $fileLimit = 1000 ) {
-
-		if ( strlen( $query ) >= 3 )
-			throw new BackWPup_Destination_Dropbox_API_Exception( "Error: Query \"$query\" must three characters long." );
-		$url = self::API_URL . self::API_VERSION_URL . 'search/' . $this->root . '/' . $this->encode_path( $path );
-
-		return $this->request( $url, array(
-										  'query'      => $query,
-										  'file_limit' => $fileLimit
-									 ) );
-	}
-
-	/**
-	 * @param string $path
-	 * @return array|mixed|string
-	 */
-	public function shares( $path = '' ) {
-
-		$url = self::API_URL . self::API_VERSION_URL . 'shares/' . $this->root . '/' . $this->encode_path( $path );
-
-		return $this->request( $url );
-	}
-
-	/**
-	 * @param string $path
-	 * @return array|mixed|string
-	 */
-	public function media( $path = '' ) {
-
-		$url = self::API_URL . self::API_VERSION_URL . 'media/' . $this->root . '/' . $this->encode_path( $path );
-
-		return $this->request( $url );
-	}
-
-	/**
 	 * @param $path
 	 * @return array|mixed|string
 	 */
@@ -599,21 +561,7 @@ final class BackWPup_Destination_Dropbox_API {
 		$url = self::API_URL . self::API_VERSION_URL . 'fileops/delete';
 
 		return $this->request( $url, array(
-										  'path' => '/' . $this->encode_path( $path ),
-										  'root' => $this->root
-									 ) );
-	}
-
-	/**
-	 * @param $path
-	 * @return array|mixed|string
-	 */
-	public function fileopsCreate_folder( $path ) {
-
-		$url = self::API_URL . self::API_VERSION_URL . 'fileops/create_folder';
-
-		return $this->request( $url, array(
-										  'path' => '/' . $this->encode_path( $path ),
+										  'path' => '/' . $path,
 										  'root' => $this->root
 									 ) );
 	}
@@ -733,6 +681,7 @@ final class BackWPup_Destination_Dropbox_API {
 			curl_setopt( $ch, CURLOPT_URL, $url . $args );
 		}
 		else {
+			curl_setopt( $ch, CURLOPT_BINARYTRANSFER, TRUE );
 			$args = ( is_array( $args ) ) ? '?' . http_build_query( $args, '', '&' ) : $args;
 			curl_setopt( $ch, CURLOPT_URL, $url . $args );
 		}
@@ -763,13 +712,17 @@ final class BackWPup_Destination_Dropbox_API {
 			fclose( $datafilefd );
 
 		if ( $status[ 'http_code' ] == 503 ) {
-			$wait = 1;
-			trigger_error($header,E_USER_WARNING);
+			$wait = 0;
 			if ( preg_match( "/retry-after:(.*?)\r/i", $header, $matches ) )
 				$wait = trim( $matches[ 1 ] );
-			trigger_error( sprintf( '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis. Wait for %d seconds.', $wait ), E_USER_WARNING );
-			sleep( $wait );
-
+			//only wait if we get a retry-after header.
+			if ( ! empty( $wait ) ) {
+				trigger_error( sprintf( '(503) Your app is making too many requests and is being rate limited. Error 503 can be triggered on a per-app or per-user basis. Wait for %d seconds.', $wait ), E_USER_WARNING );
+				sleep( $wait );
+			} else {
+				trigger_error( '(503) Service unavailable. Retrying.', E_USER_WARNING );
+			}
+			//redo request
 			return $this->request( $url, $args, $method, $filehandel, $filesize, $echo );
 		} elseif ( $status[ 'http_code' ] == 404 ) {
 			trigger_error( '(' . $status[ 'http_code' ] . ') ' . $output[ 'error' ], E_USER_WARNING );
@@ -780,17 +733,17 @@ final class BackWPup_Destination_Dropbox_API {
 			if ( isset( $output[ 'error' ] ) && is_string( $output[ 'error' ] ) ) $message = '(' . $status[ 'http_code' ] . ') ' . $output[ 'error' ];
 			elseif ( isset( $output[ 'error' ][ 'hash' ] ) && $output[ 'error' ][ 'hash' ] != '' ) $message = (string)'(' . $status[ 'http_code' ] . ') ' . $output[ 'error' ][ 'hash' ];
 			elseif ( 0 != curl_errno( $ch ) ) $message = '(' . curl_errno( $ch ) . ') ' . curl_error( $ch );
-			elseif ( $status[ 'http_code' ] == 304 ) $message = '(304) The folder contents have not changed (relies on hash parameter).';
+			elseif ( $status[ 'http_code' ] == 304 ) $message = '(304) Folder contents have not changed (relies on hash parameter).';
 			elseif ( $status[ 'http_code' ] == 400 ) $message = '(400) Bad input parameter: ' . strip_tags( $content );
-			elseif ( $status[ 'http_code' ] == 401 ) $message = '(401) Bad or expired token. This can happen if the user or Dropbox revoked or expired an access token. To fix that you should re-authenticate the user.';
-			elseif ( $status[ 'http_code' ] == 403 ) $message = '(403) Bad OAuth request (wrong consumer key, bad nonce, expired timestamp, ...). Unfortunately, reauthenticating the user won\'t help here.';
-			elseif ( $status[ 'http_code' ] == 404 ) $message = '(404) The file was not found at the specified path, or was not found at the specified rev.';
+			elseif ( $status[ 'http_code' ] == 401 ) $message = '(401) Bad or expired token. Please re-authenticate the user.';
+			elseif ( $status[ 'http_code' ] == 403 ) $message = '(403) Bad OAuth request (wrong consumer key, bad nonce, expired timestamp,&hellip;)';
+			elseif ( $status[ 'http_code' ] == 404 ) $message = '(404) File could not be found at the specified path or rev.';
 			elseif ( $status[ 'http_code' ] == 405 ) $message = '(405) Request method not expected (generally should be GET,PUT or POST).';
 			elseif ( $status[ 'http_code' ] == 406 ) $message = '(406) There are too many file entries to return.';
 			elseif ( $status[ 'http_code' ] == 411 ) $message = '(411) Chunked encoding was attempted for this upload, but is not supported by Dropbox.';
 			elseif ( $status[ 'http_code' ] == 415 ) $message = '(415) The image is invalid and cannot be thumbnailed.';
-			elseif ( $status[ 'http_code' ] == 503 ) $message = '(503) Your app is making too many requests and is being rate limited. 503s can trigger on a per-app or per-user basis.';
-			elseif ( $status[ 'http_code' ] == 507 ) $message = '(507) User is over Dropbox storage quota.';
+			elseif ( $status[ 'http_code' ] == 503 ) $message = '(503) Service unavailable.';
+			elseif ( $status[ 'http_code' ] == 507 ) $message = '(507) User exceeding Dropbox storage quota.';
 			else $message = '(' . $status[ 'http_code' ] . ') Invalid response.';
 			throw new BackWPup_Destination_Dropbox_API_Exception( $message );
 		}

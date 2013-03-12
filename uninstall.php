@@ -9,10 +9,12 @@ global $wpdb;
 if ( ! class_exists( 'BackWPup' ) ) {
 	//delete log folder and logs
 	$log_folder = get_site_option( 'backwpup_cfg_logfolder' );
-	$log_flies = scandir( $log_folder );
-	foreach ( $log_flies as $log_flie ) {
-		if ( is_file( $log_folder . $log_flie ) && ( substr( $log_flie, -8 ) == '.html.gz' || substr( $log_flie, -5 ) == '.html' ) )
-			unlink( $log_folder . $log_flie );
+	if ( $dir = opendir( $log_folder ) ) {
+		while ( FALSE !== ( $file = readdir( $dir ) ) ) {
+			if ( is_file( $log_folder . $file ) && ( substr( $file, -8 ) == '.html.gz' || substr( $file, -5 ) == '.html' ) )
+				unlink( $log_folder . $file );
+		}
+		closedir( $dir );
 	}
 	rmdir( $log_folder );
 	//delete plugin options

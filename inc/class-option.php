@@ -63,13 +63,15 @@ final class BackWPup_Option {
 			$default[ 'cfg' ][ 'showfoldersize' ]    = FALSE;
 			$default[ 'cfg' ][ 'protectfolders' ]    = TRUE;
 			//job
+			$default[ 'cfg' ][ 'jobrestartarchivesize' ] = 0;
+			$default[ 'cfg' ][ 'jobziparchivemethod' ] = '';
 			$default[ 'cfg' ][ 'jobstepretry' ]      = 3;
 			$default[ 'cfg' ][ 'jobsteprestart' ]    = FALSE;
 			$default[ 'cfg' ][ 'jobrunauthkey' ]     = substr( md5( md5( SECURE_AUTH_KEY ) ), 11, 8 );
 			$default[ 'cfg' ][ 'jobnotranslate' ] 	 = FALSE;
 			$default[ 'cfg' ][ 'jobwaittimems' ] 	 = 0;
 			//Logs
-			$default[ 'cfg' ][ 'maxlogs' ]           = 50;
+			$default[ 'cfg' ][ 'maxlogs' ]           = 30;
 			$default[ 'cfg' ][ 'gzlogs' ]            = FALSE;
 			$default[ 'cfg' ][ 'logfolder' ]         = trailingslashit( str_replace( '\\', '/',$upload_dir[ 'basedir' ] ) ) . 'backwpup-' . substr( md5( md5( SECURE_AUTH_KEY ) ), 9, 5 ) . '-logs/';
 			//Network Auth
@@ -110,7 +112,7 @@ final class BackWPup_Option {
 		//set defaults
 		$default[ 'type' ]           = array( 'DBDUMP', 'FILE', 'WPPLUGIN' );
 		$default[ 'destinations' ]   = array();
-		$default[ 'name' ]           = __( 'Please enter a name', 'backwpup' );
+		$default[ 'name' ]           = __( 'New Job', 'backwpup' );
 		$default[ 'activetype' ]     = '';
 		$default[ 'logfile' ]        = '';
 		$default[ 'lastbackupdownloadurl' ] = '';

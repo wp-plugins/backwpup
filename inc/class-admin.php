@@ -278,13 +278,13 @@ final class BackWPup_Admin {
 
 		//Allowed Pages
 		if ( ! in_array( $_POST[ 'page' ], array ( 'backwpupeditjob', 'backwpupinformation', 'backwpupsettings' ) ) )
-			wp_die( __( 'Cheating Huh?', 'backwpup' ) );
+			wp_die( __( 'Cheating, huh?', 'backwpup' ) );
 
 		//nonce check
 		check_admin_referer( $_POST[ 'page' ] . '_page' );
 
 		if ( ! current_user_can( 'backwpup' ) )
-			wp_die( __( 'Cheating Huh?', 'backwpup' ) );
+			wp_die( __( 'Cheating, huh?', 'backwpup' ) );
 
 		//build query for rederict
 		if ( ! isset( $_POST[ 'anchor' ] ) )
@@ -424,7 +424,7 @@ final class BackWPup_Admin {
 			return;
 
 		if ( ! get_site_option( 'backwpup_about_page' ) && ! ( isset( $_REQUEST[ 'page' ] ) && $_REQUEST[ 'page' ] == 'backwpup' ) )
-			echo '<div class="updated"><p>' . sprintf( __( 'You have activatetd or updated BackWPup please check <a href="%s">here</a>.', 'backwpup'), network_admin_url( 'admin.php').'?page=backwpup' ) . '</p></div>';
+			echo '<div class="updated"><p>' . sprintf( __( 'You have activated or updated BackWPup. Please check <a href="%s">this page</a>.', 'backwpup'), network_admin_url( 'admin.php').'?page=backwpup' ) . '</p></div>';
 
 	}
 }

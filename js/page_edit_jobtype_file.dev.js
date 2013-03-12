@@ -1,19 +1,5 @@
 jQuery(document).ready(function ($) {
 
-	$('input[name="backupexcludetempfolder"]').change(function () {
-		if ($('input[name="backupexcludetempfolder"]').prop("checked")) {
-			$('.tempfolder').hide();
-		} else {
-			$('.tempfolder').show();
-		}
-	});
-
-	if ($('input[name="backupexcludetempfolder"]').prop("checked")) {
-		$('.tempfolder').hide();
-	} else {
-		$('.tempfolder').show();
-	}
-
 	$('input[name="backuproot"]').change(function () {
 		if ($('input[name="backuproot"]').prop("checked")) {
 			$('#backuprootexcludedirs').show();

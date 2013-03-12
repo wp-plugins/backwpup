@@ -1,5 +1,5 @@
 <?php
-// Amazon S3 SDK v1.6.0
+// Amazon S3 SDK v1.6.1
 // http://aws.amazon.com/de/sdkforphp/
 // https://github.com/amazonwebservices/aws-sdk-for-php
 if ( ! class_exists( 'AmazonS3' ) )
@@ -19,7 +19,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 
 		$this->info[ 'ID' ]        	 = 'S3';
 		$this->info[ 'name' ]        = __( 'S3 Service', 'backwpup' );
-		$this->info[ 'description' ] = __( 'Backup to a S3 Service', 'backwpup' );
+		$this->info[ 'description' ] = __( 'Backup to an S3 Service', 'backwpup' );
 		$this->info[ 'URI' ]         = translate( BackWPup::get_plugin_data( 'PluginURI' ), 'backwpup' );
 		$this->info[ 'author' ]      = BackWPup::get_plugin_data( 'Author' );
 		$this->info[ 'authorURI' ]   = translate( BackWPup::get_plugin_data( 'AuthorURI' ), 'backwpup' );
@@ -71,7 +71,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 0, 's3syncnodelete' => TRUE );
+		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 15, 's3syncnodelete' => TRUE );
 	}
 
 
@@ -85,7 +85,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<p></p>
 		<table class="form-table">
 			<tr valign="top">
-				<th scope="row"><label for="s3region"><?php _e( 'Select a S3 service', 'backwpup' ) ?></label></th>
+				<th scope="row"><label for="s3region"><?php _e( 'Select an S3 service', 'backwpup' ) ?></label></th>
 				<td>
 					<select name="s3region" id="s3region" title="<?php _e( 'Amazon S3 Region', 'backwpup' ); ?>">
 						<option value="us-east-1" <?php selected( 'us-east-1', BackWPup_Option::get( $jobid, 's3region' ), TRUE ) ?>><?php _e( 'Amazon S3: US Standard', 'backwpup' ); ?></option>
@@ -103,7 +103,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="s3base_url"><?php _e( 'Or a S3 Server url', 'backwpup' ) ?></label></th>
+				<th scope="row"><label for="s3base_url"><?php _e( 'Or an S3 Server URL', 'backwpup' ) ?></label></th>
 				<td>
 					<input id="s3base_url" name="s3base_url" type="text"  value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3base_url' ) );?>" class="regular-text" autocomplete="off" />
 				</td>
@@ -146,7 +146,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 				</td>
 			</tr>
 			<tr valign="top">
-				<th scope="row"><label for="s3newbucket"><?php _e( 'Create a new Bucket', 'backwpup' ); ?></label></th>
+				<th scope="row"><label for="s3newbucket"><?php _e( 'Create a new bucket', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="s3newbucket" name="s3newbucket" type="text" value="" class="small-text" autocomplete="off" />
 				</td>
@@ -169,11 +169,11 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 					if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) {
 						?>
 						<label for="ids3maxbackups"><input id="ids3maxbackups" name="s3maxbackups" type="text" size="3" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3maxbackups' ) ); ?>" class="small-text" />&nbsp;
-						<?php  _e( 'Number of files to hold in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
+						<?php  _e( 'Number of files to keep in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
 						<?php } else { ?>
                         <label for="ids3syncnodelete"><input class="checkbox" value="1"
 							   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 's3syncnodelete' ), TRUE ); ?>
-							   name="s3syncnodelete" id="ids3syncnodelete" /> <?php _e( 'Do not delete files on sync to destination!', 'backwpup' ); ?></label>
+							   name="s3syncnodelete" id="ids3syncnodelete" /> <?php _e( 'Do not delete files while syncing to destination!', 'backwpup' ); ?></label>
 						<?php } ?>
 				</td>
 			</tr>
@@ -257,9 +257,9 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 				$bucket = $s3->create_bucket(  $_POST[ 's3newbucket' ], $region, 'private' );
 
 				if ( $bucket->status == 200 )
-					$message .= sprintf( __( 'Bucket %1$s in %2$s created.','backwpup'), $_POST[ 's3newbucket' ], $bucket[ 'Location' ] ) . '<br />';
+					$message .= sprintf( __( 'Bucket %1$s created in %2$s.','backwpup'), $_POST[ 's3newbucket' ], $bucket[ 'Location' ] ) . '<br />';
 				else
-					$message .= sprintf( __( 'Bucket %s could not created.','backwpup'), $_POST[ 's3newbucket' ] ) . '<br />';
+					$message .= sprintf( __( 'Bucket %s could not be created.','backwpup'), $_POST[ 's3newbucket' ] ) . '<br />';
 
 			}
 			catch ( Exception $e ) {
@@ -371,7 +371,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 	public function job_run_archive( $job_object ) {
 
 		$job_object->substeps_todo = 2 + $job_object->backup_filesize;
-		$job_object->log( sprintf( __( '%d. Trying to send backup file to S3 Service &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Trying to send backup file to S3 Service&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		
 		try {
 			
@@ -401,7 +401,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 			}
 
 			//transfer file to S3
-			$job_object->log( __( 'Upload to S3 Service started &hellip;', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Starting upload to S3 Service&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
 			
 			//check memory
 			$job_object->need_free_memory( '6M' );
@@ -427,7 +427,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 					BackWPup_Option::update( $job_object->job[ 'jobid' ], 'lastbackupdownloadurl', network_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloads3&file=' . $job_object->job[ 's3dir' ] . $job_object->backup_file . '&jobid=' . $job_object->job[ 'jobid' ] );
 			}
 			else {
-				$job_object->log( sprintf( __( 'Can not transfer backup to S3! (%1$d) %2$s', 'backwpup' ), $result->status, $result->body ), E_USER_ERROR );
+				$job_object->log( sprintf( __( 'Cannot transfer backup to S3! (%1$d) %2$s', 'backwpup' ), $result->status, $result->body ), E_USER_ERROR );
 			}
 		}
 		catch ( Exception $e ) {
@@ -472,7 +472,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 							}
 							$numdeltefiles ++;
 						} else {
-							$job_object->log( sprintf( __( 'Can not delete backup on %s.', 'backwpup' ), $this->get_s3_base_url( $job_object->job[ 's3region' ], $job_object->job[ 's3base_url' ] ). '/' .$job_object->job[ 's3bucket' ] . '/' . $job_object->job[ 's3dir' ] . $file ), E_USER_ERROR );
+							$job_object->log( sprintf( __( 'Cannot delete backup from %s.', 'backwpup' ), $this->get_s3_base_url( $job_object->job[ 's3region' ], $job_object->job[ 's3base_url' ] ). '/' .$job_object->job[ 's3bucket' ] . '/' . $job_object->job[ 's3dir' ] . $file ), E_USER_ERROR );
 						}
 					}
 					if ( $numdeltefiles > 0 )

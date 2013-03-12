@@ -127,7 +127,7 @@ class BackWPup_Page_BackWPup {
 
 				<?php if ( current_user_can( 'backwpup_jobs_edit' ) && current_user_can( 'backwpup_logs' ) && current_user_can( 'backwpup_jobs_start' ) ) {?>
 					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:300px">
-						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'First steps', 'backwpup' ); ?></span></h3>
+						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'First Steps', 'backwpup' ); ?></span></h3>
 						<div class="inside">
 							<ul style="margin-left: 30px;">
 								<?php if ( class_exists( 'BackWPup_Features' ) ) { ?>
@@ -148,7 +148,7 @@ class BackWPup_Page_BackWPup {
 					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:300px">
 						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'One click backup', 'backwpup' ); ?></span></h3>
 						<div class="inside" style="text-align: center;">
-							<a href="<?php echo wp_nonce_url( network_admin_url( 'admin.php' ). '?page=backwpup&action=dbdumpdl', 'backwpupdbdumpdl' ); ?>" class="button-primary" title="<?php _e( 'Generate a database backup of WordPress tables and download it immediately!', 'backwpup' ); ?>"><?php _e( 'Download database backup', 'backwpup' ); ?></a><br />
+							<a href="<?php echo wp_nonce_url( network_admin_url( 'admin.php' ). '?page=backwpup&action=dbdumpdl', 'backwpupdbdumpdl' ); ?>" class="button-primary" title="<?php _e( 'Generate a database backup of WordPress tables and download it right away!', 'backwpup' ); ?>"><?php _e( 'Download database backup', 'backwpup' ); ?></a><br />
 						</div>
 					</div>
 				<?php }
@@ -206,7 +206,7 @@ class BackWPup_Page_BackWPup {
 					if ( $logdata[ 'warnings' ] > 0 )
 						printf( '<span style="color:#e66f00;font-weight:bold;">' . _n( "%d WARNING", "%d WARNINGS", $logdata[ 'warnings' ], 'backwpup' ) . '</span><br />', $logdata[ 'warnings' ] );
 					if ( $logdata[ 'errors' ] == 0 && $logdata[ 'warnings' ] == 0 )
-						echo '<span style="color:green;font-weight:bold;">' . __( 'O.K.', 'backwpup' ) . '</span>';
+						echo '<span style="color:green;font-weight:bold;">' . __( 'OK', 'backwpup' ) . '</span>';
 					echo '</td></tr>';
 					$count ++;
 					if ( $count >= 5 )
@@ -272,7 +272,7 @@ class BackWPup_Page_BackWPup {
 						echo '<tr class="alternate">';
 						$alternate = FALSE;
 					}
-					echo '<td>' . date_i18n( get_option( 'date_format' ), $cronnextrun ) . '<br />' . date_i18n( get_option( 'time_format' ), $cronnextrun ) . '</td>';
+					echo '<td>' . date_i18n( get_option( 'date_format' ), $cronnextrun, TRUE ) . '<br />' . date_i18n( get_option( 'time_format' ), $cronnextrun, TRUE ) . '</td>';
 					echo '<td><a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . $jobid, 'edit-job' ) . '" title="' . esc_attr( __( 'Edit Job', 'backwpup' ) ) . '">' . $name . '</a></td></tr>';
 				}
 			}

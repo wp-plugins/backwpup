@@ -495,9 +495,9 @@ used for automated conversion or learning the format.
             $this->ui->outputData($this->output, $command);
             return $this->raiseError('SVN tag ' . $svntag . ' for ' . $package . ' already exists.');
         } elseif (file_exists($path['local']['base'] . 'tags') === false) {
-            return $this->raiseError('Can not locate the tags directory at ' . $path['local']['base'] . 'tags');
+            return $this->raiseError('Cannot locate the tags directory at ' . $path['local']['base'] . 'tags');
         } elseif (is_writeable($path['local']['base'] . 'tags') === false) {
-            return $this->raiseError('Can not write to the tag directory at ' . $path['local']['base'] . 'tags');
+            return $this->raiseError('Cannot write to the tag directory at ' . $path['local']['base'] . 'tags');
         } else {
             $makeCommand = 'svn mkdir ' . $releaseTag;
             $this->output .= "+ $makeCommand\n";

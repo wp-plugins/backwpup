@@ -24,20 +24,20 @@ use Aws\Common\Exception\NamespaceExceptionFactory;
 use Aws\Common\Exception\Parser\DefaultXmlExceptionParser;
 use Aws\Common\Exception\Parser\ExceptionParserInterface;
 use Aws\Common\Iterator\AwsResourceIteratorFactory;
-use Aws\Common\Region\EndpointProviderInterface;
-use Aws\Common\Region\CachingEndpointProvider;
-use Aws\Common\Region\XmlEndpointProvider;
 use Aws\Common\Signature\EndpointSignatureInterface;
+use Aws\Common\Signature\SignatureInterface;
 use Aws\Common\Signature\SignatureV2;
 use Aws\Common\Signature\SignatureV3;
 use Aws\Common\Signature\SignatureV3Https;
 use Aws\Common\Signature\SignatureV4;
-use Guzzle\Cache\DoctrineCacheAdapter;
 use Guzzle\Common\Collection;
 use Guzzle\Plugin\Backoff\BackoffPlugin;
 use Guzzle\Service\Client;
 use Guzzle\Service\Description\ServiceDescription;
 use Guzzle\Service\Resource\ResourceIteratorClassFactory;
+use Guzzle\Log\LogAdapterInterface;
+use Guzzle\Log\ClosureLogAdapter;
+use Guzzle\Plugin\Backoff\BackoffLogger;
 
 /**
  * Builder for creating AWS service clients
@@ -53,11 +53,6 @@ class ClientBuilder
      * @var array Default client requirements
      */
     protected static $commonConfigRequirements = array(Options::SERVICE_DESCRIPTION);
-
-    /**
-     * @var EndpointProviderInterface Default region/service endpoint provider
-     */
-    protected static $defaultEndpointProvider;
 
     /**
      * @var string The namespace of the client
@@ -78,16 +73,6 @@ class ClientBuilder
      * @var array The config requirements
      */
     protected $configRequirements = array();
-
-    /**
-     * @var CredentialsOptionResolver The resolver for credentials
-     */
-    protected $credentialsResolver;
-
-    /**
-     * @var array An array of client resolvers
-     */
-    protected $clientResolvers = array();
 
     /**
      * @var ExceptionParserInterface The Parser interface for the client
@@ -164,36 +149,6 @@ class ClientBuilder
     }
 
     /**
-     * Sets the credential resolver
-     *
-     * @param CredentialsOptionResolver $credentialsResolver The credential resolver
-     *
-     * @return ClientBuilder
-     */
-    public function setCredentialsResolver(CredentialsOptionResolver $credentialsResolver)
-    {
-        $this->credentialsResolver = $credentialsResolver;
-
-        return $this;
-    }
-
-    /**
-     * Adds a client resolver. The most common case is adding a custom
-     * exponential backoff strategy. If an exponential backoff strategy is not
-     * provided, then a default one will be used.
-     *
-     * @param OptionResolverInterface $clientResolver A client resolver
-     *
-     * @return ClientBuilder
-     */
-    public function addClientResolver(OptionResolverInterface $clientResolver)
-    {
-        $this->clientResolvers[] = $clientResolver;
-
-        return $this;
-    }
-
-    /**
      * Sets the exception parser. If one is not provided the builder will use
      * the default XML exception parser.
      *
@@ -232,7 +187,7 @@ class ClientBuilder
      */
     public function build()
     {
-        // Resolve config
+        // Resolve configuration
         $config = Collection::fromConfig(
             $this->config,
             array_merge(self::$commonConfigDefaults, $this->configDefaults),
@@ -240,29 +195,22 @@ class ClientBuilder
         );
 
         // Set values from the service description
-        $this->updateConfigFromDescription($config);
-
-        // If no endpoint provider was explicitly set, the instantiate a default endpoint provider
-        if (!$config->get(Options::ENDPOINT_PROVIDER)) {
-            $config->set(Options::ENDPOINT_PROVIDER, $this->getDefaultEndpointProvider());
-        }
-
-        // If no base_url was explicitly set, then grab one using the default endpoint provider
-        if (!$config->get(Options::BASE_URL)) {
-            $this->addBaseUrlToConfig($config);
-        }
+        $signature = $this->getSignature($this->updateConfigFromDescription($config), $config);
 
         // Resolve credentials
-        if (!$this->credentialsResolver) {
-            $this->credentialsResolver = $this->getDefaultCredentialsResolver();
+        if (!$credentials = $config->get('credentials')) {
+            $credentials = Credentials::factory($config);
         }
-        $this->credentialsResolver->resolve($config);
 
-        // Add other client resolvers, like exponential backoff
-        if (!$this->hasBackoffOptionResolver()) {
-            $this->addClientResolver($this->getDefaultBackoffResolver());
+        $backoff = $config->get(Options::BACKOFF);
+        if ($backoff === null) {
+            $backoff = BackoffPlugin::getExponentialBackoff();
+            $config->set(Options::BACKOFF, $backoff);
         }
-        $config->set(Options::RESOLVERS, $this->clientResolvers);
+
+        if ($backoff) {
+            $this->addBackoffLogger($backoff, $config);
+        }
 
         // Determine service and class name
         $clientClass = 'Aws\Common\Client\DefaultClient';
@@ -271,14 +219,8 @@ class ClientBuilder
             $clientClass = $this->clientNamespace . '\\' . $serviceName . 'Client';
         }
 
-        // Construct the client
         /** @var $client AwsClientInterface */
-        $client = new $clientClass(
-            $config->get(Options::CREDENTIALS),
-            $config->get(Options::SIGNATURE),
-            $config
-        );
-
+        $client = new $clientClass($credentials, $signature, $config);
         $client->setDescription($config->get(Options::SERVICE_DESCRIPTION));
 
         // Add exception marshaling so that more descriptive exception are thrown
@@ -306,69 +248,47 @@ class ClientBuilder
             new ResourceIteratorClassFactory($this->clientNamespace . '\\Iterator')
         ));
 
+        // Disable parameter validation if needed
+        if ($config->get(Options::VALIDATION) === false) {
+            $params = $config->get('command.params') ?: array();
+            $params['command.disable_validation'] = true;
+            $config->set('command.params', $params);
+        }
+
         return $client;
     }
 
     /**
-     * Add a base URL to the client of a region, scheme, and service were provided instead
+     * Add backoff logging to the backoff plugin if needed
      *
-     * @param Collection $config Config object
+     * @param BackoffPlugin $plugin Backoff plugin
+     * @param Collection    $config Configuration settings
      *
-     * @throws InvalidArgumentException if required parameters are not set
+     * @throws InvalidArgumentException
      */
-    protected function addBaseUrlToConfig(Collection $config)
+    protected function addBackoffLogger(BackoffPlugin $plugin, Collection $config)
     {
-        $region = $config->get(Options::REGION);
-        $service = $config->get(Options::SERVICE);
-
-        if (!$region || !$service) {
-            throw new InvalidArgumentException(
-                'You must specify a [base_url] or a [region, service, and optional scheme]'
-            );
-        }
-
-        $endpoint = $config->get(Options::ENDPOINT_PROVIDER)->getEndpoint($service, $region);
-        $config->set(Options::BASE_URL, $endpoint->getBaseUrl($config->get(Options::SCHEME)));
-    }
-
-    /**
-     * Returns the default credential resolver for a client
-     *
-     * @return CredentialsOptionResolver
-     */
-    protected function getDefaultCredentialsResolver()
-    {
-        return new CredentialsOptionResolver(function (Collection $config) {
-            return Credentials::factory($config->getAll(array_keys(Credentials::getConfigDefaults())));
-        });
-    }
-
-    /**
-     * Returns the default exponential backoff plugin for a client
-     *
-     * @return BackoffOptionResolver
-     */
-    protected function getDefaultBackoffResolver()
-    {
-        return new BackoffOptionResolver(function() {
-            return BackoffPlugin::getExponentialBackoff();
-        });
-    }
-
-    /**
-     * Determines whether or not an exponential backoff plugin has been added to the builder
-     *
-     * @return bool
-     */
-    protected function hasBackoffOptionResolver()
-    {
-        foreach ($this->clientResolvers as $resolver) {
-            if ($resolver instanceof BackoffOptionResolver) {
-                return true;
+        // The log option can be set to `debug` or an instance of a LogAdapterInterface
+        if ($logger = $config->get(Options::BACKOFF_LOGGER)) {
+            $format = $config->get(Options::BACKOFF_LOGGER_TEMPLATE);
+            if ($logger === 'debug') {
+                $logger = new ClosureLogAdapter(function ($message) {
+                    trigger_error($message . "\n");
+                });
+            } elseif (!($logger instanceof LogAdapterInterface)) {
+                throw new InvalidArgumentException(
+                    Options::BACKOFF_LOGGER . ' must be set to `debug` or an instance of '
+                        . 'Guzzle\\Common\\Log\\LogAdapterInterface'
+                );
             }
+            // Create the plugin responsible for logging exponential backoff retries
+            $logPlugin = new BackoffLogger($logger);
+            // You can specify a custom format or use the default
+            if ($format) {
+                $logPlugin->setTemplate($format);
+            }
+            $plugin->addSubscriber($logPlugin);
         }
-
-        return false;
     }
 
     /**
@@ -393,33 +313,11 @@ class ClientBuilder
     }
 
     /**
-     * Get the default {@see EndpointProviderInterface} object
-     *
-     * @return EndpointProviderInterface
-     */
-    protected function getDefaultEndpointProvider()
-    {
-        // @codeCoverageIgnoreStart
-        if (!self::$defaultEndpointProvider) {
-            self::$defaultEndpointProvider = new XmlEndpointProvider();
-            // If APC is installed and Doctrine is present, then use APC caching
-            if (class_exists('Doctrine\Common\Cache\ApcCache') && extension_loaded('apc')) {
-                self::$defaultEndpointProvider = new CachingEndpointProvider(
-                    self::$defaultEndpointProvider,
-                    new DoctrineCacheAdapter(new \Doctrine\Common\Cache\ApcCache())
-                );
-            }
-        }
-        // @codeCoverageIgnoreEnd
-
-        return self::$defaultEndpointProvider;
-    }
-
-    /**
      * Update a configuration object from a service description
      *
      * @param Collection $config Config to update
      *
+     * @return ServiceDescription
      * @throws InvalidArgumentException
      */
     protected function updateConfigFromDescription(Collection $config)
@@ -430,8 +328,6 @@ class ClientBuilder
             $config->set(Options::SERVICE_DESCRIPTION, $description);
         }
 
-        $this->addSignature($description, $config);
-
         if (!$config->get(Options::SERVICE)) {
             $config->set(Options::SERVICE, $description->getData('endpointPrefix'));
         }
@@ -440,12 +336,35 @@ class ClientBuilder
             $this->setIteratorsConfig($iterators);
         }
 
-        if (!$config->get(Options::REGION)) {
-            if (!$description->getData('globalEndpoint')) {
-                throw new InvalidArgumentException('A region is required when using ' . $config->get(Options::SERVICE));
-            }
-            $config->set(Options::REGION, 'us-east-1');
+        // Ensure that the service description has regions
+        if (!$description->getData('regions')) {
+            throw new InvalidArgumentException(
+                'No regions found in the ' . $description->getData('serviceFullName'). ' description'
+            );
         }
+
+        $region = $config->get(Options::REGION);
+        if (!$region) {
+            if (!$description->getData('globalEndpoint')) {
+                throw new InvalidArgumentException(
+                    'A region is required when using ' . $description->getData('serviceFullName')
+                    . '. Set "region" to one of: ' . implode(', ', array_keys($description->getData('regions')))
+                );
+            }
+            $region = 'us-east-1';
+            $config->set(Options::REGION, $region);
+        }
+
+        if (!$config->get(Options::BASE_URL)) {
+            // Set the base URL using the scheme and hostname of the service's region
+            $config->set(Options::BASE_URL, AbstractClient::getEndpoint(
+                $description,
+                $region,
+                $config->get(Options::SCHEME)
+            ));
+        }
+
+        return $description;
     }
 
     /**
@@ -454,14 +373,12 @@ class ClientBuilder
      * @param ServiceDescription $description Description that holds a signature option
      * @param Collection         $config      Configuration options
      *
+     * @return SignatureInterface
      * @throws InvalidArgumentException
      */
-    protected function addSignature(ServiceDescription $description, Collection $config)
+    protected function getSignature(ServiceDescription $description, Collection $config)
     {
-        if (!($signature = $config->get(Options::SIGNATURE))) {
-            if (!$description->getData('signatureVersion')) {
-                throw new InvalidArgumentException('The service description does not specify a signatureVersion');
-            }
+        if (!$signature = $config->get(Options::SIGNATURE)) {
             switch ($description->getData('signatureVersion')) {
                 case 'v2':
                     $signature = new SignatureV2();
@@ -475,17 +392,29 @@ class ClientBuilder
                 case 'v4':
                     $signature = new SignatureV4();
                     break;
+                default:
+                    throw new InvalidArgumentException('Service description does not specify a valid signatureVersion');
             }
         }
 
         // Allow a custom service name or region value to be provided
         if ($signature instanceof EndpointSignatureInterface) {
-            $signature->setServiceName(
-                $config->get(Options::SIGNATURE_SERVICE) ?: $description->getData('signingName')
-            );
-            $signature->setRegionName($config->get(Options::SIGNATURE_REGION));
+
+            // Determine the service name to use when signing
+            if (!$service = $config->get(Options::SIGNATURE_SERVICE)) {
+                if (!$service = $description->getData('signingName')) {
+                    $service = $description->getData('endpointPrefix');
+                }
+            }
+            $signature->setServiceName($service);
+
+            // Determine the region to use when signing requests
+            if (!$region = $config->get(Options::SIGNATURE_REGION)) {
+                $region = $config->get(Options::REGION);
+            }
+            $signature->setRegionName($region);
         }
 
-        $config->set(Options::SIGNATURE, $signature);
+        return $signature;
     }
 }

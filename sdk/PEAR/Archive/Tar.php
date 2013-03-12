@@ -453,7 +453,7 @@ class Archive_Tar extends PEAR
     * While extracting a directory, if a file with the same name already
     * exists, the extraction is aborted.
     * While extracting a file/directory if the destination directory exist
-    * and is write protected, or does not exist but can not be created,
+    * and is write protected, or does not exist but cannot be created,
     * the extraction is aborted.
     * If after extraction an extracted file does not show the correct
     * stored file size, the extraction is aborted.
@@ -954,7 +954,7 @@ class Archive_Tar extends PEAR
 
         if (@is_dir($v_filename) && !@is_link($v_filename)) {
             if (!($p_hdir = opendir($v_filename))) {
-                $this->_warning("Directory '$v_filename' can not be read");
+                $this->_warning("Directory '$v_filename' cannot be read");
                 continue;
             }
             while (false !== ($p_hitem = readdir($p_hdir))) {

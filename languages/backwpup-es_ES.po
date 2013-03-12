@@ -49,7 +49,7 @@ msgstr "EL modo seguro (Safe Mode) de PHP está activado. El tiempo máximo de e
 
 #: app/backwpup_dojob.php:135
 #, php-format
-msgid "Memory limit set to %1$s ,because can not use PHP: memory_get_usage() function to dynamically increase the Memory!"
+msgid "Memory limit set to %1$s ,because cannot use PHP: memory_get_usage() function to dynamically increase the Memory!"
 msgstr "El límite de memoria se ha establecido en %1$s, porque no se puede tuilizar la función memory_get_usage() de PHP para incrementar dinámicamente la memoria."
 
 #: app/backwpup_dojob.php:203
@@ -84,17 +84,17 @@ msgstr "[ERROR RECUPERABLE]"
 
 #: app/backwpup_dojob.php:307
 #, php-format
-msgid "Can not create Folder: %1$s"
+msgid "Cannot create Folder: %1$s"
 msgstr "No se ha podido crear el directorio: %1$s"
 
 #: app/backwpup_dojob.php:312
 #, php-format
-msgid "Can not write to Folder: %1$s"
+msgid "Cannot write to Folder: %1$s"
 msgstr "No se puede escribir en el directorio: %1$s"
 
 #: app/backwpup_dojob.php:346
 #, php-format
-msgid "PHP Safe Mode is on!!! Can not increase Memory Limit is %1$s"
+msgid "PHP Safe Mode is on!!! Cannot increase Memory Limit is %1$s"
 msgstr "El modo seguro (Safe Mode) de PHP está activado. No se puede incrementar el límite de memoria, de %1$s"
 
 #: app/backwpup_dojob.php:373
@@ -104,7 +104,7 @@ msgstr "Memoria incrementada de %1$s a %2$s"
 
 #: app/backwpup_dojob.php:375
 #, php-format
-msgid "Can not increase Memory Limit is %1$s"
+msgid "Cannot increase Memory Limit is %1$s"
 msgstr "No se ha podido incrementar el límite de memoria, de %1$s"
 
 #: app/backwpup_dojob.php:385
@@ -165,7 +165,7 @@ msgid "Database Dump done!"
 msgstr "Volcado de la base de datos realizado."
 
 #: app/backwpup_dojob.php:592
-msgid "Can not create Database Dump file"
+msgid "Cannot create Database Dump file"
 msgstr "No se puede crear un fichero de volcado de la base de datos"
 
 #: app/backwpup_dojob.php:595
@@ -190,11 +190,11 @@ msgid "Export to XML done!"
 msgstr "Exportación a XML realizada."
 
 #: app/backwpup_dojob.php:632
-msgid "Can not Export to XML!"
+msgid "Cannot Export to XML!"
 msgstr "No se puede exportar a XML."
 
 #: app/backwpup_dojob.php:635
-msgid "Can not Export to XML! no cURL or allow_url_fopen Support!"
+msgid "Cannot Export to XML! no cURL or allow_url_fopen Support!"
 msgstr "No se puede exportar a XML: las funciones cURL o allow_url_fopen no se pueden utilizar."
 
 #: app/backwpup_dojob.php:639
@@ -258,7 +258,7 @@ msgid "Add File to ZIP file:"
 msgstr "Añadir fichero al fichero ZIP:"
 
 #: app/backwpup_dojob.php:785
-msgid "Can not add File to ZIP file:"
+msgid "Cannot add File to ZIP file:"
 msgstr "No se puede añadir un fichero al fichero ZIP:"
 
 #: app/backwpup_dojob.php:789
@@ -267,7 +267,7 @@ msgid "Backup Zip file create done!"
 msgstr "Fichero ZIP de copia de seguridad creado."
 
 #: app/backwpup_dojob.php:791
-msgid "Can not create Backup ZIP file:"
+msgid "Cannot create Backup ZIP file:"
 msgstr "No se puede crear el fichero ZIP de copia de seguridad:"
 
 #: app/backwpup_dojob.php:802
@@ -279,7 +279,7 @@ msgid "Zip file create:"
 msgstr "Crear fichero ZIP:"
 
 #: app/backwpup_dojob.php:829
-msgid "Can not create TAR Backup file"
+msgid "Cannot create TAR Backup file"
 msgstr "No se ha podido crear el fichero TAR de copia de seguridad"
 
 #: app/backwpup_dojob.php:832
@@ -299,7 +299,7 @@ msgid "Connected by SSL-FTP to Server:"
 msgstr "Conectado por SSL-FTP al servidor:"
 
 #: app/backwpup_dojob.php:935
-msgid "Can not connect by SSL-FTP to Server:"
+msgid "Cannot connect by SSL-FTP to Server:"
 msgstr "No se puede conectar por SSL-FTP al servidor:"
 
 #: app/backwpup_dojob.php:939
@@ -311,7 +311,7 @@ msgid "Connected to FTP Server:"
 msgstr "Conectado al servidor FTP:"
 
 #: app/backwpup_dojob.php:947
-msgid "Can not connect to FTP Server:"
+msgid "Cannot connect to FTP Server:"
 msgstr "No se puede conectar por FTP al servidor:"
 
 #: app/backwpup_dojob.php:954
@@ -338,7 +338,7 @@ msgid "Entering Passive Mode"
 msgstr "Entrando en modo pasivo"
 
 #: app/backwpup_dojob.php:978
-msgid "Can not Entering Passive Mode"
+msgid "Cannot Entering Passive Mode"
 msgstr "No se puede entrar en modo pasivo"
 
 #: app/backwpup_dojob.php:981
@@ -346,7 +346,7 @@ msgid "Entering Normal Mode"
 msgstr "Entrando en modo normal"
 
 #: app/backwpup_dojob.php:983
-msgid "Can not Entering Normal Mode"
+msgid "Cannot Entering Normal Mode"
 msgstr "No se puede entrar en modo normal"
 
 #: app/backwpup_dojob.php:991
@@ -362,7 +362,7 @@ msgid "FTP Folder created!"
 msgstr "Directorio FTP creado."
 
 #: app/backwpup_dojob.php:1004
-msgid "FTP Folder on Server can not created!"
+msgid "FTP Folder on Server cannot created!"
 msgstr "No se ha podido crear el directorio en el servidor FTP."
 
 #: app/backwpup_dojob.php:1010
@@ -370,11 +370,11 @@ msgid "Backup File transferred to FTP Server:"
 msgstr "Fichero de copia de seguridad transferido al servidor FTP:"
 
 #: app/backwpup_dojob.php:1013
-msgid "Can not transfer backup to FTP server."
+msgid "Cannot transfer backup to FTP server."
 msgstr "No se ha podido transferir el fichero de copia de seguridad al servidor FTP."
 
 #: app/backwpup_dojob.php:1029
-msgid "Can not delete file on FTP Server:"
+msgid "Cannot delete file on FTP Server:"
 msgstr "No se ha podido borrar el fichero en el servidor FTP:"
 
 #: app/backwpup_dojob.php:1032
@@ -418,7 +418,7 @@ msgid "Send mail...."
 msgstr "Enviar email..."
 
 #: app/backwpup_dojob.php:1098
-msgid "Can not send mail:"
+msgid "Cannot send mail:"
 msgstr "No se puede enviar el email:"
 
 #: app/backwpup_dojob.php:1100
@@ -434,11 +434,11 @@ msgid "Backup File transferred to S3://"
 msgstr "Fichero de copia de seguridad transferido a S3://"
 
 #: app/backwpup_dojob.php:1130
-msgid "Can not transfer backup to S3."
+msgid "Cannot transfer backup to S3."
 msgstr "No se puede transferir la copia de seguridad a S3."
 
 #: app/backwpup_dojob.php:1149
-msgid "Can not delete file on S3://"
+msgid "Cannot delete file on S3://"
 msgstr "No se puede borrar el fichero en S3://"
 
 #: app/backwpup_dojob.php:1152
@@ -454,7 +454,7 @@ msgid "Amazon S3 API:"
 msgstr "API de Amazon S3:"
 
 #: app/backwpup_dojob.php:1173
-msgid "Can not load curl extension is needed for Rackspase Cloud!"
+msgid "Cannot load curl extension is needed for Rackspase Cloud!"
 msgstr "No se puede cargar la extensión curl, necesaria para Rackspace Cloud."
 
 #: app/backwpup_dojob.php:1185
@@ -475,11 +475,11 @@ msgid "Backup File transferred to RSC://"
 msgstr "Fichero de copia de seguridad transferido a RSC://"
 
 #: app/backwpup_dojob.php:1222
-msgid "Can not transfer backup to RSC."
+msgid "Cannot transfer backup to RSC."
 msgstr "No se puede transferir la copia de seguridad a RSC."
 
 #: app/backwpup_dojob.php:1244
-msgid "Can not delete file on RSC://"
+msgid "Cannot delete file on RSC://"
 msgstr "No se puede borrar el fichero en RSC://"
 
 #: app/backwpup_dojob.php:1247
@@ -487,7 +487,7 @@ msgid "files deleted on Racspase Cloud Container!"
 msgstr "ficheros borrados en Rackspace Cloud Container."
 
 #: app/backwpup_dojob.php:1261
-msgid "Can not load curl extension is needed for Microsoft Azure!"
+msgid "Cannot load curl extension is needed for Microsoft Azure!"
 msgstr "No se puede cargar la extensión curl, necesaria para Microsoft Azure."
 
 #: app/backwpup_dojob.php:1274
@@ -503,7 +503,7 @@ msgid "Backup File transferred to azure://"
 msgstr "Fichero de copia de seguridad transferido a azure://"
 
 #: app/backwpup_dojob.php:1290
-msgid "Can not transfer backup to Microsoft Azure."
+msgid "Cannot transfer backup to Microsoft Azure."
 msgstr "No se puede transferir la copia de seguridad a Microsoft Azure."
 
 #: app/backwpup_dojob.php:1311
@@ -519,7 +519,7 @@ msgid "old backup files deleted!!!"
 msgstr "los ficheros de copia de seguridad antiguos han sido borrados."
 
 #: app/backwpup_dojob.php:1352
-msgid "Can not load curl extension is needed for Dropbox!"
+msgid "Cannot load curl extension is needed for Dropbox!"
 msgstr "No se puede cargar la extensión curl, necesaria para Dropbox."
 
 #: app/backwpup_dojob.php:1366
@@ -527,7 +527,7 @@ msgid "Authed to Dropbox API from "
 msgstr "Autentificado con el API de Dropbox desde"
 
 #: app/backwpup_dojob.php:1368
-msgid "Can not Auth with Dropbox API:"
+msgid "Cannot Auth with Dropbox API:"
 msgstr "No se puede autentificar con el API de Dropbox:"
 
 #: app/backwpup_dojob.php:1376
@@ -535,7 +535,7 @@ msgid "Backup File transferred to Dropbox."
 msgstr "Fichero de copia de seguridad transferido a Dropbox."
 
 #: app/backwpup_dojob.php:1378
-msgid "Can not transfere Backup file to Dropbox:"
+msgid "Cannot transfere Backup file to Dropbox:"
 msgstr "No se puede transferir la copia de seguridad a Dropbox:"
 
 #: app/backwpup_dojob.php:1399

@@ -113,7 +113,10 @@ class S3Signature implements S3SignatureInterface
             /** @var $header \Guzzle\Http\Message\Header */
             $name = strtolower($header->getName());
             if (strpos($name, 'x-amz-') === 0) {
-                $headers[$name] = $name . ':' . (string) $header;
+                $value = trim((string) $header);
+                if ($value || $value === '0') {
+                    $headers[$name] = $name . ':' . $value;
+                }
             }
         }
 
@@ -184,12 +187,11 @@ class S3Signature implements S3SignatureInterface
             // Does not contain the base URL, so it's either a redirect, CNAME, or using a different region
             $baseHost = '';
             // For every known S3 host, check if that host is present on the request
-            $provider = $request->getClient()->getEndpointProvider();
-            foreach ($provider->getRegions('s3') as $region) {
-                $endpointHost = $provider->getEndpoint('s3', $region)->getHost();
-                if (strpos($host, $endpointHost) !== false) {
+            $regions = $request->getClient()->getDescription()->getData('regions');
+            foreach ($regions as $region) {
+                if (strpos($host, $region['hostname']) !== false) {
                     // This host matches the request host. Tells use the region and endpoint-- we can derive the bucket
-                    $baseHost = $endpointHost;
+                    $baseHost = $region['hostname'];
                     break;
                 }
             }

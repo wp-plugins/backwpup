@@ -12,7 +12,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		$this->info[ 'ID' ]          = 'DBDUMP';
 		$this->info[ 'name' ]        = __( 'DB Backup', 'backwpup' );
 		$this->info[ 'description' ] = __( 'Database backup', 'backwpup' );
-		$this->info[ 'help' ]        = __( 'Creates a .sql database dump file', 'backwpup' );
+		$this->info[ 'help' ]        = __( 'Creates an .sql database dump file', 'backwpup' );
 		$this->info[ 'URI' ]         = translate( BackWPup::get_plugin_data( 'PluginURI' ), 'backwpup' );
 		$this->info[ 'author' ]      = BackWPup::get_plugin_data( 'Author' );
 		$this->info[ 'authorURI' ]   = translate( BackWPup::get_plugin_data( 'AuthorURI' ), 'backwpup' );
@@ -160,7 +160,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		$job_object->substeps_done = 0;
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Try for database dump &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Try to dump database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 
 		//build filename
 		if ( empty( $job_object->temp[ 'dbdumpfile' ] ) )
@@ -168,7 +168,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 
 		//Set maintenance
 		if ( ! empty( $job_object->job[ 'dbdumpmaintenance'] ) )
-			$job_object->maintenance_mode( TRUE );
+			$job_object->set_maintenance_mode( TRUE );
 
 		try {
 
@@ -190,7 +190,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			if ( $job_object->substeps_todo == 0 ) {
 				$job_object->log( __( 'No tables to dump.', 'backwpup' ), E_USER_WARNING );
 				unset( $sql_dump );
-				$job_object->maintenance_mode( FALSE );
+				$job_object->set_maintenance_mode( FALSE );
 
 				return TRUE;
 			}
@@ -206,11 +206,11 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			//dump footer
 			$sql_dump->dump_footer();
 			unset( $sql_dump );
-			$job_object->maintenance_mode( FALSE );
+			$job_object->set_maintenance_mode( FALSE );
 
 		} catch ( Exception $e ) {
 			$job_object->log( $e->getMessage(), E_USER_ERROR, $e->getFile(), $e->getLine() );
-			$job_object->maintenance_mode( FALSE );
+			$job_object->set_maintenance_mode( FALSE );
 			unset( $sql_dump );
 			return FALSE;
 		}

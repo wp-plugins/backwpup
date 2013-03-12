@@ -150,7 +150,7 @@ class BackWPup_Page_Backups extends WP_List_Table {
 	 *
 	 */
 	function no_items() {
-		_e( 'No Files found. (List will be generated during next backup.)', 'backwpup' );
+		_e( 'No files could be found. (List will be generated during next backup.)', 'backwpup' );
 	}
 
 	/**
@@ -178,8 +178,11 @@ class BackWPup_Page_Backups extends WP_List_Table {
 			return;
 
 		$destinations_list = $this->get_destinations_list();
-		if ( count( $destinations_list ) <= 1 )
+		if ( count( $destinations_list ) <= 1 ) {
+			echo '<input type="hidden" name="jobdest" value="' . $destinations_list[0] . '">';
+			
 			return;
+		}
 
 		echo '<div class="alignleft actions">';
 		echo "<select name=\"jobdest\" id=\"jobdest\" class=\"postform\">" . PHP_EOL;
@@ -288,7 +291,7 @@ class BackWPup_Page_Backups extends WP_List_Table {
 					$r .= "<td $attributes><strong>" . $backup[ 'filename' ] . "</strong>";
 					$actions               = array();
 					if ( current_user_can( 'backwpup_backups_delete' ) )
-						$actions[ 'delete' ]   = "<a class=\"submitdelete\" href=\"" . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=delete&jobdest=' . $this->jobid . '_' . $this->dest . '&paged=' . $this->get_pagenum() . '&backupfiles[]=' . esc_attr( $backup[ 'file' ] ), 'bulk-backups' ) . "\" onclick=\"if ( confirm('" . esc_js( __( "You are about to delete this Backup Archive. \n  'Cancel' to stop, 'OK' to delete.", "backwpup" ) ) . "') ) { return true;}return false;\">" . __( 'Delete', 'backwpup' ) . "</a>";
+						$actions[ 'delete' ]   = "<a class=\"submitdelete\" href=\"" . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=delete&jobdest=' . $this->jobid . '_' . $this->dest . '&paged=' . $this->get_pagenum() . '&backupfiles[]=' . esc_attr( $backup[ 'file' ] ), 'bulk-backups' ) . "\" onclick=\"if ( confirm('" . esc_js( __( "You are about to delete this backup archive. \n  'Cancel' to stop, 'OK' to delete.", "backwpup" ) ) . "') ) { return true;}return false;\">" . __( 'Delete', 'backwpup' ) . "</a>";
 					if ( current_user_can( 'backwpup_backups_download' ) )
 						$actions[ 'download' ] = "<a href=\"" . wp_nonce_url( $backup[ 'downloadurl' ], 'download-backup' ) . "\">" . __( 'Download', 'backwpup' ) . "</a>";
 					$r .= $this->row_actions( $actions );
@@ -334,9 +337,9 @@ class BackWPup_Page_Backups extends WP_List_Table {
 			case 'delete': //Delete Backup archives
 				check_admin_referer( 'bulk-backups' );
 				if ( ! current_user_can( 'backwpup_backups_delete' ) )
-					wp_die( __( 'No rights!', 'backwpup') );
+					wp_die( __( 'Sorry, you don\'t have permissions to do that.', 'backwpup') );
 				$destinations = BackWpup::get_destinations();
-				list( $jobid, $dest ) = explode( '_', $_GET[ 'jobdest' ] );
+				list( $jobid, $dest ) = explode( '_', strtoupper( $_GET[ 'jobdest' ] ) );
 				foreach ( $_GET[ 'backupfiles' ] as $backupfile ) {
 					$destinations[ $dest ]->file_delete( $_GET[ 'jobdest' ], $backupfile );
 				}
@@ -346,7 +349,7 @@ class BackWPup_Page_Backups extends WP_List_Table {
 				if ( !empty( $dest ) && strstr( self::$listtable->current_action(), 'download') ) {
 					$destinations = BackWpup::get_destinations();
 					if ( ! current_user_can( 'backwpup_backups_download' ) )
-						wp_die( __( 'No rights!', 'backwpup') );
+						wp_die( __( 'Sorry, you don\'t have permissions to do that.', 'backwpup') );
 					check_admin_referer( 'download-backup' );
 					$destinations[ $dest ]->file_download( (int)$_GET[ 'jobid' ], $_GET[ 'file' ] );
 					die();

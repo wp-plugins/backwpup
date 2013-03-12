@@ -838,7 +838,7 @@ class PEAR_Installer extends PEAR_Downloader
         // {{{ really commit the transaction
         foreach ($this->file_operations as $i => $tr) {
             if (!$tr) {
-                // support removal of non-existing backups
+                // support removal of nonexistent backups
                 continue;
             }
 

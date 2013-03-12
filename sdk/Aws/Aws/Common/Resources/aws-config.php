@@ -27,10 +27,22 @@ return array(
             'class'   => 'Aws\AutoScaling\AutoScalingClient'
         ),
 
+        'cloudformation' => array(
+            'alias'   => 'CloudFormation',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\CloudFormation\CloudFormationClient'
+        ),
+
         'cloudfront' => array(
             'alias'   => 'CloudFront',
             'extends' => 'default_settings',
             'class'   => 'Aws\CloudFront\CloudFrontClient'
+        ),
+
+        'cloudsearch' => array(
+            'alias'   => 'CloudSearch',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\CloudSearch\CloudSearchClient'
         ),
 
         'cloudwatch' => array(
@@ -39,16 +51,16 @@ return array(
             'class'   => 'Aws\CloudWatch\CloudWatchClient'
         ),
 
-        'iam' => array(
-            'alias'   => 'Iam',
-            'extends' => 'default_settings',
-            'class'   => 'Aws\Iam\IamClient'
-        ),
-
         'datapipeline' => array(
             'alias'   => 'DataPipeline',
             'extends' => 'default_settings',
             'class'   => 'Aws\DataPipeline\DataPipelineClient'
+        ),
+
+        'directconnect' => array(
+            'alias'   => 'DirectConnect',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\DirectConnect\DirectConnectClient'
         ),
 
         'dynamodb' => array(
@@ -63,10 +75,10 @@ return array(
             'class'   => 'Aws\Ec2\Ec2Client'
         ),
 
-        'elasticloadbalancing' => array(
-            'alias'   => 'ElasticLoadBalancing',
+        'elasticache' => array(
+            'alias'   => 'ElastiCache',
             'extends' => 'default_settings',
-            'class'   => 'Aws\ElasticLoadBalancing\ElasticLoadBalancingClient'
+            'class'   => 'Aws\ElastiCache\ElastiCacheClient'
         ),
 
         'elasticbeanstalk' => array(
@@ -75,10 +87,22 @@ return array(
             'class'   => 'Aws\ElasticBeanstalk\ElasticBeanstalkClient'
         ),
 
+        'elasticloadbalancing' => array(
+            'alias'   => 'ElasticLoadBalancing',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\ElasticLoadBalancing\ElasticLoadBalancingClient'
+        ),
+
         'elastictranscoder' => array(
             'alias'   => 'ElasticTranscoder',
             'extends' => 'default_settings',
             'class'   => 'Aws\ElasticTranscoder\ElasticTranscoderClient'
+        ),
+
+        'emr' => array(
+            'alias'   => 'Emr',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\Emr\EmrClient'
         ),
 
         'glacier' => array(
@@ -87,16 +111,28 @@ return array(
             'class'   => 'Aws\Glacier\GlacierClient'
         ),
 
-        'rds' => array(
-            'alias'   => 'Rds',
+        'iam' => array(
+            'alias'   => 'Iam',
             'extends' => 'default_settings',
-            'class'   => 'Aws\Rds\RdsClient'
+            'class'   => 'Aws\Iam\IamClient'
+        ),
+
+        'importexport' => array(
+            'alias'   => 'ImportExport',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\ImportExport\ImportExportClient'
         ),
 
         'opsworks' => array(
             'alias'   => 'OpsWorks',
             'extends' => 'default_settings',
             'class'   => 'Aws\OpsWorks\OpsWorksClient'
+        ),
+
+        'rds' => array(
+            'alias'   => 'Rds',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\Rds\RdsClient'
         ),
 
         'redshift' => array(
@@ -129,16 +165,22 @@ return array(
             'class'   => 'Aws\Ses\SesClient'
         ),
 
+        'sns' => array(
+            'alias'   => 'Sns',
+            'extends' => 'default_settings',
+            'class'   => 'Aws\Sns\SnsClient'
+        ),
+
         'sqs' => array(
             'alias'   => 'Sqs',
             'extends' => 'default_settings',
             'class'   => 'Aws\Sqs\SqsClient'
         ),
 
-        'sns' => array(
-            'alias'   => 'Sns',
+        'storagegateway' => array(
+            'alias'   => 'StorageGateway',
             'extends' => 'default_settings',
-            'class'   => 'Aws\Sns\SnsClient'
+            'class'   => 'Aws\StorageGateway\StorageGatewayClient'
         ),
 
         'sts' => array(

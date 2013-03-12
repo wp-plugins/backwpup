@@ -19,25 +19,28 @@ namespace Aws\S3;
 use Aws\Common\Client\AbstractClient;
 use Aws\Common\Client\ClientBuilder;
 use Aws\Common\Client\UploadBodyListener;
-use Aws\Common\Credentials\CredentialsInterface;
 use Aws\Common\Enum\ClientOptions as Options;
-use Aws\Common\Enum\Region;
 use Aws\Common\Exception\InvalidArgumentException;
 use Aws\S3\Exception\AccessDeniedException;
 use Aws\S3\Exception\Parser\S3ExceptionParser;
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\Model\ClearBucket;
 use Aws\S3\S3Signature;
-use Aws\S3\S3SignatureInterface;
 use Guzzle\Common\Collection;
-use Guzzle\Plugin\Md5\CommandContentMd5Plugin;
 use Guzzle\Http\Message\RequestInterface;
+use Guzzle\Plugin\Backoff\BackoffPlugin;
+use Guzzle\Plugin\Backoff\HttpBackoffStrategy;
+use Guzzle\Plugin\Backoff\CurlBackoffStrategy;
+use Guzzle\Plugin\Backoff\TruncatedBackoffStrategy;
+use Guzzle\Plugin\Backoff\ExponentialBackoffStrategy;
+use Guzzle\Plugin\Md5\CommandContentMd5Plugin;
 use Guzzle\Service\Command\CommandInterface;
 use Guzzle\Service\Command\Factory\AliasFactory;
 use Guzzle\Service\Resource\Model;
+use Guzzle\Service\Command\Factory\CompositeFactory;
 
 /**
- * Client to interact with Amazon Simple Storage Solution
+ * Client to interact with Amazon Simple Storage Service
  *
  * @method Model abortMultipartUpload(array $args = array()) {@command S3 AbortMultipartUpload}
  * @method Model completeMultipartUpload(array $args = array()) {@command S3 CompleteMultipartUpload}
@@ -153,7 +156,6 @@ class S3Client extends AbstractClient
      * - region - Region name (e.g. 'us-east-1', 'us-west-1', 'us-west-2', 'eu-west-1', etc...)
      * - scheme - URI Scheme of the base URL (e.g. 'https', 'http').
      * - base_url - Instead of using a `region` and `scheme`, you can specify a custom base URL for the client
-     * - endpoint_provider - Optional `Aws\Common\Region\EndpointProviderInterface` used to provide region endpoints
      *
      * Generic client options
      *
@@ -174,6 +176,21 @@ class S3Client extends AbstractClient
      */
     public static function factory($config = array())
     {
+        // Configure the custom exponential backoff plugin for retrying S3 specific errors
+        if (!isset($config[Options::BACKOFF])) {
+            $config[Options::BACKOFF] = new BackoffPlugin(
+                new TruncatedBackoffStrategy(3,
+                    new HttpBackoffStrategy(null,
+                        new SocketTimeoutChecker(
+                            new CurlBackoffStrategy(null,
+                                new ExponentialBackoffStrategy()
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
         $client = ClientBuilder::factory(__NAMESPACE__)
             ->setConfig($config)
             ->setConfigDefaults(array(
@@ -222,23 +239,15 @@ class S3Client extends AbstractClient
         // Allow for specifying bodies with file paths and file handles
         $client->addSubscriber(new UploadBodyListener(array('PutObject', 'UploadPart')));
 
-        return $client;
-    }
-
-    /**
-     * @param CredentialsInterface $credentials AWS credentials
-     * @param S3SignatureInterface $signature   Amazon S3 Signature implementation
-     * @param Collection           $config      Configuration options
-     */
-    public function __construct(CredentialsInterface $credentials, S3SignatureInterface $signature, Collection $config)
-    {
-        parent::__construct($credentials, $signature, $config);
-
         // Add aliases for some S3 operations
-        $this->getCommandFactory()->add(
-            new AliasFactory($this, self::$commandAliases),
+        $default = CompositeFactory::getDefaultChain($client);
+        $default->add(
+            new AliasFactory($client, self::$commandAliases),
             'Guzzle\Service\Command\Factory\ServiceDescriptionFactory'
         );
+        $client->setCommandFactory($default);
+
+        return $client;
     }
 
     /**

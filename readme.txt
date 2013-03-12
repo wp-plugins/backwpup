@@ -1,9 +1,9 @@
-=== BackWPup ===
+﻿=== BackWPup ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.0.4
+Stable tag: 3.0.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -48,11 +48,109 @@ Have a look at the premium plugins in our [market](http://marketpress.com).
 
 == Frequently Asked Questions ==
 
-= EN =
-* Manual: http://marketpress.com/documentation/backwpup-pro/
+= My backup jobs don’t seem to run as scheduled. =
+  
+BackWPup uses WordPress’ own cron job system (**WP Cron**) to execute scheduled backup jobs. In order for WordPress to “know” when to execute a job, its “inner clock” needs to be set regularly. That happens whenever someone (including yourself) visits your site. 
+If your site happens to not being visited for a period of time, WordPress’ inner clock gets sort of slow. In that case it takes an extra server-side cron job to regularly call http://your-site.tld/wp-cron.php and tell WordPress what time it is.
+  
+A simple way to find out whether WP Cron works as it should on your site is to create a new post and set its publishing date to some point in the future, i.e. 10 minutes from now. Then leave your site (that’s important), come back after 11 minutes and check whether your scheduled post has been published. If not, you’re very likely to have an issue with WP Cron.
 
-= DE =
-* Dokumentation: http://marketpress.de/dokumentation/backwpup-pro/
+= Yuk! It says: “ERROR: No destination correctly defined for backup!” =
+
+That means a backup job has started, but BackWPup doens’t know where to store the backup files. Please cancel the running job and re-edit its configuration. There should be a Tab “To: …” in your backup job’s configuration. Have you set a backup target correctly? 
+
+= A backup job has started, but nothing seems to be happening—not even when I re-start it manually. =
+
+**Solution #1**
+
+* Open BackWPup->Settings
+* Go to the Informations tab.
+* Find *Server self connect:* in the left column.
+* If it says something like *(401) Authorisation required* in the right column, go to the Network tab and set the username and password for server-side authentication.
+* Try again starting the backup job.
+
+**Solution #2**
+
+* Open wp-config.php and find the line where it says `if ( !defined('ABSPATH') )`.
+* Somewhere before that line add this: `define( 'ALTERNATE_WP_CRON', true );`
+
+**Solution #3**
+
+Not really a solution, but a way to identify the real problem: see remarks on WP Cron at the top.
+
+= I get this error message: `The HTTP response test get a error "Connection time-out"` =
+
+BackWPup performs a simple HTTP request to the server itself every time you click `run now` or whenever a backup job starts automatically. The HTTP response test message could mean:
+
+* Your host does not allow *loop back connections*. (If you know what `WP_ALTERNATE_CRON` is, try it.)
+* Your WordPress root directory or backup directory requires authetification. Set username and password in Settings->Network.
+* The Server can’t resolve its own hostname.
+* A plugin or theme is blocking the request. 
+* Other issues related to your individual server and/or WordPress configuration.
+
+
+= I get a fatal error: `Can not create folder: […]/wp-content/backwpup-[…]-logs in […]/wp-content/plugins/backwpup/inc/class-job.php …` =
+Please set CHMOD 775 on the /wp-content/ directory and refresh the BackWPup dashboard. If that doesn’t help, try CHMOD 777. You can revert it to 755 once BackWPup has created its folder.
+
+
+= I don’t see an option to configure Dropbox, S3 or other destinations. =
+If you don’t see those options in the Add new job->General tab, it is most likely your server running a PHP version below 5.3.
+
+
+= Backup jobs are running forever! =
+Almost all web hosts have limited allowed script execution time on their servers. As a consequence, BackWPup might be “interrupted” in its job execution when executing the job takes longer than script execution is allowed for by the server (i.e. when the job requires to add a lot of files to a ZIP archive). Whenever BackWPup’s execution is stopped by the server, it waits 5 minutes before it tries to restart the job. If it is stopped again, it waits another five minutes. Those interruptions can then add up to what looks like 20-40 minutes of execution while really most of it is waiting time for a job to be restarted.
+
+A remedy in this case can be splitting a large file backup into smaller chunks. For example, create one backup job for your WordPress installation, but exclude /wp-content/. Create another job for /wp-content/. If your site has a lot of uploaded photos, maybe even go further, exclude /uploads/ from your /wp-content/ backup and create a third job for /uploads/.
+
+
+= How do I restore a backup? =
+Up to now, there is no feature in BackWPup to restore a backup. You can follow [these instructions from the WordPress Codex](http://codex.wordpress.org/Restoring_Your_Database_From_Backup) or [this tutorial (also Codex)](http://codex.wordpress.org/WordPress_Backups) for more detailed information on cPanel, Plesk, vDeck and others.
+
+
+= When I edit a job the Files tab loads forever. =
+Go to Settings->General and disable “Display folder sizes on files tab if job edited”. Calculating folder sizes can take a while on sites with many folders.
+
+= I generated a list of my installed plugins, but it’s hard to read. =
+Try opening the text file in an editor software like Notepad++ (Windows) or TextMate (Mac) to preserve line-breaks.
+
+= My web host notified me BackWPup was causing an inacceptable server load! =
+Go to Settings->Jobs and try a different option for “Reduce server load”.
+
+
+= Can I cancel a running backup job via FTP? =
+
+Yes. Go to your BackWPup temp directory and find a file named `backwpup-xyz-working.php` where “xyz” is a random string of numbers and characters. Delete that file to cancel the currently running backup job.
+
+
+= Can I move the temp directory to a different location? =
+
+Yes. You need to have writing access to the wp-config.php file (usually residing in the root directory of your WordPress installation). 
+
+* Open wp-config.php and find the line where it says `if ( !defined('ABSPATH') )`. 
+* Somewhere *before* that line add this: `define( 'WP_TEMP_DIR', '/absolute/path/to/wp/your/temp-dir' );`
+* Replace `/absolute/path/to/wp/` with the absolute path of your WordPress installation and `your/temp-dir` with the path to your new temp directory.
+* Save the file.
+
+
+= What do those placeholders in file names stand for? =
+
+* %d = Two digit day of the month, with leading zeros
+* %j = Day of the month, without leading zeros
+* %m = Day of the month, with leading zeros
+* %n = Representation of the month (without leading zeros)
+* %Y = Four digit representation for the year
+* %y = Two digit representation of the year
+* %a = Lowercase ante meridiem (am) and post meridiem (pm)
+* %A = Uppercase ante meridiem (AM) and post meridiem (PM)
+* %B = [Swatch Internet Time](http://en.wikipedia.org/wiki/Swatch_Internet_Time)
+* %g = Hour in 12-hour format, without leading zeros
+* %G = Hour in 24-hour format, without leading zeros
+* %h = Hour in 12-hour format, with leading zeros
+* %H = Hour in 24-hour format, with leading zeros
+* %i = Two digit representation of the minute
+* %s = Two digit representation of the second
+* %u = Two digit representation of the microsecond
+* %U = [UNIX timestamp](http://www.php.net/manual/en/function.time.php) (seconds since January 1 1970 00:00:00 GMT)
 
 == Screenshots ==
 
@@ -81,6 +179,23 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.5 =
+* Changed: Display only normal messages on progress bars
+* Changed: Detection of multisite blog upload folder
+* Changed: Backups list for destination file will not cached.
+* Changed: Reduced files of AWS SDK to the only needed.
+* Fixed: Side load braking if no folder permissions
+* Fixed: Multiple backups deletion on backups page not working
+* Fixed: DB optimize and check not only use WP tables if selected
+* Fixed: File deletion on Dropbox if folder name has a space
+* Fixed: False scheduling time in some timezones
+* Removed: Option for excluding file, cache, temp folders. Can done with file/folder exclusion too.
+* Added: Option to restart the job on archive creation if a size of files reached
+* Added: Option to set Zip method (PclZip or ZipArchive)
+* Improved: Performance if PclZip used.
+* Updated: AWS SDK to Version 1.6.1
+* Updated: AWS SDK to Version 2.2.0 (PHP 5.3.3+)
+
 = Version 3.0.4 =
 * Changed: default settings for 'Restart on every main step' and 'Reduce server load' to disabled
 * Fixed: Settings not correctly set to default

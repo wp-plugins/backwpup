@@ -32,7 +32,7 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 'rscusername' => '', 'rscapikey' => '', 'rsccontainer' => '', 'rscregion' => 'DFW', 'rscdir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'rscmaxbackups' => 0, 'rscsyncnodelete' => TRUE );
+		return array( 'rscusername' => '', 'rscapikey' => '', 'rsccontainer' => '', 'rscregion' => 'DFW', 'rscdir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'rscmaxbackups' => 15, 'rscsyncnodelete' => TRUE );
 	}
 
 
@@ -108,11 +108,11 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 					if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) {
 						?>
                         <label for="idrscmaxbackups"><input id="idrscmaxbackups" name="rscmaxbackups" type="text" size="3" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'rscmaxbackups' ) ); ?>" class="small-text" />&nbsp;
-						<?php  _e( 'Number of files to hold in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
+						<?php  _e( 'Number of files to keep in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
 						<?php } else { ?>
 						<label for="idrscsyncnodelete"><input class="checkbox" value="1"
 							   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'rscsyncnodelete' ), TRUE ); ?>
-							   name="rscsyncnodelete" id="idrscsyncnodelete" /> <?php _e( 'Do not delete files on sync to destination!', 'backwpup' ); ?></label>
+							   name="rscsyncnodelete" id="idrscsyncnodelete" /> <?php _e( 'Do not delete files while syncing to destination!', 'backwpup' ); ?></label>
 						<?php } ?>
 				</td>
 			</tr>
@@ -288,7 +288,7 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 				if ( !empty( $job_object->job[ 'jobid' ] ) )
 					BackWPup_Option::update( $job_object->job[ 'jobid' ], 'lastbackupdownloadurl', network_admin_url( 'admin.php' ) . '?page=backwpupbackups&action=downloadrsc&file=' . $job_object->job[ 'rscdir' ] . $job_object->backup_file . '&jobid=' . $job_object->job[ 'jobid' ] );
 			} else {
-				$job_object->log( __( 'Can not transfer backup to Rackspace cloud.', 'backwpup' ), E_USER_ERROR );
+				$job_object->log( __( 'Cannot transfer backup to Rackspace cloud.', 'backwpup' ), E_USER_ERROR );
 
 				return FALSE;
 			}
@@ -446,13 +446,13 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 		}
 
 		if ( empty( $args[ 'rscusername' ] ) )
-			_e( 'Missing Username!', 'backwpup' );
+			_e( 'Missing username!', 'backwpup' );
 		elseif ( empty( $args[ 'rscapikey' ]  ) )
 			_e( 'Missing API Key!', 'backwpup' );
 		elseif ( ! empty( $error ) )
 			echo esc_html( $error );
 		elseif ( ! is_object( $containerlist ) || $containerlist->Size() == 0 )
-			_e( "No Container's found!", 'backwpup' );
+			_e( "A container could not be found!", 'backwpup' );
 		echo '</span>';
 
 		if ( isset( $containerlist )  && $containerlist->Size() > 0 ) {

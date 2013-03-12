@@ -66,7 +66,7 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
                         <label for="iddboptimizemyisam"><input class="checkbox" value="1" id="iddboptimizemyisam"
                                type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dboptimizemyisam' ), TRUE ); ?>
                                name="dboptimizemyisam" /> <?php _e( 'Optimize MyISAM Tables', 'backwpup' ); ?>
-						<?php BackWPup_help::tip( __( 'Optimize will done with OPTIMIZE TABLE `table`.', 'backwpup' ) ); ?></label>
+						<?php BackWPup_help::tip( __( 'Optimize will be done with OPTIMIZE TABLE `table`.', 'backwpup' ) ); ?></label>
 						<br />
                         <label for="iddboptimizeinnodb"><input class="checkbox" value="1" id="iddboptimizeinnodb"
                                type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dboptimizeinnodb' ), TRUE ); ?>
@@ -98,21 +98,18 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 	public function job_run( $job_object ) {
 		global $wpdb;
 
-		trigger_error( sprintf( __( '%d. Trying to optimize database &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Trying to optimize database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] = array();
 
-		//tables to otimize
+		//tables to optimize
 		$tables = array();
 		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
-		foreach ( $restables as $table ) {
-			if ( ! empty( $job_object->job[ 'dboptimizewponly' ] ) ) {
-				$tables[ ]                 = $table[ 0 ];
-				$tablestype[ $table[ 0 ] ] = $table[ 1 ];
-			} elseif ( strstr($table[ 0 ], $wpdb->prefix ) ) {
-				$tables[ ]                 = $table[ 0 ];
-				$tablestype[ $table[ 0 ] ] = $table[ 1 ];
-			}
+		foreach ( $restables as $table ) {		
+			if ( $job_object->job[ 'dboptimizewponly' ] && substr( $table[ 0 ], 0, strlen( $wpdb->prefix ) ) != $wpdb->prefix ) 
+				continue;		
+			$tables[ ]                 = $table[ 0 ];
+			$tablestype[ $table[ 0 ] ] = $table[ 1 ];
 		}
 		//Set num
 		$job_object->substeps_todo = sizeof( $tables );
@@ -125,12 +122,12 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 
 		if ( $job_object->substeps_todo > 0 ) {
 			if ( ! empty( $job_object->job[ 'dboptimizemaintenance' ] ) )
-				$job_object->maintenance_mode( TRUE );
+				$job_object->set_maintenance_mode( TRUE );
 			foreach ( $tables as $table ) {
 				if ( in_array( $table, $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 					continue;
 				if ( $tablestype[ $table ] == 'VIEW' ) {
-					trigger_error( sprintf( __( 'Views can\'t optimize! View %1$s', 'backwpup' ), $table ), E_USER_NOTICE );
+					trigger_error( sprintf( __( 'Views cannot optimize! View %1$s', 'backwpup' ), $table ), E_USER_NOTICE );
 					continue;
 				}
 				//OPTIMIZE TABLE funktioniert nur bei MyISAM-, BDB- und InnoDB-Tabellen. (http://dev.mysql.com/doc/refman/5.1/de/optimize-table.html)
@@ -154,8 +151,8 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 				$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ][ ] = $table;
 				$job_object->substeps_done ++;
 			}
-			trigger_error( __( 'Database optimize done!', 'backwpup' ), E_USER_NOTICE );
-			$job_object->maintenance_mode( FALSE );
+			trigger_error( __( 'Database optimization done!', 'backwpup' ), E_USER_NOTICE );
+			$job_object->set_maintenance_mode( FALSE );
 		}
 		else {
 			trigger_error( __( 'No tables to optimize.', 'backwpup' ), E_USER_WARNING );

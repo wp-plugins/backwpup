@@ -87,13 +87,13 @@ class BackWPup_MySQLDump {
 		//connect to Database
 		$this->mysqli = new mysqli( $args[ 'dbhost' ], $args[ 'dbuser' ], $args[ 'dbpassword' ], $args[ 'dbname' ], $args[ 'dbport' ], $args[ 'dbsocket' ] );
 		if ( $this->mysqli->connect_error )
-			throw new BackWPup_MySQLDump_Exception( sprintf( __( 'Can not connect to MySQL Database %1$d: %2$s', 'backwpup' ), $this->mysqli->connect_errno, $this->mysqli->connect_error ) );
+			throw new BackWPup_MySQLDump_Exception( sprintf( __( 'Cannot connect to MySQL database %1$d: %2$s', 'backwpup' ), $this->mysqli->connect_errno, $this->mysqli->connect_error ) );
 
 		//set charset
 		if ( ! empty( $args[ 'dbcharset' ] ) && method_exists( $this->mysqli, 'set_charset' ) ) {
 			$res = $this->mysqli->set_charset( $args[ 'dbcharset' ] );
 			if ( ! $res )
-				throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Can not set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );
+				throw new BackWPup_MySQLDump_Exception( sprintf( _x( 'Cannot set DB charset to %s','Database Charset', 'backwpup' ), $args[ 'dbcharset' ] ) );
 		}
 
 		//set db name
@@ -123,7 +123,7 @@ class BackWPup_MySQLDump {
 
 		//check file handle
 		if ( ! is_resource( $this->handle ) )
-			throw new BackWPup_MySQLDump_Exception( __( 'Can not open dump file', 'backwpup' ) );
+			throw new BackWPup_MySQLDump_Exception( __( 'Cannot open dump file', 'backwpup' ) );
 
 		//get table names and types from Database
 		$res = $this->mysqli->query( 'SHOW FULL TABLES FROM `' . $this->dbname . '`' );
@@ -388,7 +388,7 @@ class BackWPup_MySQLDump {
 			$written = fwrite( $this->handle, $data );
 
 		if ( ! $written )
-			throw new BackWPup_MySQLDump_Exception( __( 'Error on writing to file!', 'backwpup' ) );
+			throw new BackWPup_MySQLDump_Exception( __( 'Error while writing file!', 'backwpup' ) );
 	}
 
 	/**

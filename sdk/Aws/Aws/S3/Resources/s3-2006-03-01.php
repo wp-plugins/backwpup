@@ -24,6 +24,53 @@ return array (
     'globalEndpoint' => 's3.amazonaws.com',
     'signatureVersion' => 's3',
     'namespace' => 'S3',
+    'regions' => array(
+        'us-east-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3.amazonaws.com',
+        ),
+        'us-west-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-us-west-1.amazonaws.com',
+        ),
+        'us-west-2' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-us-west-2.amazonaws.com',
+        ),
+        'eu-west-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-eu-west-1.amazonaws.com',
+        ),
+        'ap-northeast-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-ap-northeast-1.amazonaws.com',
+        ),
+        'ap-southeast-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-ap-southeast-1.amazonaws.com',
+        ),
+        'ap-southeast-2' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-ap-southeast-2.amazonaws.com',
+        ),
+        'sa-east-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-sa-east-1.amazonaws.com',
+        ),
+        'us-gov-west-1' => array(
+            'http' => true,
+            'https' => true,
+            'hostname' => 's3-us-gov-west-1.amazonaws.com',
+        ),
+    ),
     'operations' => array(
         'AbortMultipartUpload' => array(
             'httpMethod' => 'DELETE',
@@ -2329,6 +2376,7 @@ return array (
                         'http://s3.amazonaws.com/doc/2006-03-01/',
                     ),
                 ),
+                'xmlAllowEmpty' => true,
             ),
             'parameters' => array(
                 'Bucket' => array(
@@ -2505,6 +2553,10 @@ return array (
                     'location' => 'header',
                     'sentAs' => 'Content-Language',
                 ),
+                'ContentMD5' => array(
+                    'description' => 'Content-MD5 checksum of the body. Set to false to disable',
+                    'default' => true,
+                ),
                 'ContentType' => array(
                     'description' => 'A standard MIME type describing the format of the object data.',
                     'type' => 'string',
@@ -2587,10 +2639,6 @@ return array (
                     'type' => 'string',
                     'location' => 'header',
                     'sentAs' => 'x-amz-website-redirect-location',
-                ),
-                'ContentMD5' => array(
-                    'description' => 'Content-MD5 checksum of the body. Set to false to disable',
-                    'default' => true,
                 ),
                 'ValidateMD5' => array(
                     'description' => 'Whether or not the Content-MD5 header of the response is validated. Default is true.',
@@ -3774,6 +3822,11 @@ return array (
                     'location' => 'header',
                     'sentAs' => 'x-amz-delete-marker',
                 ),
+                'AcceptRanges' => array(
+                    'type' => 'string',
+                    'location' => 'header',
+                    'sentAs' => 'accept-ranges',
+                ),
                 'Expiration' => array(
                     'description' => 'If the object expiration is configured (see PUT Bucket lifecycle), the response includes this header. It includes the expiry-date and rule-id key value pairs providing object expiration information. The value of the rule-id is URL encoded.',
                     'type' => 'string',
@@ -3985,6 +4038,11 @@ return array (
                     'type' => 'string',
                     'location' => 'header',
                     'sentAs' => 'x-amz-delete-marker',
+                ),
+                'AcceptRanges' => array(
+                    'type' => 'string',
+                    'location' => 'header',
+                    'sentAs' => 'accept-ranges',
                 ),
                 'Expiration' => array(
                     'description' => 'If the object expiration is configured (see PUT Bucket lifecycle), the response includes this header. It includes the expiry-date and rule-id key value pairs providing object expiration information. The value of the rule-id is URL encoded.',

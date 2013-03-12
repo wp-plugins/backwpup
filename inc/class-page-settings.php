@@ -63,6 +63,8 @@ class BackWPup_Page_Settings {
 		if ( empty( $_POST[ 'jobstepretry' ] ) or ! is_int( $_POST[ 'jobstepretry' ] ) )
 			$_POST[ 'jobstepretry' ] = 3;
 		BackWPup_Option::update( 'cfg', 'jobstepretry', $_POST[ 'jobstepretry' ] );
+		BackWPup_Option::update( 'cfg', 'jobrestartarchivesize', abs( (int) $_POST[ 'jobrestartarchivesize' ] ) );
+		BackWPup_Option::update( 'cfg', 'jobziparchivemethod', ( $_POST[ 'jobziparchivemethod' ] == '' || $_POST[ 'jobziparchivemethod' ] == 'PclZip' || $_POST[ 'jobziparchivemethod' ] == 'ZipArchive' ) ? $_POST[ 'jobziparchivemethod' ] : '' );
 		BackWPup_Option::update( 'cfg', 'jobnotranslate', isset( $_POST[ 'jobnotranslate' ] ) ? TRUE : FALSE );
 		BackWPup_Option::update( 'cfg', 'jobwaittimems', $_POST[ 'jobwaittimems' ] );
 		BackWPup_Option::update( 'cfg', 'maxlogs', abs( (int)$_POST[ 'maxlogs' ] ) );
@@ -98,7 +100,7 @@ class BackWPup_Page_Settings {
 		<?php
 		screen_icon(); ?><h2><?php echo sprintf( __( '%s Settings', 'backwpup' ), BackWPup::get_plugin_data( 'name' ) ); ?></h2>
 		<?php
-		$tabs = array( 'general' => __( 'General', 'backwpup' ), 'job' => __( 'Jobs', 'backwpup' ), 'log' => __( 'Logs', 'backwpup' ), 'net' => __( 'Network', 'backwpup' ), 'apikey' => __( 'API Keys', 'backwpup' ), 'information' => __( 'Informations', 'backwpup' ) );
+		$tabs = array( 'general' => __( 'General', 'backwpup' ), 'job' => __( 'Jobs', 'backwpup' ), 'log' => __( 'Logs', 'backwpup' ), 'net' => __( 'Network', 'backwpup' ), 'apikey' => __( 'API Keys', 'backwpup' ), 'information' => __( 'Information', 'backwpup' ) );
 		$tabs = apply_filters( 'backwpup_page_settings_tab', $tabs );
 		echo '<h2 class="nav-tab-wrapper">';
 		foreach ( $tabs as $id => $name ) {
@@ -140,7 +142,7 @@ class BackWPup_Page_Settings {
                             <label for="showfoldersize">
                                 <input name="showfoldersize" type="checkbox" id="showfoldersize"
                                        value="1" <?php checked( BackWPup_Option::get( 'cfg', 'showfoldersize' ), TRUE ); ?> />
-								<?php _e( 'Display folder sizes on files tab if job edited', 'backwpup' ); ?></label>
+								<?php _e( 'Display folder sizes on Files tab if job edited. (Might increase loading time of Files tab.)', 'backwpup' ); ?></label>
                         </fieldset>
                     </td>
                 </tr>
@@ -170,7 +172,7 @@ class BackWPup_Page_Settings {
 
         <div class="table ui-tabs-hide" id="backwpup-tab-log">
 
-            <p><?php _e( 'Here you can set log file options.', 'backwpup' ); ?></p>
+            <p><?php _e( 'Every time BackWPup runs a backup job a log file is being generated. Choose where to store your log files and how many of them.', 'backwpup' ); ?></p>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row"><label for="logfolder"><?php _e( 'Log file folder', 'backwpup' ); ?></label></th>
@@ -207,7 +209,7 @@ class BackWPup_Page_Settings {
         </div>
         <div class="table ui-tabs-hide" id="backwpup-tab-job">
 
-            <p><?php _e( 'Here you can set job options.', 'backwpup' ); ?></p>
+            <p><?php _e( 'There are a couple of general options for backup jobs. Set them here.', 'backwpup' ); ?></p>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row">
@@ -226,10 +228,42 @@ class BackWPup_Page_Settings {
                             </legend>
                             <label for="jobsteprestart">
                                 <input name="jobsteprestart" type="checkbox" id="jobsteprestart"
-                                       value="1" <?php checked( BackWPup_Option::get( 'cfg', 'jobsteprestart' ), TRUE ); ?><?php if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) echo " disabled=\"disabled\""; ?> />
-								<?php _e( 'Restart the job on every main step on a working job', 'backwpup' ); ?>
-								<?php BackWPup_Help::tip( __( 'The job will be restated on every main step to prevent running in an execution time out. This will not work on cmd run or if <code>ALTERNATE_WP_CRON</code> has been defined.', 'backwpup' ) ); ?>
+                                       value="1" <?php checked( BackWPup_Option::get( 'cfg', 'jobsteprestart' ), TRUE ); ?> />
+								<?php _e( 'Restart the job on every main step on a running job', 'backwpup' ); ?>
+								<?php BackWPup_Help::tip( __( 'The job will be restarted on every main step to prevent running in an execution time out. This will not work on cli run. If <code>ALTERNATE_WP_CRON</code> has been defined, WordPress Cron will be used.', 'backwpup' ) ); ?>
 							</label>
+                        </fieldset>
+                    </td>
+                </tr>
+				<tr valign="top">
+                    <th scope="row"><?php _e( 'Restart on archive creation', 'backwpup' ); ?></th>
+                    <td>
+                        <fieldset>
+                            <legend class="screen-reader-text"><span><?php _e( 'Restart on archive creation', 'backwpup' ); ?></span>
+                            </legend>
+                            <label for="jobrestartarchivesize">
+                                <input name="jobrestartarchivesize" type="text" id="jobrestartarchivesize" size="3"
+                                       value="<?php echo BackWPup_Option::get( 'cfg', 'jobrestartarchivesize' ); ?>"  />
+								<?php _e( 'MB. 0 = disabled. Restart the job once a given number of Megabytes has been added to an archive', 'backwpup' ); ?>
+								<?php BackWPup_Help::tip( __( 'The job will be restarted once a given number of Megabytes has been added to an archive to prevent running in an execution time out. This will not work on cli run. If <code>ALTERNATE_WP_CRON</code> has been defined, WordPress Cron will be used.', 'backwpup' ) ); ?>
+							</label>
+                        </fieldset>
+                    </td>
+                </tr>
+				<tr valign="top">
+                    <th scope="row"><?php _e( 'Method for creating ZIP archive', 'backwpup' ); ?></th>
+                    <td>
+                        <fieldset>
+                            <legend class="screen-reader-text"><span><?php _e( 'Method for creating ZIP archive', 'backwpup' ); ?></span>
+                            </legend>
+                            <label for="jobziparchivemethod">
+								<select name="jobziparchivemethod" size="1">
+									<option value="" <?php selected( BackWPup_Option::get( 'cfg', 'jobziparchivemethod' ), '' ); ?>><?php _e( 'Auto', 'backwpup' ); ?></option>
+                                    <option value="ZipArchive" <?php selected( BackWPup_Option::get( 'cfg', 'jobziparchivemethod' ), 'ZipArchive' ); ?><?php disabled( function_exists( 'ZipArchive' ), TRUE ); ?>><?php _e( 'ZipArchive', 'backwpup' ); ?></option>
+                                    <option value="PclZip" <?php selected( BackWPup_Option::get( 'cfg', 'jobziparchivemethod' ), 'PclZip' ); ?>><?php _e( 'PclZip', 'backwpup' ); ?></option>
+                                </select>
+                            </label>
+							<?php BackWPup_Help::tip( __( 'Auto = Uses PHP class ZipArchive if available; otherwise uses PclZip.<br />ZipArchive = Uses less memory, but many open files at a time.<br />PclZip = Uses more memory, but only 2 open files at a time.', 'backwpup' ) ); ?>
                         </fieldset>
                     </td>
                 </tr>
@@ -244,7 +278,7 @@ class BackWPup_Page_Settings {
                     </td>
                 </tr>
                 <tr valign="top">
-                    <th scope="row"><?php _e( 'No Translation', 'backwpup' ); ?></th>
+                    <th scope="row"><?php _e( 'No translation', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
                             <legend class="screen-reader-text"><span><?php _e( 'No Translation', 'backwpup' ); ?></span>
@@ -271,7 +305,7 @@ class BackWPup_Page_Settings {
                                     <option value="90000" <?php selected( BackWPup_Option::get( 'cfg', 'jobwaittimems' ), 90000 ); ?>><?php _e( 'maximum', 'backwpup' ); ?></option>
                                 </select>
                             </label>
-							<?php BackWPup_Help::tip( __( 'This adds short pauses to the process. Should be used to reduce the CPU load. Disabled = off, minimum = shortest sleep, maximum = longest sleep', 'backwpup' ) ); ?>
+							<?php BackWPup_Help::tip( __( 'This adds short pauses to the process. Can be used to reduce the CPU load. Disabled = off, minimum = shortest sleep, maximum = longest sleep', 'backwpup' ) ); ?>
                         </fieldset>
                     </td>
                 </tr>
@@ -282,7 +316,7 @@ class BackWPup_Page_Settings {
         <div class="table ui-tabs-hide" id="backwpup-tab-net">
 
 			<h3 class="title"><?php _e( 'Authentication', 'backwpup' ); ?></h3>
-            <p><?php _e( 'Is your blog protected with HTTP basic authentication (.htaccess)? Then you must set the username and password for authentication to get jobs working.', 'backwpup' ); ?></p>
+            <p><?php _e( 'Is your blog protected with HTTP basic authentication (.htaccess)? Then please set the username and password for authentication here.', 'backwpup' ); ?></p>
             <table class="form-table">
                 <tr valign="top">
                     <th scope="row"><label for="httpauthuser"><?php _e( 'Username:', 'backwpup' ); ?></label></th>

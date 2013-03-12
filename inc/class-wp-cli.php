@@ -18,11 +18,11 @@ class BackWPup_WP_CLI extends WP_CLI_Command {
 			WP_CLI::error( __( 'A job is already running.', 'backwpup' ) );
 
 		if ( empty( $assoc_args['jobid'] ) )
-			WP_CLI::error( __( 'No job id specified!', 'backwpup' ) );
+			WP_CLI::error( __( 'No job ID specified!', 'backwpup' ) );
 
 		$jobids = BackWPup_Option::get_job_ids();
 		if ( ! in_array( $assoc_args['jobid'], $jobids ) )
-			WP_CLI::error( __( 'Jobid does not exist!', 'backwpup' ) );
+			WP_CLI::error( __( 'Job ID does not exist!', 'backwpup' ) );
 
 		BackWPup_Job::start_cli( $assoc_args['jobid'] );
 
@@ -105,8 +105,8 @@ class BackWPup_WP_CLI extends WP_CLI_Command {
 
 		$job_object = BackWPup_Job::get_working_data();
 		if ( ! $job_object )
-			WP_CLI::error( __( 'No job working', 'backwpup' ) );
-		WP_CLI::line( __('Working job', 'backwpup' ) );
+			WP_CLI::error( __( 'No job running', 'backwpup' ) );
+		WP_CLI::line( __('Running job', 'backwpup' ) );
 		WP_CLI::line( '----------------------------------------------------------------------' );
 		WP_CLI::line( sprintf( __( 'ID: %1$d Name: %2$s', 'backwpup' ), $job_object->job[ 'jobid' ], $job_object->job[ 'name' ] ) );
 		WP_CLI::line( sprintf( __( 'Warnings: %1$d Errors: %2$d', 'backwpup' ), $job_object->warnings , $job_object->errors ) );

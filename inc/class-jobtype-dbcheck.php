@@ -51,7 +51,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
                     <label for="iddbcheckmaintenance">
 					<input class="checkbox" value="1" id="iddbcheckmaintenance"
 						   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dbcheckmaintenance' ), TRUE ); ?>
-						   name="dbcheckmaintenance" /> <?php _e( 'Activate Maintenance mode during table check', 'backwpup' ); ?>
+						   name="dbcheckmaintenance" /> <?php _e( 'Activate maintenance mode during table check', 'backwpup' ); ?>
 					</label>
 				</td>
 			</tr>
@@ -86,7 +86,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 	public function job_run( $job_object ) {
 		global $wpdb;
 
-		trigger_error( sprintf( __( '%d. Trying to check database &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Trying to check database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] = array();
 
@@ -94,13 +94,10 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 		$tables = array();
 		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $restables as $table ) {
-			if ( ! empty( $job_object->job[ 'dbcheckwponly' ] ) ) {
-				$tables[ ]                 = $table[ 0 ];
-				$tablestype[ $table[ 0 ] ] = $table[ 1 ];
-			} elseif ( strstr($table[ 0 ], $wpdb->prefix ) ) {
-				$tables[ ]                 = $table[ 0 ];
-				$tablestype[ $table[ 0 ] ] = $table[ 1 ];
-			}
+			if ( $job_object->job[ 'dbcheckwponly' ] && substr( $table[ 0 ], 0, strlen( $wpdb->prefix ) ) != $wpdb->prefix ) 
+				continue;	
+			$tables[ ]                 = $table[ 0 ];
+			$tablestype[ $table[ 0 ] ] = $table[ 1 ];
 		}
 
 		//Set num
@@ -115,13 +112,13 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 		//check tables
 		if ( $job_object->substeps_todo > 0 ) {
 			if ( ! empty( $job_object->job[ 'dbcheckmaintenance' ] ) )
-				$job_object->maintenance_mode( TRUE );
+				$job_object->set_maintenance_mode( TRUE );
 			foreach ( $tables as $table ) {
 				if ( in_array( $table, $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 					continue;
 
 				if ( $tablestype[ $table ] == 'VIEW' ) {
-					trigger_error( sprintf( __( 'Table %1$s is a View. Not checked.', 'backwpup' ), $table ), E_USER_NOTICE );
+					trigger_error( sprintf( __( 'Table %1$s is a view. Not checked.', 'backwpup' ), $table ), E_USER_NOTICE );
 					continue;
 				}
 
@@ -152,7 +149,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 				$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ][ ] = $table;
 				$job_object->substeps_done ++;
 			}
-			$job_object->maintenance_mode( FALSE );
+			$job_object->set_maintenance_mode( FALSE );
 			trigger_error( __( 'Database check done!', 'backwpup' ), E_USER_NOTICE );
 		}
 		else {

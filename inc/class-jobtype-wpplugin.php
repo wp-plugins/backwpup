@@ -88,7 +88,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Trying to generate a file with installed Plugin names &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Trying to generate a file with installed plugin names&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		//build filename
 		if ( empty( $job_object->temp[ 'pluginlistfile' ] ) )
 			$job_object->temp[ 'pluginlistfile' ] = $job_object->generate_filename( $job_object->job[ 'pluginlistfile' ], 'txt' ) . $job_object->job[ 'pluginlistfilecompression' ];
@@ -115,7 +115,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 		$plugins        = get_plugins();
 		$plugins_active = get_option( 'active_plugins' );
 		//write it to file
-		fwrite( $handle, PHP_EOL . __( 'All plugins information:', 'backwpup' ) . PHP_EOL . '------------------------------' . PHP_EOL );
+		fwrite( $handle, PHP_EOL . __( 'All plugin information:', 'backwpup' ) . PHP_EOL . '------------------------------' . PHP_EOL );
 		foreach ( $plugins as $plugin ) {
 			fwrite( $handle, $plugin[ 'Name' ] . ' (v.' . $plugin[ 'Version' ] . ') ' . html_entity_decode( sprintf( __( 'from %s', 'backwpup' ), $plugin[ 'Author' ] ), ENT_QUOTES ) . PHP_EOL . "\t" . $plugin[ 'PluginURI' ] . PHP_EOL );
 		}

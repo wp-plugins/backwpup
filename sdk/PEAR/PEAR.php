@@ -345,7 +345,7 @@ class PEAR
      * expected errors are in effect until they are popped off the
      * stack with the popExpect() method.
      *
-     * Note that this method can not be called statically
+     * Note that this method cannot be called statically
      *
      * @param mixed $code a single error code or an array of error codes to expect
      *

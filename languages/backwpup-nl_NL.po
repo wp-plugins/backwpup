@@ -896,7 +896,7 @@ msgstr "Algemene gebruiksvoorwaarden"
 
 #: inc/class-page-settings.php:317
 #@ backwpup
-msgid "If you use this service in jobs, the schedule will submitted to api.backwpup.com. The api.backwpup.com will call the script to start the job directly. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start a job behind a basic authentication (.htaccess), on that the http authentication data will transferred too! Please make a little donation for the plugin if you use this service. The service can be removed by me without a massage."
+msgid "If you use this service in jobs, the schedule will submitted to api.backwpup.com. The api.backwpup.com will call the script to start the job directly. <em>Use this service only if you have not a cron service of your hoster, or a blog that has a few visitors.</em> The cron service can start a job behind a basic authentication (.htaccess), on that the http authentication data will transferred too! Please make a little donation for the plugin if you use this service. The service can be removed by me without a message."
 msgstr "Als je deze service in een taak gebruikt dan wordt de taakplanning verzonden naar api.backwpup.com. Api.backwpup.com zal het script aanroepen om de taak te starten. <em>Gebruik deze service alleen als je geen cron-service hebt van je provider of wanneer je blog weinig bezoekers heeft.</em> De cron-service kan een taak starten achter een http basis-aanmelding (.htaccess)! Doneer een klein bedrag als je deze service gebruikt. De service kan zonder aankondiging worden verwijderd."
 
 #: inc/class-page-editjob-metaboxes.php:34
@@ -1196,7 +1196,7 @@ msgstr "Uw Wordpress-directory is:"
 #: inc/class-page-editjob-metaboxes.php:290
 #: inc/class-page-editjob-metaboxes.php:521
 #@ backwpup
-msgid "Max. backup files in folder:"
+msgid "Maximum number of backup files to keep in folder:"
 msgstr "Max. aantal backup-bestanden in map:"
 
 #: inc/class-page-editjob-metaboxes.php:292
@@ -1208,7 +1208,7 @@ msgstr "Max. aantal backup-bestanden in map:"
 #: inc/class-page-editjob-metaboxes.php:495
 #: inc/class-page-editjob-metaboxes.php:523
 #@ backwpup
-msgid "Do not delete files on sync destination!"
+msgid "Do not delete files while syncing to destination!"
 msgstr "Verwijder geen bestanden op de synchronisatiebestemming!"
 
 #: inc/class-page-editjob-metaboxes.php:299
@@ -1682,7 +1682,7 @@ msgstr "Dropbox aanmelding gelukt!"
 
 #: inc/class-page-editjob.php:31
 #@ backwpup
-msgid "Wrong Token for Dropbox authentication received!"
+msgid "Wrong token for Dropbox authentication received!"
 msgstr "Onjuist token voor Dropbox aanmelding ontvangen!"
 
 #: inc/class-page-editjob.php:34
@@ -2056,7 +2056,7 @@ msgstr "Max. aantal pogingen bereikt: taakstap afgebroken!"
 #: inc/class-job.php:95
 #, php-format
 #@ backwpup
-msgid "Can not find job step method %s!"
+msgid "Cannot find job step method %s!"
 msgstr "Kan methode voor taakstappen niet vinden %s!"
 
 #: inc/class-job.php:121
@@ -2067,7 +2067,7 @@ msgstr "Signaal %d naar naar script verzenden!"
 
 #: inc/class-job.php:126
 #@ backwpup
-msgid "Can not restart on alternate cron...."
+msgid "Cannot restart on alternate cron...."
 msgstr "Kan niet herstarten van alternatieve cron..."
 
 #: inc/class-job.php:128
@@ -2188,7 +2188,7 @@ msgstr "Geen bestemming gedefinieerd voor backup-bestand!!! Corrigeer de taakins
 #: inc/class-job.php:353
 #, php-format
 #@ backwpup
-msgid "Can not create folder: %1$s"
+msgid "Cannot create folder: %1$s"
 msgstr "Kan map niet maken: %1$s"
 
 #: inc/class-job.php:369
@@ -2277,7 +2277,7 @@ msgstr "Geheugen vergroot van %1$s naar %2$s"
 #: inc/class-job.php:743
 #, php-format
 #@ backwpup
-msgid "Can not increase memory limit is %1$s"
+msgid "Cannot increase memory limit is %1$s"
 msgstr "Kan geheugen niet vergroten. De limiet is %1$s"
 
 #: inc/class-job.php:989
@@ -2289,7 +2289,7 @@ msgstr "%d. Database dump starten..."
 #: inc/class-job.php:1021
 #, php-format
 #@ backwpup
-msgid "Can not create database dump file! \"%s\""
+msgid "Cannot create database dump file! \"%s\""
 msgstr "Kan database dump-bestand niet maken! \"%s\""
 
 #: inc/class-job.php:1032
@@ -2459,20 +2459,20 @@ msgstr "%d. Backup-bestand (zip) maken..."
 #: inc/class-job.php:1708
 #, php-format
 #@ backwpup
-msgid "Can not create backup zip archive: %d!"
+msgid "Cannot create backup zip archive: %d!"
 msgstr "Kan backup-bestand niet maken: %d!"
 
 #: inc/class-job.php:1717
 #: inc/class-job.php:1736
 #, php-format
 #@ backwpup
-msgid "Can not add \"%s\" to zip archive!"
+msgid "Cannot add \"%s\" to zip archive!"
 msgstr "Kan \"%s\" niet toevoegen aan backup-bestand!"
 
 #: inc/class-job.php:1729
 #, php-format
 #@ backwpup
-msgid "Can not add dir \"%s\" to zip archive!"
+msgid "Cannot add dir \"%s\" to zip archive!"
 msgstr "Kan map \"%s\" niet toevoegen aan backup-bestand!"
 
 #: inc/class-job.php:1745
@@ -2557,7 +2557,7 @@ msgstr "Zip toevoeg-fout: %s"
 
 #: inc/class-job.php:1846
 #@ backwpup
-msgid "Can not create tar arcive file!"
+msgid "Cannot create tar arcive file!"
 msgstr "Kan tar-bestand niet maken!"
 
 #: inc/class-job.php:1850
@@ -2724,7 +2724,7 @@ msgstr "Via SSL verbonden met FTP-server: %s"
 #: inc/class-job.php:2224
 #, php-format
 #@ backwpup
-msgid "Can not connect by SSL-FTP to Server: %s"
+msgid "Cannot connect by SSL-FTP to Server: %s"
 msgstr "Kan via SSL niet verbinden met FTP-server: %s"
 
 #: inc/class-job.php:2228
@@ -2741,7 +2741,7 @@ msgstr "Verbonden met FTP-server: %s"
 #: inc/class-job.php:2237
 #, php-format
 #@ backwpup
-msgid "Can not connect to FTP server: %s"
+msgid "Cannot connect to FTP server: %s"
 msgstr "Kan niet verbinden met FTP-server: %s"
 
 #: inc/class-job.php:2243
@@ -2774,7 +2774,7 @@ msgstr "Passive mode starten"
 
 #: inc/class-job.php:2266
 #@ backwpup
-msgid "Can not Entering Passive Mode"
+msgid "Cannot Entering Passive Mode"
 msgstr "Kan Passive mode niet starten"
 
 #: inc/class-job.php:2269
@@ -2784,7 +2784,7 @@ msgstr "Normal mode starten"
 
 #: inc/class-job.php:2271
 #@ backwpup
-msgid "Can not Entering Normal Mode"
+msgid "Cannot Entering Normal Mode"
 msgstr "Kan Normal mode niet starten"
 
 #: inc/class-job.php:2279
@@ -2801,7 +2801,7 @@ msgstr "FTP-map \"%s\" gemaakt!"
 #: inc/class-job.php:2292
 #, php-format
 #@ backwpup
-msgid "FTP Folder \"%s\" can not created!"
+msgid "FTP Folder \"%s\" cannot created!"
 msgstr "FTP-map \"%s\" kan niet worden gemaakt!"
 
 #: inc/class-job.php:2297
@@ -2817,13 +2817,13 @@ msgstr "Backup-bestand verzonden naar FTP-server: %s"
 
 #: inc/class-job.php:2304
 #@ backwpup
-msgid "Can not transfer backup to FTP server!"
+msgid "Cannot transfer backup to FTP server!"
 msgstr "Kan backup-bestand niet verzenden naar FTP-server!"
 
 #: inc/class-job.php:2347
 #, php-format
 #@ backwpup
-msgid "Can not delete \"%s\" on FTP server!"
+msgid "Cannot delete \"%s\" on FTP server!"
 msgstr "Kan \"%s\" niet verwijderen van FTP-server!"
 
 #: inc/class-job.php:2351
@@ -2860,7 +2860,7 @@ msgstr "Verzending naar Amazon S3 gestart..."
 #: inc/class-job.php:2404
 #, php-format
 #@ backwpup
-msgid "Can not transfer backup to S3! (%1$d) %2$s"
+msgid "Cannot transfer backup to S3! (%1$d) %2$s"
 msgstr "Kan backup-bestand niet verzenden naar S3! (%1$d) %2$s"
 
 #: inc/class-job.php:2408
@@ -2873,7 +2873,7 @@ msgstr "Amazon API: %s"
 #: inc/class-job.php:2445
 #, php-format
 #@ backwpup
-msgid "Can not delete backup on S3://%s"
+msgid "Cannot delete backup from S3://%s"
 msgstr "Kan backup niet verwijderen van S3://%s"
 
 #: inc/class-job.php:2448
@@ -2910,7 +2910,7 @@ msgstr "Verzending naar Google Cloud Storage gestart..."
 #: inc/class-job.php:2496
 #, php-format
 #@ backwpup
-msgid "Can not transfer backup to Google Storage! (%1$d) %2$s"
+msgid "Cannot transfer backup to Google Storage! (%1$d) %2$s"
 msgstr "Kan backup-bestand niet verzenden naar Google Storage! (%1$d) %2$s"
 
 #: inc/class-job.php:2500
@@ -2923,7 +2923,7 @@ msgstr "Google Storage API: %s"
 #: inc/class-job.php:2537
 #, php-format
 #@ backwpup
-msgid "Can not delete backup on Google Storage://%s"
+msgid "Cannot delete backup from Google Storage://%s"
 msgstr "Kan backup-file niet verwijderen van Google Storage://%s"
 
 #: inc/class-job.php:2540
@@ -2997,7 +2997,7 @@ msgstr "Verzending naar MS Azure gestart..."
 
 #: inc/class-job.php:2618
 #@ backwpup
-msgid "Can not transfer backup to Microsoft Azure!"
+msgid "Cannot transfer backup to Microsoft Azure!"
 msgstr "Kan backup-bestand niet verzenden naar Microsoft Azure!"
 
 #: inc/class-job.php:2653
@@ -3050,12 +3050,12 @@ msgstr "Backup-bestand verzonden naar Rackspase cloud://"
 
 #: inc/class-job.php:2715
 #@ backwpup
-msgid "Can not transfer backup to Rackspase cloud."
+msgid "Cannot transfer backup to Rackspase cloud."
 msgstr "Kan backup-bestand niet verzenden naar Rackspase cloud."
 
 #: inc/class-job.php:2755
 #@ backwpup
-msgid "Can not delete file on RSC://"
+msgid "Cannot delete file on RSC://"
 msgstr "Kan bestand niet verwijderen van Rackspase cloud://"
 
 #: inc/class-job.php:2758
@@ -3096,7 +3096,7 @@ msgstr "Verzending naar SugarSync gestart..."
 
 #: inc/class-job.php:2805
 #@ backwpup
-msgid "Can not transfer backup to SugarSync!"
+msgid "Cannot transfer backup to SugarSync!"
 msgstr "Kan backup-bestand niet verzenden naar SugarSync!"
 
 #: inc/class-job.php:2842
@@ -3240,7 +3240,7 @@ msgstr "Niet gepland!"
 #: inc/class-page-backwpup.php:251
 #, php-format
 #@ backwpup
-msgid "- Server host '%1$s (%2$s)' can not resolved correctly! Resolved IP '%3$s'. Check Server config!"
+msgid "- Server host '%1$s (%2$s)' cannot resolved correctly! Resolved IP '%3$s'. Check Server config!"
 msgstr "- Server host '%1$s (%2$s)' kan niet worden bepaald! Gevonden IP '%3$s'. Controleer de server-configuratie!"
 
 #: inc/class-page-backwpup.php:262

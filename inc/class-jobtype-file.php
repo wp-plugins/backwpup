@@ -45,10 +45,10 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 	public function option_defaults() {
 
 		return array(
-			'backupexcludethumbs'   => FALSE, 'backupspecialfiles' => TRUE, 'backupexcludetempfolder' => TRUE,
+			'backupexcludethumbs'   => FALSE, 'backupspecialfiles' => TRUE,
 			'backuproot'            => TRUE, 'backupcontent' => TRUE, 'backupplugins' => FALSE, 'backupthemes' => TRUE, 'backupuploads' => TRUE,
 			'backuprootexcludedirs' => array(), 'backupcontentexcludedirs' => array(), 'backuppluginsexcludedirs' => array(), 'backupthemesexcludedirs' => array(), 'backupuploadsexcludedirs' => array(),
-			'fileexclude'           => '.tmp,.svn,.git', 'dirinclude' => ''
+			'fileexclude'           => '.tmp,.svn,.git,desktop.ini,.DS_Store', 'dirinclude' => ''
 		);
 	}
 
@@ -77,9 +77,8 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
 									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
-									echo '<nobr class="' . $class . '"><label for="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuprootexcludedirs' ) ), TRUE, FALSE ) . ' name="backuprootexcludedirs[]" id="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
+									echo '<nobr><label for="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuprootexcludedirs' ) ), TRUE, FALSE ) . ' name="backuprootexcludedirs[]" id="idrootexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -105,9 +104,8 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
 									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
-									echo '<nobr class="' . $class . '"><label for="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupcontentexcludedirs' ) ), TRUE, FALSE ) . ' name="backupcontentexcludedirs[]" id="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
+									echo '<nobr><label for="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupcontentexcludedirs' ) ), TRUE, FALSE ) . ' name="backupcontentexcludedirs[]" id="idcontentexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -133,9 +131,8 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
 									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
-									echo '<nobr class="' . $class . '"><label for="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuppluginsexcludedirs' ) ), TRUE, FALSE ) . ' name="backuppluginsexcludedirs[]" id="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
+									echo '<nobr><label for="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backuppluginsexcludedirs' ) ), TRUE, FALSE ) . ' name="backuppluginsexcludedirs[]" id="idpluginexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -161,9 +158,8 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
 									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
-									echo '<nobr class="' . $class . '"><label for="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupthemesexcludedirs' ) ), TRUE, FALSE ) . ' name="backupthemesexcludedirs[]" id="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
+									echo '<nobr><label for="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupthemesexcludedirs' ) ), TRUE, FALSE ) . ' name="backupthemesexcludedirs[]" id="idthemesexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -189,9 +185,8 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 						if ( $dir = @opendir( $folder ) ) {
 							while ( ( $file = readdir( $dir ) ) !== FALSE ) {
 								if ( ! in_array( $file, array( '.', '..' ) ) && is_dir( $folder . '/' . $file ) && ! in_array( $folder . '/' . $file . '/', $this->get_exclude_dirs( $folder ) ) ) {
-									$class = ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ) ? $class='tempfolder' : '';
 									$folder_size = ( BackWPup_Option::get( 'cfg', 'showfoldersize') ) ? ' (' . size_format( BackWPup_File::get_folder_size( $folder . '/' . $file ), 2 ) . ')' : '';
-									echo '<nobr class="' . $class . '"><label for="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupuploadsexcludedirs' ) ), TRUE, FALSE ) . ' name="backupuploadsexcludedirs[]" id="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
+									echo '<nobr><label for="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'"><input class="checkbox" type="checkbox"' . checked( in_array( $file, BackWPup_Option::get( $main, 'backupuploadsexcludedirs' ) ), TRUE, FALSE ) . ' name="backupuploadsexcludedirs[]" id="iduploadexcludedirs-'.sanitize_title_with_dashes( $file ).'" value="' . $file . '" /> ' . $file . $folder_size . '</label><br /></nobr>';
 								}
 							}
 							@closedir( $dir );
@@ -201,7 +196,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                 </td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="dirinclude"><?php _e( 'Extra folders to backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate folder names with a newline or a comma. The folder must set with full path!', 'backwpup' ) )?></th>
+                <th scope="row"><label for="dirinclude"><?php _e( 'Extra folders to backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate folder names with a line-break or a comma. Folders must be set with their absolute path!', 'backwpup' ) )?></th>
                 <td>
 					<textarea name="dirinclude" id="dirinclude" class="text code" rows="7" cols="50"><?php echo BackWPup_Option::get( $main, 'dirinclude' ); ?></textarea>
                 </td>
@@ -212,23 +207,15 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		<p></p>
 		<table class="form-table">
             <tr valign="top">
-                <th scope="row"><?php _e( 'Exclude special folders', 'backwpup' ); ?></th>
-                <td>
-                   <label for="idbackupexcludetempfolder"><input class="checkbox"
-                           type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupexcludetempfolder' ), TRUE, TRUE );?>
-                           name="backupexcludetempfolder" id="idbackupexcludetempfolder" value="1" /> <?php _e( 'Don\'t backup folders with backup, cache, or temp in their name.', 'backwpup' ); ?></label>
-				</td>
-            </tr>
-            <tr valign="top">
                 <th scope="row"><?php _e( 'Thumbnails in uploads', 'backwpup' ); ?></th>
                 <td>
                     <label for="idbackupexcludethumbs"><input class="checkbox"
                            type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupexcludethumbs' ), TRUE, TRUE );?>
-                           name="backupexcludethumbs" id="idbackupexcludethumbs" value="1" /> <?php _e( 'Don\'t backup thumbnails in blog uploads folder.', 'backwpup' ); BackWPup_Help::add_tab( __( 'All Images with -???x???. will be excluded. Use a Plugin like Regenerate Thumbnails to rebuild them after a restore.', 'backwpup' ) );?></label>
+                           name="backupexcludethumbs" id="idbackupexcludethumbs" value="1" /> <?php _e( 'Don\'t backup thumbnails from the site\'s uploads folder.', 'backwpup' ); BackWPup_Help::add_tab( __( 'All images with -???x???. will be excluded. Use a plugin like Regenerate Thumbnails to rebuild them after a restore.', 'backwpup' ) );?></label>
                 </td>
             </tr>
             <tr valign="top">
-                <th scope="row"><label for="idfileexclude"><?php _e( 'Exclude files/folders from backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate file / folder name parts with a newline or a comma. Excluding will look if the exclude a part of a file or folder name. For example /logs/,.log,.tmp', 'backwpup' ) )?></th>
+                <th scope="row"><label for="idfileexclude"><?php _e( 'Exclude files/folders from backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate file / folder name parts with a line-break or a comma. For example /logs/,.log,.tmp', 'backwpup' ) )?></th>
                 <td>
                     <textarea name="fileexclude" id="idfileexclude" class="text code" rows="7" cols="50"><?php echo BackWPup_Option::get( $main, 'fileexclude' ); ?></textarea>
                 </td>
@@ -243,7 +230,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 				<td>
 					<label for="idbackupspecialfiles"><input class="checkbox" id="idbackupspecialfiles"
 						   type="checkbox"<?php checked( BackWPup_Option::get( $main, 'backupspecialfiles' ), TRUE, TRUE );?>
-						   name="backupspecialfiles" value="1" /> <?php _e( 'Backup wp-config.php, robots.txt, .htaccess, .htpasswd and favicon.ico from root.', 'backwpup' ); BackWPup_Help::add_tab( __( 'This will backup the files if they not in backup. Wp-config.php will backup to if it one folder higher.', 'backwpup' ) ); ?></label>
+						   name="backupspecialfiles" value="1" /> <?php _e( 'Backup wp-config.php, robots.txt, .htaccess, .htpasswd and favicon.ico from root.', 'backwpup' ); BackWPup_Help::add_tab( __( 'If the WordPress root folder is not included in this backup job, check this option to additionally include wp-config.php, robots.txt, .htaccess, .htpasswd and favicon.ico into the backup. Your wp-config.php will be included even if you placed it in the parent directory of your root folder.', 'backwpup' ) ); ?></label>
 				</td>
 			</tr>
 		</table>
@@ -275,7 +262,6 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		sort( $dirinclude );
 		BackWPup_Option::update( $id, 'dirinclude', implode( ',', $dirinclude ) );
 
-		BackWPup_Option::update( $id, 'backupexcludetempfolder', ( isset( $_POST[ 'backupexcludetempfolder' ] ) && $_POST[ 'backupexcludetempfolder' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $id, 'backupexcludethumbs', ( isset( $_POST[ 'backupexcludethumbs' ] ) && $_POST[ 'backupexcludethumbs' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $id, 'backupspecialfiles', ( isset( $_POST[ 'backupspecialfiles' ] ) && $_POST[ 'backupspecialfiles' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $id, 'backuproot', ( isset( $_POST[ 'backuproot' ] ) && $_POST[ 'backuproot' ] == 1 ) ? TRUE : FALSE );
@@ -321,7 +307,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 	 */
 	public function job_run( $job_object ) {
 
-		trigger_error( sprintf( __( '%d. Trying to make a list of folders to back up &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Trying to make a list of folders to back up&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		$job_object->substeps_todo = 7;
 
 		//Check free memory for file list
@@ -466,14 +452,12 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 
 		$folder = trailingslashit( $folder );
 
-		if ( $dir = scandir( $folder ) ) {
+		if ( $dir = opendir( $folder ) ) {		
 			//add folder to folder list
 			$job_object->add_folder_to_backup( $folder );
 			//scan folder
-			foreach ( $dir as $file ) {
+			while ( FALSE !== ( $file = readdir( $dir ) ) ) {
 				if ( in_array( $file, array( '.', '..' ) ) )
-					continue;
-				if ( ! empty( $job_object->job[ 'backupexcludetempfolder' ] ) && ( stristr( $file, 'backup') || stristr( $file, 'cache') || stristr( $file, 'temp') ))
 					continue;
 				foreach ( $job_object->exclude_from_backup as $exclusion ) { //exclude files
 					$exclusion = trim( $exclusion );
@@ -490,6 +474,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 					$this->get_folder_list( $job_object, trailingslashit( $folder . $file ), $excludedirs );
 				}
 			}
+			closedir( $dir );
 		}
 
 		return TRUE;

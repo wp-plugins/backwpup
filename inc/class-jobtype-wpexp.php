@@ -42,7 +42,7 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 		?>
 		<table class="form-table">
 			<tr valign="top">
-				<th scope="row"><?php _e( 'What to export', 'backwpup' ) ?></th>
+				<th scope="row"><?php _e( 'Items to export', 'backwpup' ) ?></th>
 				<td>
 					<p><label for="idwpexportcontent-all"><input type="radio" name="wpexportcontent" id="idwpexportcontent-all" value="all" <?php checked( BackWPup_Option::get( $jobid, 'wpexportcontent' ), 'all' ); ?> /> <?php _e( 'All content', 'backwpup' ); ?></label></p>
 					<p><label for="idwpexportcontent-posts"><input type="radio" name="wpexportcontent" id="idwpexportcontent-posts" value="posts" <?php checked( BackWPup_Option::get( $jobid, 'wpexportcontent' ), 'posts' ); ?> /> <?php _e( 'Posts', 'backwpup' ); ?></label></p>
@@ -101,7 +101,7 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Trying to make a WordPress export to XML file &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		trigger_error( sprintf( __( '%d. Trying to create a WordPress export to XML file&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		$job_object->need_free_memory( '5M' ); //5MB free memory
 		//build filename
 		if ( empty( $job_object->temp[ 'wpexportfile' ] ) )
@@ -116,9 +116,13 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 		$args = array(
 			'content' =>  $job_object->job[ 'wpexportcontent' ]
 		);
-		export_wp( $args ); //WP export
+		@export_wp( $args ); //WP export
 		ob_end_clean(); //End output buffering
-		error_reporting( E_ALL | E_STRICT ); //enable error reporting
+		//enable error reporting
+		if ( defined( 'WP_DEBUG') && WP_DEBUG )
+			error_reporting( -1 );
+		else
+			error_reporting( E_ALL ^ E_NOTICE );
 
 		//add XML file to backup files
 		if ( is_readable( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] ) ) {

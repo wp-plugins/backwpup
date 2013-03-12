@@ -13,10 +13,14 @@ class BackWPup_File {
 	public static function get_upload_dir() {
 
 		if ( is_multisite() ) {
-			if ( defined( 'UPLOADBLOGSDIR' ) )
+			if ( get_site_option( 'ms_files_rewriting' ) && defined( 'UPLOADBLOGSDIR' ) )
 				return trailingslashit(  str_replace( '\\', '/',ABSPATH . UPLOADBLOGSDIR ) );
-			else
+			elseif ( defined( 'UPLOADS' ) && ! ( is_multisite() && get_site_option( 'ms_files_rewriting' ) ) )
 				return trailingslashit(  str_replace( '\\', '/',ABSPATH . UPLOADS ) );
+			elseif ( defined( 'MULTISITE' ) )
+				return trailingslashit(  str_replace( '\\', '/',ABSPATH . '/sites/' ) );
+			else
+				return trailingslashit(  str_replace( '\\', '/',ABSPATH ) );			
 		} else {
 			$upload_dir = wp_upload_dir();
 			return trailingslashit( str_replace( '\\', '/',$upload_dir[ 'basedir' ] ) );
@@ -65,14 +69,16 @@ class BackWPup_File {
 		if ( ! is_readable( $folder ) )
 			return $files_size; 
 		
-		$folder_content = scandir( $folder );
-		foreach( $folder_content as $file ) {
-			if ( in_array( $file, array( '.', '..' ) ) )
-				continue;
-			if ( is_file( $folder . '/' . $file ) )
-				$files_size = $files_size + @filesize( $folder . '/' . $file );
-			if ( $deep && is_dir( $folder . '/' . $file ) )
-				$files_size = $files_size + self::get_folder_size( $folder . '/' . $file, TRUE );
+		if ( $dir = opendir( $folder ) ) {
+			while ( FALSE !== ( $file = readdir( $dir ) ) ) {
+				if ( in_array( $file, array( '.', '..' ) ) )
+					continue;
+				if ( is_file( $folder . '/' . $file ) )
+					$files_size = $files_size + @filesize( $folder . '/' . $file );
+				if ( $deep && is_dir( $folder . '/' . $file ) )
+					$files_size = $files_size + self::get_folder_size( $folder . '/' . $file, TRUE );
+			}
+			closedir( $dir );
 		}
 
 		return $files_size;

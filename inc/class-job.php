@@ -59,13 +59,9 @@ final class BackWPup_Job {
 	 */
 	public $errors = 0;
 	/**
-	 * @var string the last log massage
+	 * @var string the last log message
 	 */
 	public $lastmsg = '';
-	/**
-	 * @var int Number of restarts
-	 */
-	private $restarts = 0;
 	/**
 	 * @var array of steps to do
 	 */
@@ -134,6 +130,10 @@ final class BackWPup_Job {
 	 * @var string path to remove from file path
 	 */
 	public $remove_path = '';
+	/**
+	 * @var bool maintenance mode can used
+	 */
+	private $maintenance_mode = TRUE;
 
 	/**
 	 *
@@ -325,8 +325,8 @@ final class BackWPup_Job {
 	 */
 	public function __sleep(){
 		//not saved:  'temp',
-		return array( 'jobstarttype', 'job', 'start_time', 'logfile', 'backup_folder', 'folder_list_file',
-					  'backup_file', 'backup_filesize', 'pid', 'timestamp_last_update', 'warnings', 'errors', 'lastmsg', 'restarts',
+		return array( 'jobstarttype', 'job', 'start_time', 'logfile', 'backup_folder', 'folder_list_file', 'maintenance_mode',
+					  'backup_file', 'backup_filesize', 'pid', 'timestamp_last_update', 'warnings', 'errors', 'lastmsg',
 					  'steps_todo', 'steps_done', 'steps_data', 'step_working', 'substeps_todo', 'substeps_done', 'step_percent',
 					  'substep_percent', 'additional_files_to_backup', 'exclude_from_backup', 'count_files',
 					  'count_filesize', 'count_folder', 'count_files_in_folder', 'count_filesize_in_folder', 'remove_path' );
@@ -718,21 +718,48 @@ final class BackWPup_Job {
 						$this->substeps_todo = 0;
 					}
 					//restart on every job step expect end and only on http connection
-					if ( ! defined( 'STDIN' ) && ! defined( 'ALTERNATE_WP_CRON' ) && BackWPup_Option::get( 'cfg', 'jobsteprestart' ) && $this->step_working != 'END' ) {
-						//do things for a clean restart
-						$this->pid = 0;
-						$this->jobstarttype = 'restart';
-						$this->maintenance_mode( FALSE );
-						$this->update_working_data( TRUE );
-						remove_action( 'shutdown', array( $this, 'shutdown' ) );
-						self::get_jobrun_url( 'restart' );
-						exit();
-					}
+					if ( BackWPup_Option::get( 'cfg', 'jobsteprestart' ) )
+						$this->do_restart();
 				}
 				if ( $this->steps_data[ $this->step_working ][ 'STEP_TRY' ] > BackWPup_Option::get( 'cfg', 'jobstepretry' ) )
 					$this->log( __( 'Step aborted: too many attempts!', 'backwpup' ), E_USER_ERROR );
 			}
 		}
+	}
+
+	/**
+	 * Do a job restart
+	 */
+	public function do_restart() {
+		
+		//no restart if no working job
+		if ( ! self::get_working_data( FALSE ) )
+			exit();
+		
+		//no restart if in end step
+		if ( $this->step_working == 'END' )
+			return;
+		
+		//no restart on cli usage
+		if ( defined( 'STDIN' ) )
+			$this->end();
+		
+		//do things for a clean restart
+		$this->pid = 0;
+		$this->jobstarttype = 'restart';
+		$this->set_maintenance_mode( FALSE );
+		$this->update_working_data( TRUE );
+		remove_action( 'shutdown', array( $this, 'shutdown' ) );
+		//do restart
+		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
+			//schedule restart for now
+			wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => 'restart' ) );
+			wp_schedule_single_event( time() + 2, 'backwpup_cron', array( 'id' => 'restart' ) );
+		} else {
+			self::get_jobrun_url( 'restart' );
+		}
+		exit();
+		
 	}
 
 	/**
@@ -840,28 +867,12 @@ final class BackWPup_Job {
 		//Put sigterm to log
 		if ( ! empty( $args[ 0 ] ) )
 			$this->log( sprintf( __( 'Signal %d is sent to script!', 'backwpup' ), $args[ 0 ] ), E_USER_ERROR );
-		//restarts count
-		$this->restarts ++;
-		//Back from maintenance
-		$this->maintenance_mode( FALSE );
-		//set jobstarttype to restart
-		$this->jobstarttype = 'restart';
-		$this->pid = 0;
-		//no restart if no working job
-		if ( ! self::get_working_data( FALSE ) )
-			exit();
 
 		//Restart on http job
-		$this->update_working_data( TRUE );
-
-		if ( ! defined( 'STDIN' ) ) {
-			$this->log( sprintf( __( '%d. Script stopped! Will start again.', 'backwpup' ), $this->restarts ) );
-			if ( ! defined( 'ALTERNATE_WP_CRON' ) || ! ALTERNATE_WP_CRON )
-				self::get_jobrun_url( 'restart' );
-		} elseif ( $this->step_working != 'END' ) {
-			$this->end();
-		}
-		exit();
+		if ( ! defined( 'STDIN' ) )
+			$this->log( __( 'Script stopped! Will start again.', 'backwpup' ) );
+		
+		$this->do_restart();
 	}
 
 
@@ -891,7 +902,7 @@ final class BackWPup_Job {
 		//create folder if it not exists
 		if ( ! is_dir( $folder ) ) {
 			if ( ! wp_mkdir_p( $folder ) ) {
-				trigger_error( sprintf( __( 'Can not create folder: %1$s', 'backwpup' ), $folder ), E_USER_ERROR );
+				trigger_error( sprintf( __( 'Cannot create folder: %1$s', 'backwpup' ), $folder ), E_USER_WARNING );
 
 				return FALSE;
 			}
@@ -899,7 +910,7 @@ final class BackWPup_Job {
 
 		//check is writable dir
 		if ( ! is_writable( $folder ) ) {
-			trigger_error( sprintf( __( 'Folder "%1$s" is not writable', 'backwpup' ), $folder ), E_USER_ERROR );
+			trigger_error( sprintf( __( 'Folder "%1$s" is not writable', 'backwpup' ), $folder ), E_USER_WARNING );
 
 			return FALSE;
 		}
@@ -929,10 +940,10 @@ final class BackWPup_Job {
 
 	/**
 	 *
-	 * The error handler to write massage to log
+	 * The error handler to write message to log
 	 *
 	 * @internal param int     the error number (E_USER_ERROR,E_USER_WARNING,E_USER_NOTICE, ...)
-	 * @internal param string  the error massage
+	 * @internal param string  the error message
 	 * @internal param string  the full path of file with error (__FILE__)
 	 * @internal param int     the line in that is the error (__LINE__)
 	 *
@@ -945,14 +956,14 @@ final class BackWPup_Job {
 		if ( error_reporting() == 0 )
 			return TRUE;
 
-		//if first the massage an second the type switch it on user errors
+		//if first the message an second the type switch it on user errors
 		if ( isset( $args[ 1 ] ) && in_array( $args[ 1 ], array( E_USER_NOTICE, E_USER_WARNING, E_USER_ERROR, 16384 ) ) ) {
 			$temp 		= $args[ 0 ];
 			$args[ 0 ] 	= $args[ 1 ];
 			$args[ 1 ] 	= $temp;
 		}
 
-		//if first the massage and not type set
+		//if first the message and not type set
 		if ( ! isset( $args[ 1 ] ) && ! is_int( $args[ 0 ] ) ) {
 			$args[ 1 ] = $args[ 0 ];
 			$args[ 0 ] = E_USER_NOTICE;
@@ -1010,15 +1021,16 @@ final class BackWPup_Job {
 
 		$in_file = str_replace( str_replace( '\\', '/', ABSPATH ), '', str_replace( '\\', '/', $args[ 2 ] ) );
 
-		//print massage to cli
+		//print message to cli
 		if ( defined( 'STDIN' ) && defined( 'STDOUT' ) )
 			fwrite( STDOUT, '[' . date_i18n( 'd-M-Y H:i:s' ) . '] ' . strip_tags( $messagetype ) . str_replace( '&hellip;', '...', strip_tags( $args[ 1 ] ) ) . PHP_EOL ) ;
 		//log line
 		$timestamp = '<span datetime="' . date_i18n( 'c' ) . '" title="[Type: ' . $args[ 0 ] . '|Line: ' . $args[ 3 ] . '|File: ' . $in_file . '|Mem: ' . size_format( @memory_get_usage( TRUE ), 2 ) . '|Mem Max: ' . size_format( @memory_get_peak_usage( TRUE ), 2 ) . '|Mem Limit: ' . ini_get( 'memory_limit' ) . '|PID: ' . self::get_pid() . '|Query\'s: ' . get_num_queries() . ']">[' . date_i18n( 'd-M-Y H:i:s' ) . ']</span> ';
 		//ste last Message
-		$this->lastmsg = $messagetype . $args[ 1 ] . '</samp>';
+		if ( $args[ 0 ] == E_NOTICE || $args[ 0 ] == E_USER_NOTICE )
+			$this->lastmsg = $messagetype . htmlentities( $args[ 1 ], ENT_COMPAT , get_bloginfo( 'charset' ), FALSE ) . '</samp>';
 		//write log file
-		file_put_contents( $this->logfile, $timestamp . $messagetype . $args[ 1 ] . '</samp>' . PHP_EOL, FILE_APPEND );
+		file_put_contents( $this->logfile, $timestamp . $messagetype . htmlentities( $args[ 1 ], ENT_COMPAT , get_bloginfo( 'charset' ), FALSE ) . '</samp>' . PHP_EOL, FILE_APPEND );
 
 		//write new log header
 		if ( $adderrorwarning ) {
@@ -1073,6 +1085,9 @@ final class BackWPup_Job {
 
 		//set execution time again
 		@set_time_limit( 0 );
+		
+		//check free memory
+		$this->need_free_memory( '10M' );
 
 		//check MySQL connection to WordPress Database and reconnect if needed
 		if ( is_resource( $wpdb->dbh ) ) {
@@ -1117,7 +1132,7 @@ final class BackWPup_Job {
 
 		//Back from maintenance if not
 		if ( is_file( ABSPATH . '.maintenance' ) || ( defined( 'FB_WM_TEXTDOMAIN' ) && ( get_site_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 || get_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 ) ) )
-			$this->maintenance_mode( FALSE );
+			$this->set_maintenance_mode( FALSE );
 
 		//delete old logs
 		if ( BackWPup_Option::get( 'cfg', 'maxlogs' ) ) {
@@ -1246,12 +1261,35 @@ final class BackWPup_Job {
 
 	/**
 	 *
-	 * Ste blog to maintenance mode
+	 * Set blog to maintenance mode and back
 	 *
 	 * @param bool $enable set to true to enable maintenance
 	 */
-	public function maintenance_mode( $enable = FALSE ) {
+	public function set_maintenance_mode( $enable = FALSE ) {
+		
+		//do not deactivate maintenance if active
+		if ( $enable ) {
+			$is_active = FALSE;
+			if ( class_exists( 'WPMaintenanceMode' ) ) {
+				if ( is_multisite() && is_plugin_active_for_network( FB_WM_BASENAME ) )
+					$is_active = update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
+				else
+					$is_active = update_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
+			}
+			
+			if ( ! empty( $is_active ) )			
+				$this->maintenance_mode = FALSE;
+		}
+		
+		//Not activate Maintenance mode on runnow
+		if ( ! class_exists( 'WPMaintenanceMode' ) && $this->jobstarttype == 'runnow' || $this->jobstarttype == 'runnowalt' )
+			$this->maintenance_mode = FALSE;
+		
+		//exit on not allowed
+		if ( ! $this->maintenance_mode )
+			return;
 
+		//Activate Maintenance mode
 		if ( $enable ) {
 			$this->log( __( 'Set blog into maintenance mode', 'backwpup' ), E_USER_NOTICE );
 			if ( class_exists( 'WPMaintenanceMode' ) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
@@ -1259,28 +1297,24 @@ final class BackWPup_Job {
 					update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
 				else
 					update_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
-			}
-			else { //WP Support
-				if ( $this->jobstarttype == 'runnow' || $this->jobstarttype == 'runnowalt' ) {
-					$this->log( __( 'WordPress Maintenance mode not activated on Manual run. Because it disappears displaying of working progress.', 'backwpup' ), E_USER_NOTICE );
-					return;
-				}
+			} else { //WP Support
 				if ( FALSE === file_put_contents( ABSPATH . '.maintenance', '<?php $upgrading = ' . time() . '; ?>' ) )
 					$this->log( __( 'Cannot set blog into maintenance mode! .maintenance is not writable!', 'backwpup' ), E_USER_WARNING );
 			}
+			
+			return;
 		}
-		else {
-			if ( is_file( ABSPATH . '.maintenance' ) or ( defined( 'FB_WM_TEXTDOMAIN' ) && ( get_site_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 ) ) ) {
-				$this->log( __( 'Set blog to normal mode', 'backwpup' ), E_USER_NOTICE );
-				if ( class_exists( 'WPMaintenanceMode' ) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
-					if ( is_multisite() && is_plugin_active_for_network( FB_WM_BASENAME ) )
-						update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
-					else
-						update_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
-				}
-				else { //WP Support
-					@unlink( ABSPATH . '.maintenance' );
-				}
+
+		//deactivate Maintenance mode		
+		if ( is_file( ABSPATH . '.maintenance' ) || ( defined( 'FB_WM_TEXTDOMAIN' ) && ( get_site_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 || get_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 ) ) ) {
+			$this->log( __( 'Set blog to normal mode', 'backwpup' ), E_USER_NOTICE );
+			if ( class_exists( 'WPMaintenanceMode' ) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
+				if ( is_multisite() && is_plugin_active_for_network( FB_WM_BASENAME ) )
+					update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
+				else
+					update_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
+			} else { //WP Support
+				@unlink( ABSPATH . '.maintenance' );
 			}
 		}
 	}
@@ -1302,8 +1336,6 @@ final class BackWPup_Job {
 				$newmemory = round( $needmemory / 1024 / 1024 / 1024 ) . 'G';
 			if ( $oldmem = @ini_set( 'memory_limit', $newmemory ) )
 				$this->log( sprintf( __( 'Memory increased from %1$s to %2$s', 'backwpup' ), $oldmem, @ini_get( 'memory_limit' ) ), E_USER_NOTICE );
-			else
-				$this->log( sprintf( __( 'Can not increase memory limit. The current value is %1$s', 'backwpup' ), @ini_get( 'memory_limit' ) ), E_USER_WARNING );
 		}
 	}
 
@@ -1587,8 +1619,8 @@ final class BackWPup_Job {
 			return $files;
 		}
 
-		if ( $dir = scandir( $folder ) ) {
-			foreach ( $dir as $file ) {
+		if ( $dir = opendir( $folder ) ) {
+			while ( FALSE !== ( $file = readdir( $dir ) ) ) {
 				if ( in_array( $file, array( '.', '..' ) ) )
 					continue;
 				foreach ( $this->exclude_from_backup as $exclusion ) { //exclude files
@@ -1608,6 +1640,7 @@ final class BackWPup_Job {
 					$this->count_filesize_in_folder = $this->count_filesize_in_folder + @filesize( $folder . $file );
 				}
 			}
+			closedir( $dir );
 		}
 
 		return $files;
@@ -1622,14 +1655,24 @@ final class BackWPup_Job {
 		$folders_to_backup = $this->get_folders_to_backup();
 
 		$this->substeps_todo = $this->count_folder  + 1;
+		
+		//initial settings for restarts in archiving
+		if ( ! isset( $this->steps_data[ $this->step_working ]['step_size'] ) )
+			$this->steps_data[ $this->step_working ]['step_size'] = 0;
+		if ( ! isset( $this->steps_data[ $this->step_working ]['done_files'] ) )
+			$this->steps_data[ $this->step_working ]['done_files'] = array();
+		if ( ! isset( $this->steps_data[ $this->step_working ]['folder_files'] ) )
+			$this->steps_data[ $this->step_working ]['folder_files'] = array();
 
-		$this->log( sprintf( __( '%d. Trying to create backup archive &hellip;', 'backwpup' ), $this->steps_data[ $this->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		if ( $this->substeps_done == 0 )
+			$this->log( sprintf( __( '%d. Trying to create backup archive &hellip;', 'backwpup' ), $this->steps_data[ $this->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 
 		try {
 			$backup_archive = new BackWPup_Create_Archive( $this->backup_folder . $this->backup_file );
 
 			//show method for creation
-			$this->log( sprintf( _x( 'Compression method is %s', 'Archive compression method', 'backwpup'), $backup_archive->get_method() ) );
+			if ( $this->substeps_done == 0 )
+				$this->log( sprintf( _x( 'Compression method is %s', 'Archive compression method', 'backwpup'), $backup_archive->get_method() ) );
 
 			//add extra files
 			if ( $this->substeps_done == 0 ) {
@@ -1638,24 +1681,45 @@ final class BackWPup_Job {
 						$backup_archive->add_file( $file, basename( $file ) );
 						$this->count_files ++;
 						$this->count_filesize = filesize( $file );
+						$this->steps_data[ $this->step_working ]['step_size'] += filesize( $file );
 						$this->update_working_data();
 					}
 				}
 				$this->substeps_done ++;
 			}
+			
 			//add normal files
+			$jobrestartarchivesize = BackWPup_Option::get( 'cfg', 'jobrestartarchivesize' );
 			for ( $i = $this->substeps_done - 1; $i < $this->substeps_todo - 1; $i ++ ) {
-				$files = $this->get_files_in_folder( $folders_to_backup[ $i ] );
-				$backup_archive->add_empty_folder( $folders_to_backup[ $i ], ltrim( str_replace( $this->remove_path, '', $folders_to_backup[ $i ] ), '/' ) );
-				if ( count( $files ) > 0 ) {
-					foreach ( $files as $file ) {
+				$this->steps_data[ $this->step_working ]['folder_files'] = $this->get_files_in_folder( $folders_to_backup[ $i ] );
+				if ( empty( $this->steps_data[ $this->step_working ]['done_files'] ) && empty( $this->steps_data[ $this->step_working ]['folder_files'] ) )
+					$backup_archive->add_empty_folder( $folders_to_backup[ $i ], ltrim( str_replace( $this->remove_path, '', $folders_to_backup[ $i ] ), '/' ) );
+				if ( count( $this->steps_data[ $this->step_working ]['folder_files'] ) > 0 ) {
+					foreach ( $this->steps_data[ $this->step_working ]['folder_files'] as $file ) {
+						//restart if size reached in MB
+						if ( ! empty( $jobrestartarchivesize ) && ! defined( 'STDIN' ) && $this->steps_data[ $this->step_working ]['step_size'] > $jobrestartarchivesize * 1024 * 1024 ) {
+							$this->steps_data[ $this->step_working ]['step_size'] = 0;
+							$this->steps_data[ $this->step_working ][ 'STEP_TRY' ] -= 1; //reduce step try because normal restart
+							unset( $backup_archive );
+							$this->do_restart();
+						}
+						//jump over files that are already archived
+						if ( in_array( $file, $this->steps_data[ $this->step_working ]['done_files'] ) )
+							continue;
+						//generate filename in archive
 						$in_archive_filename = ltrim( str_replace( $this->remove_path, '', $file ), '/' );
+						//add file to archive
 						$backup_archive->add_file( $file, $in_archive_filename );
+						//count settings					
+						$this->steps_data[ $this->step_working ]['done_files'][] = $file;
+						$this->steps_data[ $this->step_working ]['step_size'] += filesize( $file );
 						$this->update_working_data();
 					}
 				}
 				$this->substeps_done ++;
+				$this->steps_data[ $this->step_working ]['done_files'] = array();
 			}
+			$backup_archive->close();
 			unset( $backup_archive );
 			$this->log( __( 'Backup archive created.', 'backwpup' ), E_USER_NOTICE );
 		} catch ( Exception $e ) {
@@ -1794,17 +1858,17 @@ final class BackWPup_Job {
 
 		// Is function avail
 		if ( ! function_exists( 'shell_exec' ) )
-			return false;
+			return FALSE;
 
 		// Is shell_exec disabled?
 		if ( in_array( 'shell_exec', array_map( 'trim', explode( ',', @ini_get( 'disable_functions' ) ) ) ) )
-			return false;
+			return FALSE;
 
 		// Can we issue a simple echo command?
 		if ( ! @shell_exec( 'echo backwpup' ) )
-			return false;
+			return FALSE;
 
-		return true;
+		return TRUE;
 
 	}
 }

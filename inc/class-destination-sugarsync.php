@@ -24,7 +24,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 	 * @return array
 	 */
 	public function option_defaults() {
-		return array( 'sugarrefreshtoken' => '', 'sugarroot' => '', 'sugardir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'sugarmaxbackups' => 0 );
+		return array( 'sugarrefreshtoken' => '', 'sugarroot' => '', 'sugardir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'sugarmaxbackups' => 15 );
 	}
 
 
@@ -41,7 +41,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 			<tr valign="top">
 				<th scope="row"><?php _e( 'Authentication', 'backwpup' ); ?></th>
                 <td>
-                    <label for="sugaremail"><?php _e( 'E-mail address:', 'backwpup' ); ?><br/>
+                    <label for="sugaremail"><?php _e( 'E-Mail address:', 'backwpup' ); ?><br/>
                     <input id="sugaremail" name="sugaremail" type="text"
 						   value="<?php if ( isset( $_POST[ 'sugaremail' ] ) ) echo $_POST[ 'sugaremail' ];?>" class="large-text" autocomplete="off" /></label>
 					<br/>
@@ -53,7 +53,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 					<input type="submit" id="idauthbutton" name="authbutton" class="button-primary" accesskey="d"
 						   value="<?php _e( 'Sugarsync authenticate!', 'backwpup' ); ?>"/>
 					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" name="authbutton" class="button"
-														 value="<?php _e( 'Create Sugarsync Account', 'backwpup' ); ?>"/>
+														 value="<?php _e( 'Create Sugarsync account', 'backwpup' ); ?>"/>
                 </td>
             </tr>
 		<?php } else { ?>
@@ -68,7 +68,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 		<?php } ?>
         </table>
 
-        <h3 class="title"><?php _e( 'SgarSync Root', 'backwpup' ); ?></h3>
+        <h3 class="title"><?php _e( 'SugarSync Root', 'backwpup' ); ?></h3>
         <p></p>
         <table class="form-table">
             <tr valign="top">
@@ -113,11 +113,11 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 				if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) {
 					?>
                     <label for="idsugarmaxbackups"><input id="idsugarmaxbackups" name="sugarmaxbackups" type="text" size="3" value="<?php echo BackWPup_Option::get( $jobid, 'sugarmaxbackups' );?>" class="small-text" />&nbsp;
-					<?php  _e( 'Number of files to hold in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
+					<?php  _e( 'Number of files to keep in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
 					<?php } else { ?>
                     <label for="idsugarsyncnodelete"><input class="checkbox" value="1"
                            type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'sugarsyncnodelete' ), TRUE ); ?>
-                           name="sugarsyncnodelete" id="idsugarsyncnodelete" /> <?php _e( 'Do not delete files on sync to destination!', 'backwpup' ); ?></label>
+                           name="sugarsyncnodelete" id="idsugarsyncnodelete" /> <?php _e( 'Do not delete files while syncing to destination!', 'backwpup' ); ?></label>
 					<?php } ?>
             </td>
         </tr>
@@ -148,7 +148,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 			BackWPup_Option::delete( $jobid, 'sugarrefreshtoken' );
 		}
 
-		if ( isset( $_POST[ 'authbutton' ] ) && $_POST[ 'authbutton' ] == __( 'Create Sugarsync Account', 'backwpup' ) ) {
+		if ( isset( $_POST[ 'authbutton' ] ) && $_POST[ 'authbutton' ] == __( 'Create Sugarsync account', 'backwpup' ) ) {
 			try {
 				$sugarsync = new BackWPup_Destination_SugarSync_API();
 				$sugarsync->create_account( $_POST[ 'sugaremail' ], $_POST[ 'sugarpass' ] );
@@ -240,30 +240,30 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 	public function job_run_archive( $job_object ) {
 
 		$job_object->substeps_todo = 2 + $job_object->backup_filesize;
-		$job_object->log( sprintf( __( '%d. Try to send backup to SugarSync &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Try to send backup to SugarSync&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 
 		try {
 			$sugarsync = new BackWPup_Destination_SugarSync_API( $job_object->job[ 'sugarrefreshtoken' ] );
 			//Check Quota
 			$user = $sugarsync->user();
 			if ( ! empty( $user->nickname ) )
-				$job_object->log( sprintf( __( 'Authed to SugarSync with Nick %s', 'backwpup' ), $user->nickname ), E_USER_NOTICE );
+				$job_object->log( sprintf( __( 'Authenticated to SugarSync with nickname %s', 'backwpup' ), $user->nickname ), E_USER_NOTICE );
 			$sugarsyncfreespase = (float)$user->quota->limit - (float)$user->quota->usage; //float fixes bug for display of no free space
 			if ( $job_object->backup_filesize > $sugarsyncfreespase ) {
-				$job_object->log( __( 'No free space left on SugarSync!', 'backwpup' ), E_USER_ERROR );
+				$job_object->log( sprintf( _x( 'Not enough disk space available on SugarSync. Available: %s.','Available space on SugarSync', 'backwpup' ), size_format( $sugarsyncfreespase, 2 ) ), E_USER_ERROR );
 				$job_object->substeps_todo = 1 + $job_object->backup_filesize;
 
 				return TRUE;
 			}
 			else {
-				$job_object->log( sprintf( __( '%s free on SugarSync', 'backwpup' ), size_format( $sugarsyncfreespase, 2 ) ), E_USER_NOTICE );
+				$job_object->log( sprintf( __( '%s available at SugarSync', 'backwpup' ), size_format( $sugarsyncfreespase, 2 ) ), E_USER_NOTICE );
 			}
 			//Create and change folder
 			$sugarsync->mkdir( $job_object->job[ 'sugardir' ], $job_object->job[ 'sugarroot' ] );
 			$dirid = $sugarsync->chdir( $job_object->job[ 'sugardir' ], $job_object->job[ 'sugarroot' ] );
 			//Upload to SugarSync
 			$job_object->substeps_done = 0;
-			$job_object->log( __( 'Upload to SugarSync now started &hellip;', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Starting upload to SugarSync&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
 			$reponse = $sugarsync->upload( $job_object->backup_folder . $job_object->backup_file );
 			if ( is_object( $reponse ) ) {
 				if ( ! empty( $job_object->job[ 'jobid' ] ) )
@@ -272,7 +272,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 				$job_object->log( sprintf( __( 'Backup transferred to %s', 'backwpup' ), 'https://' . $user->nickname . '.sugarsync.com/' . $sugarsync->showdir( $dirid ) . $job_object->backup_file ), E_USER_NOTICE );
 			}
 			else {
-				$job_object->log( __( 'Can not transfer backup to SugarSync!', 'backwpup' ), E_USER_ERROR );
+				$job_object->log( __( 'Cannot transfer backup to SugarSync!', 'backwpup' ), E_USER_ERROR );
 
 				return FALSE;
 			}

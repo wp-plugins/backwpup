@@ -65,7 +65,7 @@ class BackWPup_Adminbar {
 			$wp_admin_bar->add_menu( array(
 										  'id'     => 'backwpup_working',
 										  'parent' => 'backwpup_jobs',
-										  'title'  => __( 'See Working!', 'backwpupadminbar' ),
+										  'title'  => __( 'Now Running', 'backwpupadminbar' ),
 										  'href'   => network_admin_url( 'admin.php' ) . '?page=backwpupjobs'
 									 ) );
 			$wp_admin_bar->add_menu( array(
@@ -108,26 +108,6 @@ class BackWPup_Adminbar {
 									  'href'   => network_admin_url( 'admin.php' ) . '?page=backwpupbackups'
 								 ) );
 
-		if ( current_user_can( 'backwpup' ) )
-			$wp_admin_bar->add_menu( array(
-									  'id'     => 'backwpup_wizard',
-									  'parent' => 'backwpup',
-									  'title'  => __( 'Wizards', 'backwpupadminbar' ),
-									  'href'   => network_admin_url( 'admin.php' ) . '?page=backwpupwizard'
-								 ) );
-
-		//add wizards
-		$wizards = BackWPup::get_wizards();
-		foreach ( $wizards as $wizard_class ) {
-			if ( ! current_user_can( $wizard_class->info[ 'cap' ] ) )
-				continue;
-			$wp_admin_bar->add_menu( array(
-										  'id'     => 'backwpup_wizard_' . $wizard_class->info[ 'ID' ],
-										  'parent' => 'backwpup_wizard',
-										  'title'  => $wizard_class->info[ 'name' ],
-										  'href'   => network_admin_url( 'admin.php' ) . '?page=backwpupwizard&wizard_start=' . $wizard_class->info[ 'ID' ]
-									 ) );
-		}
 
 		//add jobs
 		$jobs = (array)BackWPup_Option::get_job_ids();

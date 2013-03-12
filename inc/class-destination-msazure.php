@@ -32,7 +32,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 'msazureaccname' => '', 'msazurekey' => '', 'msazurecontainer' => '', 'msazuredir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'msazuremaxbackups' => 0, 'msazuresyncnodelete' => TRUE );
+		return array( 'msazureaccname' => '', 'msazurekey' => '', 'msazurecontainer' => '', 'msazuredir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'msazuremaxbackups' => 15, 'msazuresyncnodelete' => TRUE );
 	}
 
 
@@ -99,11 +99,11 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 					if ( BackWPup_Option::get( $jobid, 'backuptype' ) == 'archive' ) {
 						?>
                         <label for="idmsazuremaxbackups"><input id="idmsazuremaxbackups" name="msazuremaxbackups" type="text" size="3" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'msazuremaxbackups' ) );?>" class="small-text" />&nbsp;
-						<?php  _e( 'Number of files to hold in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
+						<?php  _e( 'Number of files to keep in folder.', 'backwpup' ); BackWPup_Help::tip( __( 'Oldest files will be deleted first. 0 = no deletion', 'backwpup' ) ); ?></label>
 						<?php } else { ?>
 						<label for="idmsazuresyncnodelete"><input class="checkbox" value="1"
 							   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'msazuresyncnodelete' ), TRUE ); ?>
-							   name="msazuresyncnodelete" id="idmsazuresyncnodelete" /> <?php _e( 'Do not delete files on sync to destination!', 'backwpup' ); ?></label>
+							   name="msazuresyncnodelete" id="idmsazuresyncnodelete" /> <?php _e( 'Do not delete files while syncing to destination!', 'backwpup' ); ?></label>
 						<?php } ?>
 				</td>
 			</tr>
@@ -218,7 +218,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 
 		$job_object->substeps_todo = 2;
 
-		$job_object->log( sprintf( __( '%d. Try sending backup to a Microsoft Azure (Blob) &hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Try sending backup to a Microsoft Azure (Blob)&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
 		try {
 
 			$blobRestProxy = WindowsAzure\Common\ServicesBuilder::getInstance()->createBlobService('DefaultEndpointsProtocol=https;AccountName=' . $job_object->job[ 'msazureaccname' ] . ';AccountKey=' . BackWPup_Encryption::decrypt( $job_object->job[ 'msazurekey' ] ) );
@@ -243,7 +243,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 			}
 
 
-			$job_object->log( __( 'Upload to MS Azure now started &hellip;', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Starting upload to MS Azure&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
 			$blobRestProxy->createBlockBlob( $job_object->job[ 'msazurecontainer' ], $job_object->job[ 'msazuredir'  ] . $job_object->backup_file,  fopen( $job_object->backup_folder . $job_object->backup_file, 'r' ) );
 			$job_object->substeps_done = 1;
 			$job_object->log( sprintf( __( 'Backup transferred to %s', 'backwpup' ), $container_url . '/' . $job_object->job[ 'msazuredir'  ] . $job_object->backup_file ), E_USER_NOTICE );
@@ -376,13 +376,13 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 		}
 
 		if ( empty( $args[ 'msazureaccname' ] ) )
-			_e( 'Missing Account Name!', 'backwpup' );
+			_e( 'Missing account name!', 'backwpup' );
 		elseif ( empty( $args[ 'msazurekey' ] ) )
-			_e( 'Missing Access Key!', 'backwpup' );
+			_e( 'Missing access key!', 'backwpup' );
 		elseif ( ! empty( $error ) )
 			echo esc_html( $error );
 		elseif ( empty( $containers ) )
-			_e( 'No Container found!', 'backwpup' );
+			_e( 'No container found!', 'backwpup' );
 		echo '</span>';
 
 		if ( !empty( $containers ) ) {
