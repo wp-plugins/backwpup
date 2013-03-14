@@ -154,12 +154,10 @@ class BackWPup_Page_Editjob {
 					if ( $_POST[ 'cronbtype' ] == 'hour' )
 						BackWPup_Option::update( $jobid, 'cron', $_POST[ 'hourcronminutes' ] . ' * * * *' );
 				}
-				//Save next run time
-				BackWPup_Option::update( $jobid, 'cronnextrun', BackWPup_Cron::cron_next( BackWPup_Option::get( $jobid, 'cron' ) ) );
 				//reschedule
 				wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => $jobid ) );
 				if ( BackWPup_Option::get( $jobid, 'activetype' ) == 'wpcron' ) {
-					$cronnxet = BackWPup_Option::get( $jobid, 'cronnextrun' );
+					$cronnxet = BackWPup_Cron::cron_next( BackWPup_Option::get( $jobid, 'cron' ) );
 					wp_schedule_single_event( $cronnxet, 'backwpup_cron', array( 'id' => $jobid ) );
 				}
 				break;
@@ -324,13 +322,13 @@ class BackWPup_Page_Editjob {
 				$repeathouer = 1;
 			echo '<span style="color:red;">' . sprintf( __( 'ATTENTION: Job runs every %d hours!', 'backwpup' ), $repeathouer ) . '</span><br />';
 		}
-		$nextrun = BackWPup_Cron::cron_next( $cronstamp );
+		$nextrun = BackWPup_Cron::cron_next( $cronstamp ) + ( get_option( 'gmt_offset' ) * 3600 );
 		if ( 2147483647 == $nextrun ) {
 			echo '<span style="color:red;">' . __( 'ATTENTION: Can\'t calculate cron!', 'backwpup' ) . '</span><br />';
 		}
 		else {
 			_e( 'Next runtime:', 'backwpup' );
-			echo ' <b>' . date_i18n( 'D, j M Y, H:i', BackWPup_Cron::cron_next( $cronstamp ) + ( get_option( 'gmt_offset' ) * 3600 ),TRUE ) . '</b>';
+			echo ' <b>' . date_i18n( 'D, j M Y, H:i', $nextrun, TRUE ) . '</b>';
 		}
 		echo "</p>";
 

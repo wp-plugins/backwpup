@@ -263,8 +263,6 @@ class BackWPup_Page_BackWPup {
 					echo "</td></tr>";
 				}
 				else {
-					$cronnextrun = BackWPup_Option::get( $jobid, 'cronnextrun' );
-					$cronnextrun = $cronnextrun + ( get_option( 'gmt_offset' ) * 3600 );
 					if ( ! $alternate ) {
 						echo '<tr>';
 						$alternate = TRUE;
@@ -272,7 +270,11 @@ class BackWPup_Page_BackWPup {
 						echo '<tr class="alternate">';
 						$alternate = FALSE;
 					}
-					echo '<td>' . date_i18n( get_option( 'date_format' ), $cronnextrun, TRUE ) . '<br />' . date_i18n( get_option( 'time_format' ), $cronnextrun, TRUE ) . '</td>';
+					if ( $nextrun = wp_next_scheduled( 'backwpup_cron', array( 'id' => $jobid ) ) + ( get_option( 'gmt_offset' ) * 3600 ) )					
+						echo '<td>' . date_i18n( get_option( 'date_format' ), $nextrun, TRUE ) . '<br />' . date_i18n( get_option( 'time_format' ), $nextrun, TRUE ) . '</td>';
+					else
+						echo '<td><em>' . __( 'Not scheduled!', 'backwpup' ) . '</em></td>';
+
 					echo '<td><a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . $jobid, 'edit-job' ) . '" title="' . esc_attr( __( 'Edit Job', 'backwpup' ) ) . '">' . $name . '</a></td></tr>';
 				}
 			}

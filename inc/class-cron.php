@@ -156,8 +156,7 @@ class BackWPup_Cron {
 	 *
 	 * Get the local time timestamp of the next cron execution
 	 *
-	 * @param string $cronstring string of cron (* * * * *)
-	 *
+	 * @param string $cronstring  cron (* * * * *)
 	 * @return int timestamp
 	 */
 	public static function cron_next( $cronstring ) {
@@ -284,7 +283,7 @@ class BackWPup_Cron {
 		}
 
 		//calc next timestamp
-		$current_timestamp = time();
+		$current_timestamp = current_time( 'timestamp' );
 		foreach ( $cron[ 'year' ] as $year ) {
 			foreach ( $cron[ 'mon' ] as $mon ) {
 				foreach ( $cron[ 'mday' ] as $mday ) {

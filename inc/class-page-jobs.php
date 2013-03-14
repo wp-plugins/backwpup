@@ -191,13 +191,10 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					if ( is_object( $job_object ) && $job_object->job[ 'jobid' ] == $jobid )
 						$r .='<div class="job-normal"' . $job_normal_hide . '>';
 					if ( BackWPup_Option::get( $jobid, 'activetype' ) == 'wpcron' ) {
-						if ( $nextrun = wp_next_scheduled( 'backwpup_cron', array( 'id' => $jobid ) ) ) {
-							$nextrun = $nextrun + get_option( 'gmt_offset' ) * 3600;
+						if ( $nextrun = wp_next_scheduled( 'backwpup_cron', array( 'id' => $jobid ) ) + ( get_option( 'gmt_offset' ) * 3600 )  )
 							$r .= '<span title="' . sprintf( __( 'Cron: %s','backwpup'),BackWPup_Option::get( $jobid, 'cron' ) ). '">' . sprintf( __( '%1$s at %2$s by WP-Cron', 'backwpup' ) , date_i18n( get_option( 'date_format' ), $nextrun, TRUE ) , date_i18n( get_option( 'time_format' ), $nextrun, TRUE ) ) . '</span>';
-						}
-						else {
+						else
 							$r .= __( 'Not scheduled!', 'backwpup' );
-						}
 					}
 					else {
 						$r .= __( 'Inactive', 'backwpup' );
@@ -277,7 +274,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					if ( $key == "archivename" )
 						$option = str_replace( $_GET[ 'jobid' ], $newjobid, $option );
 					if ( $key == "logfile" || $key == "lastbackupdownloadurl" || $key == "lastruntime" ||
-						$key == "lastrun" || $key == "cronnextrun" )
+						$key == "lastrun" )
 						continue;
 					BackWPup_Option::update( $newjobid, $key, $option );
 				}

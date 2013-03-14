@@ -495,29 +495,36 @@ final class BackWPup_Destination_Dropbox_API {
 		if ( ! is_readable( $file ) or ! is_file( $file ) )
 			throw new BackWPup_Destination_Dropbox_API_Exception( "Error: File \"$file\" is not readable or doesn't exist." );
 
-		$file_handel      = fopen( $file, 'r' );
-		$uploadid         = NULL;
-		$offset           = 0;
 		$job_object 	  = BackWPup_Job::getInstance();
-
+		$file_handel      = fopen( $file, 'r' );
+		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] ) )
+			$job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] = NULL;
+		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'offset' ] ) )
+			$job_object->steps_data[ $job_object->step_working ][ 'offset' ] = 0;
+		//seek to current position
+		fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
+		
 		while ( $data = fread( $file_handel, 4194304 ) ) { //4194304 = 4MB
-			$chunkHandle = fopen( 'php://temp', 'rw' );
+			$chunkHandle = fopen( 'php://temp/maxmemory:4200000', 'r+' );
 			fwrite( $chunkHandle, $data );
 			rewind( $chunkHandle );
 			$url    = self::API_CONTENT_URL . self::API_VERSION_URL . 'chunked_upload';
-			$output = $this->request( $url, array( 'upload_id' => $uploadid, 'offset' => $offset ), 'PUT', $chunkHandle, strlen( $data ) );
-			fclose( $chunkHandle );
-			$job_object->curl_read_callback( NULL, NULL, strlen( $data ) );
+			$output = $this->request( $url, array( 'upload_id' => $job_object->steps_data[ $job_object->step_working ][ 'uploadid' ], 'offset' => $job_object->steps_data[ $job_object->step_working ][ 'offset' ] ), 'PUT', $chunkHandle, strlen( $data ) );
+			fclose( $chunkHandle );		
 			//args for next chunk
-			$offset   = $output[ 'offset' ];
-			$uploadid = $output[ 'upload_id' ];
-			fseek( $file_handel, $offset );
+			$job_object->steps_data[ $job_object->step_working ][ 'offset' ]   = $output[ 'offset' ];
+			$job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] = $output[ 'upload_id' ];
+			if ( $job_object->job[ 'backuptype' ] == 'archive' )
+				$job_object->substeps_done = $job_object->steps_data[ $job_object->step_working ][ 'offset' ];
+			$job_object->update_working_data();
+			//correct position
+			fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
 		}
 
 		fclose( $file_handel );
 		$url = self::API_CONTENT_URL . self::API_VERSION_URL . 'commit_chunked_upload/' . $this->root . '/' . $this->encode_path( $path );
 
-		return $this->request( $url, array( 'overwrite' => ( $overwrite ) ? 'true' : 'false', 'upload_id' => $uploadid ), 'POST' );
+		return $this->request( $url, array( 'overwrite' => ( $overwrite ) ? 'true' : 'false', 'upload_id' => $job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] ), 'POST' );
 	}
 
 	/**
@@ -724,7 +731,12 @@ final class BackWPup_Destination_Dropbox_API {
 			}
 			//redo request
 			return $this->request( $url, $args, $method, $filehandel, $filesize, $echo );
-		} elseif ( $status[ 'http_code' ] == 404 ) {
+		} 
+		elseif ( $status[ 'http_code' ] == 400 && $method == 'PUT' ) {	//correct offset on chunk uploads
+			trigger_error( '(' . $status[ 'http_code' ] . ') False offset will corrected', E_USER_NOTICE );
+			return $output;
+		}
+		elseif ( $status[ 'http_code' ] == 404 && ! empty( $output[ 'error' ] )) {
 			trigger_error( '(' . $status[ 'http_code' ] . ') ' . $output[ 'error' ], E_USER_WARNING );
 
 			return FALSE;

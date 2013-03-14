@@ -169,7 +169,6 @@ final class BackWPup_Job {
 			BackWPup_Option::update( $this->job[ 'jobid' ], 'lastrun', $this->start_time );
 			BackWPup_Option::update( $this->job[ 'jobid' ], 'logfile', $this->logfile ); //Set current logfile
 			BackWPup_Option::update( $this->job[ 'jobid' ], 'lastbackupdownloadurl', '' );
-			BackWPup_Option::update( $this->job[ 'jobid' ], 'cronnextrun', BackWPup_Cron::cron_next( BackWPup_Option::get( $this->job[ 'jobid' ], 'cron' ) ) );
 		}
 		//Set needed job values
 		$this->timestamp_last_update      = microtime( TRUE );
@@ -273,7 +272,7 @@ final class BackWPup_Job {
 		$info .= __( '[INFO] This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . PHP_EOL;
 		$info .= sprintf(__( '[INFO] BackWPup job: %1$s; %2$s', 'backwpup' ), esc_attr( $this->job[ 'name' ] ) , implode( '+', $this->job[ 'type' ] ) ) . PHP_EOL;
 		if ( $this->job[ 'activetype' ] != '' )
-			$info .= __( '[INFO] BackWPup cron:', 'backwpup' ) . ' ' . $this->job[ 'cron' ] . '; ' . date_i18n( 'D, j M Y @ H:i', $this->job[ 'cronnextrun' ] + ( get_option( 'gmt_offset' ) * 3600 ), TRUE ) . PHP_EOL;
+			$info .= __( '[INFO] BackWPup cron:', 'backwpup' ) . ' ' . $this->job[ 'cron' ] . '; ' . date_i18n( 'D, j M Y @ H:i' ) . PHP_EOL;
 		if ( $this->jobstarttype == 'cronrun' )
 			$info .= __( '[INFO] BackWPup job started from wp-cron', 'backwpup' ) . PHP_EOL;
 		elseif ( $this->jobstarttype == 'runnow' or $this->jobstarttype == 'runnowalt' )

@@ -23,7 +23,7 @@ class BackWPup_Install {
 		$activejobs = BackWPup_Option::get_job_ids( 'activetype', 'wpcron' );
 		if ( ! empty( $activejobs ) ) {
 			foreach ( $activejobs as $id ) {
-				$cronnxet = BackWPup_Option::get( $id, 'cronnextrun' );
+				$cronnxet = BackWPup_Cron::cron_next( BackWPup_Option::get( $id, 'cron') );
 				wp_schedule_single_event( $cronnxet, 'backwpup_cron', array( 'id' => $id ) );
 			}
 		}
@@ -300,7 +300,7 @@ class BackWPup_Install {
 			}
 			$jobvalue[ 'backupuploadsexcludedirs' ] = $excludes;
 			//delete not longer needed
-			unset( $jobvalue[ 'fileprefix' ], $jobvalue[ 'fileformart' ], $jobvalue[ 'scheduleintervaltype' ], $jobvalue[ 'scheduleintervalteimes' ], $jobvalue[ 'scheduleinterval' ], $jobvalue[ 'dropemail' ], $jobvalue[ 'dropepass' ], $jobvalue[ 'dropesignmethod' ] );
+			unset( $jobvalue[ 'cronnextrun' ], $jobvalue[ 'fileprefix' ], $jobvalue[ 'fileformart' ], $jobvalue[ 'scheduleintervaltype' ], $jobvalue[ 'scheduleintervalteimes' ], $jobvalue[ 'scheduleinterval' ], $jobvalue[ 'dropemail' ], $jobvalue[ 'dropepass' ], $jobvalue[ 'dropesignmethod' ] );
 			//save in options
 			foreach ( $jobvalue as $jobvaluename => $jobvaluevalue )
 				BackWPup_Option::update( $jobvalue[ 'jobid' ], $jobvaluename, $jobvaluevalue );
