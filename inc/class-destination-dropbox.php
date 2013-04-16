@@ -108,7 +108,7 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
         <tr valign="top">
             <th scope="row"><?php _e( 'Authenticate', 'backwpup' ); ?></th>
             <td><?php if ( ! BackWPup_Option::get( $jobid, 'dropboxtoken' ) && ! BackWPup_Option::get( $jobid, 'dropboxsecret' ) && ! isset( $oAuthStuff[ 'oauth_token' ] ) ) { ?>
-               		<span style="color:red;"><?php _e( 'Not authenticated!', 'backwpup' ); ?></span>&nbsp;<a href="http://db.tt/8irM1vQ0"><?php _e( 'Create Account', 'backwpup' ); ?></a><br />
+               		<span style="color:red;"><?php _e( 'Not authenticated!', 'backwpup' ); ?></span>&nbsp;<a href="http://db.tt/hvNPyV3U"><?php _e( 'Create Account', 'backwpup' ); ?></a><br />
 				<?php } else { ?>
                 	<span style="color:green;"><?php _e( 'Authenticated!', 'backwpup' ); ?></span><br />
 				<?php } ?>
