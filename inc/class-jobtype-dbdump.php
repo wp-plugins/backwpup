@@ -35,7 +35,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		global $wpdb;
 
 		$defaults = array(
-			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_title_with_dashes( DB_NAME ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => '',
+			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_file_name( DB_NAME ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => '',
 			'dbdumpmaintenance' => FALSE
 		);
 		//set only wordpress tables as default
@@ -57,11 +57,11 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 
 		?>
         <input name="dbdumpwpony" type="hidden" value="1" />
-        <h3 class="title"><?php _e( 'Settings for database dump', 'backwpup' ) ?></h3>
+        <h3 class="title"><?php _e( 'Settings for database backup', 'backwpup' ) ?></h3>
         <p></p>
         <table class="form-table">
             <tr valign="top">
-                <th scope="row"><?php _e( 'Tables to dump', 'backwpup' ); ?></th>
+                <th scope="row"><?php _e( 'Tables to backup', 'backwpup' ); ?></th>
                 <td>
                     <input type="button" class="button-secondary" id="dball" value="<?php _e( 'all', 'backwpup' ); ?>">&nbsp;
 					<input type="button" class="button-secondary" id="dbnone" value="<?php _e( 'none', 'backwpup' ); ?>">&nbsp;
@@ -133,7 +133,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		BackWPup_Option::update( $id, 'dbdumpmaintenance', ( isset( $_POST[ 'dbdumpmaintenance' ] ) && $_POST[ 'dbdumpmaintenance' ] == 1 ) ? TRUE : FALSE );
 		if ( $_POST[ 'dbdumpfilecompression' ] == '' || $_POST[ 'dbdumpfilecompression' ] == '.gz' || $_POST[ 'dbdumpfilecompression' ] == '.bz2' )
 			BackWPup_Option::update( $id, 'dbdumpfilecompression', $_POST[ 'dbdumpfilecompression' ] );
-		BackWPup_Option::update( $id, 'dbdumpfile',  sanitize_title_with_dashes( $_POST[ 'dbdumpfile' ]) );
+		BackWPup_Option::update( $id, 'dbdumpfile',  sanitize_file_name( $_POST[ 'dbdumpfile' ]) );
 		//selected tables
 		$dbdumpexclude = array();
 		$checked_db_tables = array();
@@ -160,7 +160,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		$job_object->substeps_done = 0;
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Try to dump database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Try to dump database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 
 		//build filename
 		if ( empty( $job_object->temp[ 'dbdumpfile' ] ) )

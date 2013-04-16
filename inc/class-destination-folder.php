@@ -111,11 +111,10 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
 			@set_time_limit( 0 );
 			//chunked readfile
 			ob_end_clean();
-			$handle = fopen( $get_file, 'r' );
+			$handle = fopen( $get_file, 'rb' );
 			if ( $handle ) {
 				while ( ! feof( $handle ) ) {
-					$buffer = fread( $handle, 20482048 ); //2MB chunkes
-					echo $buffer;
+					echo fread( $handle, 20482048 ); //2MB chunkes
 					ob_flush();
 					flush();
 				}
@@ -142,6 +141,8 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
 		$backup_folder  = BackWPup_Option::get( $jobid, 'backupdir' );
 		if ( $dir = opendir( $backup_folder ) ) { //make file list
 			while ( FALSE !== ( $file = readdir( $dir ) ) ) {
+				if ( in_array( $file, array( '.', '..', 'index.php', '.htaccess' ) ) )
+					continue;
 				if ( is_file( $backup_folder . $file ) ) {
 					//file list for backups
 					$files[ $filecounter ][ 'folder' ]      = $backup_folder;

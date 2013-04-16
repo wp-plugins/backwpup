@@ -1,5 +1,5 @@
 <?php
-// Amazon S3 SDK v2.2.0
+// Amazon S3 SDK v2.2.1
 // http://aws.amazon.com/de/sdkforphp2/
 // https://github.com/aws/aws-sdk-php
 if ( ! class_exists( 'Symfony\\Component\\ClassLoader\\UniversalClassLoader' ) )
@@ -76,7 +76,7 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 15, 's3syncnodelete' => TRUE, 's3multipart' => TRUE );
+		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 15, 's3syncnodelete' => TRUE, 's3multipart' => TRUE );
 	}
 
 
@@ -399,9 +399,6 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 
 			//transfer file to S3
 			$job_object->log( __( 'Starting upload to S3 Service&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
-
-			//check memory
-			$job_object->need_free_memory( '6M' );
 			
 			if ( ! $job_object->job[ 's3multipart' ] ) {
 				//Prepare Upload
@@ -431,20 +428,19 @@ class BackWPup_Destination_S3 extends BackWPup_Destinations {
 					->setClient( $s3 )
 					->setSource( $job_object->backup_folder . $job_object->backup_file )
 					->setBucket( $job_object->job[ 's3bucket' ] )
-					->setOption('ContentType', $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file ) )
-					->setOption('ACL', 'private' )
+					->setOption( 'ContentType', $job_object->get_mime_type( $job_object->backup_folder . $job_object->backup_file ) )
+					->setOption( 'ACL', 'private' )
 					->setKey( $job_object->job[ 's3dir' ] . $job_object->backup_file );
 					if ( ! empty( $job_object->job[ 's3ssencrypt' ] ) )
-						$multipart_transfer = $multipart_transfer->setOption('ServerSideEncryption', $job_object->job[ 's3ssencrypt' ] );
+						$multipart_transfer = $multipart_transfer->setOption( 'ServerSideEncryption', $job_object->job[ 's3ssencrypt' ] );
 					if ( ! empty( $job_object->job[ 's3storageclass' ] ) )
-						$multipart_transfer = $multipart_transfer->setOption('StorageClass', $job_object->job[ 's3storageclass' ] );
+						$multipart_transfer = $multipart_transfer->setOption( 'StorageClass', $job_object->job[ 's3storageclass' ] );
 					$multipart_transfer = $multipart_transfer->build();
 	
 				// Attach event listeners to the transfer object for upload progress
-				$dispatcher = $multipart_transfer->getEventDispatcher();
-				$dispatcher->addListener($multipart_transfer::AFTER_PART_UPLOAD, function ($event) {
+				$multipart_transfer->getEventDispatcher()->addListener( $multipart_transfer::AFTER_PART_UPLOAD, function ($event) {
 					$size = $event['command']->get('Body')->getContentLength();
-					$job_object = BackWPup_Job::get_working_data();
+					$job_object = BackWPup_Job::getInstance();
 					$job_object->substeps_done = $job_object->substeps_done + $size;
 					$job_object->update_working_data();
 				});

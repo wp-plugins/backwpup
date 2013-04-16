@@ -297,6 +297,9 @@ final class BackWPup_Option {
 		$key     	  = sanitize_key( trim( $key ) );
 		$jobs_options = self::jobs_options( FALSE );
 
+		if ( empty( $jobs_options ) )
+			return array();
+		
 		//get option job ids
 		if ( empty( $key ) )
 			return array_keys( $jobs_options );

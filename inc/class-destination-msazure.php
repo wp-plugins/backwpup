@@ -32,7 +32,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 'msazureaccname' => '', 'msazurekey' => '', 'msazurecontainer' => '', 'msazuredir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'msazuremaxbackups' => 15, 'msazuresyncnodelete' => TRUE );
+		return array( 'msazureaccname' => '', 'msazurekey' => '', 'msazurecontainer' => '', 'msazuredir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ), 'msazuremaxbackups' => 15, 'msazuresyncnodelete' => TRUE );
 	}
 
 

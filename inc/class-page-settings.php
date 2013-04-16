@@ -365,18 +365,18 @@ class BackWPup_Page_Settings {
 				echo '<tr title=""><td>' . __( 'cURL version', 'backwpup' ) . '</td><td>' . __( 'unavailable', 'backwpup' ) . '</td></tr>';
 			}
 			//response test
-			$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), home_url( '/' ) ), array(
+			$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), site_url( 'wp-cron.php' ) ), array(
 																																																				   'blocking'   => TRUE,
-																																																				   'sslverify'  => apply_filters( 'https_local_ssl_verify', TRUE ),
+																																																				   'sslverify'  => FALSE,
 																																																				   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
-																																																				   'user-agent' => 'BackWPup/' . BackWPup::get_plugin_data( 'Version' ) ) );
+																																																				   'user-agent' =>  BackWPup::get_plugin_data( 'user-agent' ) ) );
 			echo '<tr><td>' . __( 'Server self connect:', 'backwpup' ) . '</td><td>';
 			$test_result = '';
 			if ( is_wp_error( $raw_response ) )
 				$test_result .= sprintf( __( 'The HTTP response test get a error "%s"','backwpup' ), $raw_response->get_error_message() );
 			if ( 200 != wp_remote_retrieve_response_code( $raw_response ) )
 				$test_result .= sprintf( __( 'The HTTP response test get a false http status (%s)','backwpup' ), wp_remote_retrieve_response_code( $raw_response ) );
-			if ( trim( wp_remote_retrieve_body( $raw_response ) ) != 'Response Test O.K.' )
+			if ( ! strstr( wp_remote_retrieve_body( $raw_response ), 'Response Test O.K.' ) )
 				$test_result .= sprintf( __( 'The HTTP response gives back the false body "%s"','backwpup' ), strip_tags( wp_remote_retrieve_body( $raw_response ) ) );
 
 			if ( empty( $test_result ) )
@@ -429,7 +429,9 @@ class BackWPup_Page_Settings {
 			echo '<tr title=""><td>' . __( 'Blog Timezone', 'backwpup' ) . '</td><td>' . get_option( 'timezone_string' ) . '</td></tr>';
 			echo '<tr title=""><td>' . __( 'Blog Time offset', 'backwpup' ) . '</td><td>' . sprintf( __( '%s hours', 'backwpup' ), get_option( 'gmt_offset' ) ) . '</td></tr>';
 			echo '<tr title="WPLANG"><td>' . __( 'Blog language', 'backwpup' ) . '</td><td>' . get_bloginfo( 'language' ) . '</td></tr>';
-			echo '<tr title="utf8"><td>' . __( 'MySQL Client encoding', 'backwpup' ) . '</td><td>' . DB_CHARSET . '</td></tr>';
+			echo '<tr title="utf8"><td>' . __( 'MySQL Client encoding', 'backwpup' ) . '</td><td>';
+			echo defined( 'DB_CHARSET' ) ? DB_CHARSET : '';
+			echo '</td></tr>';
 			echo '<tr title="URF-8"><td>' . __( 'Blog charset', 'backwpup' ) . '</td><td>' . get_bloginfo( 'charset' ) . '</td></tr>';
 			echo '<tr title="&gt;=128M"><td>' . __( 'PHP Memory limit', 'backwpup' ) . '</td><td>' . ini_get( 'memory_limit' ) . '</td></tr>';
 			echo '<tr title="WP_MEMORY_LIMIT"><td>' . __( 'WP memory limit', 'backwpup' ) . '</td><td>' . WP_MEMORY_LIMIT . '</td></tr>';

@@ -31,7 +31,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 	 * @return array
 	 */
 	public function option_defaults() {
-		return array( 'pluginlistfilecompression' => '', 'pluginlistfile' => sanitize_title_with_dashes( get_bloginfo( 'name' ) ) . '.pluginlist.%Y-%m-%d' );
+		return array( 'pluginlistfilecompression' => '', 'pluginlistfile' => sanitize_file_name( get_bloginfo( 'name' ) ) . '.pluginlist.%Y-%m-%d' );
 	}
 
 	/**
@@ -88,7 +88,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Trying to generate a file with installed plugin names&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Trying to generate a file with installed plugin names&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		//build filename
 		if ( empty( $job_object->temp[ 'pluginlistfile' ] ) )
 			$job_object->temp[ 'pluginlistfile' ] = $job_object->generate_filename( $job_object->job[ 'pluginlistfile' ], 'txt' ) . $job_object->job[ 'pluginlistfilecompression' ];
@@ -137,7 +137,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 			$job_object->additional_files_to_backup[ ] = BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'pluginlistfile' ];
 			$job_object->count_files ++;
 			$job_object->count_filesize = $job_object->count_filesize + @filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'pluginlistfile' ] );
-			trigger_error( sprintf( __( 'Added plugin list file "%1$s" with %2$s to backup file list.', 'backwpup' ), $job_object->temp[ 'pluginlistfile' ], size_format( filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'pluginlistfile' ] ), 2 ) ), E_USER_NOTICE );
+			$job_object->log( sprintf( __( 'Added plugin list file "%1$s" with %2$s to backup file list.', 'backwpup' ), $job_object->temp[ 'pluginlistfile' ], size_format( filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'pluginlistfile' ] ), 2 ) ) );
 		}
 		$job_object->substeps_done = 1;
 

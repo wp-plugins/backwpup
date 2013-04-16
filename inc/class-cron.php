@@ -127,18 +127,6 @@ class BackWPup_Cron {
 		if ( ! $job_object ) {
 			//remove restart cron
 			wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => 'restart' ) );
-			//clear maintenance mode
-			if ( is_file( ABSPATH . '.maintenance' ) or ( defined( 'FB_WM_TEXTDOMAIN' ) && ( get_site_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 or get_option( FB_WM_TEXTDOMAIN . '-msqld' ) == 1 ) ) ) {
-				if ( class_exists( 'WPMaintenanceMode' ) ) { //Support for WP Maintenance Mode Plugin (Frank Bueltge)
-					if ( is_multisite() && is_plugin_active_for_network( FB_WM_BASENAME ) )
-						update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
-					else
-						update_option( FB_WM_TEXTDOMAIN . '-msqld', 0 );
-				}
-				else { //WP Support
-					unlink( ABSPATH . '.maintenance' );
-				}
-			}
 			//temp cleanup
 			if ( $dir = opendir( BackWPup::get_plugin_data( 'TEMP' ) ) ) {
 				while ( FALSE !== ( $file = readdir( $dir ) ) ) {
@@ -152,6 +140,51 @@ class BackWPup_Cron {
 		}
 	}
 
+	
+	/**
+	 * Start job if in cron and run query args are set.
+	 */
+	public static function cron_active() {
+
+		//only if cron active
+		if ( ! defined( 'DOING_CRON' ) || ! DOING_CRON )
+			return;
+			
+		//only work if backwpup_run as query var ist set and nothing else and the value ist right
+		if ( empty( $_GET[ 'backwpup_run' ] ) || ! in_array( $_GET[ 'backwpup_run' ], array( 'test','restart', 'runnow', 'runnowalt', 'runext', 'cronrun' ) ) )
+			return;
+		
+		// generate normal nonce
+		$nonce = substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-' . $_GET[ 'backwpup_run' ], 'nonce' ), - 12, 10 );
+		//special nonce on external start
+		if ( $_GET[ 'backwpup_run' ] == 'runext' )
+			$nonce = BackWPup_Option::get( 'cfg', 'jobrunauthkey' );
+		// check nonce
+		if ( empty( $_GET['_nonce'] ) || $nonce != $_GET['_nonce'] )
+			return;
+
+		//response on test
+		if ( $_GET[ 'backwpup_run' ] == 'test') {
+			@header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
+			@header( 'X-Robots-Tag: noindex, nofollow' );
+			send_nosniff_header();
+			nocache_headers();
+			die( 'Response Test O.K.' );
+		}
+
+		//check runext is allowed for job
+		if ( $_GET[ 'backwpup_run' ] == 'runext' ) {
+			$jobids_external = BackWPup_Option::get_job_ids( 'activetype', 'link' );
+			if ( !isset( $_GET[ 'jobid' ] ) || ! in_array( $_GET[ 'jobid' ], $jobids_external ) )
+				return;
+		}
+
+		//run BackWPup job
+		BackWPup_Job::start_http( $_GET[ 'backwpup_run' ] );
+		die();
+	}
+	
+	
 	/**
 	 *
 	 * Get the local time timestamp of the next cron execution

@@ -31,12 +31,13 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 	 * @return array
 	 */
 	public function option_defaults() {
-		return array( 'wpexportcontent' => 'all', 'wpexportfilecompression' => '', 'wpexportfile' => sanitize_title_with_dashes( get_bloginfo( 'name' ) ) . '.wordpress.%Y-%m-%d' );
+		return array( 'wpexportcontent' => 'all', 'wpexportfilecompression' => '', 'wpexportfile' => sanitize_file_name( get_bloginfo( 'name' ) ) . '.wordpress.%Y-%m-%d' );
 	}
 
 
 	/**
-	 * @param $main
+	 * @param $jobid
+	 * @internal param $main
 	 */
 	public function edit_tab( $jobid ) {
 		?>
@@ -101,35 +102,28 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 
 		$job_object->substeps_todo = 1;
 
-		trigger_error( sprintf( __( '%d. Trying to create a WordPress export to XML file&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
-		$job_object->need_free_memory( '5M' ); //5MB free memory
+		$job_object->log( sprintf( __( '%d. Trying to create a WordPress export to XML file&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		//build filename
 		if ( empty( $job_object->temp[ 'wpexportfile' ] ) )
 			$job_object->temp[ 'wpexportfile' ] = $job_object->generate_filename( $job_object->job[ 'wpexportfile' ], 'xml' ) . $job_object->job[ 'wpexportfilecompression' ];
 
-		error_reporting( 0 ); //disable error reporting
 		//include WP export function
 		require_once ABSPATH . 'wp-admin/includes/export.php';
-		ob_flush();
-		ob_clean();
+		while (@ob_end_clean());
 		ob_start( array( $this, 'wp_export_ob_bufferwrite' ), 1048576 ); //start output buffering
 		$args = array(
 			'content' =>  $job_object->job[ 'wpexportcontent' ]
 		);
 		@export_wp( $args ); //WP export
+		ob_flush(); //send rest of data
 		ob_end_clean(); //End output buffering
-		//enable error reporting
-		if ( defined( 'WP_DEBUG') && WP_DEBUG )
-			error_reporting( -1 );
-		else
-			error_reporting( E_ALL ^ E_NOTICE );
 
 		//add XML file to backup files
 		if ( is_readable( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] ) ) {
 			$job_object->additional_files_to_backup[ ] = BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ];
 			$job_object->count_files ++;
 			$job_object->count_filesize = $job_object->count_filesize + @filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] );
-			trigger_error( sprintf( __( 'Added XML export "%1$s" with %2$s to backup file list.', 'backwpup' ), $job_object->temp[ 'wpexportfile' ], size_format( filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] ), 2 ) ), E_USER_NOTICE );
+			$job_object->log( sprintf( __( 'Added XML export "%1$s" with %2$s to backup file list.', 'backwpup' ), $job_object->temp[ 'wpexportfile' ], size_format( filesize( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] ), 2 ) ) );
 		}
 		$job_object->substeps_done = 1;
 

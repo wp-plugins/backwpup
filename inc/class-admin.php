@@ -247,7 +247,11 @@ final class BackWPup_Admin {
 	public static function init_generel() {
 
 		//start using sessions
-		session_start();
+		if ( ! session_id() ) {
+			if ( ! is_writeable( session_save_path() ) ) 
+				session_save_path( BackWPup::get_plugin_data( 'temp' ) );
+			session_start();
+		}
 		
 		add_thickbox();
 
@@ -274,7 +278,11 @@ final class BackWPup_Admin {
 	public function save_post_form() {
 
 		//start using sessions
-		session_start();
+		if ( ! session_id() ) {
+			if ( ! is_writeable( session_save_path() ) ) 
+				session_save_path( BackWPup::get_plugin_data( 'temp' ) );
+			session_start();
+		}
 
 		//Allowed Pages
 		if ( ! in_array( $_POST[ 'page' ], array ( 'backwpupeditjob', 'backwpupinformation', 'backwpupsettings' ) ) )
@@ -352,6 +360,9 @@ final class BackWPup_Admin {
 	 */
 	public static function get_message( ) {
 
+		if ( ! isset( $_SESSION[ 'backwpup_messages' ] ) )
+			return array();
+		
 		return $_SESSION[ 'backwpup_messages' ];
 	}
 
@@ -424,7 +435,7 @@ final class BackWPup_Admin {
 			return;
 
 		if ( ! get_site_option( 'backwpup_about_page' ) && ! ( isset( $_REQUEST[ 'page' ] ) && $_REQUEST[ 'page' ] == 'backwpup' ) )
-			echo '<div class="updated"><p>' . sprintf( __( 'You have activated or updated BackWPup. Please check <a href="%s">this page</a>.', 'backwpup'), network_admin_url( 'admin.php').'?page=backwpup' ) . '</p></div>';
+			echo '<div class="updated"><p>' . str_replace( '\"','"', sprintf( __( 'You have activated or updated BackWPup. Please check <a href="%s">this page</a>.', 'backwpup'), network_admin_url( 'admin.php').'?page=backwpup' ) ) . '</p></div>';
 
 	}
 }

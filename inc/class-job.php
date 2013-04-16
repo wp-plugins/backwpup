@@ -131,9 +131,9 @@ final class BackWPup_Job {
 	 */
 	public $remove_path = '';
 	/**
-	 * @var bool maintenance mode can used
+	 * @var bool maintenance mode already active
 	 */
-	private $maintenance_mode = TRUE;
+	private $maintenance_mode = FALSE;
 
 	/**
 	 *
@@ -352,7 +352,7 @@ final class BackWPup_Job {
 	 */
 	public static function get_jobrun_url( $starttype, $jobid = 0 ) {
 
-		$url        = home_url( '/' );
+		$url        = site_url( 'wp-cron.php' );
 		$header     = '';
 		$authurl    = '';
 		$query_args = array(
@@ -398,7 +398,7 @@ final class BackWPup_Job {
 		if ( ! in_array( $starttype, array( 'runnowlink', 'runext' ) ) ) {
 			return @wp_remote_get( $url[ 'url' ], array(
 													   'blocking'   => FALSE,
-													   'sslverify' 	=> apply_filters( 'https_local_ssl_verify', TRUE ),
+													   'sslverify' 	=> FALSE,
 													   'timeout' 	=> 0.01,
 													   'headers'    => $url[ 'header' ],
 													   'user-agent' => BackWpup::get_plugin_data( 'User-Agent' )
@@ -413,10 +413,6 @@ final class BackWPup_Job {
 	 *
 	 */
 	public static function start_http($starttype) {
-
-		//define DOING_CRON to prevent caching
-		if( ! defined( 'DOING_CRON' ) )
-			define( 'DOING_CRON', TRUE );
 
 		//prevent W3TC object cache
 		define('DONOTCACHEOBJECT', TRUE);
@@ -469,8 +465,8 @@ final class BackWPup_Job {
 		if ( $starttype == 'restart' && is_object( $backwpup_job_object ) ) {
 			self::$instance = $backwpup_job_object;
 		}
-		//disable user abort
-		ignore_user_abort( TRUE );
+		// disable user abort. wp-cron.php set it now
+		//ignore_user_abort( TRUE );
 		//close session file on server side to avoid blocking other requests
 		session_write_close();
 		// disconnect or redirect
@@ -650,7 +646,7 @@ final class BackWPup_Job {
 		if ( defined( 'WP_DEBUG') && WP_DEBUG ) //on debug display all errors
 			set_error_handler( array( $this, 'log' ) );
 		else  //on normal display all errors without notices
-			set_error_handler( array( $this, 'log' ), E_ALL ^ E_NOTICE );
+			set_error_handler( array( $this, 'log' ), E_ALL ^ E_NOTICE ^ E_STRICT );
 		set_exception_handler( array( $this, 'exception_handler' ) );
 		//not loading Textdomains and unload loaded
 		if ( BackWPup_Option::get( 'cfg', 'jobnotranslate') ) {
@@ -1268,24 +1264,20 @@ final class BackWPup_Job {
 		
 		//do not deactivate maintenance if active
 		if ( $enable ) {
-			$is_active = FALSE;
-			if ( class_exists( 'WPMaintenanceMode' ) ) {
-				if ( is_multisite() && is_plugin_active_for_network( FB_WM_BASENAME ) )
-					$is_active = update_site_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
-				else
-					$is_active = update_option( FB_WM_TEXTDOMAIN . '-msqld', 1 );
-			}
+			$is_active = 0;
+			if ( method_exists( 'WPMaintenanceMode', 'get_msqld_option' ) )
+				$is_active = WPMaintenanceMode::get_msqld_option();
+			if ( is_file( ABSPATH . '.maintenance' ) )
+				$is_active = TRUE;
 			
-			if ( ! empty( $is_active ) )			
-				$this->maintenance_mode = FALSE;
+			if ( ! empty( $is_active ) ) {			
+				$this->maintenance_mode = TRUE;
+				$this->log( __( 'Blog is not setting to maintenance mode, because it is already active.', 'backwpup' ), E_USER_NOTICE );
+			}
 		}
 		
-		//Not activate Maintenance mode on runnow
-		if ( ! class_exists( 'WPMaintenanceMode' ) && $this->jobstarttype == 'runnow' || $this->jobstarttype == 'runnowalt' )
-			$this->maintenance_mode = FALSE;
-		
 		//exit on not allowed
-		if ( ! $this->maintenance_mode )
+		if ( $this->maintenance_mode )
 			return;
 
 		//Activate Maintenance mode
@@ -1333,8 +1325,7 @@ final class BackWPup_Job {
 			$newmemory = round( $needmemory / 1024 / 1024 ) + 1 . 'M';
 			if ( $needmemory >= 1073741824 )
 				$newmemory = round( $needmemory / 1024 / 1024 / 1024 ) . 'G';
-			if ( $oldmem = @ini_set( 'memory_limit', $newmemory ) )
-				$this->log( sprintf( __( 'Memory increased from %1$s to %2$s', 'backwpup' ), $oldmem, @ini_get( 'memory_limit' ) ), E_USER_NOTICE );
+			@ini_set( 'memory_limit', $newmemory );
 		}
 	}
 
@@ -1769,7 +1760,7 @@ final class BackWPup_Job {
 			return FALSE;
 		
 		$datevars  = array( '%d', '%j', '%m', '%n', '%Y', '%y', '%a', '%A', '%B', '%g', '%G', '%h', '%H', '%i', '%s', '%u', '%U' );
-		$dateregex = array( '(0[1-9]|[12][0-9]|3[01])', '([1-9]|[12][0-9]|3[01])', '(0[1-9]|1[0-2])', '([1-9]|1[0-2])', '((19|20|21)[0-9]{2})', '([0-9]{2})', '(am|pm)', '(AM|PM)', '([0-9]{3})', '([1-9]|1[0-2])', '([1-9]|1[0-9]|2[0-4])', '(0[1-9]|1[0-2])', '(0[1-9]|1[0-9]|2[0-4])', '(0[1-9]|[1-5][0-9])', '(0[1-9]|[1-5][0-9])', '\d', '\d' );
+		$dateregex = array( '(0[1-9]|[12][0-9]|3[01])', '([1-9]|[12][0-9]|3[01])', '(0[1-9]|1[0-2])', '([1-9]|1[0-2])', '((19|20|21)[0-9]{2})', '([0-9]{2})', '(am|pm)', '(AM|PM)', '([0-9]{3})', '([0-9]|1[0-1])', '([0-9]|1[0-9]|2[0-3])', '(0[0-9]|1[0-1])', '(0[0-9]|1[0-9]|2[0-3])', '(0[0-9]|[1-5][0-9])', '(0[0-9]|[1-5][0-9])', '\d', '\d' );
 
 		$regex = "/^" . str_replace( $datevars, $dateregex, str_replace( "\/", "/", $this->job[ 'archivename' ] ) . $this->job[ 'archiveformat' ] ) . "$/";
 
@@ -1814,7 +1805,7 @@ final class BackWPup_Job {
 			file_put_contents( $this->folder_list_file ,'<?php' . PHP_EOL .'$folders = array();', FILE_APPEND );
 		}
 
-		file_put_contents( $this->folder_list_file , PHP_EOL . '$folders[] = utf8_decode( \'' . utf8_encode( $folder ) .'\' );', FILE_APPEND );
+		file_put_contents( $this->folder_list_file , PHP_EOL . '$folders[] = utf8_decode( \'' . addslashes( utf8_encode( $folder ) ) .'\' );', FILE_APPEND );
 
 		$this->count_folder ++;
 	}

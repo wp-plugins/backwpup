@@ -86,7 +86,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 	public function job_run( $job_object ) {
 		global $wpdb;
 
-		trigger_error( sprintf( __( '%d. Trying to check database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Trying to check database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] = array();
 
@@ -118,42 +118,42 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 					continue;
 
 				if ( $tablestype[ $table ] == 'VIEW' ) {
-					trigger_error( sprintf( __( 'Table %1$s is a view. Not checked.', 'backwpup' ), $table ), E_USER_NOTICE );
+					$job_object->log( sprintf( __( 'Table %1$s is a view. Not checked.', 'backwpup' ), $table ) );
 					continue;
 				}
 
 				if ( $status[ $table ][ 'Engine' ] != 'MyISAM' && $status[ $table ][ 'Engine' ] != 'InnoDB' ) {
-					trigger_error( sprintf( __( 'Table %1$s is not a MyISAM/InnoDB table. Not checked.', 'backwpup' ), $table ), E_USER_NOTICE );
+					$job_object->log( sprintf( __( 'Table %1$s is not a MyISAM/InnoDB table. Not checked.', 'backwpup' ), $table ) );
 					continue;
 				}
 
 				//CHECK TABLE funktioniert bei MyISAM- und InnoDB-Tabellen (http://dev.mysql.com/doc/refman/5.1/de/check-table.html)
 				$check = $wpdb->get_row( "CHECK TABLE `" . $table . "` MEDIUM", OBJECT );
 				if ( $check->Msg_text == 'OK' )
-					trigger_error( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ), E_USER_NOTICE );
+					$job_object->log( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ) );
 				elseif ( strtolower( $check->Msg_type ) == 'warning' )
-					trigger_error( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ), E_USER_WARNING );
+					$job_object->log( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ), E_USER_WARNING );
 				else
-					trigger_error( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ), E_USER_ERROR );
+					$job_object->log( sprintf( __( 'Result of table check for %1$s is: %2$s', 'backwpup' ), $table, $check->Msg_text ), E_USER_ERROR );
 
 				//Try to Repair table
 				if ( ! empty( $job_object->job[ 'dbcheckrepair' ] ) && $check->Msg_text != 'OK' && $status[ $table ][ 'Engine' ] == 'MyISAM' ) {
 					$repair = $wpdb->get_row( 'REPAIR TABLE `' . $table . '` EXTENDED', OBJECT );
 					if ( $repair->Msg_type == 'OK' )
-						trigger_error( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ), E_USER_NOTICE );
+						$job_object->log( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ) );
 					elseif ( strtolower( $repair->Msg_type ) == 'warning' )
-						trigger_error( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ), E_USER_WARNING );
+						$job_object->log( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ), E_USER_WARNING );
 					else
-						trigger_error( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ), E_USER_ERROR );
+						$job_object->log( sprintf( __( 'Result of table repair for %1$s is: %2$s', 'backwpup' ), $table, $repair->Msg_text ), E_USER_ERROR );
 				}
 				$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ][ ] = $table;
 				$job_object->substeps_done ++;
 			}
 			$job_object->set_maintenance_mode( FALSE );
-			trigger_error( __( 'Database check done!', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Database check done!', 'backwpup' ) );
 		}
 		else {
-			trigger_error( __( 'No tables to check.', 'backwpup' ), E_USER_WARNING );
+			$job_object->log( __( 'No tables to check.', 'backwpup' ) );
 		}
 
 		unset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] );

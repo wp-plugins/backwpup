@@ -271,9 +271,17 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 		else
 			$job_object->log( sprintf( __( 'FTP server reply: %s', 'backwpup' ), __( 'Error getting SYSTYPE', 'backwpup' ) ), E_USER_ERROR );
 
+		//set actuel ftp dir to ftp dir
+		if ( empty( $job_object->job[ 'ftpdir' ] ) )
+			$job_object->job[ 'ftpdir' ] = trailingslashit( ftp_pwd( $ftp_conn_id ) );
+		// prepend actual ftp dir if relative dir
+		if ( substr( $job_object->job[ 'ftpdir' ], 0, 1 ) != '/' )
+			$job_object->job[ 'ftpdir' ] = trailingslashit( ftp_pwd( $ftp_conn_id ) ) . $job_object->job[ 'ftpdir' ];
+		
 		//test ftp dir and create it if not exists
-		if ( ! empty( $job_object->job[ 'ftpdir' ] ) && $job_object->job[ 'ftpdir' ] != '/' ) {
-			$ftpdirs = explode( "/", rtrim( $job_object->job[ 'ftpdir' ], '/' ) );
+		if ( $job_object->job[ 'ftpdir' ] != '/' ) {
+			@ftp_chdir( $ftp_conn_id, '/' ); //go to root
+			$ftpdirs = explode( '/', trim( $job_object->job[ 'ftpdir' ], '/' ) );
 			foreach ( $ftpdirs as $ftpdir ) {
 				if ( empty( $ftpdir ) )
 					continue;
@@ -340,22 +348,22 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 		$backupfilelist = array();
 		$filecounter    = 0;
 		$files          = array();
-		if ( $filelist = ftp_nlist( $ftp_conn_id, $current_ftp_dir ) ) {
+		if ( $filelist = ftp_nlist( $ftp_conn_id, '.' ) ) {
 			foreach ( $filelist as $file ) {
-				if ( $job_object->is_backup_archive( $file ) ) {
-					$time = ftp_mdtm( $ftp_conn_id, '"' . $file . '"' );
-					if ( $time != - 1 )
-						$backupfilelist[ $time ] = basename( $file );
-					else
-						$backupfilelist[ ] = basename( $file );
-				}
 				if ( basename( $file ) != '.' && basename( $file ) != '..' ) {
-					$files[ $filecounter ][ 'folder' ]      = "ftp://" . $job_object->job[ 'ftphost' ] . ':' . $job_object->job[ 'ftphostport' ] . dirname( $file ) . "/";
-					$files[ $filecounter ][ 'file' ]        = $file;
+					if ( $job_object->is_backup_archive( $file ) ) {
+						$time = ftp_mdtm( $ftp_conn_id, $file );
+						if ( $time != - 1 )
+							$backupfilelist[ $time ] = basename( $file );
+						else
+							$backupfilelist[ ] = basename( $file );
+					}
+					$files[ $filecounter ][ 'folder' ]      = 'ftp://' . $job_object->job[ 'ftphost' ] . ':' . $job_object->job[ 'ftphostport' ] . $job_object->job[ 'ftpdir' ];
+					$files[ $filecounter ][ 'file' ]        = $job_object->job[ 'ftpdir' ] . basename( $file );
 					$files[ $filecounter ][ 'filename' ]    = basename( $file );
-					$files[ $filecounter ][ 'downloadurl' ] = "ftp://" . rawurlencode( $job_object->job[ 'ftpuser' ] ) . ":" . rawurlencode( BackWPup_Encryption::decrypt( $job_object->job[ 'ftppass' ] ) ) . "@" . $job_object->job[ 'ftphost' ] . ':' . $job_object->job[ 'ftphostport' ] . $file;
-					$files[ $filecounter ][ 'filesize' ]    = ftp_size( $ftp_conn_id, '"' . $file . '"' );
-					$files[ $filecounter ][ 'time' ]        = ftp_mdtm( $ftp_conn_id, '"' . $file . '"' );
+					$files[ $filecounter ][ 'downloadurl' ] = 'ftp://' . rawurlencode( $job_object->job[ 'ftpuser' ] ) . ':' . rawurlencode( BackWPup_Encryption::decrypt( $job_object->job[ 'ftppass' ] ) ) . '@' . $job_object->job[ 'ftphost' ] . ':' . $job_object->job[ 'ftphostport' ] . $job_object->job[ 'ftpdir' ] . basename( $file );
+					$files[ $filecounter ][ 'filesize' ]    = ftp_size( $ftp_conn_id, $file );
+					$files[ $filecounter ][ 'time' ]        = ftp_mdtm( $ftp_conn_id, $file );
 					$filecounter ++;
 				}
 			}
@@ -368,7 +376,7 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 				while ( $file = array_shift( $backupfilelist ) ) {
 					if ( count( $backupfilelist ) < $job_object->job[ 'ftpmaxbackups' ] )
 						break;
-					if ( ftp_delete( $ftp_conn_id, $job_object->job[ 'ftpdir' ] . $file ) ) { //delete files on ftp
+					if ( ftp_delete( $ftp_conn_id, $file ) ) { //delete files on ftp
 						foreach ( $files as $key => $filedata ) {
 							if ( $filedata[ 'file' ] == $job_object->job[ 'ftpdir' ] . $file )
 								unset( $files[ $key ] );
@@ -377,7 +385,6 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 					}
 					else
 						$job_object->log( sprintf( __( 'Cannot delete "%s" on FTP server!', 'backwpup' ), $job_object->job[ 'ftpdir' ] . $file ), E_USER_ERROR );
-
 				}
 				if ( $numdeltefiles > 0 )
 					$job_object->log( sprintf( _n( 'One file deleted on FTP server', '%d files deleted on FTP server', $numdeltefiles, 'backwpup' ), $numdeltefiles ), E_USER_NOTICE );

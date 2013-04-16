@@ -33,7 +33,7 @@ abstract class AbstractTransfer extends CommonAbstractTransfer
 
     /**
      * {@inheritdoc}
-     * @throws RuntimeException if the part size cannot be calculated from the provided data
+     * @throws RuntimeException if the part size can not be calculated from the provided data
      */
     protected function init()
     {

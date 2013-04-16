@@ -13,17 +13,17 @@ class BackWPup_File {
 	public static function get_upload_dir() {
 
 		if ( is_multisite() ) {
-			if ( get_site_option( 'ms_files_rewriting' ) && defined( 'UPLOADBLOGSDIR' ) )
-				return trailingslashit(  str_replace( '\\', '/',ABSPATH . UPLOADBLOGSDIR ) );
-			elseif ( defined( 'UPLOADS' ) && ! ( is_multisite() && get_site_option( 'ms_files_rewriting' ) ) )
-				return trailingslashit(  str_replace( '\\', '/',ABSPATH . UPLOADS ) );
-			elseif ( defined( 'MULTISITE' ) )
-				return trailingslashit(  str_replace( '\\', '/',ABSPATH . '/sites/' ) );
+			if ( defined( 'UPLOADBLOGSDIR' ) )
+				return trailingslashit( str_replace( '\\', '/',ABSPATH . UPLOADBLOGSDIR ) );
+			elseif ( is_dir( trailingslashit( WP_CONTENT_DIR ) . 'uploads/sites') )
+				return str_replace( '\\', '/', trailingslashit( WP_CONTENT_DIR ) . 'uploads/sites/' );
+			elseif ( is_dir( trailingslashit( WP_CONTENT_DIR ) . 'uploads' ) )
+				return str_replace( '\\', '/', trailingslashit( WP_CONTENT_DIR ) . 'uploads/' );	
 			else
-				return trailingslashit(  str_replace( '\\', '/',ABSPATH ) );			
+				return trailingslashit( str_replace( '\\', '/', WP_CONTENT_DIR ) );
 		} else {
 			$upload_dir = wp_upload_dir();
-			return trailingslashit( str_replace( '\\', '/',$upload_dir[ 'basedir' ] ) );
+			return trailingslashit( str_replace( '\\', '/', $upload_dir[ 'basedir' ] ) );
 		}
 
 	}

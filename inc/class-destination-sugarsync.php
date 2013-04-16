@@ -24,7 +24,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
 	 * @return array
 	 */
 	public function option_defaults() {
-		return array( 'sugarrefreshtoken' => '', 'sugarroot' => '', 'sugardir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 'sugarmaxbackups' => 15 );
+		return array( 'sugarrefreshtoken' => '', 'sugarroot' => '', 'sugardir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ), 'sugarmaxbackups' => 15 );
 	}
 
 

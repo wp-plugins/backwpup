@@ -5,7 +5,7 @@
  * Description: WordPress Backup and more...
  * Author: Inpsyde GmbH
  * Author URI: http://inpsyde.com
- * Version: 3.0.6
+ * Version: 3.0.7
  * Text Domain: backwpup
  * Domain Path: /languages/
  * Network: true
@@ -70,9 +70,19 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				spl_autoload_register( array( $this, 'autoloader' ) );
 			else //auto loader fallback
 				$this->autoloader_fallback();
+			//load pro features
+			if ( is_file( dirname( __FILE__ ) . '/inc/features/class-features.php' ) )
+				require dirname( __FILE__ ) . '/inc/features/class-features.php';						
 			//WP-Cron
-			add_action( 'backwpup_cron', array( 'BackWPup_Cron', 'run' ) );
-			add_action( 'backwpup_check_cleanup', array( 'BackWPup_Cron', 'check_cleanup' ) );
+			if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+				// add normal cron actions
+				add_action( 'backwpup_cron', array( 'BackWPup_Cron', 'run' ) );
+				add_action( 'backwpup_check_cleanup', array( 'BackWPup_Cron', 'check_cleanup' ) );
+				// add action for doing thinks if cron active
+				add_action( 'wp_loaded', array( 'BackWPup_Cron', 'cron_active' ) );
+				// if in cron the rest is not needed
+				return;
+			}
 			//deactivation hook
 			register_deactivation_hook( __FILE__, array( 'BackWPup_Install', 'deactivate' ) );
 			//Things that must do in plugin init
@@ -80,12 +90,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			//start upgrade if needed
 			if ( get_site_option( 'backwpup_version' ) != self::get_plugin_data( 'Version' ) && class_exists( 'BackWPup_Install' ) )
 				BackWPup_Install::activate();
-			//Frontend
-			if ( ! is_admin() && is_main_site() && class_exists( 'BackWPup_FrontEnd' ) )
-				BackWPup_FrontEnd::getInstance();
-			//load Pro Features
-			if ( is_file( dirname( __FILE__ ) . '/inc/features/class-features.php' ) )
-				require dirname( __FILE__ ) . '/inc/features/class-features.php';
 			//only in backend
 			if ( is_admin() && ( current_user_can( 'backwpup' ) || $GLOBALS[ 'pagenow' ] == 'plugins.php' ) && class_exists( 'BackWPup_Admin' ) )
 				BackWPup_Admin::getInstance();

@@ -42,11 +42,10 @@ class BackWPup_Page_About {
 	 */
 	public static function page() {
 
-		//set_site_transient( 'backwpup_upgrade_from_version_two', TRUE, 3600*24*7); // See update notice
 		?>
         <div class="wrap">
         	<div class="inpsyde">
-            	<a href="http://inpsyde.com/" title="Inpsyde GmbH">inpsyde</a>
+            	<a href="http://inpsyde.com/" title="Inpsyde GmbH">Inpsyde</a>
             </div>
 			<?php screen_icon(); ?>
             <h2><?php echo sprintf( __( '%s Welcome', 'backwpup' ), BackWPup::get_plugin_data( 'name') ); ?></h2>
@@ -56,7 +55,7 @@ class BackWPup_Page_About {
 						<?php if ( get_site_transient( 'backwpup_upgrade_from_version_two') ) { ?>
                             <div id="update-notice" class="backwpup-welcome updated">
                                 <h3><?php _e( 'Heads up! You have updated from version 2.x', 'backwpup' ); ?></h3>
-                                <p><?php echo sprintf( __( 'Please <a href="%s">check your settings</a> after updating from version 2.x:', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupjobs'); ?></a></p>
+                                <p><?php echo str_replace( '\"','"', sprintf( __( 'Please <a href="%s">check your settings</a> after updating from version 2.x:', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupjobs') ); ?></a></p>
                                 <ul><li><?php _e('Dropbox authentication must be re-entered','backwpup'); ?></li>
 								<li><?php _e('SugarSync authentication must be re-entered','backwpup'); ?></li>
                                 <li><?php _e('S3 Settings','backwpup'); ?></li>
@@ -73,7 +72,7 @@ class BackWPup_Page_About {
                             <h3><?php _e( 'Welcome to BackWPup Pro', 'backwpup' ); ?></h3>
                             <p><?php _e( 'Here you can schedule backup plans with a wizard.', 'backwpup' );
 _e( 'The backup files can be used to save your whole installation including <code>/wp-content/</code> and push them to an external Backup Service, if you don’t want to save the backups on the same server. With a single backup file you are able to restore an installation.', 'backwpup' ); ?></p>
-                            <p><?php echo sprintf( __( 'First <a href="%1$s">set up a job</a>, and plan what you want to save. You can <a href="%2$s">use the wizards</a> or the expert mode.', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupeditjob' , network_admin_url( 'admin.php').'?page=backwpupwizard' ); ?></p>
+                            <p><?php echo str_replace( '\"','"', sprintf( __( 'First <a href="%1$s">set up a job</a>, and plan what you want to save. You can <a href="%2$s">use the wizards</a> or the expert mode.', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupeditjob' , network_admin_url( 'admin.php').'?page=backwpupwizard' ) ); ?></p>
                         </div>
                     </div>
                     <?php } else {?>
@@ -114,7 +113,7 @@ _e( 'The backup files can be used to save your whole installation including <cod
                             </div>
                             <div class="feature_text <?php self::feature_class(); ?>">
                             	<h3><?php _e( 'Save your database regularly', 'backwpup' ); ?></h3>
-                                <p><?php echo sprintf( __( 'With BackWPup you can schedule the database backup to run automatically. With a single backup file you can restore your database. You should <a href="%s">set up a backup job</a>, so you will never forget it. There is also an option to repair and optimize the database after each backup.', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupeditjob' ); ?></p>
+                                <p><?php echo str_replace( '\"','"', sprintf( __( 'With BackWPup you can schedule the database backup to run automatically. With a single backup file you can restore your database. You should <a href="%s">set up a backup job</a>, so you will never forget it. There is also an option to repair and optimize the database after each backup.', 'backwpup' ), network_admin_url( 'admin.php').'?page=backwpupeditjob' ) ); ?></p>
                             </div>
                         </div>
                         <div class="feature_box">
@@ -132,7 +131,7 @@ _e( 'The backup files can be used to save your whole installation including <cod
                             </div>
                             <div class="feature_text <?php self::feature_class(); ?>">
                             	<h3><?php _e('Save all files', 'backwpup'); ?></h3>
-                                <p><?php echo sprintf( __('You can back up all your attachments, also all system files, plugins and themes in a single file. You can <a href="%s">create a job</a> to update a backup copy of your file system only when files are changed.', 'backwpup'), network_admin_url( 'admin.php' ) . '?page=backwpupeditjob' ); ?></p>
+                                <p><?php echo str_replace( '\"','"', sprintf( __('You can back up all your attachments, also all system files, plugins and themes in a single file. You can <a href="%s">create a job</a> to update a backup copy of your file system only when files are changed.', 'backwpup'), network_admin_url( 'admin.php' ) . '?page=backwpupeditjob' ) ); ?></p>
                             </div>
                         </div>
                         <div class="feature_box">

@@ -343,11 +343,11 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 						}
 					}
 					//check sever callback
-					$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), home_url( '/' ) ), array(
+					$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), site_url( 'wp-cron.php' ) ), array(
 																																																						   'blocking'   => TRUE,
-																																																						   'sslverify'  => apply_filters( 'https_local_ssl_verify', TRUE ),
+																																																						   'sslverify'  => FALSE,
 																																																						   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
-																																																						   'user-agent' => 'BackWPup/' . BackWPup::get_plugin_data( 'Version' ) ) );
+																																																						   'user-agent' => BackWPup::get_plugin_data( 'user-agent' ) ) );
 					$test_result = '';
 					if ( is_wp_error( $raw_response ) )
 						$test_result .= sprintf( __( 'The HTTP response test get a error "%s"','backwpup' ), $raw_response->get_error_message() );
@@ -519,35 +519,37 @@ class BackWPup_Page_Jobs extends WP_List_Table {
                         },
                         dataType: 'json',
                         success:function (rundata) {
-                            $('#logpos').val(rundata.logpos);
-                            if ('' != rundata.logtext) {
-                                $('#showworking').append(rundata.logtext);
-								$('#TB_ajaxContent').scrollTop(rundata.logpos * 15);
+							if (0 < rundata.log_pos) {
+								$('#logpos').val(rundata.log_pos);
+							}
+                            if ('' != rundata.log_text) {
+                                $('#showworking').append(rundata.log_text);
+								$('#TB_ajaxContent').scrollTop(rundata.log_pos * 15);
                             }
-                            if (0 < rundata.errors) {
-                                $('#errors').replaceWith('<span id="errors">' + rundata.errors + '</span>');
+                            if (0 < rundata.error_count) {
+                                $('#errors').replaceWith('<span id="errors">' + rundata.error_count + '</span>');
                             }
-                            if (0 < rundata.warnings) {
-                                $('#warnings').replaceWith('<span id="warnings">' + rundata.warnings + '</span>');
+                            if (0 < rundata.warning_count) {
+                                $('#warnings').replaceWith('<span id="warnings">' + rundata.warning_count + '</span>');
                             }
                             if (0 < rundata.step_percent) {
                                 $('#progressstep').replaceWith('<div id="progressstep">' + rundata.step_percent + '%</div>');
                                 $('#progressstep').css('width', parseFloat(rundata.step_percent) + '%');
                             }
-                            if (0 < rundata.substep_percent) {
-                                $('#progresssteps').replaceWith('<div id="progresssteps">' + rundata.substep_percent + '%</div>');
-                                $('#progresssteps').css('width', parseFloat(rundata.substep_percent) + '%');
+                            if (0 < rundata.sub_step_percent) {
+                                $('#progresssteps').replaceWith('<div id="progresssteps">' + rundata.sub_step_percent + '%</div>');
+                                $('#progresssteps').css('width', parseFloat(rundata.sub_step_percent) + '%');
                             }
-                            if (0 < rundata.runtime) {
-                                $('#runtime').replaceWith('<span id="runtime">' + rundata.runtime + '</span>');
-                            }
-                            if ( rundata.onstep ) {
-                                $('#onstep').replaceWith('<div id="onstep"><samp>' + rundata.onstep + '</samp></div>');
+                            if (0 < rundata.running_time) {
+                                $('#runtime').replaceWith('<span id="runtime">' + rundata.running_time + '</span>');
                             }
                             if ( rundata.onstep ) {
-                                $('#lastmsg').replaceWith('<div id="lastmsg">' + rundata.lastmsg + '</div>');
+                                $('#onstep').replaceWith('<div id="onstep"><samp>' + rundata.on_step + '</samp></div>');
                             }
-                            if ( rundata.jobdone == 1 ) {
+                            if ( rundata.last_msg ) {
+                                $('#lastmsg').replaceWith('<div id="lastmsg">' + rundata.last_msg + '</div>');
+                            }
+                            if ( rundata.job_done == 1 ) {
                                 $("#abortbutton").remove();
                                 $("#backwpup-adminbar-running").remove();
 								$(".job-run").hide();
@@ -557,7 +559,10 @@ class BackWPup_Page_Jobs extends WP_List_Table {
                             } else {
                             	setTimeout('backwpup_show_working()', 750);
                             }
-                        }
+                        },
+						error:function ( ) {
+							setTimeout('backwpup_show_working()', 750);
+						}
                     });
                 };
                 backwpup_show_working();
@@ -639,16 +644,16 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 
 			@header( 'Content-Type: application/json; charset=' . get_option( 'blog_charset' ), TRUE );
 			echo json_encode( array(
-								   'logpos'          => strlen( $logfiledata ) + $logpos,
-								   'logtext'         => substr( $logfiledata, $startpos, $length ) . $stop,
-								   'warnings'        => $warnings,
-								   'errors'          => $errors,
-								   'runtime'		 => $runtime,
+								   'log_pos'         => strlen( $logfiledata ) + $logpos,
+								   'log_text'        => substr( $logfiledata, $startpos, $length ) . $stop,
+								   'warning_count'   => $warnings,
+								   'error_count'     => $errors,
+								   'running_time'	 => $runtime,
 								   'step_percent'    => $step_percent,
-								   'onstep'			 => $onstep,
-								   'lastmsg'		 => $lastmsg,
-								   'substep_percent' => $substep_percent,
-								   'jobdone'		 => $done
+								   'on_step'		 => $onstep,
+								   'last_msg'		 => $lastmsg,
+								   'sub_step_percent' => $substep_percent,
+								   'job_done'		 => $done
 							  ) );
 		}
 		die();

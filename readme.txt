@@ -3,7 +3,7 @@ Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.0.6
+Stable tag: 3.0.7
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -179,6 +179,16 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.7 =
+* Improved: All job requests will done over wp-cron.php now
+* Improved: Ajax calls if blog in maintenance mode
+* Improved: Getting of DB_CHARSET
+* Improved: FTP file deletion
+* Improved: Dropbox authentication (If restrict to job settings page not work you can open the settings page manually again to authenticate)
+* Fixed: No maintenance mode, if a maintenance mode already active
+* Fixed: Archive file deletion
+* Updated: AWS SDK to Version 2.2.1 (PHP 5.3.3+)
+
 = Version 3.0.6 =
 * Fixed: Massages on empty DB prefix
 * Fixed: Bug in cron calculation

@@ -292,7 +292,6 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 			Swift_Preferences::getInstance()->setTempDir( untrailingslashit( BackWPup::get_plugin_data( 'TEMP' ) ) )->setCacheType( 'disk' );
 			// Create the Transport
 			if ( $emailmethod == 'smtp' ) {
-				$job_object->need_free_memory( '8M' );
 				$transport = Swift_SmtpTransport::newInstance( $emailhost, $emailhostport );
 				$transport->setUsername( $emailuser );
 				$transport->setPassword( $emailpass );
@@ -302,7 +301,6 @@ class BackWPup_Destination_Email extends BackWPup_Destinations {
 					$transport->setEncryption( 'tls' );
 			}
 			elseif ( $emailmethod == 'sendmail' ) {
-				$job_object->need_free_memory( '8M' );
 				$transport = Swift_SendmailTransport::newInstance( $emailsendmail );
 			}
 			else {

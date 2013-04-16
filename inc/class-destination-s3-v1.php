@@ -71,7 +71,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 	 */
 	public function option_defaults() {
 
-		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_title_with_dashes( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 15, 's3syncnodelete' => TRUE );
+		return array( 's3accesskey' => '', 's3secretkey' => '', 's3bucket' => '', 's3region' => 'us-east-1', 's3base_url' => '', 's3ssencrypt' => '', 's3storageclass' => '', 's3dir' => trailingslashit( sanitize_file_name( get_bloginfo( 'name' ) ) ), 's3maxbackups' => 15, 's3syncnodelete' => TRUE );
 	}
 
 
@@ -402,9 +402,6 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 
 			//transfer file to S3
 			$job_object->log( __( 'Starting upload to S3 Service&#160;&hellip;', 'backwpup' ), E_USER_NOTICE );
-			
-			//check memory
-			$job_object->need_free_memory( '6M' );
 			
 			//Transfer Backup to S3
 		    if ( $job_object->job[ 's3storageclass' ] == 'REDUCED_REDUNDANCY' ) //set reduced redundancy or not			

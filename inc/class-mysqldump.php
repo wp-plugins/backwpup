@@ -60,7 +60,7 @@ class BackWPup_MySQLDump {
 			'dbname' 	  => DB_NAME,
 			'dbuser' 	  => DB_USER,
 			'dbpassword'  => DB_PASSWORD,
-			'dbcharset'   => DB_CHARSET,
+			'dbcharset'   => defined( 'DB_CHARSET' ) ? DB_CHARSET : '',
 			'dumpfilehandle' => fopen( 'php://output', 'wb' ),
 			'dumpfile' 	  => NULL,
 			'compression' => ''

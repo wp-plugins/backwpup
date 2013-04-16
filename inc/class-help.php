@@ -14,7 +14,7 @@ class BackWPup_Help {
 													 'id'      => 'plugininfo',
 													 'title'   => __( 'Plugin Info', 'backwpup' ),
 													 'content' =>
-													 '<p> '.sprintf( _x( '%1$s version %2$s. A project by <a href="http://inpsyde.com">Inpsyde GmbH</a>. Developed by <a href="http://danielhuesken.de">Daniel Hüsken</a>.','Plugin name and link; Plugin Version','backwpup' ), '<a href="' . translate( BackWPup::get_plugin_data( 'PluginURI' ), 'backwpup' ) . '">' . BackWPup::get_plugin_data( 'Name' ) . '</a>' , BackWPup::get_plugin_data( 'Version' ) ) . '</p>'
+													 '<p> '.str_replace( '\"','"', sprintf( _x( '%1$s version %2$s. A project by <a href="http://inpsyde.com">Inpsyde GmbH</a>. Developed by <a href="http://danielhuesken.de">Daniel Hüsken</a>.','Plugin name and link; Plugin Version','backwpup' ), '<a href="' . translate( BackWPup::get_plugin_data( 'PluginURI' ), 'backwpup' ) . '">' . BackWPup::get_plugin_data( 'Name' ) . '</a>' , BackWPup::get_plugin_data( 'Version' ) ) ) . '</p>'
 													 . '<p>' . __( 'BackWPup comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . '</p>'
 												) );
 

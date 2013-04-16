@@ -98,7 +98,7 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 	public function job_run( $job_object ) {
 		global $wpdb;
 
-		trigger_error( sprintf( __( '%d. Trying to optimize database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ), E_USER_NOTICE );
+		$job_object->log( sprintf( __( '%d. Trying to optimize database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] = array();
 
@@ -127,35 +127,35 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 				if ( in_array( $table, $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 					continue;
 				if ( $tablestype[ $table ] == 'VIEW' ) {
-					trigger_error( sprintf( __( 'Views cannot optimize! View %1$s', 'backwpup' ), $table ), E_USER_NOTICE );
+					$job_object->log( sprintf( __( 'Views cannot optimize! View %1$s', 'backwpup' ), $table ) );
 					continue;
 				}
 				//OPTIMIZE TABLE funktioniert nur bei MyISAM-, BDB- und InnoDB-Tabellen. (http://dev.mysql.com/doc/refman/5.1/de/optimize-table.html)
 				if ( ! empty( $job_object->job[ 'dboptimizemyisam' ] ) && $status[ $table ][ 'Engine' ] == 'MyISAM' ) {
 					$optimize = $wpdb->get_row( "OPTIMIZE TABLE `" . $table . "`", OBJECT );
 					if ( strtolower( $optimize->Msg_type ) == 'error' )
-						trigger_error( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_ERROR );
+						$job_object->log( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_ERROR );
 					elseif ( strtolower( $optimize->Msg_type ) == 'warning' )
-						trigger_error( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_WARNING );
+						$job_object->log( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_WARNING );
 					else
-						trigger_error( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ), E_USER_NOTICE );
+						$job_object->log( sprintf( __( 'Result of MyISAM table optimize for %1$s is: %2$s', 'backwpup' ), $table, $optimize->Msg_text ) );
 				}
 				elseif ( ! empty( $job_object->job[ 'dboptimizeinnodb' ] ) && $status[ $table ][ 'Engine' ] == 'InnoDB' ) {
 					$res = $wpdb->query( "ALTER TABLE `" . $table . "` ENGINE='InnoDB'" );
 					if ( ! empty( $res ) )
-						trigger_error( sprintf( __( 'InnoDB Table %1$s optimizing done.', 'backwpup' ), $table ), E_USER_NOTICE );
+						$job_object->log( sprintf( __( 'InnoDB Table %1$s optimizing done.', 'backwpup' ), $table ) );
 				}
 				else {
-					trigger_error( sprintf( __( '%2$s table %1$s not optimized.', 'backwpup' ), $table, $status[ $table ][ 'Engine' ] ), E_USER_NOTICE );
+					$job_object->log( sprintf( __( '%2$s table %1$s not optimized.', 'backwpup' ), $table, $status[ $table ][ 'Engine' ] ) );
 				}
 				$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ][ ] = $table;
 				$job_object->substeps_done ++;
 			}
-			trigger_error( __( 'Database optimization done!', 'backwpup' ), E_USER_NOTICE );
+			$job_object->log( __( 'Database optimization done!', 'backwpup' ) );
 			$job_object->set_maintenance_mode( FALSE );
 		}
 		else {
-			trigger_error( __( 'No tables to optimize.', 'backwpup' ), E_USER_WARNING );
+			$job_object->log( __( 'No tables to optimize.', 'backwpup' ), E_USER_WARNING );
 		}
 
 		unset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] );
