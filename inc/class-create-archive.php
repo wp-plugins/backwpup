@@ -214,9 +214,13 @@ class BackWPup_Create_Archive {
 	 */
 	public function add_file( $file_name, $name_in_archive = '' ) {
 
+		$file_name = trim( $file_name );
+		
 	    //check param
-		if ( empty( $file_name ) )
-			throw new BackWPup_Create_Archive_Exception(  __( 'File name cannot be empty', 'backwpup' ) );
+		if ( empty( $file_name ) ) {
+			trigger_error( __( 'File name cannot be empty', 'backwpup' ), E_USER_WARNING );
+			return FALSE;
+		}
 
 		if ( ! is_file( $file_name ) || ! is_readable( $file_name ) ) {
 			trigger_error( sprintf( _x( 'File %s does not exist or is not readable', 'File path to add to archive', 'backwpup' ), $file_name ), E_USER_WARNING );
@@ -305,9 +309,13 @@ class BackWPup_Create_Archive {
 	 */
 	public function add_empty_folder( $folder_name, $name_in_archive = '' ) {
 
+		$folder_name = trim( $folder_name );
+		
 		//check param
-		if ( empty( $folder_name ) )
-			throw new BackWPup_Create_Archive_Exception(  __( 'Folder name cannot be empty', 'backwpup' ) );
+		if ( empty( $folder_name ) ) {
+			trigger_error( __( 'Folder name cannot be empty', 'backwpup' ), E_USER_WARNING );
+			return FALSE;
+		}
 
 		if ( ! is_dir( $folder_name ) || ! is_readable( $folder_name ) ) {
 			trigger_error( sprintf( _x( 'Folder %s does not exist or is not readable', 'Folder path to add to archive', 'backwpup' ), $folder_name ), E_USER_WARNING );

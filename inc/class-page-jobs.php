@@ -343,11 +343,13 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 						}
 					}
 					//check sever callback
-					$raw_response = wp_remote_get( add_query_arg( array( 'backwpup_run' => 'test', '_nonce' => substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-test', 'nonce' ), - 12, 10 ) ), site_url( 'wp-cron.php' ) ), array(
-																																																						   'blocking'   => TRUE,
-																																																						   'sslverify'  => FALSE,
-																																																						   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
-																																																						   'user-agent' => BackWPup::get_plugin_data( 'user-agent' ) ) );
+					$raw_response = wp_remote_get( site_url( 'wp-cron.php?backwpup_run=test' ), array(
+																									   'blocking'   => TRUE,
+																									   'sslverify'  => FALSE,
+																									   'timeout' 	=> 15,
+																									   'redirection' => 0,
+																									   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
+																									   'user-agent' => BackWPup::get_plugin_data( 'user-agent' ) ) );
 					$test_result = '';
 					if ( is_wp_error( $raw_response ) )
 						$test_result .= sprintf( __( 'The HTTP response test get a error "%s"','backwpup' ), $raw_response->get_error_message() );

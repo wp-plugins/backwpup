@@ -145,6 +145,12 @@ final class BackWPup_Job {
 	private function __construct( $starttype, $job_settings = 0 ) {
 		global $wpdb;
 
+		//check if a job started already than abort
+		if ( is_file( BackWPup::get_plugin_data( 'running_file' ) ) )
+			return;
+		else
+			file_put_contents( BackWPup::get_plugin_data( 'running_file' ), '<?php //'. serialize( $this ) );
+		
 		//check startype
 		if ( ! in_array( $starttype, array( 'runnow', 'runnowalt', 'cronrun', 'runext', 'runcli' ) ) )
 			return;
@@ -614,6 +620,7 @@ final class BackWPup_Job {
 		unset( $job_object );
 		//set Pid
 		$this->pid = self::get_pid();
+		$this->update_working_data( TRUE );
 		//set function for PHP user defined error handling
 		$this->temp[ 'PHP' ][ 'INI' ][ 'ERROR_LOG' ]      = ini_get( 'error_log' );
 		$this->temp[ 'PHP' ][ 'INI' ][ 'LOG_ERRORS' ]     = ini_get( 'log_errors' );
@@ -703,7 +710,7 @@ final class BackWPup_Job {
 						$done = call_user_func( array( $destinations[ str_replace( 'DEST_SYNC_', '', $this->step_working ) ], 'job_run_sync' ), $this );
 					elseif ( strstr( $this->step_working, 'DEST_' ) )
 						$done = call_user_func( array( $destinations[ str_replace( 'DEST_', '', $this->step_working ) ], 'job_run_archive' ), $this );
-					else
+					elseif ( ! empty( $this->steps_data[ $this->step_working ][ 'CALLBACK' ] ) )
 						$done = call_user_func( $this->steps_data[ $this->step_working ][ 'CALLBACK' ], $this );
 					//set step as done
 					if ( $done == TRUE ) {
@@ -749,7 +756,7 @@ final class BackWPup_Job {
 		if ( defined( 'ALTERNATE_WP_CRON' ) && ALTERNATE_WP_CRON ) {
 			//schedule restart for now
 			wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => 'restart' ) );
-			wp_schedule_single_event( time() + 2, 'backwpup_cron', array( 'id' => 'restart' ) );
+			wp_schedule_single_event( time(), 'backwpup_cron', array( 'id' => 'restart' ) );
 		} else {
 			self::get_jobrun_url( 'restart' );
 		}
@@ -1682,8 +1689,13 @@ final class BackWPup_Job {
 			$jobrestartarchivesize = BackWPup_Option::get( 'cfg', 'jobrestartarchivesize' );
 			for ( $i = $this->substeps_done - 1; $i < $this->substeps_todo - 1; $i ++ ) {
 				$this->steps_data[ $this->step_working ]['folder_files'] = $this->get_files_in_folder( $folders_to_backup[ $i ] );
-				if ( empty( $this->steps_data[ $this->step_working ]['done_files'] ) && empty( $this->steps_data[ $this->step_working ]['folder_files'] ) )
-					$backup_archive->add_empty_folder( $folders_to_backup[ $i ], ltrim( str_replace( $this->remove_path, '', $folders_to_backup[ $i ] ), '/' ) );
+				//add empty folders
+				if ( empty( $this->steps_data[ $this->step_working ]['done_files'] ) && empty( $this->steps_data[ $this->step_working ]['folder_files'] ) ) {
+					$folder_name_in_archive = trim( ltrim( str_replace( $this->remove_path, '', $folders_to_backup[ $i ] ), '/' ) );
+					if ( ! empty ( $folder_name_in_archive ) )
+						$backup_archive->add_empty_folder( $folders_to_backup[ $i ], $folder_name_in_archive );
+				}
+				//add files
 				if ( count( $this->steps_data[ $this->step_working ]['folder_files'] ) > 0 ) {
 					foreach ( $this->steps_data[ $this->step_working ]['folder_files'] as $file ) {
 						//restart if size reached in MB

@@ -856,7 +856,7 @@ class BackWPup_Page_Editjob {
     jQuery(document).ready(function ($) {
         // auto post if things changed
         var changed = false;
-        $('input, textarea, select').change(function () {
+        $( '#editjob' ).change( function () {
             changed = true;
         });
 		$( '.nav-tab' ).click( function () {

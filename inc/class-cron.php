@@ -154,6 +154,15 @@ class BackWPup_Cron {
 		if ( empty( $_GET[ 'backwpup_run' ] ) || ! in_array( $_GET[ 'backwpup_run' ], array( 'test','restart', 'runnow', 'runnowalt', 'runext', 'cronrun' ) ) )
 			return;
 		
+		//set some header
+		send_nosniff_header();
+		nocache_headers();
+		@header( 'x-backwpup-ver: ' . BackWPup::get_plugin_data( 'version' ) );
+		
+		//on test die for fast feedback
+		if ( $_GET[ 'backwpup_run' ] == 'test' ) 
+			die();
+		
 		// generate normal nonce
 		$nonce = substr( wp_hash( wp_nonce_tick() . 'backwup_job_run-' . $_GET[ 'backwpup_run' ], 'nonce' ), - 12, 10 );
 		//special nonce on external start
@@ -162,15 +171,6 @@ class BackWPup_Cron {
 		// check nonce
 		if ( empty( $_GET['_nonce'] ) || $nonce != $_GET['_nonce'] )
 			return;
-
-		//response on test
-		if ( $_GET[ 'backwpup_run' ] == 'test') {
-			@header( 'Content-Type: text/html; charset=' . get_bloginfo( 'charset' ) );
-			@header( 'X-Robots-Tag: noindex, nofollow' );
-			send_nosniff_header();
-			nocache_headers();
-			die( 'Response Test O.K.' );
-		}
 
 		//check runext is allowed for job
 		if ( $_GET[ 'backwpup_run' ] == 'runext' ) {

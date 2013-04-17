@@ -5,7 +5,7 @@
  * Description: WordPress Backup and more...
  * Author: Inpsyde GmbH
  * Author URI: http://inpsyde.com
- * Version: 3.0.7
+ * Version: 3.0.8
  * Text Domain: backwpup
  * Domain Path: /languages/
  * Network: true
@@ -79,8 +79,8 @@ if ( ! class_exists( 'BackWPup' ) ) {
 				add_action( 'backwpup_cron', array( 'BackWPup_Cron', 'run' ) );
 				add_action( 'backwpup_check_cleanup', array( 'BackWPup_Cron', 'check_cleanup' ) );
 				// add action for doing thinks if cron active
-				add_action( 'wp_loaded', array( 'BackWPup_Cron', 'cron_active' ) );
-				// if in cron the rest is not needed
+				add_action( 'wp_loaded', array( 'BackWPup_Cron', 'cron_active' ), 1 );
+				// if in cron the rest must not needed
 				return;
 			}
 			//deactivation hook

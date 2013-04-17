@@ -41,7 +41,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		//set only wordpress tables as default
 		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $dbtables as $dbtable) {
-			if ( $wpdb->prefix == substr( $dbtable[ 0 ], 0, strlen( $wpdb->prefix ) ) )
+			if ( $wpdb->prefix != substr( $dbtable[ 0 ], 0, strlen( $wpdb->prefix ) ) )
 				$defaults[ 'dbdumpexclude' ][] = $dbtable[ 0 ];
 		}
 
