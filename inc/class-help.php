@@ -58,5 +58,6 @@ class BackWPup_Help {
 			return '<img class="help_tip" title="' . esc_attr( $text ) . '" src="' . BackWPup::get_plugin_data( 'URL' ) . '/images/help.png" />';
 
 		echo '<img class="help_tip" title="' . esc_attr( $text ) . '" src="' . BackWPup::get_plugin_data( 'URL' ) . '/images/help.png" />';
+		return '';
 	}
 }

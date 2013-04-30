@@ -130,12 +130,6 @@ class BackWPup_Page_Backups extends WP_List_Table {
 			}
 		}
 
-		//by page
-		$start = intval( ( $this->get_pagenum() - 1 ) * $per_page );
-		$end   = $start + $per_page;
-		if ( $end > count( $this->items ) )
-			$end = count( $this->items );
-
 		$this->set_pagination_args( array(
 										 'total_items' => count( $this->items ),
 										 'per_page'    => $per_page,

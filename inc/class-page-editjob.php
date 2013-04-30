@@ -58,7 +58,8 @@ class BackWPup_Page_Editjob {
 				} else {
 					$_POST[ 'type' ]= array();
 				}
-				//test if jobtype makes backup
+				//test if job type makes backup
+				/* @var BackWPup_JobTypes $job_type */
 				$makes_file = FALSE;
 				foreach ( $job_types as $type_id => $job_type) {
 					if ( in_array( $type_id, $_POST[ 'type' ] ) ) {
@@ -416,7 +417,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title"><?php _e( 'Job Name', 'backwpup' ) ?></h3>
 				<p></p>
 				<table class="form-table">
-					<tr valign="top">
+					<tr>
 						<th scope="row"><label for="name"><?php _e( 'Please name this job.', 'backwpup' ) ?></label></th>
 						<td>
 							<input name="name" type="text" id="name"
@@ -428,7 +429,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title"><?php _e( 'Job Tasks', 'backwpup' ) ?></h3>
 				<p></p>
 				<table class="form-table">
-					<tr valign="top">
+					<tr>
 						<th scope="row"><?php _e( 'This job is a&#160;&hellip;', 'backwpup' ) ?></th>
 						<td>
 							<fieldset>
@@ -452,7 +453,7 @@ class BackWPup_Page_Editjob {
 				<p class="hasdests"></p>
 				<table class="form-table hasdests">
 					<?php if ( class_exists( 'BackWPup_Features', FALSE ) ) { ?>
-					<tr valign="top">
+					<tr>
 						<th scope="row"><?php _e( 'Backup type', 'backwpup' ); ?></th>
 						<td>
 							<fieldset>
@@ -470,7 +471,7 @@ class BackWPup_Page_Editjob {
 						</td>
 					</tr>
 					<?php } ?>
-					<tr valign="top" class="nosync">
+					<tr class="nosync">
 						<th scope="row"><label for="archivename"><?php _e( 'Archive name', 'backwpup' ) ?></label></th>
 						<td>
 							<input name="archivename" type="text" id="archivename"
@@ -510,7 +511,7 @@ class BackWPup_Page_Editjob {
 							?>
 						</td>
 					</tr>
-					<tr valign="top" class="nosync">
+					<tr class="nosync">
 						<th scope="row"><?php _e( 'Archive Format', 'backwpup' ); ?></th>
 						<td>
 							<fieldset>
@@ -537,7 +538,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title hasdests"><?php _e( 'Job Destination', 'backwpup' ) ?></h3>
 				<p class="hasdests"></p>
 				<table class="form-table hasdests">
-					<tr valign="top">
+					<tr>
 						<th scope="row"><?php _e( 'Where should your backup file be stored?', 'backwpup' ) ?></th>
 						<td>
 							<fieldset>
@@ -560,7 +561,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title"><?php _e( 'Log Files', 'backwpup' ) ?></h3>
 				<p></p>
 				<table class="form-table">
-					<tr valign="top">
+					<tr>
 						<th scope="row"><label for="mailaddresslog"><?php _e( 'Send log to e-mail address', 'backwpup' ) ?></label></th>
 						<td>
 							<input name="mailaddresslog" type="text" id="mailaddresslog"
@@ -568,7 +569,7 @@ class BackWPup_Page_Editjob {
 								   class="regular-text" /><?php BackWPup_Help::tip( __( 'Leave empty to not have log sent.', 'backwpup' ) ); ?>
 						</td>
 					</tr>
-					<tr valign="top">
+					<tr>
 						<th scope="row"><label for="mailaddresssenderlog"><?php _e( 'E-Mail FROM field', 'backwpup' ) ?></label></th>
 						<td>
 							<input name="mailaddresssenderlog" type="text" id="mailaddresssenderlog"
@@ -576,7 +577,7 @@ class BackWPup_Page_Editjob {
 								   class="regular-text" /><?php BackWPup_Help::tip( __( 'E-Mail "From" field (Name &lt;&#160;you@your-email-address.tld&#160;&gt;)', 'backwpup' ) ); ?>
 						</td>
 					</tr>
-					<tr valign="top">
+					<tr>
 						<th scope="row"><?php _e( 'Errors only', 'backwpup' ); ?></th>
 						<td>
                             <label for="idmailerroronly">
@@ -596,7 +597,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title"><?php _e( 'Job Schedule', 'backwpup' ) ?></h3>
 				<p></p>
 				<table class="form-table">
-					<tr valign="top">
+					<tr>
                         <th scope="row"><?php _e( 'Start job', 'backwpup' ); ?></th>
                         <td>
                             <fieldset>
@@ -623,7 +624,7 @@ class BackWPup_Page_Editjob {
                             </fieldset>
                         </td>
                     </tr>
-                    <tr valign="top">
+                    <tr>
 						<th scope="row"><?php _e( 'Start job with CLI', 'backwpup' ); ?></th>
 						<td>
 							<?php
@@ -636,7 +637,7 @@ class BackWPup_Page_Editjob {
 				<h3 class="title wpcron"><?php _e( 'Schedule execution time', 'backwpup' ) ?></h3>
 				<?php BackWPup_Page_Editjob::ajax_cron_text( array( 'cronstamp' => BackWPup_Option::get( $jobid, 'cron' ), 'crontype' => BackWPup_Option::get( $jobid, 'cronselect' ) ) ); ?>
 				<table class="form-table wpcron">
-					<tr valign="top">
+					<tr>
 						<th scope="row"><?php _e( 'Scheduler type', 'backwpup' ); ?></th>
 						<td>
 							<fieldset>
@@ -677,7 +678,7 @@ class BackWPup_Page_Editjob {
 					else
 						$wday = explode( ',', $cronstr[ 'wday' ] );
 					?>
-                    <tr valign="top" class="wpcronbasic"<?php if ( BackWPup_Option::get( $jobid, 'cronselect' ) != 'basic' ) echo ' style="display:none;"';?>>
+                    <tr class="wpcronbasic"<?php if ( BackWPup_Option::get( $jobid, 'cronselect' ) != 'basic' ) echo ' style="display:none;"';?>>
                         <th scope="row"><?php _e( 'Scheduler', 'backwpup' ); ?></th>
                         <td>
                             <table id="wpcronbasic">
@@ -745,7 +746,7 @@ class BackWPup_Page_Editjob {
                             </table>
                         </td>
                     </tr>
-					<tr valign="top" class="wpcronadvanced"<?php if ( BackWPup_Option::get( $jobid, 'cronselect' ) != 'advanced' ) echo ' style="display:none;"';?>>
+					<tr class="wpcronadvanced"<?php if ( BackWPup_Option::get( $jobid, 'cronselect' ) != 'advanced' ) echo ' style="display:none;"';?>>
 						<th scope="row"><?php _e( 'Scheduler', 'backwpup' ); ?></th>
 						<td>
                             <div id="cron-min-box">

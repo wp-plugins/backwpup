@@ -3654,7 +3654,7 @@ class AmazonS3 extends CFRuntime
 	 * Creates an Amazon S3 object using the multipart upload APIs. It is analogous to <create_object()>.
 	 *
 	 * While each individual part of a multipart upload can hold up to 5 GB of data, this method limits the
-	 * part size to a maximum of 500 MB. The combined size of all parts cannot exceed 5 TB of data. When an
+	 * part size to a maximum of 500 MB. The combined size of all parts can not exceed 5 TB of data. When an
 	 * object is stored in Amazon S3, the data is streamed to multiple storage servers in multiple data
 	 * centers. This ensures the data remains available in the event of internal network or hardware failure.
 	 *

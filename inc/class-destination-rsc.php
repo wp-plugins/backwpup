@@ -1,11 +1,13 @@
 <?php
-// Rackspace OpenCloud SDK v1.4.1
+// Rackspace OpenCloud SDK v1.5.4
 // http://www.rackspace.com/cloud/files/
 // https://github.com/rackspace/php-opencloud
 if ( ! defined( 'RAXSDK_CACERTPEM' ) )
-	define('RAXSDK_CACERTPEM', BackWPup::get_plugin_data( 'plugindir' ) . '/inc/cacert.pem');
+	define('RAXSDK_CACERTPEM', dirname( __FILE__ ) . '/cacert.pem');
+if ( ! defined( 'RAXSDK_TIMEOUT' ) )
+	define('RAXSDK_TIMEOUT', 0 ); //todo file uploads times out
 if ( ! class_exists( 'Rackspace' ) )
-	require BackWPup::get_plugin_data( 'plugindir' ) . '/sdk/OpenCloud/rackspace.php';
+	require __DIR__ . '/../sdk/OpenCloud/php-opencloud.php';
 
 /**
  *
@@ -44,14 +46,14 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Rack Space Cloud Keys', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="rscusername"><?php _e( 'Username', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="rscusername" name="rscusername" type="text"
 						   value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'rscusername' ) );?>" class="regular-text" autocomplete="off" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="rscapikey"><?php _e( 'API Key', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="rscapikey" name="rscapikey" type="password"
@@ -63,7 +65,7 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Select region', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="rscregion"><?php _e( 'Rackspace Cloud Files Region', 'backwpup' ); ?></label></th>
 				<td>
 					<select name="rscregion" id="rscregion" title="<?php _e( 'Rackspace Cloud Files Region', 'backwpup' ); ?>">
@@ -72,7 +74,7 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 					</select><br/>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="rsccontainerselected"><?php _e( 'Container selection', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="rsccontainerselected" name="rsccontainerselected" type="hidden" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'rsccontainer' ) ); ?>" />
@@ -84,7 +86,7 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 																																				) ); ?>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idnewrsccontainer"><?php _e( 'Create a new container', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="idnewrsccontainer" name="newrsccontainer" type="text" value="" class="text" />
@@ -92,16 +94,16 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 			</tr>
 		</table>
 
-		<h3 class="title"><?php _e( 'S3 Backup settings', 'backwpup' ); ?></h3>
+		<h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idrscdir"><?php _e( 'Folder in bucket', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="idrscdir" name="rscdir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'rscdir' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File deletion', 'backwpup' ); ?></th>
 				<td>
 					<?php

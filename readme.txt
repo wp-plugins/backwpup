@@ -179,6 +179,23 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.9 =
+* Fixed: Fixed bug in Dropbox temp file fallback
+* Fixed: Not working if WP-Cron Control active
+* PRO Fixed: Synchronisation of files to Dropbox
+* PRO Changed: About page only displays on new installation not on updates
+* Added: Sending auth cookie for self requests
+* Added: Displaying off last error or waring in execution screen
+* Added: Job end message depending on error's or waring's
+* Added: Setting of BackWPup role in the user settings
+* Improved: Wait time after job start
+* Improved: Rights management to work better with Role management Plugins
+* Changed: Sessions now only used for wizards in pro version
+* Removed: Maintenance Mode support, because to many problems and not really needed
+* Updated: RSC SDK to Version 1.5.4
+* Updated: AWS SDK to Version 1.6.2
+* Updated: AWS SDK to Version 2.3.0 (PHP 5.3.3+)
+
 = Version 3.0.8 =
 * Fixed: Selected database tables not save on tab change
 * Fixed: Database tables selection on new job

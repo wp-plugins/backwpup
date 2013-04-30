@@ -100,6 +100,8 @@ use Guzzle\Service\Command\Factory\CompositeFactory;
  */
 class S3Client extends AbstractClient
 {
+    const LATEST_API_VERSION = '2006-03-01';
+
     /**
      * @var array Aliases for S3 operations
      */
@@ -198,7 +200,8 @@ class S3Client extends AbstractClient
             ->setConfig($config)
             ->setConfigDefaults(array(
                 Options::SIGNATURE => new S3Signature(),
-                Options::SERVICE_DESCRIPTION => __DIR__ . '/Resources/s3-2006-03-01.php'
+                Options::VERSION => self::LATEST_API_VERSION,
+                Options::SERVICE_DESCRIPTION => __DIR__ . '/Resources/s3-%s.php'
             ))
             ->setExceptionParser(new S3ExceptionParser())
             ->setIteratorsConfig(array(
@@ -270,7 +273,7 @@ class S3Client extends AbstractClient
             // Cannot look like an IP address
             || preg_match('/^\d+\.\d+\.\d+\.\d+$/', $bucket)
             // Cannot include special characters, must start and end with lower alnum
-            || !preg_match('/^[a-z0-9]([a-z0-9\\-.]*[a-z0-9])?$/', $bucket)) {
+            || !preg_match('/^[a-z0-9][a-z0-9\-.]*[a-z0-9]?$/', $bucket)) {
             return false;
         }
 
@@ -409,6 +412,18 @@ class S3Client extends AbstractClient
     {
         // Remove a leading slash if one is found
         return explode('/', $key && $key[0] == '/' ? substr($key, 1) : $key);
+    }
+
+    /**
+     * Register the Amazon S3 stream wrapper and associates it with this client object
+     *
+     * @return self
+     */
+    public function registerStreamWrapper()
+    {
+        StreamWrapper::register($this);
+
+        return $this;
     }
 
     /**

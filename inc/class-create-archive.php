@@ -469,7 +469,7 @@ class BackWPup_Create_Archive {
 			fwrite( $this->filehandel, $header );		
 		}
 		
-		// read/write files in 512K Blocks
+		// read/write files in 512 bite Blocks
 		while ( ! feof( $fd ) ) {
 			$file_data = fread( $fd, 512 );
 			if ( strlen( $file_data ) > 0 ) {

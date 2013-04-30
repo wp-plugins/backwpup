@@ -41,13 +41,13 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
     <h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
     <p></p>
     <table class="form-table">
-        <tr valign="top">
+        <tr>
             <th scope="row"><label for="idbackupdir"><?php _e( 'Folder to store backups in', 'backwpup' ); ?></label></th>
             <td>
                 <input name="backupdir" id="idbackupdir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'backupdir' ) ); ?>" class="regular-text" />
             </td>
         </tr>
-        <tr valign="top">
+        <tr>
             <th scope="row"><?php _e( 'File Deletion', 'backwpup' ); ?></th>
             <td>
 				<?php
@@ -110,13 +110,13 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
 			header( "Content-Length: " . filesize( $get_file ) );
 			@set_time_limit( 0 );
 			//chunked readfile
-			ob_end_clean();
+			@ob_end_clean();
 			$handle = fopen( $get_file, 'rb' );
 			if ( $handle ) {
 				while ( ! feof( $handle ) ) {
 					echo fread( $handle, 20482048 ); //2MB chunkes
-					ob_flush();
-					flush();
+					@ob_flush();
+					@flush();
 				}
 				fclose( $handle );
 			}
@@ -151,7 +151,8 @@ class BackWPup_Destination_Folder extends BackWPup_Destinations {
 					$files[ $filecounter ][ 'downloadurl' ] = add_query_arg( array(
 																				  'page'   => 'backwpupbackups',
 																				  'action' => 'downloadfolder',
-																				  'file'   => $backup_folder . $file
+																				  'file'   => $backup_folder . $file,
+																				  'jobid'  => $jobid
 																			 ), network_admin_url( 'admin.php' ) );
 					$files[ $filecounter ][ 'filesize' ]    = filesize( $backup_folder . $file );
 					$files[ $filecounter ][ 'time' ]        = filemtime( $backup_folder . $file );

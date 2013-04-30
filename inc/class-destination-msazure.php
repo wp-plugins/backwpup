@@ -2,7 +2,7 @@
 // Windows Azure SDK v0.3.1_2011-08
 // http://www.windowsazure.com/en-us/develop/php/
 // https://github.com/WindowsAzure/azure-sdk-for-php
-include BackWPup::get_plugin_data( 'PluginDir' ) . '/sdk/WindowsAzure/WindowsAzure.php';
+include __DIR__ . '/../sdk/WindowsAzure/WindowsAzure.php';
 // Pear libs include
 // http://www.pear.com/
 set_include_path( get_include_path() . PATH_SEPARATOR . BackWPup::get_plugin_data( 'PluginDir' ) . '/sdk/PEAR/');
@@ -44,14 +44,14 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'MS Azure access keys', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="msazureaccname"><?php _e( 'Account name', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="msazureaccname" name="msazureaccname" type="text"
 						   value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'msazureaccname' ) );?>" class="regular-text" autocomplete="off" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="msazurekey"><?php _e( 'Access key', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="msazurekey" name="msazurekey" type="password"
@@ -63,7 +63,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Blob container', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="msazurecontainerselected"><?php _e( 'Container selection', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="msazurecontainerselected" name="msazurecontainerselected" type="hidden" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'msazurecontainer' ) );?>" />
@@ -75,7 +75,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 																																					) ); ?>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="newmsazurecontainer"><?php _e( 'Create a new container', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="newmsazurecontainer" name="newmsazurecontainer" type="text" value="" class="small-text" autocomplete="off" />
@@ -86,13 +86,13 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idmsazuredir"><?php _e( 'Folder in container', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="idmsazuredir" name="msazuredir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'msazuredir' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File deletion', 'backwpup' ); ?></th>
 				<td>
 					<?php
@@ -114,6 +114,7 @@ class BackWPup_Destination_MSAzure extends BackWPup_Destinations {
 
 	/**
 	 * @param $jobid
+	 * @return string
 	 */
 	public function edit_form_post_save( $jobid ) {
 		$message="";

@@ -60,7 +60,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		<h3 class="title"><?php _e( 'Folders to backup', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idbackuproot"><?php _e( 'Backup root folder', 'backwpup' ); ?></label></th>
 				<td>
 					<?php 
@@ -87,7 +87,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                     </fieldset>
 				</td>
 			</tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idbackupcontent"><?php _e( 'Backup content folder', 'backwpup' ); ?></label></th>
                 <td>
 					<?php 
@@ -114,7 +114,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                     </fieldset>
                 </td>
             </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idbackupplugins"><?php _e( 'Backup plugins', 'backwpup' ); ?></label></th>
                 <td>
 					<?php 
@@ -141,7 +141,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                     </fieldset>
                 </td>
             </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idbackupthemes"><?php _e( 'Backup themes', 'backwpup' ); ?></label></th>
                 <td>
 					<?php 
@@ -168,7 +168,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                     </fieldset>
                 </td>
             </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idbackupuploads"><?php _e( 'Backup uploads folder', 'backwpup' ); ?></label></th>
                 <td>
 					<?php 
@@ -195,7 +195,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                     </fieldset>
                 </td>
             </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="dirinclude"><?php _e( 'Extra folders to backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate folder names with a line-break or a comma. Folders must be set with their absolute path!', 'backwpup' ) )?></th>
                 <td>
 					<textarea name="dirinclude" id="dirinclude" class="text code" rows="7" cols="50"><?php echo BackWPup_Option::get( $main, 'dirinclude' ); ?></textarea>
@@ -206,7 +206,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		<h3 class="title"><?php _e( 'Exclude from backup', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-            <tr valign="top">
+            <tr>
                 <th scope="row"><?php _e( 'Thumbnails in uploads', 'backwpup' ); ?></th>
                 <td>
                     <label for="idbackupexcludethumbs"><input class="checkbox"
@@ -214,7 +214,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
                            name="backupexcludethumbs" id="idbackupexcludethumbs" value="1" /> <?php _e( 'Don\'t backup thumbnails from the site\'s uploads folder.', 'backwpup' ); BackWPup_Help::add_tab( __( 'All images with -???x???. will be excluded. Use a plugin like Regenerate Thumbnails to rebuild them after a restore.', 'backwpup' ) );?></label>
                 </td>
             </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idfileexclude"><?php _e( 'Exclude files/folders from backup', 'backwpup' ); ?></label> <?php BackWPup_Help::tip( __( 'Separate file / folder name parts with a line-break or a comma. For example /logs/,.log,.tmp', 'backwpup' ) )?></th>
                 <td>
                     <textarea name="fileexclude" id="idfileexclude" class="text code" rows="7" cols="50"><?php echo BackWPup_Option::get( $main, 'fileexclude' ); ?></textarea>
@@ -225,7 +225,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 		<h3 class="title"><?php _e( 'Special option', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'Include special files', 'backwpup' ); ?></th>
 				<td>
 					<label for="idbackupspecialfiles"><input class="checkbox" id="idbackupspecialfiles"

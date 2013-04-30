@@ -44,7 +44,8 @@ class BackWPup_Adminbar {
 	 */
 	public function adminbar() {
 		global $wp_admin_bar;
-
+		/* @var WP_Admin_Bar $wp_admin_bar */
+		
 		$job_object = BackWPup_Job::get_working_data( FALSE );
 		$menu_title = '<span class="ab-icon"></span><span class="ab-label">' . BackWPup::get_plugin_data( 'name' ) . '</span>';
 		$menu_herf  = network_admin_url( 'admin.php' ) . '?page=backwpup';

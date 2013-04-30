@@ -38,7 +38,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
         <table class="form-table">
 
 		<?php if ( ! BackWPup_Option::get( $jobid, 'sugarrefreshtoken' ) ) { ?>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'Authentication', 'backwpup' ); ?></th>
                 <td>
                     <label for="sugaremail"><?php _e( 'E-Mail address:', 'backwpup' ); ?><br/>
@@ -57,7 +57,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
                 </td>
             </tr>
 		<?php } else { ?>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="idauthbutton"><?php _e( 'Authentication', 'backwpup' ); ?></label></th>
                 <td>
 					<span style="color:green;"><?php _e( 'Authenticated!', 'backwpup' ); ?></span>
@@ -71,7 +71,7 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
         <h3 class="title"><?php _e( 'SugarSync Root', 'backwpup' ); ?></h3>
         <p></p>
         <table class="form-table">
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="sugarroot"><?php _e( 'Sync folder selection', 'backwpup' ); ?></label></th>
                 <td>
 				<?php
@@ -100,13 +100,13 @@ class BackWPup_Destination_SugarSync extends BackWPup_Destinations {
     <h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
     <p></p>
     <table class="form-table">
-        <tr valign="top">
+        <tr>
             <th scope="row"><label for="idsugardir"><?php _e( 'Folder in root', 'backwpup' ); ?></label></th>
             <td>
                 <input id="idsugardir" name="sugardir" type="text" value="<?php echo  BackWPup_Option::get( $jobid, 'sugardir' ); ?>" class="regular-text" />
             </td>
         </tr>
-        <tr valign="top">
+        <tr>
             <th scope="row"><?php _e( 'File Deletion', 'backwpup' ); ?></th>
             <td>
 				<?php
@@ -763,7 +763,7 @@ class BackWPup_Destination_SugarSync_API {
 					}
 				}
 				if ( ! $isdir ) {
-					$request  = $this->doCall( $this->folder, '<?xml version="1.0" encoding="UTF-8"?><folder><displayName>' . mb_convert_encoding( $dir, 'UTF-8', $this->encoding ) . '</displayName></folder>', 'POST' );
+					$this->doCall( $this->folder, '<?xml version="1.0" encoding="UTF-8"?><folder><displayName>' . mb_convert_encoding( $dir, 'UTF-8', $this->encoding ) . '</displayName></folder>', 'POST' );
 					$contents = $this->getcontents( 'folder' );
 					foreach ( $contents->collection as $collection ) {
 						if ( strtolower( $collection->displayName ) == strtolower( $dir ) ) {
@@ -865,7 +865,7 @@ class BackWPup_Destination_SugarSync_API {
 
 		$xmlrequest .= '</file>';
 
-		$request  = $this->doCall( $this->folder, $xmlrequest, 'POST' );
+		$this->doCall( $this->folder, $xmlrequest, 'POST' );
 		$getfiles = $this->getcontents( 'file' );
 		foreach ( $getfiles->file as $getfile ) {
 			if ( $getfile->displayName == $name ) {

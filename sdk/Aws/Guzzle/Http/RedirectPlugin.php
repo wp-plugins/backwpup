@@ -3,9 +3,11 @@
 namespace Guzzle\Http;
 
 use Guzzle\Common\Event;
+use Guzzle\Http\Exception\BadResponseException;
 use Guzzle\Http\Url;
 use Guzzle\Http\Message\Response;
 use Guzzle\Http\Message\RequestInterface;
+use Guzzle\Http\Message\RequestFactory;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Exception\TooManyRedirectsException;
 use Guzzle\Http\Exception\CouldNotRewindStreamException;
@@ -76,8 +78,17 @@ class RedirectPlugin implements EventSubscriberInterface
             $originalRequest
         );
 
-        // Send the redirect request and hijack the response of the original request
-        $redirectResponse = $redirectRequest->send();
+        try {
+            // Send the redirect request and hijack the response of the original request
+            $redirectResponse = $redirectRequest->send();
+        } catch (BadResponseException $e) {
+            // Still hijack if an exception occurs after redirecting
+            $redirectResponse = $e->getResponse();
+            if (!$e->getResponse()) {
+                throw $e;
+            }
+        }
+
         $request->setResponse($redirectResponse);
         if (!$redirectResponse->getPreviousResponse()) {
             $redirectResponse->setPreviousResponse($response);
@@ -114,6 +125,7 @@ class RedirectPlugin implements EventSubscriberInterface
             $redirectRequest = clone $request;
         }
 
+        $redirectRequest->setIsRedirect(true);
         // Always use the same response body when redirecting
         $redirectRequest->setResponseBody($request->getResponseBody());
 
@@ -155,17 +167,7 @@ class RedirectPlugin implements EventSubscriberInterface
      */
     protected function cloneRequestWithGetMethod(EntityEnclosingRequestInterface $request)
     {
-        // Create a new GET request using the original request's URL
-        $redirectRequest = $request->getClient()->get($request->getUrl());
-        $redirectRequest->getCurlOptions()->replace($request->getCurlOptions()->getAll());
-        // Copy over the headers, while ensuring that the Content-Length is not copied
-        $redirectRequest->setHeaders($request->getHeaders()->getAll())->removeHeader('Content-Length');
-        $redirectRequest->setEventDispatcher(clone $request->getEventDispatcher());
-        $redirectRequest->getParams()
-            ->replace($request->getParams()->getAll())
-            ->remove('curl_handle')->remove('queued_response')->remove('curl_multi');
-
-        return $redirectRequest;
+        return RequestFactory::getInstance()->cloneRequestWithMethod($request, 'GET');
     }
 
     /**
@@ -214,17 +216,17 @@ class RedirectPlugin implements EventSubscriberInterface
      */
     protected function throwTooManyRedirectsException(RequestInterface $request)
     {
-        $responses = array();
+        $lines = array();
+        $response = $request->getResponse();
 
-        // Create a nice message to use when throwing the exception that shows each request/response transaction
         do {
-            $response = $request->getResponse();
-            $responses[] = '> ' . $request->getRawHeaders() . "\n\n< " . $response->getRawHeaders();
-            $request = $response->getPreviousResponse() ? $response->getPreviousResponse()->getRequest() : null;
-        } while ($request);
+            $lines[] = '> ' . $response->getRequest()->getRawHeaders() . "\n\n< " . $response->getRawHeaders();
+            $response = $response->getPreviousResponse();
+        } while ($response);
 
-        $transaction = implode("* Sending redirect request\n", array_reverse($responses));
-
-        throw new TooManyRedirectsException("Too many redirects were issued for this transaction:\n{$transaction}");
+        throw new TooManyRedirectsException(
+            "Too many redirects were issued for this transaction:\n"
+            . implode("* Sending redirect request\n", array_reverse($lines))
+        );
     }
 }

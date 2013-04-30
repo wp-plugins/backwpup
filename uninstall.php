@@ -4,9 +4,27 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) )
 	die();
 
 global $wpdb;
+/* @var wpdb $wpdb */
 
 //only uninstall if no BackWPup Version active
 if ( ! class_exists( 'BackWPup' ) ) {
+	//remove roles from user
+	/* @var WP_User $user */
+	$users = get_users( array( 'role' => 'backwpup_admin' ) );
+	foreach ( $users as $user ) {
+		$user->remove_role( 'backwpup_admin' );
+	}		
+	remove_role( 'backwpup_admin' );
+	$users = get_users( array( 'role' => 'backwpup_helper' ) );
+	foreach ( $users as $user ) {
+		$user->remove_role( 'backwpup_helper' );
+	}
+	remove_role( 'backwpup_helper' );
+	$users = get_users( array( 'role' => 'backwpup_check' ) );
+	foreach ( $users as $user ) {
+		$user->remove_role( 'backwpup_check' );
+	}
+	remove_role( 'backwpup_check' );	
 	//delete log folder and logs
 	$log_folder = get_site_option( 'backwpup_cfg_logfolder' );
 	if ( $dir = opendir( $log_folder ) ) {

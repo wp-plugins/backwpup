@@ -63,10 +63,10 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
     <h3 class="title"><?php _e( 'Login', 'backwpup' ); ?></h3>
     <p></p>
     <table class="form-table">
-        <tr valign="top">
+        <tr>
             <th scope="row"><?php _e( 'Authenticate', 'backwpup' ); ?></th>
             <td><?php if ( ! BackWPup_Option::get( $jobid, 'dropboxtoken' ) && ! BackWPup_Option::get( $jobid, 'dropboxsecret' ) && ! isset( $oAuthStuff[ 'oauth_token' ] ) ) { ?>
-               		<span style="color:red;"><?php _e( 'Not authenticated!', 'backwpup' ); ?></span>&nbsp;<a href="http://db.tt/hvNPyV3U"><?php _e( 'Create Account', 'backwpup' ); ?></a><br />
+               		<span style="color:red;"><?php _e( 'Not authenticated!', 'backwpup' ); ?></span>&nbsp;<a href="http://db.tt/8irM1vQ0"><?php _e( 'Create Account', 'backwpup' ); ?></a><br />
 				<?php } else { ?>
                 	<span style="color:green;"><?php _e( 'Authenticated!', 'backwpup' ); ?></span><br />
 				<?php } ?>
@@ -80,13 +80,13 @@ class BackWPup_Destination_Dropbox extends BackWPup_Destinations {
     <h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
     <p></p>
     <table class="form-table">
-        <tr valign="top">
+        <tr>
             <th scope="row"><label for="iddropboxdir"><?php _e( 'Folder in Dropbox', 'backwpup' ); ?></label></th>
             <td>
                 <input id="iddropboxdir" name="dropboxdir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'dropboxdir' ) ); ?>" class="regular-text" />
             </td>
         </tr>
-        <tr valign="top">
+        <tr>
             <th scope="row"><?php _e( 'File Deletion', 'backwpup' ); ?></th>
             <td>
 				<?php
@@ -489,7 +489,6 @@ final class BackWPup_Destination_Dropbox_API {
 	 */
 	public function chunked_upload( $file, $path = '', $overwrite = TRUE ) {
 		
-		$temp_file = tmpfile();
 		$file = str_replace( "\\", "/", $file );
 
 		if ( ! is_readable( $file ) or ! is_file( $file ) )
@@ -505,9 +504,9 @@ final class BackWPup_Destination_Dropbox_API {
 		fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
 		
 		while ( $data = fread( $file_handel, 4194304 ) ) { //4194304 = 4MB
-			if ( ! $chunk_handle = fopen( 'php://temp/maxmemory:4200000', 'w+' ) ) {
+			if ( ! $chunk_handle = fopen( 'php://temp/maxmemory:4194304', 'r+' ) ) {
 				//fallback if php://temp not working
-				if ( ! $chunk_handle = fopen( $temp_file, 'w+' ) )
+				if ( ! $chunk_handle = tmpfile() )
 					throw new BackWPup_Destination_Dropbox_API_Exception( "Can not open temp file for chunked transfer." );
 			}			
 			fwrite( $chunk_handle, $data );
@@ -524,10 +523,6 @@ final class BackWPup_Destination_Dropbox_API {
 			//correct position
 			fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
 		}
-		
-		// delete temp file if existing
-		if ( is_file( $temp_file ) )
-			unlink( $temp_file );
 
 		fclose( $file_handel );
 		$url = self::API_CONTENT_URL . self::API_VERSION_URL . 'commit_chunked_upload/' . $this->root . '/' . $this->encode_path( $path );
@@ -538,15 +533,17 @@ final class BackWPup_Destination_Dropbox_API {
 	/**
 	 * @param      $path
 	 * @param bool $echo
-	 * @return array|mixed|string
+	 * @return string
 	 */
 	public function download( $path, $echo = FALSE ) {
 
 		$url = self::API_CONTENT_URL . self::API_VERSION_URL . 'files/' . $this->root . '/' .  $path;
 		if ( ! $echo )
 			return $this->request( $url );
-		else
+		else {
 			$this->request( $url, NULL, 'GET', NULL, 0, TRUE );
+			return '';
+		}
 	}
 
 	/**

@@ -18,6 +18,7 @@ namespace Aws\Common\Client;
 
 use Aws\Common\Credentials\Credentials;
 use Aws\Common\Enum\ClientOptions as Options;
+use Aws\Common\Enum\Region;
 use Aws\Common\Exception\ExceptionListener;
 use Aws\Common\Exception\InvalidArgumentException;
 use Aws\Common\Exception\NamespaceExceptionFactory;
@@ -32,6 +33,10 @@ use Aws\Common\Signature\SignatureV3Https;
 use Aws\Common\Signature\SignatureV4;
 use Guzzle\Common\Collection;
 use Guzzle\Plugin\Backoff\BackoffPlugin;
+use Guzzle\Plugin\Backoff\CurlBackoffStrategy;
+use Guzzle\Plugin\Backoff\ExponentialBackoffStrategy;
+use Guzzle\Plugin\Backoff\HttpBackoffStrategy;
+use Guzzle\Plugin\Backoff\TruncatedBackoffStrategy;
 use Guzzle\Service\Client;
 use Guzzle\Service\Description\ServiceDescription;
 use Guzzle\Service\Resource\ResourceIteratorClassFactory;
@@ -194,17 +199,38 @@ class ClientBuilder
             (self::$commonConfigRequirements + $this->configRequirements)
         );
 
-        // Set values from the service description
-        $signature = $this->getSignature($this->updateConfigFromDescription($config), $config);
+        // Resolve endpoint and signature from the config and service description
+        $description = $this->updateConfigFromDescription($config);
+        $signature = $this->getSignature($description, $config);
 
         // Resolve credentials
         if (!$credentials = $config->get('credentials')) {
             $credentials = Credentials::factory($config);
         }
 
+        // Resolve exception parser
+        if (!$this->exceptionParser) {
+            $this->exceptionParser = new DefaultXmlExceptionParser();
+        }
+
+        // Resolve backoff strategy
         $backoff = $config->get(Options::BACKOFF);
         if ($backoff === null) {
-            $backoff = BackoffPlugin::getExponentialBackoff();
+            $backoff = new BackoffPlugin(
+                // Retry failed requests up to 3 times if it is determined that the request can be retried
+                new TruncatedBackoffStrategy(3,
+                    // Retry failed requests with 400-level responses due to throttling
+                    new ThrottlingErrorChecker($this->exceptionParser,
+                        // Retry failed requests with 500-level responses
+                        new HttpBackoffStrategy(array(500, 503, 509),
+                            // Retry failed requests due to transient network or cURL problems
+                            new CurlBackoffStrategy(null,
+                                new ExponentialBackoffStrategy()
+                            )
+                        )
+                    )
+                )
+            );
             $config->set(Options::BACKOFF, $backoff);
         }
 
@@ -221,12 +247,12 @@ class ClientBuilder
 
         /** @var $client AwsClientInterface */
         $client = new $clientClass($credentials, $signature, $config);
-        $client->setDescription($config->get(Options::SERVICE_DESCRIPTION));
+        $client->setDescription($description);
 
         // Add exception marshaling so that more descriptive exception are thrown
         if ($this->clientNamespace) {
             $exceptionFactory = new NamespaceExceptionFactory(
-                $this->exceptionParser ?: new DefaultXmlExceptionParser(),
+                $this->exceptionParser,
                 "{$this->clientNamespace}\\Exception",
                 "{$this->clientNamespace}\\Exception\\{$serviceName}Exception"
             );
@@ -324,6 +350,10 @@ class ClientBuilder
     {
         $description = $config->get(Options::SERVICE_DESCRIPTION);
         if (!($description instanceof ServiceDescription)) {
+            // Inject the version into the sprintf template if it is a string
+            if (is_string($description)) {
+                $description = sprintf($description, $config->get(Options::VERSION));
+            }
             $description = ServiceDescription::factory($description);
             $config->set(Options::SERVICE_DESCRIPTION, $description);
         }
@@ -343,15 +373,16 @@ class ClientBuilder
             );
         }
 
+        // Make sure a valid region is set
         $region = $config->get(Options::REGION);
-        if (!$region) {
-            if (!$description->getData('globalEndpoint')) {
-                throw new InvalidArgumentException(
-                    'A region is required when using ' . $description->getData('serviceFullName')
-                    . '. Set "region" to one of: ' . implode(', ', array_keys($description->getData('regions')))
-                );
-            }
-            $region = 'us-east-1';
+        $global = $description->getData('globalEndpoint');
+        if (!$global && !$region) {
+            throw new InvalidArgumentException(
+                'A region is required when using ' . $description->getData('serviceFullName')
+                . '. Set "region" to one of: ' . implode(', ', array_keys($description->getData('regions')))
+            );
+        } elseif ($global && (!$region || $description->getData('namespace') !== 'S3')) {
+            $region = Region::US_EAST_1;
             $config->set(Options::REGION, $region);
         }
 

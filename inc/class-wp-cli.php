@@ -38,8 +38,13 @@ class BackWPup_WP_CLI extends WP_CLI_Command {
 		$job_object = BackWPup_Job::get_working_data();
 		if ( ! $job_object )
 			WP_CLI::error( __( 'Nothing to abort!', 'backwpup' ) );
-
+		
+		delete_site_option( 'backwpup_working_job' );
 		unlink( BackWPup::get_plugin_data( 'running_file' ) );
+		
+		if ( ! is_object( $job_object ) )
+			WP_CLI::error( __( 'Running file can\'t read. tra again.', 'backwpup' ) );
+		
 		//remove restart cron
 		wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => 'restart' ) );
 		//add log entry
@@ -106,6 +111,8 @@ class BackWPup_WP_CLI extends WP_CLI_Command {
 		$job_object = BackWPup_Job::get_working_data();
 		if ( ! $job_object )
 			WP_CLI::error( __( 'No job running', 'backwpup' ) );
+		if ( ! is_object( $job_object ) )
+			WP_CLI::error( __( 'Running file can\'t read. tra again.', 'backwpup' ) );
 		WP_CLI::line( __('Running job', 'backwpup' ) );
 		WP_CLI::line( '----------------------------------------------------------------------' );
 		WP_CLI::line( sprintf( __( 'ID: %1$d Name: %2$s', 'backwpup' ), $job_object->job[ 'jobid' ], $job_object->job[ 'name' ] ) );

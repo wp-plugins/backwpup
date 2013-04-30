@@ -33,10 +33,10 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 	 */
 	public function option_defaults() {
 		global $wpdb;
-
+		/* @var wpdb $wpdb */
+		
 		$defaults = array(
-			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_file_name( DB_NAME ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => '',
-			'dbdumpmaintenance' => FALSE
+			'dbdumpexclude'    => array(), 'dbdumpfile' => sanitize_file_name( DB_NAME ), 'dbdumptype' => 'sql', 'dbdumpfilecompression' => ''
 		);
 		//set only wordpress tables as default
 		$dbtables = $wpdb->get_results( 'SHOW TABLES FROM `' . DB_NAME . '`', ARRAY_N );
@@ -54,13 +54,14 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 	 */
 	public function edit_tab( $jobid ) {
 		global $wpdb;
-
+		/* @var wpdb $wpdb */
+		
 		?>
         <input name="dbdumpwpony" type="hidden" value="1" />
         <h3 class="title"><?php _e( 'Settings for database backup', 'backwpup' ) ?></h3>
         <p></p>
         <table class="form-table">
-            <tr valign="top">
+            <tr>
                 <th scope="row"><?php _e( 'Tables to backup', 'backwpup' ); ?></th>
                 <td>
                     <input type="button" class="button-secondary" id="dball" value="<?php _e( 'all', 'backwpup' ); ?>">&nbsp;
@@ -87,15 +88,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 					?>
                 </td>
             </tr>
-            <tr valign="top">
-                <th scope="row"><?php _e( 'Maintenance mode', 'backwpup' ); ?></th>
-                <td>
-                    <label for="iddbdumpmaintenance"><input class="checkbox" value="1"  id="iddbdumpmaintenance"
-						   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dbdumpmaintenance' ), TRUE ); ?>
-						   name="dbdumpmaintenance" /> <?php _e( 'Activate maintenance mode on database dump', 'backwpup' ); ?></label>
-                </td>
-            </tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><label for="iddbdumpfile"><?php _e( 'Dumpfile name', 'backwpup' ) ?></label></th>
                 <td>
                     <input id="iddbdumpfile" name="dbdumpfile" type="text"
@@ -103,7 +96,7 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
                            class="medium-text code"/>.sql
                 </td>
             </tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'Dumpfile compression', 'backwpup' ) ?></th>
 				<td>
 					<?php
@@ -129,8 +122,8 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 	 */
 	public function edit_form_post_save( $id ) {
 		global $wpdb;
-
-		BackWPup_Option::update( $id, 'dbdumpmaintenance', ( isset( $_POST[ 'dbdumpmaintenance' ] ) && $_POST[ 'dbdumpmaintenance' ] == 1 ) ? TRUE : FALSE );
+		/* @var wpdb $wpdb */
+		
 		if ( $_POST[ 'dbdumpfilecompression' ] == '' || $_POST[ 'dbdumpfilecompression' ] == '.gz' || $_POST[ 'dbdumpfilecompression' ] == '.bz2' )
 			BackWPup_Option::update( $id, 'dbdumpfilecompression', $_POST[ 'dbdumpfilecompression' ] );
 		BackWPup_Option::update( $id, 'dbdumpfile',  sanitize_file_name( $_POST[ 'dbdumpfile' ]) );
@@ -155,7 +148,6 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 	 * @return bool
 	 */
 	public function job_run( $job_object ) {
-		global $wpdb;
 
 		$job_object->substeps_done = 0;
 		$job_object->substeps_todo = 1;
@@ -165,10 +157,6 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 		//build filename
 		if ( empty( $job_object->temp[ 'dbdumpfile' ] ) )
 			$job_object->temp[ 'dbdumpfile' ] = $job_object->generate_filename( $job_object->job[ 'dbdumpfile' ], 'sql' ) . $job_object->job[ 'dbdumpfilecompression' ];
-
-		//Set maintenance
-		if ( ! empty( $job_object->job[ 'dbdumpmaintenance'] ) )
-			$job_object->set_maintenance_mode( TRUE );
 
 		try {
 
@@ -190,8 +178,6 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			if ( $job_object->substeps_todo == 0 ) {
 				$job_object->log( __( 'No tables to dump.', 'backwpup' ), E_USER_WARNING );
 				unset( $sql_dump );
-				$job_object->set_maintenance_mode( FALSE );
-
 				return TRUE;
 			}
 
@@ -206,11 +192,9 @@ class BackWPup_JobType_DBDump extends BackWPup_JobTypes {
 			//dump footer
 			$sql_dump->dump_footer();
 			unset( $sql_dump );
-			$job_object->set_maintenance_mode( FALSE );
 
 		} catch ( Exception $e ) {
 			$job_object->log( $e->getMessage(), E_USER_ERROR, $e->getFile(), $e->getLine() );
-			$job_object->set_maintenance_mode( FALSE );
 			unset( $sql_dump );
 			return FALSE;
 		}

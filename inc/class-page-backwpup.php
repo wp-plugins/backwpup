@@ -96,7 +96,8 @@ class BackWPup_Page_BackWPup {
 				<?php }
 
 				if ( class_exists( 'BackWPup_Features' ) ) {
-
+					/* @var BackWPup_Wizards $wizard_class */
+					
 					foreach ( $wizards as $wizard_class ) {
 						//check permissions
 						if ( ! current_user_can( $wizard_class->info[ 'cap' ] ) )
@@ -239,17 +240,17 @@ class BackWPup_Page_BackWPup {
 			</thead>
 			<?php
 			//get next jobs
-			$job_object  = BackWPup_Job::get_working_data();
 			$mainsactive = BackWPup_Option::get_job_ids( 'activetype', 'wpcron' );
 			sort( $mainsactive );
 			$alternate = TRUE;
 			// add working job if it not in active jobs
-			if ( is_object( $job_object ) && ! empty( $job_object->job[ 'jobid' ] ) && ! in_array( $job_object->job[ 'jobid' ], $mainsactive ) )
-				$mainsactive[ ] = $job_object->job[ 'jobid' ];
+			$active_jobid = get_site_option( 'backwpup_working_job' );
+			if ( $active_jobid && ! in_array( $active_jobid, $mainsactive ) )
+				$mainsactive[ ] = $active_jobid;
 			foreach ( $mainsactive as $jobid ) {
 				$name = BackWPup_Option::get( $jobid, 'name' );
-				if ( is_object( $job_object )  && ! empty( $job_object->job[ 'jobid' ] ) && $job_object->job[ 'jobid' ] == $jobid ) {
-					$runtime  = current_time( 'timestamp' ) - $job_object->start_time;
+				if ( ! empty( $active_jobid ) && $active_jobid == $jobid ) {
+					$runtime  = current_time( 'timestamp' ) - BackWPup_Option::get( $active_jobid, 'lastrun' );
 					if ( ! $alternate ) {
 						echo '<tr>';
 						$alternate = TRUE;
@@ -278,7 +279,7 @@ class BackWPup_Page_BackWPup {
 					echo '<td><a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupeditjob&jobid=' . $jobid, 'edit-job' ) . '" title="' . esc_attr( __( 'Edit Job', 'backwpup' ) ) . '">' . $name . '</a></td></tr>';
 				}
 			}
-			if ( empty( $mainsactive ) and ! $job_object ) {
+			if ( empty( $mainsactive ) and ! $active_jobid ) {
 				echo '<tr><td colspan="2"><i>' . __( 'none', 'backwpup' ) . '</i></td></tr>';
 			}
 			?>

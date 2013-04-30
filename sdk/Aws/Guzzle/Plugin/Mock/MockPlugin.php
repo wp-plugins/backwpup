@@ -5,18 +5,19 @@ namespace Guzzle\Plugin\Mock;
 use Guzzle\Common\Event;
 use Guzzle\Common\Exception\InvalidArgumentException;
 use Guzzle\Common\AbstractHasDispatcher;
+use Guzzle\Http\Exception\CurlException;
 use Guzzle\Http\Message\RequestInterface;
 use Guzzle\Http\Message\EntityEnclosingRequestInterface;
 use Guzzle\Http\Message\Response;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
- * Queues mock responses and delivers mock responses in a fifo order.
+ * Queues mock responses or exceptions and delivers mock responses or exceptions in a fifo order.
  */
 class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterface, \Countable
 {
     /**
-     * @var array Array of mock responses
+     * @var array Array of mock responses / exceptions
      */
     protected $queue = array();
 
@@ -38,17 +39,21 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
     /**
      * Constructor
      *
-     * @param array $responses  Array of responses to queue
+     * @param array $items      Array of responses or exceptions to queue
      * @param bool  $temporary  Set to TRUE to remove the plugin when the queue is empty
      * @param bool  $readBodies Set to TRUE to consume the entity body when a mock is served
      */
-    public function __construct(array $responses = null, $temporary = false, $readBodies = false)
+    public function __construct(array $items = null, $temporary = false, $readBodies = false)
     {
         $this->readBodies = $readBodies;
         $this->temporary = $temporary;
-        if ($responses) {
-            foreach ($responses as $response) {
-                $this->addResponse($response);
+        if ($items) {
+            foreach ($items as $item) {
+                if ($item instanceof \Exception) {
+                    $this->addException($item);
+                } else {
+                    $this->addResponse($item);
+                }
             }
         }
     }
@@ -72,7 +77,7 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
     /**
      * Get a mock response from a file
      *
-     * @param string $file File to retrieve a mock response from
+     * @param string $path File to retrieve a mock response from
      *
      * @return Response
      * @throws InvalidArgumentException if the file is not found
@@ -90,7 +95,7 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
      * Set whether or not to consume the entity body of a request when a mock
      * response is used
      *
-     * @param bool $consumeBody Set to true to read and consume entity bodies
+     * @param bool $readBodies Set to true to read and consume entity bodies
      *
      * @return self
      */
@@ -134,6 +139,20 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
     }
 
     /**
+     * Add an exception to the end of the queue
+     *
+     * @param CurlException $e Exception to throw when the request is executed
+     *
+     * @return MockPlugin
+     */
+    public function addException(CurlException $e)
+    {
+        $this->queue[] = $e;
+
+        return $this;
+    }
+
+    /**
      * Clear the queue
      *
      * @return MockPlugin
@@ -170,7 +189,8 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
      *
      * @param RequestInterface $request Request to mock
      *
-     * @return MockPlugin
+     * @return self
+     * @throws CurlException When request.send is called and an exception is queued
      */
     public function dequeue(RequestInterface $request)
     {
@@ -179,12 +199,30 @@ class MockPlugin extends AbstractHasDispatcher implements EventSubscriberInterfa
             'request' => $request
         ));
 
-        $request->setResponse(array_shift($this->queue), true);
-
-        if ($this->readBodies && $request instanceof EntityEnclosingRequestInterface) {
-            $request->getEventDispatcher()->addListener('request.sent', function (Event $event) {
-                while ($data = $event['request']->getBody()->read(8096));
-            });
+        $item = array_shift($this->queue);
+        if ($item instanceof Response) {
+            $request->setResponse($item, true);
+            if ($this->readBodies && $request instanceof EntityEnclosingRequestInterface) {
+                $request->getEventDispatcher()->addListener('request.sent', function (Event $event) {
+                    while ($data = $event['request']->getBody()->read(8096));
+                });
+            }
+        } elseif ($item instanceof CurlException) {
+            $request->getEventDispatcher()->addListener(
+                'request.before_send',
+                function (Event $event) use ($request, $item) {
+                    // Emulates exceptions encountered while transferring requests
+                    $item->setRequest($request);
+                    $request->setState(RequestInterface::STATE_ERROR);
+                    $request->dispatch('request.exception', array('request' => $request, 'exception' => $item));
+                    // Only throw if the exception wasn't handled
+                    if ($request->getState() == RequestInterface::STATE_ERROR) {
+                        throw $item;
+                    }
+                },
+                // Use a number lower than the CachePlugin
+                -999
+            );
         }
 
         return $this;

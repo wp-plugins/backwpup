@@ -120,7 +120,7 @@ class BackWPup_Page_Settings {
 			<h3 class="title"><?php _e( 'Display Settings', 'backwpup' ); ?></h3>
             <p><?php _e( 'Do you want to see BackWPup in the WordPress admin bar?', 'backwpup' ); ?></p>
             <table class="form-table">
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Admin bar', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -133,7 +133,7 @@ class BackWPup_Page_Settings {
                         </fieldset>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Folder sizes', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -150,7 +150,7 @@ class BackWPup_Page_Settings {
 			<h3 class="title"><?php _e( 'Security', 'backwpup' ); ?></h3>
 			<p><?php _e( 'Security option for BackWPup', 'backwpup' ); ?></p>
             <table class="form-table">
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Protect folders', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -174,7 +174,7 @@ class BackWPup_Page_Settings {
 
             <p><?php _e( 'Every time BackWPup runs a backup job a log file is being generated. Choose where to store your log files and how many of them.', 'backwpup' ); ?></p>
             <table class="form-table">
-                <tr valign="top">
+                <tr>
                     <th scope="row"><label for="logfolder"><?php _e( 'Log file folder', 'backwpup' ); ?></label></th>
                     <td>
                         <input name="logfolder" type="text" id="logfolder"
@@ -182,7 +182,7 @@ class BackWPup_Page_Settings {
                                class="regular-text code"/>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><label for="maxlogs"><?php _e( 'Maximum number of log files in folder', 'backwpup' ); ?></label>
                     </th>
                     <td>
@@ -191,7 +191,7 @@ class BackWPup_Page_Settings {
 						<?php BackWPup_Help::tip( __( 'Oldest files will be deleted first.', 'backwpup' ) ); ?>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Compression', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -211,7 +211,7 @@ class BackWPup_Page_Settings {
 
             <p><?php _e( 'There are a couple of general options for backup jobs. Set them here.', 'backwpup' ); ?></p>
             <table class="form-table">
-                <tr valign="top">
+                <tr>
                     <th scope="row">
                         <label for="jobstepretry"><?php _e( "Maximum number of retries for job steps", 'backwpup' ); ?></label></th>
                     <td>
@@ -220,7 +220,7 @@ class BackWPup_Page_Settings {
                                class="small-text code" />
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Restart on every main step', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -235,7 +235,7 @@ class BackWPup_Page_Settings {
                         </fieldset>
                     </td>
                 </tr>
-				<tr valign="top">
+				<tr>
                     <th scope="row"><?php _e( 'Restart on archive creation', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -250,7 +250,7 @@ class BackWPup_Page_Settings {
                         </fieldset>
                     </td>
                 </tr>
-				<tr valign="top">
+				<tr>
                     <th scope="row"><?php _e( 'Method for creating ZIP archive', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -267,7 +267,7 @@ class BackWPup_Page_Settings {
                         </fieldset>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row">
                         <label for="jobrunauthkey"><?php _e( 'Key to start jobs externally with an URL', 'backwpup' ); ?></label>
                     </th>
@@ -277,7 +277,7 @@ class BackWPup_Page_Settings {
 						<?php BackWPup_Help::tip( __( 'empty = deactivated. Will be used to protect job starts from unauthorized persons.', 'backwpup' ) ); ?>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'No translation', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -291,7 +291,7 @@ class BackWPup_Page_Settings {
                         </fieldset>
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><?php _e( 'Reduce server load', 'backwpup' ); ?></th>
                     <td>
                         <fieldset>
@@ -318,7 +318,7 @@ class BackWPup_Page_Settings {
 			<h3 class="title"><?php _e( 'Authentication', 'backwpup' ); ?></h3>
             <p><?php _e( 'Is your blog protected with HTTP basic authentication (.htaccess)? Then please set the username and password for authentication here.', 'backwpup' ); ?></p>
             <table class="form-table">
-                <tr valign="top">
+                <tr>
                     <th scope="row"><label for="httpauthuser"><?php _e( 'Username:', 'backwpup' ); ?></label></th>
                     <td>
                         <input name="httpauthuser" type="text" id="httpauthuser"
@@ -326,7 +326,7 @@ class BackWPup_Page_Settings {
                                class="regular-text" autocomplete="off" />
                     </td>
                 </tr>
-                <tr valign="top">
+                <tr>
                     <th scope="row"><label for="httpauthpassword"><?php _e( 'Password:', 'backwpup' ); ?></label></th>
                     <td>
                         <input name="httpauthpassword" type="password" id="httpauthpassword"
@@ -365,12 +365,13 @@ class BackWPup_Page_Settings {
 				echo '<tr title=""><td>' . __( 'cURL version', 'backwpup' ) . '</td><td>' . __( 'unavailable', 'backwpup' ) . '</td></tr>';
 			}
 			//response test
+			$wp_admin_user = get_users( array( 'role' => 'administrator' ) );
 			$raw_response = wp_remote_get( site_url( 'wp-cron.php?backwpup_run=test' ), array(
 																							   'blocking'   => TRUE,
 																							   'sslverify'  => FALSE,
 																							   'timeout' 	=> 15,
 																							   'redirection' => 0,
-																							   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
+																							   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ), 'Cookie' => LOGGED_IN_COOKIE. '='. wp_generate_auth_cookie( $wp_admin_user[ 0 ]->ID, time() + 60, 'logged_in') ),
 																							   'user-agent' =>  BackWPup::get_plugin_data( 'user-agent' ) ) );
 			echo '<tr><td>' . __( 'Server self connect:', 'backwpup' ) . '</td><td>';
 			$test_result = '';

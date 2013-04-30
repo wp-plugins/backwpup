@@ -1,9 +1,9 @@
 <?php
-// Amazon S3 SDK v1.6.1
+// Amazon S3 SDK v1.6.2
 // http://aws.amazon.com/de/sdkforphp/
 // https://github.com/amazonwebservices/aws-sdk-for-php
 if ( ! class_exists( 'AmazonS3' ) )
-	include BackWPup::get_plugin_data( 'PluginDir' ) . '/sdk/Aws_v1/sdk.class.php';
+	include dirname( __FILE__ ) . '/../sdk/Aws_v1/sdk.class.php';
 if ( ! defined( 'E_USER_DEPRECATED') )
 	define( 'E_USER_DEPRECATED', 16384 );
 
@@ -84,7 +84,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'S3 Service', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3region"><?php _e( 'Select an S3 service', 'backwpup' ) ?></label></th>
 				<td>
 					<select name="s3region" id="s3region" title="<?php _e( 'Amazon S3 Region', 'backwpup' ); ?>">
@@ -102,7 +102,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 					</select>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3base_url"><?php _e( 'Or an S3 Server URL', 'backwpup' ) ?></label></th>
 				<td>
 					<input id="s3base_url" name="s3base_url" type="text"  value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3base_url' ) );?>" class="regular-text" autocomplete="off" />
@@ -113,14 +113,14 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'S3 Access Keys', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3accesskey"><?php _e( 'Access Key', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="s3accesskey" name="s3accesskey" type="text"
 						   value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3accesskey' ) );?>" class="regular-text" autocomplete="off" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3secretkey"><?php _e( 'Secret Key', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="s3secretkey" name="s3secretkey" type="password"
@@ -132,7 +132,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'S3 Bucket', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3bucketselected"><?php _e( 'Bucket selection', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="s3bucketselected" name="s3bucketselected" type="hidden" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3bucket' ) ); ?>" />
@@ -145,7 +145,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 																																				  ) ); ?>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="s3newbucket"><?php _e( 'Create a new bucket', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="s3newbucket" name="s3newbucket" type="text" value="" class="small-text" autocomplete="off" />
@@ -156,13 +156,13 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'S3 Backup settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="ids3dir"><?php _e( 'Folder in bucket', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="ids3dir" name="s3dir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 's3dir' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File deletion', 'backwpup' ); ?></th>
 				<td>
 					<?php
@@ -182,7 +182,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Amazon specific settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="ids3storageclass"><?php _e( 'Amazon: Storage Class', 'backwpup' ); ?></label></th>
 				<td>
 					<select name="s3storageclass" id="ids3storageclass" title="<?php _e( 'Amazon: Storage Class', 'backwpup' ); ?>">
@@ -191,7 +191,7 @@ class BackWPup_Destination_S3_V1 extends BackWPup_Destinations {
 					</select>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="ids3ssencrypt"><?php _e( 'Server side encryption', 'backwpup' ); ?></label></th>
 				<td>
 					<input class="checkbox" value="AES256"

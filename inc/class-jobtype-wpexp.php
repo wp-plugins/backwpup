@@ -42,7 +42,7 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 	public function edit_tab( $jobid ) {
 		?>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'Items to export', 'backwpup' ) ?></th>
 				<td>
 					<p><label for="idwpexportcontent-all"><input type="radio" name="wpexportcontent" id="idwpexportcontent-all" value="all" <?php checked( BackWPup_Option::get( $jobid, 'wpexportcontent' ), 'all' ); ?> /> <?php _e( 'All content', 'backwpup' ); ?></label></p>
@@ -55,7 +55,7 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 					<?php } ?>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idwpexportfile"><?php _e( 'XML Export file name', 'backwpup' ) ?></label></th>
 				<td>
 					<input name="wpexportfile" type="text" id="idwpexportfile"
@@ -63,7 +63,7 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 						   class="medium-text code"/>.xml
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File compression', 'backwpup' ) ?></th>
 				<td>
 					<?php
@@ -115,8 +115,8 @@ class BackWPup_JobType_WPEXP extends BackWPup_JobTypes {
 			'content' =>  $job_object->job[ 'wpexportcontent' ]
 		);
 		@export_wp( $args ); //WP export
-		ob_flush(); //send rest of data
-		ob_end_clean(); //End output buffering
+		@ob_flush(); //send rest of data
+		@ob_end_clean(); //End output buffering
 
 		//add XML file to backup files
 		if ( is_readable( BackWPup::get_plugin_data( 'TEMP' ) . $job_object->temp[ 'wpexportfile' ] ) ) {

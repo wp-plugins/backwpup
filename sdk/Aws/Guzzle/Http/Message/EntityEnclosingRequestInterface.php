@@ -11,7 +11,7 @@ use Guzzle\Http\QueryString;
  */
 interface EntityEnclosingRequestInterface extends RequestInterface
 {
-    const URL_ENCODED = 'application/x-www-form-urlencoded';
+    const URL_ENCODED = 'application/x-www-form-urlencoded; charset=utf-8';
     const MULTIPART = 'multipart/form-data';
 
     /**
@@ -23,7 +23,7 @@ interface EntityEnclosingRequestInterface extends RequestInterface
      * @param bool                                $tryChunkedTransfer Try to use chunked Transfer-Encoding
      *
      * @return EntityEnclosingRequestInterface
-     * @throws RequestException if the protocol is < 1.1 and Content-Length cannot be determined
+     * @throws RequestException if the protocol is < 1.1 and Content-Length can not be determined
      */
     public function setBody($body, $contentType = null, $tryChunkedTransfer = false);
 

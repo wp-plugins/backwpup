@@ -38,7 +38,7 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'FTP server and login', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idftphost"><?php _e( 'FTP server', 'backwpup' ); ?></label></th>
 				<td>
                     <input id="idftphost" name="ftphost" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'ftphost' ) );?>"
@@ -48,14 +48,14 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
                            class="small-text" /></label>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idftpuser"><?php _e( 'Username', 'backwpup' ); ?></label></th>
 				<td>
                     <input id="idftpuser" name="ftpuser" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'ftpuser' ) ); ?>"
                            class="user regular-text" autocomplete="off" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idftppass"><?php _e( 'Password', 'backwpup' ); ?></label></th>
 				<td>
                     <input id="idftppass" name="ftppass" type="password" value="<?php echo esc_attr( BackWPup_Encryption::decrypt(BackWPup_Option::get( $jobid, 'ftppass' ) ) ); ?>"
@@ -67,13 +67,13 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'Backup settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idftpdir"><?php _e( 'Folder to store files in', 'backwpup' ); ?></label></th>
 				<td>
 					<input id="idftpdir" name="ftpdir" type="text" value="<?php echo esc_attr( BackWPup_Option::get( $jobid, 'ftpdir' ) ); ?>" class="regular-text" />
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File Deletion', 'backwpup' ); ?></th>
 				<td>
 					<?php
@@ -93,7 +93,7 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 		<h3 class="title"><?php _e( 'FTP specific settings', 'backwpup' ); ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idftptimeout"><?php _e( 'Timeout for FTP connection', 'backwpup' ); ?></label></th>
 				<td>
                     <input id="idftptimeout" name="ftptimeout" type="text" size="3"
@@ -101,7 +101,7 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
                            class="small-text" /> <?php _e( 'seconds', 'backwpup' ); ?>
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'SSL-FTP connection', 'backwpup' ); ?></th>
 				<td>
                     <label for="idftpssl"><input class="checkbox" value="1"
@@ -110,7 +110,7 @@ class BackWPup_Destination_Ftp extends BackWPup_Destinations {
 
 				</td>
 			</tr>
-            <tr valign="top">
+            <tr>
                 <th scope="row"><?php _e( 'FTP Passive Mode', 'backwpup' ); ?></th>
                 <td>
                     <label for="idftppasv"><input class="checkbox" value="1"

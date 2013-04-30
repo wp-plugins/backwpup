@@ -23,7 +23,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 	 * @return array
 	 */
 	public function option_defaults() {
-		return array( 'dbcheckwponly' => TRUE, 'dbcheckmaintenance' => FALSE, 'dbcheckrepair' => FALSE );
+		return array( 'dbcheckwponly' => TRUE, 'dbcheckrepair' => FALSE );
 	}
 
 
@@ -35,7 +35,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 		<h3 class="title"><?php _e( 'Settings for database check', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'WordPress tables only', 'backwpup' ); ?></th>
 				<td>
 					<label for="iddbcheckwponly">
@@ -45,17 +45,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
                     </label>
 				</td>
 			</tr>
-			<tr valign="top">
-				<th scope="row"><?php _e( 'Maintenance mode', 'backwpup' ); ?></th>
-				<td>
-                    <label for="iddbcheckmaintenance">
-					<input class="checkbox" value="1" id="iddbcheckmaintenance"
-						   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dbcheckmaintenance' ), TRUE ); ?>
-						   name="dbcheckmaintenance" /> <?php _e( 'Activate maintenance mode during table check', 'backwpup' ); ?>
-					</label>
-				</td>
-			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'Repair', 'backwpup' ); ?></th>
 				<td>
                     <label for="iddbcheckrepair">
@@ -75,7 +65,6 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 	 */
 	public function edit_form_post_save( $jobid ) {
 		BackWPup_Option::update( $jobid, 'dbcheckwponly', ( isset( $_POST[ 'dbcheckwponly' ] ) && $_POST[ 'dbcheckwponly' ] == 1 ) ? TRUE : FALSE );
-		BackWPup_Option::update( $jobid, 'dbcheckmaintenance', ( isset( $_POST[ 'dbcheckmaintenance' ] ) && $_POST[ 'dbcheckmaintenance' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $jobid, 'dbcheckrepair', ( isset( $_POST[ 'dbcheckrepair' ] ) && $_POST[ 'dbcheckrepair' ] == 1 ) ? TRUE : FALSE );
 	}
 
@@ -85,6 +74,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 	 */
 	public function job_run( $job_object ) {
 		global $wpdb;
+		/* @var wpdb $wpdb */
 
 		$job_object->log( sprintf( __( '%d. Trying to check database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
@@ -92,6 +82,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 
 		//to check
 		$tables = array();
+		$tablestype = array();
 		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $restables as $table ) {
 			if ( $job_object->job[ 'dbcheckwponly' ] && substr( $table[ 0 ], 0, strlen( $wpdb->prefix ) ) != $wpdb->prefix ) 
@@ -104,6 +95,7 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 		$job_object->substeps_todo = sizeof( $tables );
 
 		//Get table status
+		$status = array();
 		$resstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`", ARRAY_A );
 		foreach ( $resstatus as $tablestatus ) {
 			$status[ $tablestatus[ 'Name' ] ] = $tablestatus;
@@ -111,8 +103,6 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 
 		//check tables
 		if ( $job_object->substeps_todo > 0 ) {
-			if ( ! empty( $job_object->job[ 'dbcheckmaintenance' ] ) )
-				$job_object->set_maintenance_mode( TRUE );
 			foreach ( $tables as $table ) {
 				if ( in_array( $table, $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 					continue;
@@ -149,7 +139,6 @@ class BackWPup_JobType_DBCheck extends BackWPup_JobTypes {
 				$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ][ ] = $table;
 				$job_object->substeps_done ++;
 			}
-			$job_object->set_maintenance_mode( FALSE );
 			$job_object->log( __( 'Database check done!', 'backwpup' ) );
 		}
 		else {

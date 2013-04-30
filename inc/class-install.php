@@ -32,30 +32,31 @@ class BackWPup_Install {
 		wp_clear_scheduled_hook( 'backwpup_check_cleanup' );
 		wp_schedule_event( time(), 'twicedaily', 'backwpup_check_cleanup' );
 
-		//add user role
+		//remove old roles pre v.3.0.9
 		$role = get_role( 'administrator' );
-		$role->add_cap( 'backwpup' );  					// BackWPup general accesses (like Dashboard)
-		$role->add_cap( 'backwpup_jobs' ); 				// accesses for job page
-		$role->add_cap( 'backwpup_jobs_edit' ); 		// user can edit/delete/copy/export jobs
-		$role->add_cap( 'backwpup_jobs_start' ); 		// user can start jobs
-		$role->add_cap( 'backwpup_backups' ); 			// accesses for backups page
-		$role->add_cap( 'backwpup_backups_download' ); 	// user can download backup files
-		$role->add_cap( 'backwpup_backups_delete' ); 	// user can delete backup files
-		$role->add_cap( 'backwpup_logs' ); 				// accesses for logs page
-		$role->add_cap( 'backwpup_logs_delete' ); 		// user can delete log files
-		$role->add_cap( 'backwpup_settings' ); 			// accesses for settings page
+		$role->remove_cap( 'backwpup' );
+		$role->remove_cap( 'backwpup_jobs' );
+		$role->remove_cap( 'backwpup_jobs_edit' );
+		$role->remove_cap( 'backwpup_jobs_start' );
+		$role->remove_cap( 'backwpup_backups' );
+		$role->remove_cap( 'backwpup_backups_download' );
+		$role->remove_cap( 'backwpup_backups_delete' );
+		$role->remove_cap( 'backwpup_logs' );
+		$role->remove_cap( 'backwpup_logs_delete' );
+		$role->remove_cap( 'backwpup_settings' );			
 
+		//add/overwrite roles
 		add_role( 'backwpup_admin', __( 'BackWPup Admin', 'backwpup' ), array(
-												  'backwpup' => TRUE,
-												  'backwpup_jobs' => TRUE,
-												  'backwpup_jobs_edit' => TRUE,
-												  'backwpup_jobs_start' => TRUE,
-												  'backwpup_backups' => TRUE,
-												  'backwpup_backups_download' => TRUE,
-												  'backwpup_backups_delete' => TRUE,
-												  'backwpup_logs' => TRUE,
-												  'backwpup_logs_delete' => TRUE,
-												  'backwpup_settings' => TRUE,
+												  'backwpup' => TRUE, 					// BackWPup general accesses (like Dashboard)
+												  'backwpup_jobs' => TRUE,				// accesses for job page
+												  'backwpup_jobs_edit' => TRUE,			// user can edit/delete/copy/export jobs
+												  'backwpup_jobs_start' => TRUE,		// user can start jobs
+												  'backwpup_backups' => TRUE,			// accesses for backups page
+												  'backwpup_backups_download' => TRUE,	// user can download backup files
+												  'backwpup_backups_delete' => TRUE,	// user can delete backup files
+												  'backwpup_logs' => TRUE,				// accesses for logs page
+												  'backwpup_logs_delete' => TRUE,		// user can delete log files
+												  'backwpup_settings' => TRUE,			// accesses for settings page
 											 ) );
 
 		add_role( 'backwpup_check', __( 'BackWPup jobs checker', 'backwpup' ), array(
@@ -83,6 +84,16 @@ class BackWPup_Install {
 																		 'backwpup_logs_delete' => TRUE,
 																		 'backwpup_settings' => FALSE,
 																	) );
+		
+		//add role to admin user if no one
+		$users_backwpup = get_users( array( 'blog_id' => 1, 'role' => 'backwpup_admin' ) );
+		if ( empty( $users_backwpup ) ) {
+			/* @var WP_User $user */
+			$users = get_users( array( 'blog_id' => 1, 'role' => 'administrator' ) );
+			foreach ( $users as $user ) {
+				$user->add_role( 'backwpup_admin' );
+			}
+		}
 
 		//add cfg options to database prevent false false if option not exists
 		$cfg_options = BackWPup_Option::defaults( 'cfg', NULL );
@@ -120,20 +131,6 @@ class BackWPup_Install {
 			}
 		}
 		wp_clear_scheduled_hook( 'backwpup_check_cleanup' );
-		remove_role( 'backwpup_admin' );
-		remove_role( 'backwpup_helper' );
-		remove_role( 'backwpup_check' );
-		$role = get_role( 'administrator' );
-		$role->remove_cap( 'backwpup' );
-		$role->remove_cap( 'backwpup_jobs' );
-		$role->remove_cap( 'backwpup_jobs_edit' );
-		$role->remove_cap( 'backwpup_jobs_start' );
-		$role->remove_cap( 'backwpup_backups' );
-		$role->remove_cap( 'backwpup_backups_download' );
-		$role->remove_cap( 'backwpup_backups_delete' );
-		$role->remove_cap( 'backwpup_logs' );
-		$role->remove_cap( 'backwpup_logs_delete' );
-		$role->remove_cap( 'backwpup_settings' );
 		//to reschedule on activation and so on
 		update_site_option( 'backwpup_version', BackWPup::get_plugin_data( 'version' ) .'-inactive' );
 	}
@@ -267,9 +264,6 @@ class BackWPup_Install {
 			$jobvalue[ 'dbdumpexclude' ] = $jobvalue[ 'dbexclude' ];
 			unset( $jobvalue[ 'dbexclude' ], $jobvalue['dbshortinsert'] );
 			//convert jobtype DBDUMP, DBCHECK, DBOPTIMIZE
-			$jobvalue[ 'dbdumpmaintenance' ] = $jobvalue['maintenance'];
-			$jobvalue[ 'dbcheckmaintenance' ] = $jobvalue['maintenance'];
-			$jobvalue[ 'dboptimizemaintenance' ] = $jobvalue['maintenance'];
 			$jobvalue[ 'dbcheckrepair' ] = TRUE;
 			unset( $jobvalue[ 'maintenance' ] );
 			//convert jobtype wpexport

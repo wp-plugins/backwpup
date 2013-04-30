@@ -189,23 +189,27 @@ abstract class AbstractClient extends Client implements AwsClientInterface
     {
         $config = $this->getConfig();
         $formerRegion = $config->get(Options::REGION);
+        $global = $this->serviceDescription->getData('globalEndpoint');
 
-        $baseUrl = self::getEndpoint($this->serviceDescription, $region, $config->get(Options::SCHEME));
-        $this->setBaseUrl($baseUrl);
-        $config->set(Options::BASE_URL, $baseUrl)->set(Options::REGION, $region);
+        // Only change the region if the service does not have a global endpoint
+        if (!$global || $this->serviceDescription->getData('namespace') === 'S3') {
+            $baseUrl = self::getEndpoint($this->serviceDescription, $region, $config->get(Options::SCHEME));
+            $this->setBaseUrl($baseUrl);
+            $config->set(Options::BASE_URL, $baseUrl)->set(Options::REGION, $region);
 
-        // Update the signature if necessary
-        $signature = $this->getSignature();
-        if ($signature instanceof EndpointSignatureInterface) {
-            /** @var $signature EndpointSignatureInterface */
-            $signature->setRegionName($region);
+            // Update the signature if necessary
+            $signature = $this->getSignature();
+            if ($signature instanceof EndpointSignatureInterface) {
+                /** @var $signature EndpointSignatureInterface */
+                $signature->setRegionName($region);
+            }
+
+            // Dispatch an event that the region has been changed
+            $this->dispatch('client.region_changed', array(
+                'region'        => $region,
+                'former_region' => $formerRegion,
+            ));
         }
-
-        // Dispatch an event that the region has been changed
-        $this->dispatch('client.region_changed', array(
-            'region'        => $region,
-            'former_region' => $formerRegion,
-        ));
 
         return $this;
     }
@@ -231,11 +235,7 @@ abstract class AbstractClient extends Client implements AwsClientInterface
     }
 
     /**
-     * Set the waiter factory to use with the client
-     *
-     * @param WaiterFactoryInterface $waiterFactory Factory used to create waiters
-     *
-     * @return self
+     * {@inheritdoc}
      */
     public function setWaiterFactory(WaiterFactoryInterface $waiterFactory)
     {
@@ -245,9 +245,7 @@ abstract class AbstractClient extends Client implements AwsClientInterface
     }
 
     /**
-     * Get the waiter factory used with the class
-     *
-     * @return WaiterFactoryInterface
+     * {@inheritdoc}
      */
     public function getWaiterFactory()
     {
@@ -263,5 +261,13 @@ abstract class AbstractClient extends Client implements AwsClientInterface
         }
 
         return $this->waiterFactory;
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getApiVersion()
+    {
+        return $this->serviceDescription->getApiVersion();
     }
 }

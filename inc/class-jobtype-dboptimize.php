@@ -24,7 +24,7 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 	 */
 	public function option_defaults() {
 
-		return array( 'dboptimizewponly' => TRUE, 'dboptimizemyisam' => TRUE, 'dboptimizeinnodb' => TRUE, 'dboptimizemaintenance' => FALSE );
+		return array( 'dboptimizewponly' => TRUE, 'dboptimizemyisam' => TRUE, 'dboptimizeinnodb' => TRUE );
 	}
 
 
@@ -36,7 +36,7 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 		<h3 class="title"><?php _e( 'Settings for database optimization', 'backwpup' ) ?></h3>
 		<p></p>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
                 <th scope="row"><?php _e( 'WordPress tables only', 'backwpup' ); ?></th>
 				<td>
                     <label for="iddboptimizewponly">
@@ -46,18 +46,7 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 					</label>
 				</td>
 			</tr>
-            <tr valign="top">
-                <th scope="row"><?php _e( 'Maintenance mode', 'backwpup' ); ?></th>
-                <td>
-                    <label for="iddboptimizemaintenance">
-					<input class="checkbox" value="1" id="iddboptimizemaintenance"
-						   type="checkbox" <?php checked( BackWPup_Option::get( $jobid, 'dboptimizemaintenance' ), TRUE ); ?>
-						   name="dboptimizemaintenance" /> <?php _e( 'Activate maintenance mode during table optimize', 'backwpup' ); ?>
-				    </label>
-                </td>
-            </tr>
-
-            <tr valign="top">
+            <tr>
                 <th scope="row"><?php _e( 'Table types to optimize', 'backwpup' ); ?></th>
                 <td>
                     <fieldset>
@@ -86,7 +75,6 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 	public function edit_form_post_save( $jobid ) {
 
 		BackWPup_Option::update( $jobid, 'dboptimizewponly', ( isset( $_POST[ 'dboptimizewponly' ] ) && $_POST[ 'dboptimizewponly' ] == 1 ) ? TRUE : FALSE );
-		BackWPup_Option::update( $jobid, 'dboptimizemaintenance', ( isset( $_POST[ 'dboptimizemaintenance' ] ) && $_POST[ 'dboptimizemaintenance' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $jobid, 'dboptimizemyisam', ( isset( $_POST[ 'dboptimizemyisam' ] ) && $_POST[ 'dboptimizemyisam' ] == 1 ) ? TRUE : FALSE );
 		BackWPup_Option::update( $jobid, 'dboptimizeinnodb', ( isset( $_POST[ 'dboptimizeinnodb' ] ) && $_POST[ 'dboptimizeinnodb' ] == 1 ) ? TRUE : FALSE );
 	}
@@ -97,13 +85,15 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 	 */
 	public function job_run( $job_object ) {
 		global $wpdb;
-
+		/* @var wpdb $wpdb */
+		
 		$job_object->log( sprintf( __( '%d. Trying to optimize database&#160;&hellip;', 'backwpup' ), $job_object->steps_data[ $job_object->step_working ][ 'STEP_TRY' ] ) );
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) || ! is_array( $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] = array();
 
 		//tables to optimize
 		$tables = array();
+		$tablestype = array();
 		$restables = $wpdb->get_results( 'SHOW FULL TABLES FROM `' . DB_NAME . '`', ARRAY_N );
 		foreach ( $restables as $table ) {		
 			if ( $job_object->job[ 'dboptimizewponly' ] && substr( $table[ 0 ], 0, strlen( $wpdb->prefix ) ) != $wpdb->prefix ) 
@@ -116,13 +106,12 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 
 		//Get table status
 		$resstatus = $wpdb->get_results( "SHOW TABLE STATUS FROM `" . DB_NAME . "`", ARRAY_A );
+		$status = array();
 		foreach ( $resstatus as $tablestatus ) {
 			$status[ $tablestatus[ 'Name' ] ] = $tablestatus;
 		}
 
 		if ( $job_object->substeps_todo > 0 ) {
-			if ( ! empty( $job_object->job[ 'dboptimizemaintenance' ] ) )
-				$job_object->set_maintenance_mode( TRUE );
 			foreach ( $tables as $table ) {
 				if ( in_array( $table, $job_object->steps_data[ $job_object->step_working ][ 'DONETABLE' ] ) )
 					continue;
@@ -152,7 +141,6 @@ class BackWPup_JobType_DBOptimize extends BackWPup_JobTypes {
 				$job_object->substeps_done ++;
 			}
 			$job_object->log( __( 'Database optimization done!', 'backwpup' ) );
-			$job_object->set_maintenance_mode( FALSE );
 		}
 		else {
 			$job_object->log( __( 'No tables to optimize.', 'backwpup' ), E_USER_WARNING );

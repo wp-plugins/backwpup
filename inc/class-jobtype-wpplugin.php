@@ -41,7 +41,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 	public function edit_tab( $jobid ) {
 		?>
 		<table class="form-table">
-			<tr valign="top">
+			<tr>
 				<th scope="row"><label for="idpluginlistfile"><?php _e( 'Plugin list file name', 'backwpup' ) ?></label></th>
 				<td>
 					<input name="pluginlistfile" type="text" id="idpluginlistfile"
@@ -49,7 +49,7 @@ class BackWPup_JobType_WPPlugin extends BackWPup_JobTypes {
 						   class="medium-text code"/>.txt
 				</td>
 			</tr>
-			<tr valign="top">
+			<tr>
 				<th scope="row"><?php _e( 'File compression', 'backwpup' ) ?></th>
 				<td>
 					<?php

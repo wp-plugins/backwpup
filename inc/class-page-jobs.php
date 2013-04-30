@@ -343,12 +343,13 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 						}
 					}
 					//check sever callback
+					$wp_admin_user = get_users( array( 'role' => 'administrator' ) );
 					$raw_response = wp_remote_get( site_url( 'wp-cron.php?backwpup_run=test' ), array(
 																									   'blocking'   => TRUE,
 																									   'sslverify'  => FALSE,
 																									   'timeout' 	=> 15,
 																									   'redirection' => 0,
-																									   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ) ),
+																									   'headers'    => array( 'Authorization' => 'Basic ' . base64_encode( BackWPup_Option::get( 'cfg', 'httpauthuser' ) . ':' . BackWPup_Encryption::decrypt( BackWPup_Option::get( 'cfg', 'httpauthpassword' ) ) ), 'Cookie' => LOGGED_IN_COOKIE. '='. wp_generate_auth_cookie( $wp_admin_user[ 0 ]->ID, time() + 60, 'logged_in') ),
 																									   'user-agent' => BackWPup::get_plugin_data( 'user-agent' ) ) );
 					$test_result = '';
 					if ( is_wp_error( $raw_response ) )
@@ -361,20 +362,25 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 					//only start job if messages empty
 					$log_messages = BackWPup_Admin::get_message();					
 					if ( empty ( $log_messages ) )  {
-						$last_log = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
 						BackWPup_Admin::message( sprintf( __( 'Job "%s" started.', 'backwpup' ), esc_attr( BackWPup_Option::get( $_GET[ 'jobid' ], 'name' ) ) ) );
-						BackWPup_Job::get_jobrun_url( 'runnow', $_GET[ 'jobid' ] );					
-						//sleep as long as jon not started
+						BackWPup_Job::get_jobrun_url( 'runnow', $_GET[ 'jobid' ] );
+						usleep( 250000 ); //wait a quarter second
+						//sleep as long as job not started
 						$i=0;
-						while ( $last_log == BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE ) ) {
-							usleep( 250000 ); //wait a half second for net try
+						$job_object = BackWPup_Job::get_working_data( TRUE );
+						while ( empty( $job_object->logfile ) ) {
+							usleep( 250000 ); //wait a quarter second for net try
 							clearstatcache();
-							//wait maximal 5 sec.
-							if ( $i >= 20 )
+							$job_object = BackWPup_Job::get_working_data( TRUE );
+							//wait maximal 10 sec.
+							if ( $i >= 40 )
 								break;
 							$i++;
 						}
-						self::$logfile = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
+						if ( ! empty( $job_object->logfile ) ) 
+							self::$logfile = $job_object->logfile;
+						else
+							self::$logfile = BackWPup_Option::get( $_GET[ 'jobid' ], 'logfile', NULL, FALSE );
 					}
 				}
 				break;
@@ -385,7 +391,10 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				$job_object = BackWPup_Job::get_working_data();
 				if ( ! $job_object )
 					break;
+				delete_site_option( 'backwpup_working_job' );
 				unlink( BackWPup::get_plugin_data( 'running_file' ) );
+				if ( ! is_object( $job_object ) )
+					break;
 				//remove restart cron
 				wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => 'restart' ) );
 				//add log entry
@@ -462,7 +471,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 		echo '<h2>' . esc_html( sprintf( __( '%s Jobs', 'backwpup' ), BackWPup::get_plugin_data( 'name' ) ) ) . '&nbsp;<a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupeditjob', 'edit-job' ) . '" class="button add-new-h2">' . esc_html__( 'Add New', 'backwpup' ) . '</a></h2>';
 		BackWPup_Admin::display_messages();
 		$job_object = BackWPup_Job::get_working_data();
-		if ( current_user_can( 'backwpup_jobs_start' ) && is_object( $job_object ) ) {
+		if ( current_user_can( 'backwpup_jobs_start' ) && ! empty( $job_object->logfile )  ) {
 			echo '<div id="runningjob">';
 				//read existing logfile
 				$logfiledata = file_get_contents( $job_object->logfile, FALSE, NULL, 0 );
@@ -479,13 +488,13 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				echo '<div id="runniginfos">';
 					echo '<h2 id="runningtitle">' . sprintf( __('Job currently running: %s','backwpup'), $job_object->job[ 'name' ] ) . '</h2>';
 					echo '<span id="warningsid">' . __( 'Warnings:', 'backwpup' ) . ' <span id="warnings">' . $job_object->warnings . '</span></span>';
-					echo '<span id="errorid">' . __( 'Errors:', 'backwpup' ) . ' <span id="errors">' . $job_object->errors . '</span></span>';
+					echo '<span id="errorid">' . __( 'Errors:', 'backwpup' ) . ' <span id="errors">' . $job_object->errors . '</span></span>';				   
 					echo '<div class="infobuttons"><a href="#TB_inline?height=440&width=630&inlineId=tb-showworking" id="showworkingbutton" class="thickbox" title="' . __( 'Working job log', 'backwpup') . '">' . __( 'Display working log', 'backwpup' ) . '</a>';
 					echo '<a href="' . wp_nonce_url( network_admin_url( 'admin.php' ) . '?page=backwpupjobs&action=abort', 'abort-job' ) . '" id="abortbutton" class="backwpup-fancybox">' . __( 'Abort', 'backwpup' ) . '</a>';
 					echo '<a href="#" id="showworkingclose" title="' . __( 'Close working screen', 'backwpup') .'" style="display:none" >' . __( 'close', 'backwpup' ) . '</a></div>';
 				echo '</div>';
 				echo '<input type="hidden" name="logpos" id="logpos" value="' . strlen( $logfiledata ) . '">';
-
+				echo '<div id="lasterrormsg"></div>';
 				echo '<div class="progressbar"><div id="progressstep" style="width:' . $job_object->step_percent . '%;">' . $job_object->step_percent . '%</div></div>';
 				echo '<div id="onstep"><samp>' . $job_object->steps_data[ $job_object->step_working ][ 'NAME' ] . '</samp></div>';
 				echo '<div class="progressbar"><div id="progresssteps" style="width:' . $job_object->substep_percent . '%;">' . $job_object->substep_percent . '%</div></div>';
@@ -551,6 +560,9 @@ class BackWPup_Page_Jobs extends WP_List_Table {
                             if ( rundata.last_msg ) {
                                 $('#lastmsg').replaceWith('<div id="lastmsg">' + rundata.last_msg + '</div>');
                             }
+							if ( rundata.last_error_msg ) {
+							    $('#lasterrormsg').replaceWith('<div id="lasterrormsg">' + rundata.last_error_msg + '</div>');
+						    }
                             if ( rundata.job_done == 1 ) {
                                 $("#abortbutton").remove();
                                 $("#backwpup-adminbar-running").remove();
@@ -600,7 +612,10 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 		if ( is_file( $logfile ) ) {
 			$job_object = BackWPup_Job::get_working_data();
 			$done = 0;
-			if ( is_object( $job_object ) ) {
+			if ( $job_object ) {
+				if ( ! is_object( $job_object ) ) {
+					die();
+				}
 				$warnings        = $job_object->warnings;
 				$errors          = $job_object->errors;
 				$step_percent    = $job_object->step_percent;
@@ -608,6 +623,7 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				$runtime 		 = current_time( 'timestamp' ) - $job_object->start_time;
 				$onstep			 = $job_object->steps_data[ $job_object->step_working ][ 'NAME' ];
 				$lastmsg		 = $job_object->lastmsg;
+				$lasterrormsg    = $job_object->lasterrormsg;
 			}
 			else {
 				$logheader       = BackWPup_Job::read_logheader( $logfile );
@@ -617,7 +633,13 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 				$step_percent    = 100;
 				$substep_percent = 100;
 				$onstep			 = __( 'Job end' , 'backwpup' );
-				$lastmsg		 = '<samp>' . sprintf( __( 'Job completed in %s seconds.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
+				if ( $errors > 0 )
+					$lastmsg		 = '<samp style="background-color:red;color:#fff">' . __( 'ERROR:', 'backwpup' ) . ' ' .  sprintf( __( 'Job has ended with errors in %s seconds. You must resolve the errors for correct execution.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
+				elseif ( $warnings > 0 )
+					$lastmsg		 = '<samp style="background-color:#ffc000;color:#fff">' . __( 'WARNING:', 'backwpup' ) . ' ' .  sprintf( __( 'Job has done with warnings in %s seconds. Please resolve them for correct execution.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
+				else
+					$lastmsg		 = '<samp>' .  sprintf( __( 'Job done in %s seconds.', 'backwpup' ), $logheader[ 'runtime' ] ) . '</samp>';
+				$lasterrormsg    = '';
 			}
 
 			if ( '.gz' == substr( $logfile, -3 ) )
@@ -654,7 +676,8 @@ class BackWPup_Page_Jobs extends WP_List_Table {
 								   'step_percent'    => $step_percent,
 								   'on_step'		 => $onstep,
 								   'last_msg'		 => $lastmsg,
-								   'sub_step_percent' => $substep_percent,
+								   'last_error_msg'	 => $lasterrormsg,
+								   'sub_step_percent'=> $substep_percent,
 								   'job_done'		 => $done
 							  ) );
 		}

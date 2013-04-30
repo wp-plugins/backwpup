@@ -35,13 +35,10 @@ h2#runnigtitle {
 	margin-bottom: 15px;
 	padding: 0;
 }
-#warningsid {
+#warningsid, #errorid {
     margin-right: 10px;
 }
 
-#errorid {
-    margin-left: 10px;
-}
 .infobuttons {
 	position: absolute;
 	right: 10px;
@@ -71,11 +68,10 @@ a#abortbutton, a#showworkingclose {
 .progressbar {
     margin-top: 20px;
 	height: auto;
-	background-color: #f6f6f6;
-	background-image: url(../images/progressbarhg.jpg);
+    background: #f6f6f6 url(../images/progressbarhg.jpg);
 }
 
-#lastmsg, #onstep {
+#lastmsg, #onstep, #lasterrormsg {
    text-align: center;
    margin-bottom: 20px;
 }
