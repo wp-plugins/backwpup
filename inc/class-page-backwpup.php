@@ -123,11 +123,29 @@ class BackWPup_Page_BackWPup {
 						echo '</form></div>';
 					}
 				}
+				?><div style="clear:both"><?php
+					self::mb_next_jobs();
+					self::mb_last_logs();
 				?>
+				</div>
 			</div>
 
+			<div style="width:35%;float:left;">
+				<?php if ( ! class_exists( 'BackWPup_Features' ) ) { ?>
+					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:320px">
+						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'Thank you for using BackWPup!', 'backwpup' ); ?></span></h3>
+						<div class="inside backwpuppro">
+							<img src="<?php echo BackWPup::get_plugin_data( 'URL' ) . '/images/backwpupbanner-pro.png'; ?>" alt="BackWPup Banner" />
+							<?php _e( 'BackWPup Pro offers you first-class premium support and more features like a wizard for scheduled backup jobs, differential backup of changed directories in the cloud and much more!', 'backwpup' ); ?>.
+							<div style="text-align: center;margin-top:10px;">
+								<a href="<?php _e( 'http://marketpress.com/product/backwpup-pro/', 'backwpup' ); ?>" class="button-primary" title="<?php _e( 'Get BackWPup Pro now', 'backwpup' ); ?>"><?php _e( 'Get BackWPup Pro now', 'backwpup' ); ?></a><br />
+							</div>
+						</div>
+					</div>
+				<?php } ?>
+
 				<?php if ( current_user_can( 'backwpup_jobs_edit' ) && current_user_can( 'backwpup_logs' ) && current_user_can( 'backwpup_jobs_start' ) ) {?>
-					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:300px">
+					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:320px">
 						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'First Steps', 'backwpup' ); ?></span></h3>
 						<div class="inside">
 							<ul style="margin-left: 30px;">
@@ -146,18 +164,14 @@ class BackWPup_Page_BackWPup {
 				<?php }
 
 				if ( current_user_can( 'backwpup_jobs_start' ) ) {?>
-					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:300px">
+					<div class="metabox-holder postbox" style="padding-top:0;margin:10px;cursor:auto;width:30%;float:left;min-width:320px">
 						<h3 class="hndle" style="cursor: auto;"><span><?php  _e( 'One click backup', 'backwpup' ); ?></span></h3>
 						<div class="inside" style="text-align: center;">
 							<a href="<?php echo wp_nonce_url( network_admin_url( 'admin.php' ). '?page=backwpup&action=dbdumpdl', 'backwpupdbdumpdl' ); ?>" class="button-primary" title="<?php _e( 'Generate a database backup of WordPress tables and download it right away!', 'backwpup' ); ?>"><?php _e( 'Download database backup', 'backwpup' ); ?></a><br />
 						</div>
 					</div>
-				<?php }
-
-					self::mb_next_jobs();
-					self::mb_last_logs();
-				?>
-
+				<?php }	?>
+			</div>
         </div>
 	<?php
 	}
@@ -170,7 +184,7 @@ class BackWPup_Page_BackWPup {
 		if ( ! current_user_can( 'backwpup_logs' ) )
 			return;
 		?>
-		<table class="wp-list-table widefat" cellspacing="0" style="margin:10px;width:30%;float:left;clear:none;min-width:300px">
+		<table class="wp-list-table widefat" cellspacing="0" style="margin:10px;width:47%;float:left;clear:none;min-width:300px">
 			<thead>
 			<tr><th colspan="3" style="font-size:15px"><?php _e( 'Last logs', 'backwpup' ); ?></tr>
 			<tr><th style="width:30%"><?php _e( 'Time', 'backwpup' ); ?></th><th style="width:55%"><?php  _e( 'Job', 'backwpup' ); ?></th><th style="width:20%"><?php  _e( 'Result', 'backwpup' ); ?></th></tr>
@@ -230,7 +244,7 @@ class BackWPup_Page_BackWPup {
 		if ( ! current_user_can( 'backwpup_jobs' ) )
 			return;
 		?>
-		<table class="wp-list-table widefat" cellspacing="0" style="margin:10px;width:30%;float:left;clear:none;min-width:300px">
+		<table class="wp-list-table widefat" cellspacing="0" style="margin:10px;width:47%;float:left;clear:none;min-width:300px">
 			<thead>
 			<tr><th colspan="2" style="font-size:15px"><?php _e( 'Next scheduled jobs', 'backwpup' ); ?></th></tr>
 			<tr>

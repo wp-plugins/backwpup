@@ -179,8 +179,14 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.11 =
+* Improved: About page will only be shown after install
+* Updated: AWS SDK to Version 2.3.1 (PHP 5.3.3+)
+* Fixed: some notices and warnings
+* Fixed: Change of BackWPup role for other users
+* Added: Message for Pro version to support plugin
 = Version 3.0.10 =
-* Fixed: Fatal Error because of wrong symfony folder
+* Fixed only Version on WordPress.org because of SVN upload problems with Symfony folder from AWS
 = Version 3.0.9 =
 * Fixed: Fixed bug in Dropbox temp file fallback
 * Fixed: Not working if WP-Cron Control active

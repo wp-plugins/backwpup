@@ -27,8 +27,8 @@ class BackWPup_Cron {
 			if ( ! in_array( $arg, $jobids) )
 				return;
 			//reschedule job for next run
-			$cronnxet = BackWPup_Cron::cron_next( BackWPup_Option::get( $arg, 'cron' ) );
-			wp_schedule_single_event( $cronnxet, 'backwpup_cron', array( 'id' => $arg ) );
+			$cron_next = self::cron_next( BackWPup_Option::get( $arg, 'cron' ) );
+			wp_schedule_single_event( $cron_next, 'backwpup_cron', array( 'id' => $arg ) );
 			//start job
 			BackWPup_Job::start_wp_cron( $arg );
 		}
@@ -44,7 +44,7 @@ class BackWPup_Cron {
 		$jobids = BackWPup_Option::get_job_ids( );
 
 		// check aborted jobs for longer than a tow hours, abort them courtly and send mail
-		if ( is_object( $job_object ) ) {
+		if ( is_object( $job_object ) && ! empty( $job_object->logfile ) ) {
 			$not_worked_time = microtime( TRUE ) - $job_object->timestamp_last_update;
 			if ( $not_worked_time > 7200 ) {
 				unlink( BackWPup::get_plugin_data( 'running_file' ) );
@@ -54,17 +54,19 @@ class BackWPup_Cron {
 				//write new log header
 				$job_object->errors ++;
 				$fd      = fopen( $job_object->logfile, 'r+' );
-				$filepos = ftell( $fd );
-				while ( ! feof( $fd ) ) {
-					$line = fgets( $fd );
-					if ( stripos( $line, "<meta name=\"backwpup_errors\"" ) !== FALSE ) {
-						fseek( $fd, $filepos );
-						fwrite( $fd, str_pad( "<meta name=\"backwpup_errors\" content=\"" . $job_object->errors . "\" />", 100 ) . PHP_EOL );
-						break;
-					}
+				if ( is_resource( $fd ) ) {
 					$filepos = ftell( $fd );
+					while ( ! feof( $fd ) ) {
+						$line = fgets( $fd );
+						if ( stripos( $line, "<meta name=\"backwpup_errors\"" ) !== FALSE ) {
+							fseek( $fd, $filepos );
+							fwrite( $fd, str_pad( "<meta name=\"backwpup_errors\" content=\"" . $job_object->errors . "\" />", 100 ) . PHP_EOL );
+							break;
+						}
+						$filepos = ftell( $fd );
+					}
+					fclose( $fd );
 				}
-				fclose( $fd );
 				//update job settings
 				if ( ! empty( $job_object->job[ 'jobid' ] ) )
 					BackWPup_Option::update( $job_object->job[ 'jobid' ], 'lastruntime', ( current_time( 'timestamp' ) - $job_object->start_time ) );

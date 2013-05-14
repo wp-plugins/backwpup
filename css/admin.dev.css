@@ -35,6 +35,14 @@ li.wp-has-current-submenu#toplevel_page_backwpup .wp-menu-image {
     display: none;
 }
 
+#wp-admin-bar-backwpup.menupop>.ab-item .ab-icon, #wp-admin-bar-backwpup.menupop>a>span .ab-icon,
+#wp-admin-bar-backwpup.menupop.hover>.ab-item .ab-icon, #wp-admin-bar-backwpup.menupop.hover>a>span .ab-icon:hover {
+    background-size: cover;
+}
+
+.inside.backwpuppro img { width:100%; height:auto; }
+.inside.backwpuppro { text-align: center; font-weight:bold; }
+
 @media only screen and (-webkit-min-device-pixel-ratio: 2) {
 	#toplevel_page_backwpup .wp-menu-image {
         background-size: 16px 32px;

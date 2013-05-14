@@ -336,13 +336,10 @@ _e( 'The backup files can be used to save your whole installation including <cod
 							</tr>
 						</table>
 					</div>
-				<?php endif; ?>
-
-				<?php if ( ! get_site_option( 'backwpup_about_page' ) ) { ?>
-                	<a href="<?php network_admin_url( 'admin.php' )?>?page=backwpup" class="button-primary-bwp"><?php _e( 'Backup now!', 'backwpup' ); ?></a>
-				<?php
-					update_site_option( 'backwpup_about_page', TRUE );
-					} ?>
+				<?php 
+				endif;
+				update_site_option( 'backwpup_about_page', TRUE );
+ 				?>
             </div>
         </div>
 	<?php

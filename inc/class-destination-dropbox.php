@@ -494,19 +494,27 @@ final class BackWPup_Destination_Dropbox_API {
 		if ( ! is_readable( $file ) or ! is_file( $file ) )
 			throw new BackWPup_Destination_Dropbox_API_Exception( "Error: File \"$file\" is not readable or doesn't exist." );
 
-		$job_object 	  = BackWPup_Job::getInstance();
-		$file_handel      = fopen( $file, 'r' );
+		$file_handel = fopen( $file, 'r' );
+		if ( ! is_resource( $file_handel ) )
+			throw new BackWPup_Destination_Dropbox_API_Exception( "Can not open surce file for transfer." );
+		
+		//get the current job object
+		$job_object = BackWPup_Job::getInstance();
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'uploadid' ] = NULL;
 		if ( ! isset( $job_object->steps_data[ $job_object->step_working ][ 'offset' ] ) )
 			$job_object->steps_data[ $job_object->step_working ][ 'offset' ] = 0;
+		
 		//seek to current position
-		fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
+		if ( $job_object->steps_data[ $job_object->step_working ][ 'offset' ] > 0 )
+			fseek( $file_handel, $job_object->steps_data[ $job_object->step_working ][ 'offset' ] );
 		
 		while ( $data = fread( $file_handel, 4194304 ) ) { //4194304 = 4MB
-			if ( ! $chunk_handle = fopen( 'php://temp/maxmemory:4194304', 'r+' ) ) {
+			$chunk_handle = fopen( 'php://temp/maxmemory:4194304', 'r+' );
+			if ( ! is_resource( $chunk_handle )  ) {
 				//fallback if php://temp not working
-				if ( ! $chunk_handle = tmpfile() )
+				$chunk_handle = tmpfile();
+				if ( ! is_resource( $chunk_handle ) )
 					throw new BackWPup_Destination_Dropbox_API_Exception( "Can not open temp file for chunked transfer." );
 			}			
 			fwrite( $chunk_handle, $data );

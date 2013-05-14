@@ -223,13 +223,8 @@ img.help_tip {
 	text-align:center;
 }
 
-.ip_logo {
-	background-image:url(../images/iplogo.png);
-	background-repeat:no-repeat;
-    padding-left:30px;
-	height:25px;
-	float:left;
-	margin-right:15px !important;
+.mp_logo {
+    margin-right:15px !important;
 }
 
 /* DOKU */

@@ -31,8 +31,6 @@ final class BackWPup_Admin {
 			add_action( 'network_admin_menu', array( $this, 'admin_menu' ) );
 		else
 			add_action( 'admin_menu', array( $this, 'admin_menu' ) );
-		//add notices
-		add_action('admin_notices', array( $this, 'admin_notices' ) );
 		//add Plugin links
 		add_filter( 'plugin_row_meta', array( $this, 'plugin_links' ), 10, 2 );
 		//add more actions
@@ -50,8 +48,7 @@ final class BackWPup_Admin {
 		if ( current_user_can( 'administrator' ) || current_user_can( 'backwpup_admin' ) ) {
 			add_action( 'show_user_profile', array( $this, 'user_profile_fields' ) );
 			add_action( 'edit_user_profile',  array( $this, 'user_profile_fields' ) );
-			add_action( 'personal_options_update',  array( $this, 'save_user_profile_fields' ) );
-			add_action( 'edit_user_profile_update',  array( $this, 'save_user_profile_fields' ) );
+			add_action( 'profile_update',  array( $this, 'save_profile_update' ) );
 		}
 	}
 
@@ -136,23 +133,16 @@ final class BackWPup_Admin {
 	 */
 	public function admin_menu() {
 
-		if ( ! get_site_option( 'backwpup_about_page' ) ) {  //display about page only
-			$this->page_hooks[ 'backwpup' ] = add_menu_page( BackWPup::get_plugin_data( 'name' ), BackWPup::get_plugin_data( 'name' ), 'activate_plugins', 'backwpup', array( 'BackWPup_Page_About', 'page' ), BackWPup::get_plugin_data( 'URL' ) . '/images/BackWPup16.png' );
-			add_action( 'load-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Admin', 'init_generel' ) );
-			add_action( 'admin_print_styles-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_About', 'admin_print_styles' ) );
-			add_action( 'admin_print_scripts-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_About', 'admin_print_scripts' ) );
-		} else { // Display normal pages
-			add_menu_page( BackWPup::get_plugin_data( 'name' ), BackWPup::get_plugin_data( 'name' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ), BackWPup::get_plugin_data( 'URL' ) . '/images/BackWPup16.png' );
-			$this->page_hooks[ 'backwpup' ] = add_submenu_page( 'backwpup', __( 'BackWPup Dashboard', 'backwpup' ), __( 'Dashboard', 'backwpup' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ) );
-			add_action( 'load-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Admin', 'init_generel' ) );
-			add_action( 'load-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'load' ) );
-			add_action( 'admin_print_styles-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'admin_print_styles' ) );
-			add_action( 'admin_print_scripts-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'admin_print_scripts' ) );
+		add_menu_page( BackWPup::get_plugin_data( 'name' ), BackWPup::get_plugin_data( 'name' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ), BackWPup::get_plugin_data( 'URL' ) . '/images/BackWPup16.png' );
+		$this->page_hooks[ 'backwpup' ] = add_submenu_page( 'backwpup', __( 'BackWPup Dashboard', 'backwpup' ), __( 'Dashboard', 'backwpup' ), 'backwpup', 'backwpup', array( 'BackWPup_Page_Backwpup', 'page' ) );
+		add_action( 'load-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Admin', 'init_generel' ) );
+		add_action( 'load-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'load' ) );
+		add_action( 'admin_print_styles-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'admin_print_styles' ) );
+		add_action( 'admin_print_scripts-' . $this->page_hooks[ 'backwpup' ], array( 'BackWPup_Page_Backwpup', 'admin_print_scripts' ) );		
 
-			//Add pages form plugins
-			$this->page_hooks = apply_filters( 'backwpup_admin_pages' ,$this->page_hooks );
-		}
-
+		//Add pages form plugins
+		$this->page_hooks = apply_filters( 'backwpup_admin_pages' ,$this->page_hooks );
+		
 	}
 
 
@@ -394,7 +384,7 @@ final class BackWPup_Admin {
 	public function admin_footer_text( $admin_footer_text ) {
 
 		if ( isset( $_REQUEST[ 'page' ] ) && strstr( $_REQUEST[ 'page' ], 'backwpup') ) {
-			$admin_footer_text  = '<span class="ip_logo">' . sprintf( _x( 'A project of %s', 'link to Inpsyde.com, link text: Inpsyde GmbH', 'backwpup' ), '<a href="http://inpsyde.com">Inpsyde GmbH</a>' ) . '</span>';
+			$admin_footer_text = '<span class="mp_logo">' . sprintf( __( '<img src="%s"/> <a href="%s">Get BackWPup Pro now.</a>', 'backwpup' ), BackWPup::get_plugin_data( 'URL' ) . '/images/mp_logo_small.png', __( 'http://marketpress.com/product/backwpup-pro/', 'backwpup' ) ) . '</span>';
 			$admin_footer_text .=  sprintf( _x( 'Developer: %s', 'developer name, link text: Daniel Hüsken', 'backwpup' ), '<a href="http://danielhuesken.de">Daniel Hüsken</a>' );
 
 			return $admin_footer_text;
@@ -420,18 +410,6 @@ final class BackWPup_Admin {
 		return $update_footer_text;
 	}
 
-	/**
-	 * Display admin notices
-	 */
-	public function admin_notices() {
-		if ( ! current_user_can( 'activate_plugins') )
-			return;
-
-		if ( ! get_site_option( 'backwpup_about_page' ) && ! ( isset( $_REQUEST[ 'page' ] ) && $_REQUEST[ 'page' ] == 'backwpup' ) )
-			echo '<div class="updated"><p>' . str_replace( '\"','"', sprintf( __( 'You have activated or updated BackWPup. Please check <a href="%s">this page</a>.', 'backwpup'), network_admin_url( 'admin.php') . '?page=backwpup' ) ) . '</p></div>';
-
-	}
-
 
 	/**
 	 *  Add filed for selecting user role in user section
@@ -439,6 +417,7 @@ final class BackWPup_Admin {
 	 * @param $user WP_User
 	 */
 	public function user_profile_fields( $user ) {
+		global $wp_roles;
 		
 		?>
 		    <h3><?php echo BackWPup::get_plugin_data( 'name' ); ?></h3>		    
@@ -448,14 +427,13 @@ final class BackWPup_Admin {
 		                <label for="backwpup_role"><?php _e('BackWPup Role', 'backwpup'); ?>
 		            </label></th>
 		            <td>
-		                <select name="backwpup_role" id="backwpup_role">
-							<option value=""><?php _e('None', 'backwpup'); ?></option>
+		                <select name="backwpup_role" id="backwpup_role" style="display:inline-block; float:none;">
+							<option value=""><?php _e('&mdash; No role for BackWPup &mdash;', 'backwpup'); ?></option>
 							<?php
-							$roles = get_editable_roles();
-							foreach ( $roles as $role => $rolevalue ) {
-								if ( ! stristr( $role, 'backwpup' ) )
+							foreach ( $wp_roles->roles as $role => $rolevalue ) {
+								if ( ! strstr( $role, 'backwpup_' ) )
 									continue;
-								echo '<option value="'.$role.'" '. selected( in_array( $role, $user->roles ), TRUE, FALSE ) .'>'.$rolevalue[ 'name' ] . '</option>';
+								echo '<option value="'.$role.'" '. selected( in_array( $role, $user->roles ), TRUE, FALSE ) .'>'. $rolevalue[ 'name' ] . '</option>';
 							}
 							?>						
 		                </select>
@@ -471,26 +449,37 @@ final class BackWPup_Admin {
 	 * Save for user role adding
 	 * 
 	 * @param $user_id int
-	 * @return bool
 	 */
-	public function save_user_profile_fields( $user_id ) {
+	public function save_profile_update( $user_id ) {
+		global $wp_roles;
 		
-		if ( ! ( current_user_can( 'administrator' ) || current_user_can( 'backwpup_admin' ) ) )
-	        return FALSE;
+		if ( empty( $user_id ) )
+			return;
 		
+		if ( ! isset( $_POST['backwpup_role'] ) )
+			return;
+		
+		// get BackWPup roles
 		$backwpup_roles = array();
-		$user = new WP_User( $user_id );
-		$roles = array_keys( get_editable_roles() );
-		foreach ( $roles as $role ) {
-			if ( ! stristr( $role, 'backwpup' ) )
+		foreach ( array_keys( $wp_roles->roles ) as $role ) {
+			if ( ! strstr( $role, 'backwpup_' ) )
 				continue;
-			$user->remove_role( $role );
 			$backwpup_roles[] = $role;
 		}
-		if ( in_array( $_POST['backwpup_role'], $backwpup_roles ) )
+		
+		//get user for adding/removing role
+		$user = new WP_User( $user_id );
+		//remove BackWPup role from user
+		foreach ( $user->roles as $role ) {
+			if ( ! strstr( $role, 'backwpup_' ) )
+				continue;
+			$user->remove_role( $role );
+		}
+		//add new role to user
+		if ( ! empty( $_POST['backwpup_role'] ) && in_array( $_POST['backwpup_role'], $backwpup_roles ) )
 			$user->add_role( $_POST['backwpup_role'] );
 		
-		return TRUE;		
+		return;		
 	}
 	
 }

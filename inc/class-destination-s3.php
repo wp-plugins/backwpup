@@ -1,5 +1,5 @@
 <?php
-// Amazon S3 SDK v2.3.0
+// Amazon S3 SDK v2.3.1
 // http://aws.amazon.com/de/sdkforphp2/
 // https://github.com/aws/aws-sdk-php
 if ( ! class_exists( 'Symfony\\Component\\ClassLoader\\UniversalClassLoader' ) )

@@ -1158,7 +1158,7 @@ final class BackWPup_Job {
 
 		//Display job working time
 		if ( $this->errors > 0 )
-			$this->log( sprintf( __( 'Job has ended with errors in %s seconds. You must resolve the errors for correct execution.', 'backwpup' ), current_time( 'timestamp' ) - $this->start_time, E_USER_ERROE ) );
+			$this->log( sprintf( __( 'Job has ended with errors in %s seconds. You must resolve the errors for correct execution.', 'backwpup' ), current_time( 'timestamp' ) - $this->start_time, E_USER_ERROR ) );
 		elseif ( $this->warnings > 0 )
 			$this->log( sprintf( __( 'Job has done with warnings in %s seconds. Please resolve them for correct execution.', 'backwpup' ), current_time( 'timestamp' ) - $this->start_time, E_USER_WARNING ) );
 		else

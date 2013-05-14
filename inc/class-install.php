@@ -23,8 +23,8 @@ class BackWPup_Install {
 		$activejobs = BackWPup_Option::get_job_ids( 'activetype', 'wpcron' );
 		if ( ! empty( $activejobs ) ) {
 			foreach ( $activejobs as $id ) {
-				$cronnxet = BackWPup_Cron::cron_next( BackWPup_Option::get( $id, 'cron') );
-				wp_schedule_single_event( $cronnxet, 'backwpup_cron', array( 'id' => $id ) );
+				$cron_next = BackWPup_Cron::cron_next( BackWPup_Option::get( $id, 'cron') );
+				wp_schedule_single_event( $cron_next, 'backwpup_cron', array( 'id' => $id ) );
 			}
 		}
 
@@ -89,7 +89,7 @@ class BackWPup_Install {
 		$users_backwpup = get_users( array( 'blog_id' => 1, 'role' => 'backwpup_admin' ) );
 		if ( empty( $users_backwpup ) ) {
 			/* @var WP_User $user */
-			$users = get_users( array( 'blog_id' => 1, 'role' => 'administrator' ) );
+			$users = get_users( array( 'blog_id' => 1, 'role' => 'administrator', 'fields' => 'all_with_meta' ) );
 			foreach ( $users as $user ) {
 				$user->add_role( 'backwpup_admin' );
 			}
@@ -111,8 +111,6 @@ class BackWPup_Install {
 		//update version
 		update_site_option( 'backwpup_version', BackWPup::get_plugin_data( 'Version' ) );
 				
-		//show trailing page again
-		update_site_option( 'backwpup_about_page', FALSE );
 	}
 
 	/**

@@ -77,7 +77,7 @@ class BackWPup_Page_Editjob {
 					foreach ( (array)$_POST[ 'destinations' ] as $key => $destid ) {
 						if ( empty( $destinations[ $destid ] ) ) //remove all destinations that not exists
 							unset( $_POST[ 'destinations' ][ $key ] );
-						if ( $_POST[ 'backuptype' ] == 'sync' ) { //if sync remove all not sync destinations
+						if ( class_exists( 'BackWPup_Features', FALSE ) && $_POST[ 'backuptype' ] == 'sync' ) { //if sync remove all not sync destinations
 							if ( ! $destinations[ $destid ]->can_sync() )
 								unset( $_POST[ 'destinations' ][ $key ] );
 						}
@@ -158,8 +158,8 @@ class BackWPup_Page_Editjob {
 				//reschedule
 				wp_clear_scheduled_hook( 'backwpup_cron', array( 'id' => $jobid ) );
 				if ( BackWPup_Option::get( $jobid, 'activetype' ) == 'wpcron' ) {
-					$cronnxet = BackWPup_Cron::cron_next( BackWPup_Option::get( $jobid, 'cron' ) );
-					wp_schedule_single_event( $cronnxet, 'backwpup_cron', array( 'id' => $jobid ) );
+					$cron_next = BackWPup_Cron::cron_next( BackWPup_Option::get( $jobid, 'cron' ) );
+					wp_schedule_single_event( $cron_next, 'backwpup_cron', array( 'id' => $jobid ) );
 				}
 				break;
 			default:
@@ -323,13 +323,13 @@ class BackWPup_Page_Editjob {
 				$repeathouer = 1;
 			echo '<span style="color:red;">' . sprintf( __( 'ATTENTION: Job runs every %d hours!', 'backwpup' ), $repeathouer ) . '</span><br />';
 		}
-		$nextrun = BackWPup_Cron::cron_next( $cronstamp ) + ( get_option( 'gmt_offset' ) * 3600 );
-		if ( 2147483647 == $nextrun ) {
+		$cron_next = BackWPup_Cron::cron_next( $cronstamp ) + ( get_option( 'gmt_offset' ) * 3600 );
+		if ( 2147483647 == $cron_next ) {
 			echo '<span style="color:red;">' . __( 'ATTENTION: Can\'t calculate cron!', 'backwpup' ) . '</span><br />';
 		}
 		else {
 			_e( 'Next runtime:', 'backwpup' );
-			echo ' <b>' . date_i18n( 'D, j M Y, H:i', $nextrun, TRUE ) . '</b>';
+			echo ' <b>' . date_i18n( 'D, j M Y, H:i', $cron_next, TRUE ) . '</b>';
 		}
 		echo "</p>";
 
