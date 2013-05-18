@@ -179,6 +179,11 @@ Please check all settings after the update:
 
 
 == Changelog ==
+= Version 3.0.12 =
+* Fixed: Redirect when accessing the WordPress backend
+* Added: Russian translation
+* Added: Simplified chinese translation
+* Fixed: German log string typo
 
 = Version 3.0.11 =
 * Improved: About page will only be shown after install
