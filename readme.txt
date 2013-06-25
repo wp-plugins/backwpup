@@ -1,4 +1,4 @@
-=== BackWPup ===
+=== BackWPup - WordPress Backup Plugin ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
 Requires at least: 3.2
@@ -11,9 +11,7 @@ Flexible, scheduled WordPress backups to any location
 
 == Description ==
 
-The backup files can be used to save your whole installation including `/wp-content/`
-and push them to an external Backup Service, if you don’t want to save the backups on
-the same server. With the single backup .zip file you are able to restore an installation.
+The backup plugin BackWPup can be used to save your complete installation including /wp-content/ and push them to an external Backup Service, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation.
 
 * Database Backup  *(needs mysqli)*
 * WordPress XML Export
@@ -24,27 +22,27 @@ the same server. With the single backup .zip file you are able to restore an ins
 * Backups in zip, tar, tar.gz, tar.bz2 format *(needs gz, bz2, ZipArchive)*
 * Store backup to directory
 * Store backup to FTP server *(needs ftp)*
+* Store backup to Dropbox *(needs curl)*
 * Store backup to S3 services *(needs curl)*
 * Store backup to Microsoft Azure (Blob) *(needs PHP 5.3.2, curl)*
 * Store backup to RackSpaceCloud *(needs PHP 5.3.2, curl)*
-* Store backup to Dropbox *(needs curl)*
 * Store backup to SugarSync *(needs curl)*
 * Send logs and backups by email
-* Multi-site support only as network admin		
+* Multi-site support only as network admin
 
-Get the Pro Version: http://marketpress.com/product/backwpup-pro/
+Get the BackWPup Pro Version: http://marketpress.com/product/backwpup-pro/
 
 **WordPress 3.2 and PHP 5.2.6 required!**
 
 **To use the Plugin with full functionality PHP 5.3.3 with mysqli, FTP,gz, bz2,  ZipArchive and curl is needed.**
 
-**Plugin functions that don't work will be not displayed.**
+**Plugin functions that don't work because of your server settings, will not be displayed in admin area.**
 
 **Test your Backups!**
 
 **Made by [Inpsyde](http://inpsyde.com) &middot; We love WordPress**
 
-Have a look at the premium plugins in our [market](http://marketpress.com).
+Have a look at our other premium plugins at [MarketPress.com](http://marketpress.com).
 
 == Frequently Asked Questions ==
 
