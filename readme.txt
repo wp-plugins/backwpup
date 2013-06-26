@@ -7,11 +7,13 @@ Stable tag: 3.0.12
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Flexible, scheduled WordPress backups to any location
+Schedule easy, and complete automatic backups for your WordPress installation. Decide which content will be stored where and when (Dropbox, S3, FTP). 
 
 == Description ==
 
-The backup plugin BackWPup can be used to save your complete installation including /wp-content/ and push them to an external Backup Service, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation.
+The backup plugin **[BackWPup](http://marketpress.com/product/backwpup-pro/)** can be used to save your **complete installation including /wp-content/ and push them to an external Backup Service**, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation.
+
+**BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users, 750.000 downloads and in the top 50 (on rankwp.com)**
 
 * Database Backup  *(needs mysqli)*
 * WordPress XML Export
@@ -29,8 +31,16 @@ The backup plugin BackWPup can be used to save your complete installation includ
 * Store backup to SugarSync *(needs curl)*
 * Send logs and backups by email
 * Multi-site support only as network admin
+* Pro version and support available - [BackWPup Pro](http://marketpress.com/product/backwpup-pro/)
 
-Get the BackWPup Pro Version: http://marketpress.com/product/backwpup-pro/
+**Available languages
+* english (standard)
+* french / français (fr_FR)
+* german / deutsch (de_DE)
+* russian / pоссия (ru_RU)
+* simplified chinese (zh_CN)
+
+Get the [BackWPup Pro](http://marketpress.com/product/backwpup-pro/) Version with more features on [MarketPress.com](http://marketpress.com/product/backwpup-pro/)
 
 **WordPress 3.2 and PHP 5.2.6 required!**
 
@@ -38,7 +48,7 @@ Get the BackWPup Pro Version: http://marketpress.com/product/backwpup-pro/
 
 **Plugin functions that don't work because of your server settings, will not be displayed in admin area.**
 
-**Test your Backups!**
+**The most expensive backup is the one you never did! And please test your backups!**
 
 **Made by [Inpsyde](http://inpsyde.com) &middot; We love WordPress**
 
@@ -60,7 +70,6 @@ That means a backup job has started, but BackWPup doens’t know where to store 
 = A backup job has started, but nothing seems to be happening—not even when I re-start it manually. =
 
 **Solution #1**
-
 * Open BackWPup->Settings
 * Go to the Informations tab.
 * Find *Server self connect:* in the left column.
@@ -68,18 +77,15 @@ That means a backup job has started, but BackWPup doens’t know where to store 
 * Try again starting the backup job.
 
 **Solution #2**
-
 * Open wp-config.php and find the line where it says `if ( !defined('ABSPATH') )`.
 * Somewhere before that line add this: `define( 'ALTERNATE_WP_CRON', true );`
 
 **Solution #3**
-
 Not really a solution, but a way to identify the real problem: see remarks on WP Cron at the top.
 
 = I get this error message: `The HTTP response test get a error "Connection time-out"` =
 
 BackWPup performs a simple HTTP request to the server itself every time you click `run now` or whenever a backup job starts automatically. The HTTP response test message could mean:
-
 * Your host does not allow *loop back connections*. (If you know what `WP_ALTERNATE_CRON` is, try it.)
 * Your WordPress root directory or backup directory requires authetification. Set username and password in Settings->Network.
 * The Server can’t resolve its own hostname.
@@ -116,12 +122,10 @@ Go to Settings->Jobs and try a different option for “Reduce server load”.
 
 
 = Can I cancel a running backup job via FTP? =
-
 Yes. Go to your BackWPup temp directory and find a file named `backwpup-xyz-working.php` where “xyz” is a random string of numbers and characters. Delete that file to cancel the currently running backup job.
 
 
 = Can I move the temp directory to a different location? =
-
 Yes. You need to have writing access to the wp-config.php file (usually residing in the root directory of your WordPress installation). 
 
 * Open wp-config.php and find the line where it says `if ( !defined('ABSPATH') )`. 
