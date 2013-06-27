@@ -13,7 +13,7 @@ Schedule easy, and complete automatic backups for your WordPress installation. D
 
 The **backup plugin** **[BackWPup](http://marketpress.com/product/backwpup-pro/)** can be used to save your complete installation including /wp-content/ and push them to an external Backup Service, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation.
 
-BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users, 750.000 downloads and in the top 50 (on rankwp.com)
+BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users, 750.000 downloads and in the top 50 of all WordPress Plugins (checked on rankwp.com)
 
 * Database Backup  *(needs mysqli)*
 * WordPress XML Export
@@ -34,20 +34,22 @@ BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users
 * Pro version and support available - [BackWPup Pro](http://marketpress.com/product/backwpup-pro/)
 
 **Available languages**  
+
 * english (standard)
 * french / français (fr_FR)
 * german / deutsch (de_DE)
 * russian / pоссия (ru_RU)
 * simplified chinese (zh_CN)
 
-Get the [BackWPup Pro](http://marketpress.com/product/backwpup-pro/) Version with more features on [MarketPress.com](http://marketpress.com/product/backwpup-pro/)
-
 **Requirements**  
+
 * WordPress 3.2 and PHP 5.2.6 required!
 * To use the Plugin with full functionality PHP 5.3.3 with mysqli, FTP,gz, bz2,  ZipArchive and curl is needed.
 * Plugin functions that don't work because of your server settings, will not be displayed in admin area.
 
 **Remember: The most expensive backup is the one you never did! And please test your backups!**
+
+Get the [BackWPup Pro](http://marketpress.com/product/backwpup-pro/) Version with more features on [MarketPress.com](http://marketpress.com/product/backwpup-pro/)
 
 **Made by [Inpsyde](http://inpsyde.com) &middot; We love WordPress**
 
