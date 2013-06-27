@@ -33,16 +33,14 @@ BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users
 * Multi-site support only as network admin
 * Pro version and support available - [BackWPup Pro](http://marketpress.com/product/backwpup-pro/)
 
-**Available languages**  
-
+= Available languages =  
 * english (standard)
 * french / français (fr_FR)
 * german / deutsch (de_DE)
 * russian / pоссия (ru_RU)
 * simplified chinese (zh_CN)
 
-**Requirements**  
-
+= Requirements =  
 * WordPress 3.2 and PHP 5.2.6 required!
 * To use the Plugin with full functionality PHP 5.3.3 with mysqli, FTP,gz, bz2,  ZipArchive and curl is needed.
 * Plugin functions that don't work because of your server settings, will not be displayed in admin area.
