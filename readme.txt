@@ -1,6 +1,6 @@
 === BackWPup - WordPress Backup Plugin ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
-Tags: backup, dump, database, file, ftp, xml, time, upload, multisite, cloud, dropbox, storage, S3
+Tags: Amazon, Amazon S3, back up, backup, cloud, cloud files, database, db backup, dropbox, dump, file, ftp, ftps, migrate, multisite, schedule, sftp, storage, S3, time, upload, xml
 Requires at least: 3.2
 Tested up to: 3.5.1
 Stable tag: 3.0.12
