@@ -10,17 +10,17 @@ global $wpdb;
 if ( ! class_exists( 'BackWPup' ) ) {
 	//remove roles from user
 	/* @var WP_User $user */
-	$users = get_users( array( 'role' => 'backwpup_admin' ) );
+	$users = get_users( array( 'role' => 'backwpup_admin', 'fields' => 'all_with_meta' ) );
 	foreach ( $users as $user ) {
 		$user->remove_role( 'backwpup_admin' );
 	}		
 	remove_role( 'backwpup_admin' );
-	$users = get_users( array( 'role' => 'backwpup_helper' ) );
+	$users = get_users( array( 'role' => 'backwpup_helper', 'fields' => 'all_with_meta' ) );
 	foreach ( $users as $user ) {
 		$user->remove_role( 'backwpup_helper' );
 	}
 	remove_role( 'backwpup_helper' );
-	$users = get_users( array( 'role' => 'backwpup_check' ) );
+	$users = get_users( array( 'role' => 'backwpup_check', 'fields' => 'all_with_meta' ) );
 	foreach ( $users as $user ) {
 		$user->remove_role( 'backwpup_check' );
 	}

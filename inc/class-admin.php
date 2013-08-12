@@ -91,6 +91,13 @@ final class BackWPup_Admin {
 				}
 			}
 		}
+		
+		//display about page after Update
+		if ( ! defined( 'DOING_AJAX' ) && ! get_site_option( 'backwpup_about_page', FALSE ) && ! isset( $_GET['activate-multi'] ) ) {
+			update_site_option( 'backwpup_about_page', TRUE );
+			wp_redirect( network_admin_url( 'admin.php' ) . '?page=backwpupabout' );
+			exit();
+		}
 	}
 
 	/**
@@ -383,10 +390,12 @@ final class BackWPup_Admin {
 	 */
 	public function admin_footer_text( $admin_footer_text ) {
 
-		if ( isset( $_REQUEST[ 'page' ] ) && strstr( $_REQUEST[ 'page' ], 'backwpup') ) {
-			$admin_footer_text = '<span class="mp_logo">' . sprintf( __( '<img src="%s"/> <a href="%s">Get BackWPup Pro now.</a>', 'backwpup' ), BackWPup::get_plugin_data( 'URL' ) . '/images/mp_logo_small.png', __( 'http://marketpress.com/product/backwpup-pro/', 'backwpup' ) ) . '</span>';
-			$admin_footer_text .=  sprintf( _x( 'Developer: %s', 'developer name, link text: Daniel Hüsken', 'backwpup' ), '<a href="http://danielhuesken.de">Daniel Hüsken</a>' );
-
+		if ( isset( $_REQUEST[ 'page' ] ) && strstr( $_REQUEST[ 'page' ], 'backwpup' ) ) {
+			$admin_footer_text = '<a href="' . __( 'http://marketpress.com', 'backwpup' ) . '" class="mp_logo" title="' . __( 'MarketPress', 'backwpup' ) . '">' . __( 'MarketPress', 'backwpup' ) . '</a>';
+			if ( ! class_exists( 'BackWPup_Features', FALSE ) )
+				$admin_footer_text .= '<span>'.sprintf( __( '<a href="%s">Get BackWPup Pro now.</a>', 'backwpup' ), __( 'http://marketpress.com/product/backwpup-pro/', 'backwpup' ) ). '</span>';
+			$admin_footer_text .= '<span>'.sprintf( _x( 'Developer: %s', 'developer name, link text: Daniel Hüsken', 'backwpup' ), '<a href="http://danielhuesken.de">Daniel Hüsken</a>' ) . '</span>';
+				
 			return $admin_footer_text;
 		}
 

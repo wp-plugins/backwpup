@@ -338,7 +338,6 @@ _e( 'The backup files can be used to save your whole installation including <cod
 					</div>
 				<?php 
 				endif;
-				update_site_option( 'backwpup_about_page', TRUE );
  				?>
             </div>
         </div>

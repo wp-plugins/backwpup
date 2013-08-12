@@ -9,7 +9,14 @@ class BackWPup_Page_Editjob {
 	 */
 	public static function auth() {
 
-		if ( isset($_GET[ 'tab' ]) && strstr( $_GET[ 'tab' ], 'dest-' ) ) {
+		//check $_GET[ 'tab' ]
+		if ( isset($_GET[ 'tab' ] ) ) {
+			$_GET[ 'tab' ] = sanitize_title_with_dashes( $_GET[ 'tab' ] );
+			if ( substr( $_GET[ 'tab' ], 0, 5 ) != 'dest-' && substr( $_GET[ 'tab' ], 0, 8 ) != 'jobtype-'  && ! in_array( $_GET[ 'tab' ], array( 'job','cron' ) ) )
+				$_GET[ 'tab' ] = 'job';			
+		}
+
+		if ( substr( $_GET[ 'tab' ], 0, 5 ) == 'dest-' ) {
 			$destinations = BackWPup::get_destinations();
 			$jobid        = (int)$_GET[ 'jobid' ];
 			$id = strtoupper( str_replace( 'dest-', '', $_GET[ 'tab' ] ) );
@@ -190,10 +197,7 @@ class BackWPup_Page_Editjob {
 		wp_enqueue_style('backwpupgeneral');
 
 		//add css for the first tabs
-		if ( empty($_GET[ 'tab' ]) || $_GET[ 'tab' ]=='job' ) {
-			$_GET[ 'tab' ] = 'job';
-		}
-		elseif ( $_GET[ 'tab' ]=='cron' ) {
+		if ( $_GET[ 'tab' ] == 'cron' ) {
 			if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
 				wp_enqueue_style( 'backwpuptabcron', BackWPup::get_plugin_data( 'URL' ) . '/css/page_edit_tab_cron.dev.css', '', time(), 'screen' );
 			} else {
@@ -201,12 +205,12 @@ class BackWPup_Page_Editjob {
 			}
 		}
 		//add css for all other tabs
-		elseif ( strstr( $_GET[ 'tab' ], 'dest-' ) ) {
+		elseif ( substr( $_GET[ 'tab' ], 0, 5 ) == 'dest-' ) {
 			$destinations = BackWPup::get_destinations();
 			$id    = strtoupper( str_replace( 'dest-', '', $_GET[ 'tab' ] ) );
 			$destinations[ $id ]->admin_print_styles();
 		}
-		elseif ( strstr( $_GET[ 'tab' ], 'jobtype-' ) ) {
+		elseif ( substr( $_GET[ 'tab' ], 0, 8 ) == 'jobtype-' ) {
 			$job_type = BackWPup::get_job_types();
 			$id       = strtoupper( str_replace( 'jobtype-', '', $_GET[ 'tab' ] ) );
 			$job_type[ $id ]->admin_print_styles( );
@@ -224,7 +228,7 @@ class BackWPup_Page_Editjob {
 		wp_enqueue_script( 'backwpupgeneral' );
 
 		//add js for the first tabs
-		if ( empty($_GET[ 'tab' ]) || $_GET[ 'tab' ] == 'job' ) {
+		if ( $_GET[ 'tab' ] == 'job' ) {
 			if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
 				wp_enqueue_script( 'backwpuptabjob', BackWPup::get_plugin_data( 'URL' ) . '/js/page_edit_tab_job.dev.js', array('jquery'), time(), TRUE );
 			} else {
@@ -353,9 +357,6 @@ class BackWPup_Page_Editjob {
 			sort( $newjobid );
 			$jobid = end( $newjobid ) + 1;
 		}
-
-		if ( empty( $_GET[ 'tab' ] ) )
-			$_GET[ 'tab' ] = 'job';
 
 		$destinations = BackWPup::get_destinations();
 		$job_types    = BackWPup::get_job_types();
@@ -836,11 +837,11 @@ class BackWPup_Page_Editjob {
 				break;
 			default:
 				echo '<div class="table" id="info-tab-' . $_GET[ 'tab' ] . '">';
-				if ( isset($_GET[ 'tab' ]) && strstr( $_GET[ 'tab' ], 'dest-' ) ) {
+				if ( strstr( $_GET[ 'tab' ], 'dest-' ) ) {
 					$id = strtoupper( str_replace( 'dest-', '', $_GET[ 'tab' ] ) );
 					call_user_func( array( $destinations[ $id ], 'edit_tab' ), $jobid );
 				}
-				if ( isset($_GET[ 'tab' ]) && strstr( $_GET[ 'tab' ], 'jobtype-' ) ) {
+				if ( strstr( $_GET[ 'tab' ], 'jobtype-' ) ) {
 					$id = strtoupper( str_replace( 'jobtype-', '', $_GET[ 'tab' ] ) );
 					call_user_func( array( $job_types[ $id ], 'edit_tab' ), $jobid );
 				}
@@ -869,11 +870,11 @@ class BackWPup_Page_Editjob {
 		});
 		<?php
 		//add inline js
-		if ( isset($_GET[ 'tab' ]) && strstr( $_GET[ 'tab' ], 'dest-' ) ) {
+		if ( strstr( $_GET[ 'tab' ], 'dest-' ) ) {
 			$id = strtoupper( str_replace( 'dest-', '', $_GET[ 'tab' ] ) );
 			call_user_func( array( $destinations[ $id ], 'edit_inline_js' ) );
 		}
-		if ( isset($_GET[ 'tab' ]) && strstr( $_GET[ 'tab' ], 'jobtype-' ) ) {
+		if ( strstr( $_GET[ 'tab' ], 'jobtype-' ) ) {
 			$id = strtoupper( str_replace( 'jobtype-', '', $_GET[ 'tab' ] ) );
 			call_user_func( array( $job_types[ $id ], 'edit_inline_js' ) );
 		}

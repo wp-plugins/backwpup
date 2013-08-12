@@ -364,6 +364,7 @@ class BackWPup_Page_Settings {
 			else {
 				echo '<tr title=""><td>' . __( 'cURL version', 'backwpup' ) . '</td><td>' . __( 'unavailable', 'backwpup' ) . '</td></tr>';
 			}
+			echo '<tr title=""><td>' . __( 'WP-Cron url:', 'backwpup' ) . '</td><td>' . site_url( 'wp-cron.php' ) . '</td></tr>';
 			//response test
 			$wp_admin_user = get_users( array( 'role' => 'administrator' ) );
 			$raw_response = wp_remote_get( site_url( 'wp-cron.php?backwpup_run=test' ), array(

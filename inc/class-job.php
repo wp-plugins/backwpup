@@ -267,6 +267,7 @@ final class BackWPup_Job {
 		$info = '';
 		$info .= sprintf( _x( '[INFO] %1$s version %2$s; WordPress version %3$s; A project of Inpsyde GmbH developed by Daniel Hüsken','Plugin name; Plugin Version; WordPress Version','backwpup' ), BackWPup::get_plugin_data( 'name' ) , BackWPup::get_plugin_data( 'Version' ), BackWPup::get_plugin_data( 'wp_version' ) ) . PHP_EOL;
 		$info .= __( '[INFO] This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you are welcome to redistribute it under certain conditions.', 'backwpup' ) . PHP_EOL;
+		$info .= sprintf(__( '[INFO] Blog url: %s', 'backwpup' ) , esc_attr( site_url( '/' ) ) ). PHP_EOL;		
 		$info .= sprintf(__( '[INFO] BackWPup job: %1$s; %2$s', 'backwpup' ), esc_attr( $this->job[ 'name' ] ) , implode( '+', $this->job[ 'type' ] ) ) . PHP_EOL;
 		if ( $this->job[ 'activetype' ] != '' )
 			$info .= __( '[INFO] BackWPup cron:', 'backwpup' ) . ' ' . $this->job[ 'cron' ] . '; ' . date_i18n( 'D, j M Y @ H:i' ) . PHP_EOL;

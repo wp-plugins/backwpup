@@ -71,6 +71,8 @@ class BackWPup_Destination_RSC extends BackWPup_Destinations {
 					<select name="rscregion" id="rscregion" title="<?php _e( 'Rackspace Cloud Files Region', 'backwpup' ); ?>">
 						<option value="DFW" <?php selected( 'DFW', BackWPup_Option::get( $jobid, 'rscregion' ), TRUE ) ?>><?php _e( 'Dallas (DFW)', 'backwpup' ); ?></option>
 						<option value="ORD" <?php selected( 'ORD', BackWPup_Option::get( $jobid, 'rscregion' ), TRUE ) ?>><?php _e( 'Chicago (ORD)', 'backwpup' ); ?></option>
+						<option value="SYD" <?php selected( 'SYD', BackWPup_Option::get( $jobid, 'rscregion' ), TRUE ) ?>><?php _e( 'Sydney (SYD)', 'backwpup' ); ?></option>
+						<option value="LON" <?php selected( 'LON', BackWPup_Option::get( $jobid, 'rscregion' ), TRUE ) ?>><?php _e( 'London (LON)', 'backwpup' ); ?></option>					
 					</select><br/>
 				</td>
 			</tr>

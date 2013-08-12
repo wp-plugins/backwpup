@@ -5,7 +5,7 @@
  * Description: WordPress Backup and more...
  * Author: Inpsyde GmbH
  * Author URI: http://inpsyde.com
- * Version: 3.0.12
+ * Version: 3.0.13
  * Text Domain: backwpup
  * Domain Path: /languages/
  * Network: true
@@ -240,9 +240,6 @@ if ( ! class_exists( 'BackWPup' ) ) {
 			if ( ! defined( 'DOING_CRON' ) && current_user_can( 'backwpup' ) && current_user_can( 'backwpup' ) && is_admin_bar_showing() && get_site_option( 'backwpup_cfg_showadminbar', FALSE ) )
 				BackWPup_Adminbar::getInstance();
 			
-			//display about page after Update
-			if ( ! get_site_option( 'backwpup_about_page', FALSE ) && $_REQUEST[ 'page' ] != 'backwpupabout' ) 
-				wp_redirect( network_admin_url( 'admin.php' ) . '?page=backwpupabout' );
 		}
 
 		/**
