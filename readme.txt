@@ -1,19 +1,19 @@
-=== BackWPup - WordPress Backup Plugin ===
+=== BackWPup (free) - WordPress Backup Plugin ===
 Contributors: inpsyde, danielhuesken, Bueltge, nullbyte
 Tags: Amazon, Amazon S3, back up, backup, chinese, cloud, cloud files, database, db backup, dropbox, dump, file, french, ftp, ftps, german, migrate, multisite, russian, schedule, sftp, storage, S3, time, upload, xml
 Requires at least: 3.2
 Tested up to: 3.5.1
-Stable tag: 3.0.12
+Stable tag: 3.0.13
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-Schedule easy, and complete automatic backups for your WordPress installation. Decide which content will be stored where and when (Dropbox, S3, FTP). This is the free version
+Schedule complete automatic backups of your WordPress installation. Decide which content will be stored (Dropbox, S3…). This is the free version
 
 == Description ==
 
-The **backup plugin** **[BackWPup](http://marketpress.com/product/backwpup-pro/)** can be used to save your complete installation including /wp-content/ and push them to an external Backup Service, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation. Please understand: this free version will not be supported as good as the [BackWPup Pro version](http://marketpress.com/product/backwpup-pro/).
+The **backup plugin** **[BackWPup (free)](http://marketpress.com/product/backwpup-pro/)** can be used to save your complete installation including /wp-content/ and push them to an external Backup Service, like **Dropbox**, **S3**, **FTP** and many more, see list below. With a single backup .zip file you are able to easily restore an installation. Please understand: this free version will not be supported as good as the [BackWPup Pro version](http://marketpress.com/product/backwpup-pro/).
 
-BackWPup is the number 1 backup-plugin for WordPress with more than 60.000 users, 800.000 downloads and in the top 50 of all WordPress Plugins (checked on rankwp.com)
+BackWPup (free) is the number 1 backup-plugin for WordPress with nearly 1.000.000 downloads and in the top 20 of all WordPress Plugins (checked on rankwp.com)
 
 * Database Backup  *(needs mysqli)*
 * WordPress XML Export
