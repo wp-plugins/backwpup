@@ -356,7 +356,7 @@ class BackWPup_JobType_File extends BackWPup_JobTypes {
 			$job_object->substeps_done = 2;
 		$job_object->update_working_data();
 
-		$wp_plugin_dir = realpath( WP_CONTENT_DIR );
+		$wp_plugin_dir = realpath( WP_PLUGIN_DIR );
 		if ( $wp_plugin_dir && ! empty( $job_object->job[ 'backupplugins'] ) && $job_object->substeps_done == 2 ) {
 			$wp_plugin_dir = trailingslashit( str_replace( '\\', '/', $wp_plugin_dir ) );
 			$excludes = $this->get_exclude_dirs( $wp_plugin_dir );
