@@ -529,8 +529,9 @@ final class BackWPup_Admin {
 			return;
 
 		$show = get_user_meta( get_current_user_id(), 'backwpup_show_pro_panel', TRUE );
-		if ( $show !== 0 )
-			$show = TRUE;
+
+		$show = $show === '0' ? FALSE : TRUE;
+
 		if ( isset( $_GET[ 'dis_pro' ] ) && $_GET[ 'dis_pro' ] == 0 ) {
 			update_user_meta( get_current_user_id(), 'backwpup_show_pro_panel', 0 );
 			$show = FALSE;
