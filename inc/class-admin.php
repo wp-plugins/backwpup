@@ -55,8 +55,8 @@ final class BackWPup_Admin {
 		//Change Backup message on core updates
 		add_filter( 'gettext', array( $this, 'gettext' ), 10, 3 );
 		//Plugin banner free
-		if ( ! class_exists( 'BackWPup_Pro', FALSE ) )
-			add_action( 'admin_notices', array( $this, 'get_pro_banner' ) );
+		/*if ( ! class_exists( 'BackWPup_Pro', FALSE ) )
+			add_action( 'admin_notices', array( $this, 'get_pro_banner' ) );*/
 	}
 
 	/**
