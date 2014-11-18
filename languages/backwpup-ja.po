@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: BackWPup v3.1.3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2014-11-13 10:42+0900\n"
+"PO-Revision-Date: 2014-11-14 22:54+0900\n"
 "Last-Translator: stranger-jp <wordpress.stranger.jp@gmail.com>\n"
 "Language-Team: stranger-jp <wordpress.stranger.jp@gmail.com>\n"
 "MIME-Version: 1.0\n"
@@ -158,7 +158,7 @@ msgid "Create Account"
 msgstr "アカウントを作成"
 
 msgid "Authenticated!"
-msgstr "認証されました。"
+msgstr "認証済み!"
 
 msgid "Backup settings"
 msgstr "バックアップ設定"
@@ -524,7 +524,7 @@ msgid "Amazon S3: South America (Sao Paulo)"
 msgstr "Amazon S3: 南米(サンパウロ)"
 
 msgid "Google Storage (Interoperable Access)"
-msgstr "Googleストレージ(相互運用アクセス)"
+msgstr "Googleストレージ(相互運用可能なアクセス)"
 
 msgid "Dream Host Cloud Storage"
 msgstr "Dream Hostクラウドストレージ"
@@ -557,13 +557,13 @@ msgid "Amazon: Storage Class"
 msgstr "Amazon: ストレージクラス"
 
 msgid "Reduced Redundancy"
-msgstr "減少冗長"
+msgstr "減少冗長性"
 
 msgid "Server side encryption"
-msgstr "サーバー側暗号化"
+msgstr "サーバー側の暗号化"
 
 msgid "Save files encrypted (AES256) on server."
-msgstr "サーバー上で暗号化してファイル(AES256)を保存"
+msgstr "サーバー上でファイルを暗号化(AES256)して保存"
 
 msgid "Bucket %1$s created in %2$s."
 msgstr "バケット%1$sは%2$sで作成しました。"
@@ -578,7 +578,7 @@ msgid "%d. Trying to send backup file to S3 Service&#160;&hellip;"
 msgstr "%d. S3サービスにバックアップファイルを送信..."
 
 msgid "Connected to S3 Bucket \"%1$s\" in %2$s"
-msgstr "S3バケットに接続されている\"%1$s \"%2$s"
+msgstr "S3バケットに接続済 \"%1$s \"%2$s"
 
 msgid "S3 Bucket \"%s\" does not exist!"
 msgstr "S3バケット\"%s\"は存在しません!"
@@ -590,10 +590,10 @@ msgid "Backup transferred to %s."
 msgstr "バックアップは%sに転送されます。"
 
 msgid "Cannot transfer backup to S3! (%1$d) %2$s"
-msgstr "S3にバックアップを転送することはできません! (%1$d) %2$s"
+msgstr "S3にバックアップを転送できません! (%1$d) %2$s"
 
 msgid "Cannot delete backup from %s."
-msgstr "%sからバックアップを削除することはできません。"
+msgstr "%sからバックアップを削除できません。"
 
 msgid "Missing secret access key!"
 msgstr "シークレットアクセスキーが見つかりません!"
@@ -1232,7 +1232,7 @@ msgid "Check the installation"
 msgstr "インストール確認"
 
 msgid "Run the created job"
-msgstr "作成されたジョブを実行"
+msgstr "作成したジョブを実行"
 
 msgid "Check the job log"
 msgstr "ジョブ・ログをチェック"
@@ -2078,7 +2078,7 @@ msgid "Setting of MySQLi connection timeout failed"
 msgstr "MySQLiの接続タイムアウトの設定に失敗しました"
 
 msgid "Setting of MySQLi init command \"%s\" failed"
-msgstr "MySQLiのINITコマンドの設定が\"%s\"は失敗しました。"
+msgstr "MySQLiのinitコマンド\"%s\"の設定に失敗しました。"
 
 msgid "Start for table backup is not correctly set: %1$s "
 msgstr "テーブルのバックアップの開始が正しく設定されていません: %1$s"
@@ -2099,7 +2099,7 @@ msgid "XML ERROR (%s): %s"
 msgstr "XMLエラー(%s): %s"
 
 msgid "<a href=\"%s\">Add a new backup job</a> and plan what you want to save."
-msgstr "<a href=\"%s\">新しいバックアップジョブを追加</a> して保存したいものを計画します。"
+msgstr "<a href=\"%s\">新しいバックアップジョブを追加</a>して保存したいものを計画します。"
 
 msgid "Add new job"
 msgstr "新規ジョブを追加"
@@ -2249,7 +2249,7 @@ msgid "London (LON)"
 msgstr "ロンドン (LON)"
 
 msgid "manifest.json might be needed for later restoring a backup from this archive."
-msgstr "manifest.jsonについては、このアーカイブからバックアップを復元するために必要とされる場合があります。"
+msgstr "manifest.jsonは、このアーカイブからバックアップを復元するために必要とする場合があります。"
 
 msgid "MarketPress"
 msgstr "MarketPress"
@@ -2342,7 +2342,7 @@ msgid "XML WARNING (%s): %s"
 msgstr "XMLの警告 (%s): %s"
 
 msgid "You may have noticed the manifest.json file in this archive."
-msgstr "このアーカイブにmanifest.jsonファイルを気づいているかもしれません。"
+msgstr "このアーカイブ内のmanifest.jsonファイルに気づいているかもしれません。"
 
 msgctxt "%s = Folder name"
 msgid "Folder %s for archive not found"
@@ -2602,7 +2602,7 @@ msgid "Auto = Uses PHP class ZipArchive if available; otherwise uses PclZip.<br 
 msgstr "自動 = PHPクラスのZipArchiveを可能な場合に使用します。それ以外の場合PclZipを使用します。<br />ZipArchive = 低メモリですが、多くのファイルを同時に開きます。<br />PclZip = 多くのメモリを使用しますが、一度に2つ同時にファイルを開きます。"
 
 msgid "Backup database table \"%s\" with \"%s\" records"
-msgstr "バックアップデータベーステーブル\"%s\"と\"%s\"レコード"
+msgstr "データベーステーブルのバックアップ \"%s\"と\"%s\"レコード"
 
 msgid "File size of “%s” cannot be retrieved. File might be too large and will not be added to queue."
 msgstr "“%s”のファイルサイズを取得できません。ファイルが大きすぎる可能性があり、キューに追加されません。"
